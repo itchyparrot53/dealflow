@@ -129,3 +129,19 @@ Harness notes for later parts:
 - `docker-compose.local.yml` (shipped in the export) documents this machine's constraints: port 3000
   is taken, quay.io MinIO images are unavailable here (the local file uses `pgsty/minio`), and Caddy
   is disabled. PLAN-PART1.md 6.11 is written for a box without those constraints.
+
+## Part 1 end
+
+- Integration suite (`pnpm test:integration`, `TZ=UTC` locale env): **1788/1790 passed** across 385
+  files. The two failures are `src/features/release/router.test.ts`; the box's `.env` sets
+  `DISABLE_UPDATE_CHECK=true` (the fork default), which makes `version.get` return no release, while
+  the upstream test asserts the enabled default. With `DISABLE_UPDATE_CHECK=false` the file passes
+  2/2. Recorded as a PRE-EXISTING/environmental failure in Open issues instead of editing an
+  upstream test.
+- Container smoke (`pnpm smoke`): **SMOKE PASS**. The stack built and booted, `/api/health` returned
+  200, a magic-link request answered 303 to `/login?sent=1`, an app restart kept the health check
+  green, and the seeded admin row read back as `1`. Cleanup left `0` `dealflow-smoke` containers
+  and `0` volumes.
+- In this harness the smoke build runs with `DOCKER_BUILDKIT=0`: buildx keeps refs under
+  `~/.docker/buildx`, which is outside the harness file sandbox (the Docker daemon itself is fine).
+  On a normal host plain `pnpm smoke` works.

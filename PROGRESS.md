@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 6.2 · Last updated: 2026-10-20 06:10
+Current: 6.3 · Last updated: 2026-10-20 06:40
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -50,7 +50,7 @@ Current: 6.2 · Last updated: 2026-10-20 06:10
 - [x] 5.4 Assistant drawer
 - [x] 5.5 Phase 5 QA gate
 - [x] 6.1 E2E specs and screenshot gallery
-- [ ] 6.2 Integration suite and container smoke
+- [x] 6.2 Integration suite and container smoke
 - [ ] 6.3 Independent review and hardening
 - [ ] 6.4 Final checklist
 - [ ] 6.5 Final report and completion
@@ -282,6 +282,9 @@ typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10 · `che
 - 6.1: added the `invite-result` hook from 6.12 to the invite success block (the plan requires it; the link was already hooked).
 - 6.1: 01-auth saves its own signed-in storage state at the end because signing out revokes every session for that user, including the seeded `admin.json`; the later specs then start signed in. Selectors avoid tab-content duplication with the form ids and exact labels, and the proposal subject is asserted as an input value.
 - 6.1: `pnpm e2e` is green: 15 tests, 23 screenshots in the (gitignored, local-only) gallery.
+
+- 6.2: the full integration suite ran once: 1788/1790. The two failures are the untouched upstream `release/router.test.ts`, which assumes `DISABLE_UPDATE_CHECK` is off; this box's `.env` sets it true (fork default) and the file passes 2/2 with `DISABLE_UPDATE_CHECK=false`. Logged as PRE-EXISTING/environmental rather than editing an upstream test.
+- 6.2: `pnpm smoke` prints SMOKE PASS: build, health 200, magic-link 303 to `/login?sent=1`, app restart, health again, seeded admin count 1, and zero `dealflow-smoke` containers or volumes afterwards. In the harness the build needs `DOCKER_BUILDKIT=0` because buildx writes refs under `~/.docker/buildx`, outside the file sandbox; recorded in `HEALTH-CHECK.md`.
 
 ## Phase 5 hand-off (planner summary)
 
