@@ -34,6 +34,9 @@ const base = z.object({
   DATABASE_URL: z.string().min(1),
   WS_TICKET_SECRET: z.string().min(32),
   WS_PUBLIC_URL: z.string().min(1),
+  // Port the standalone WebSocket server binds. The app only signs tickets; src/entrypoints/ws.ts
+  // reads this, and compose publishes it on the host.
+  WS_PORT: z.coerce.number().int().positive().default(8080),
   // Full URL, not a bare hostname: buildMinioClient does new URL(MINIO_ENDPOINT), and the
   // browser POSTs uploads directly to the presigned host, so it must be publicly reachable
   // (e.g. https://s3.example.com), never an internal-only compose alias like "minio".

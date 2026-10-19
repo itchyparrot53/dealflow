@@ -71,7 +71,34 @@ With `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` the whole suite passes: 4,889/
 
 ## Click-through
 
-Filled in Task 0.5 (Playwright, production build on port 3210, seeded `dealflow_e2e` database).
+Playwright 1.64.1, Chromium, production build on port 3210 (WebSocket server on 3211), throwaway
+`dealflow_e2e` database seeded with the demo data, signed in as `demo1@example.com` through a real
+session row. Spec: `e2e/00-health.spec.ts`; result: 9 passed in 16.2s (`pnpm e2e`, 51s including the
+build). Every page: HTTP 200 after redirects, URL never contains `/login`, no boundary error
+heading. Screenshots are full page, 1440x900, in `e2e/screenshots/` (ignored by git).
+
+| # | Page | Route | HTTP status | Screenshot |
+|---|---|---|---|---|
+| 1 | Pipeline | `/pipeline` | 307 to `/pipeline/{pipelineId}`, then 200 | `p1-00-pipeline.png` |
+| 2 | Deal workspace | `/deals/{dealId}` | 200 | `p1-00-deal.png` |
+| 3 | People | `/contacts/people` | 200 | `p1-00-people.png` |
+| 4 | Organizations | `/contacts/orgs` | 200 | `p1-00-orgs.png` |
+| 5 | Leads | `/leads` | 200 | `p1-00-leads.png` |
+| 6 | Activities | `/activities` | 200 | `p1-00-activities.png` |
+| 7 | Inbox | `/inbox` | 200 | `p1-00-inbox.png` |
+| 8 | Dashboard | `/dashboard` | 200 | `p1-00-dashboard.png` |
+| 9 | Settings (profile) | `/settings/profile` | 200 | `p1-00-settings.png` |
+
+Harness notes for later parts:
+
+- `pnpm e2e` = `pnpm e2e:build` (Next build with the e2e env inlined) then `playwright test`, which
+  starts `scripts/e2e/e2e-server.mjs` (it recreates and seeds `dealflow_e2e`, writes
+  `.e2e/admin.json`, `.e2e/rep.json` and `.e2e/fixtures.json`, then runs the app and the ws server).
+- Chromium is installed outside the project (`PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers`
+  in this run) because the harness file sandbox cannot write to the default browser cache.
+- `src/entrypoints/ws.ts` runs through tsx in the harness, so its startup moved into an async
+  `main()`: tsx treats a `.ts` file in a CommonJS package as CJS, where top-level await does not
+  compile.
 
 ## Notes for Part 2
 

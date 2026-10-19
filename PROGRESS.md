@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-19 21:40
+Current: 0.5 · Last updated: 2026-10-19 22:35
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -10,7 +10,7 @@ Current: 0.4 · Last updated: 2026-10-19 21:40
 - [x] 0.1 Repository, upstream remote and kit
 - [x] 0.2 Toolchain, install and dev services
 - [x] 0.3 Baseline fixes from the OSS export
-- [ ] 0.4 Baseline run and health report
+- [x] 0.4 Baseline run and health report
 - [ ] 0.5 E2E harness and health click-through
 - [ ] 0.6 Purelymail probe
 - [ ] 0.7 Phase 0 QA gate
@@ -67,11 +67,15 @@ Current: 0.4 · Last updated: 2026-10-19 21:40
 - 0.3: typed `auditConfig.SavedFilterRow.targetEntity` as `string` and narrowed it against `SAVED_FILTER_TARGET_ENTITIES`, because `SavedFilterSeed.target` is `string` and the plan's stricter signature failed the existing test's typecheck.
 - 0.3: excluded a stray `DEALFLOW/` copy of the old app (with its own node_modules) from tsc, Biome, ESLint and vitest classification, because it sits inside this workspace and its foreign tests, React types and lint findings broke typecheck, lint and test collection.
 
+- 0.4: ran verification with `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` because 13 untouched unit tests assert en-US formatting and UTC dates; under the machine default (Europe/London, en-GB) they fail by locale only, so the environment is set instead of editing tests (recorded in docs/dealflow/HEALTH-CHECK.md).
+- 0.4: built with `ALLOW_FIRST_LOGIN_ADMIN=false` in the shell because next build runs NODE_ENV=production while the received `.env` keeps the dev value `true`, and rule 17 forbids editing `.env`.
+- 0.4: seeded demo data into a fresh scratch database `warpdrive_baseline` in the dev Postgres because the pre-existing dev database holds leftover non-demo rows that abort `pnpm db:seed:demo` (`activities_deal_id_deals_id_fk`) and `DROP DATABASE warpdrive` is a guard hard limit.
+
 ## Owner actions
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in /tmp because the harness sandbox blocks writes outside the project folder.
 
 ## Open issues
-- None
+- PRE-EXISTING: `src/features/email/inboxDate.test.ts` (4 tests), `src/features/stats/ui/trendTooltip.test.ts` (3), `src/features/stats/ui/widgets.test.tsx` (2), `src/features/stats/ui/TrendWidget.test.tsx` (1), `src/features/deals/DealList.test.tsx` (1), `src/features/email/ThreadRow.test.tsx` (1), `src/features/activities/AddActivityModal.test.tsx` (1): locale/UTC-sensitive assertions in the untouched export; they pass with `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` (see docs/dealflow/HEALTH-CHECK.md).
 
 ## Final report
 (written in Task 6.5)
