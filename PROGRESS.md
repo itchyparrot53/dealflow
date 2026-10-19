@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-19 22:35
+Current: 1.6 · Last updated: 2026-10-19 22:45
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -19,7 +19,7 @@ Current: 1.5 · Last updated: 2026-10-19 22:35
 - [x] 1.2 Package, docs, licence and MCP names
 - [x] 1.3 Telemetry and update check off by default
 - [x] 1.4 Compose without Caddy and reverse-proxy docs
-- [ ] 1.5 CLAUDE.md fast profile and project notes
+- [x] 1.5 CLAUDE.md fast profile and project notes
 - [ ] 1.6 Phase 1 QA gate
 - [ ] 2.1 Auth env, schema and error IDs
 - [ ] 2.2 System mailer
@@ -91,6 +91,8 @@ Current: 1.5 · Last updated: 2026-10-19 22:35
 - AMENDMENT A5: host-run commands in this and later phases keep the `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` override (Node's `--env-file` never overrides an already-set variable), tests keep `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`, and `pnpm build` keeps `ALLOW_FIRST_LOGIN_ADMIN=false`.
 - 1.4: the proxy example keeps every security header and its pinned tests, but its upstreams are now `{$APP_UPSTREAM:localhost:3000}`, `{$WS_UPSTREAM:localhost:8080}` and `{$S3_UPSTREAM:localhost:9000}` so the file works outside compose; `docs/deploy.md` documents the loopback binds as a rate-limit precondition rather than a Caddy-only claim.
 - 1.4: `docs/dealflow/UPSTREAM.md` now records the ROADMAP supersession: the dev stack uses the folder's compose project name, and only the smoke test uses `dealflow-smoke`.
+
+- 1.5: CLAUDE.md now describes the fast verification profile and the Dealflow conventions; the test-first section it replaced was already contradicted by PLAN-PART1.md section 0 rule 8, so this removes the contradiction without changing any lint or engineering rule.
 
 ## Owner actions
 - TODO(owner): add `APP_PORT=3001` to `.env`, then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept). The compose base now publishes the app on `127.0.0.1:${APP_PORT:-3000}`, so without this the owner's stack would try port 3000, which is taken.

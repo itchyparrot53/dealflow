@@ -78,7 +78,11 @@ describe("env boundary", () => {
   });
 
   test("opts in to both switches when they are set to false", () => {
-    const result = parseEnv({ ...process.env, DISABLE_TELEMETRY: "false", DISABLE_UPDATE_CHECK: "false" });
+    const result = parseEnv({
+      ...process.env,
+      DISABLE_TELEMETRY: "false",
+      DISABLE_UPDATE_CHECK: "false",
+    });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.DISABLE_TELEMETRY).toBe(false);
