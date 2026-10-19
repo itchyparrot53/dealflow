@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.6 · Last updated: 2026-10-20 03:45
+Current: 5.1 · Last updated: 2026-10-20 04:10
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -41,7 +41,7 @@ Current: 4.6 · Last updated: 2026-10-20 03:45
 - [x] 4.3 Email draft in the composer
 - [x] 4.4 Notes to activities
 - [x] 4.5 Describe a filter
-- [ ] 4.6 Phase 4 QA gate
+- [x] 4.6 Phase 4 QA gate
 - [ ] 5.1 Tool catalogue from the MCP registry
 - [ ] 5.2 Assistant loop and pending actions
 - [ ] 5.3 Assistant actions and reads
@@ -58,6 +58,7 @@ Current: 4.6 · Last updated: 2026-10-20 03:45
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4902/4902
 - Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10
 - Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4934/4934 · usage 7/7
+- Phase 4 gate: commands green · typecheck ok · lint ok · build ok · unit 4938/4938 · dealInsights 4/4
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
 
 ## Decisions
@@ -159,6 +160,8 @@ Current: 4.6 · Last updated: 2026-10-20 03:45
 - 4.5: the filter catalogue is built from the four existing configs, so the prompt, the operator allow-list and `savedFilterDefinitionSchema` cannot drift; the output schema wraps the real saved-filter schema, so an invented field counts as invalid output and gets the retry.
 - 4.5: `describeFilter` accepts a test `deps` object (reference data plus chat deps) so the unit suite runs without a database; the four cases cover a valid definition, an unknown field with the repair retry, two invalid replies, and the prompt listing `value`/`expectedCloseDate`.
 - 4.5: `AiFilterBox` fills the existing dialog's rows and combinator for the deal entity only; the modal and its 16 tests keep passing with `ai.status` mocked unavailable.
+
+- 4.6: gate fixes: the AI card was split into Summary/Score sections to stay under the cognitive-complexity limit, its clock read moved to module scope for the purity rule, and the tRPC-dependent AI components are stubbed in the sidebar, composer and filter-dialog suites that render without a provider (test-only, no assertions weakened).
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
