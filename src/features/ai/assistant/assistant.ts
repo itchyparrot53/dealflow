@@ -80,7 +80,7 @@ async function runTool(
       : safeParse(toolResultText(result));
   }
 
-  const args = validated.data as Record<string, unknown>;
+  const args: Record<string, unknown> = validated.data;
   const summary = summarizeWrite(call.name, args);
   const [action] = await db
     .insert(aiActions)

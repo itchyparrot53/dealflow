@@ -133,40 +133,45 @@ export async function conversationView(
     .orderBy(asc(aiActions.seq));
   signal.throwIfAborted();
 
-  const items: (ConversationItem & { _at: number; _seq: number; _kind: number })[] = [];
+  // Sort metadata stays beside the item so the public shape carries no internal fields.
+  const entries: { item: ConversationItem; at: number; seq: number; kind: number }[] = [];
   for (const message of messages) {
     if (message.role !== "user" && message.role !== "assistant") continue;
     if (message.content === null || message.content === "") continue;
-    items.push({
-      kind: "message",
-      id: message.id,
-      role: message.role,
-      content: message.content,
-      createdAt: message.createdAt.toISOString(),
-      _at: message.createdAt.getTime(),
-      _seq: message.seq,
-      _kind: 0,
+    entries.push({
+      item: {
+        kind: "message",
+        id: message.id,
+        role: message.role,
+        content: message.content,
+        createdAt: message.createdAt.toISOString(),
+      },
+      at: message.createdAt.getTime(),
+      seq: message.seq,
+      kind: 0,
     });
   }
   for (const action of actions) {
-    items.push({
-      kind: "action",
-      id: action.id,
-      tool: action.tool,
-      summary: action.summary,
-      status: action.status,
-      createdAt: action.createdAt.toISOString(),
-      _at: action.createdAt.getTime(),
-      _seq: action.seq,
-      _kind: 1,
+    entries.push({
+      item: {
+        kind: "action",
+        id: action.id,
+        tool: action.tool,
+        summary: action.summary,
+        status: action.status,
+        createdAt: action.createdAt.toISOString(),
+      },
+      at: action.createdAt.getTime(),
+      seq: action.seq,
+      kind: 1,
     });
   }
-  items.sort((a, b) => a._at - b._at || a._seq - b._seq || a._kind - b._kind);
+  entries.sort((a, b) => a.at - b.at || a.seq - b.seq || a.kind - b.kind);
 
   return {
     id: conversation?.id ?? conversationId,
     title: conversation?.title ?? "New conversation",
-    items: items.map(({ _at, _seq, _kind, ...item }) => item),
+    items: entries.map((entry) => entry.item),
   };
 }
 
