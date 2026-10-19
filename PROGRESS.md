@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-19 22:50
+Current: 2.4 · Last updated: 2026-10-19 23:20
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -22,9 +22,9 @@ Current: 2.1 · Last updated: 2026-10-19 22:50
 - [x] 1.4 Compose without Caddy and reverse-proxy docs
 - [x] 1.5 CLAUDE.md fast profile and project notes
 - [x] 1.6 Phase 1 QA gate
-- [ ] 2.1 Auth env, schema and error IDs
-- [ ] 2.2 System mailer
-- [ ] 2.3 Local auth services
+- [x] 2.1 Auth env, schema and error IDs
+- [x] 2.2 System mailer
+- [x] 2.3 Local auth services
 - [ ] 2.4 Auth routes and safe dev-login
 - [ ] 2.5 Login, magic-link and invite pages
 - [ ] 2.6 Invite email, profile password and bootstrap link
@@ -96,8 +96,17 @@ Current: 2.1 · Last updated: 2026-10-19 22:50
 
 - 1.5: CLAUDE.md now describes the fast verification profile and the Dealflow conventions; the test-first section it replaced was already contradicted by PLAN-PART1.md section 0 rule 8, so this removes the contradiction without changing any lint or engineering rule.
 
+- 2.1: Google SSO is now optional (all three `GOOGLE_*` set, or all three empty, enforced by superRefine), and production additionally requires at least one sign-in method; unit tests cover the partial-Google, all-empty, every-method-off and password-only production cases.
+- 2.1: the owner's `.env` holds a Google client id and secret but the workspace-domain line was the env-sync placeholder, so after `env:sync -- --migrate` blanked it the file is half-configured. Rule 17 forbids editing `.env`, so this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on the command line for anything that loads `.env` (build, host DB commands, the bootstrap CLI), and the owner decides below whether to finish the Google setup or clear the two values.
+- 2.1: `env:sync` appended 26 keys to `.env` (AUTH_*, SMTP_*, MAIL_*, Docker host ports, MinIO images and the probe host defaults), including `APP_PORT=3000`; the owner action below asks for `3001` on this machine.
+
+- 2.2: wrote the system mailer exactly as 6.6, with `captureMailer(dir = env.MAIL_CAPTURE_DIR)` taking an optional directory so the unwritable-directory test does not need to mutate the frozen env object; templates return `MailContent` (the mail without a recipient) because 6.6 gives them only the URL.
+- 2.3: argon2 hashing, token mint/peek/consume, credentials, password login with lockout, bootstrap, magic links, invites and session revocation are in place; `localAuth.integration.test.ts` covers all nine required cases (10 tests) against the real Postgres test database and passes.
+- 2.3: `mintAuthToken` retires the user's open `invite` tokens only, exactly as 6.5 says; `admin_setup` links are single-use but a new one does not invalidate an older one (the invite page accepts both kinds).
+
 ## Owner actions
-- TODO(owner): add `APP_PORT=3001` to `.env`, then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept). The compose base now publishes the app on `127.0.0.1:${APP_PORT:-3000}`, so without this the owner's stack would try port 3000, which is taken.
+- TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
+- TODO(owner): decide the Google SSO config in `.env`. It currently has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set but `GOOGLE_WORKSPACE_DOMAIN` empty, which the new all-or-nothing rule rejects. Either set `GOOGLE_WORKSPACE_DOMAIN` to the Workspace domain (Google on) or blank the client id and secret (Google off). Until then, anything that loads `.env` needs `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on the command line, as this run does.
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in `/tmp/dealflow-tools` because the harness sandbox blocks writes outside the project folder. Not blocking: every command in this run worked through that copy.
 - TODO(owner, optional): delete the probe artifacts in the Purelymail mailbox (`Dealflow mail probe ...` messages in `\Sent` and `\Trash`, plus one `append diagnostic` message from the APPEND check). They contain no secrets.
 - Done by owner in Phase 0: `MAIL_PROBE_USER` and `MAIL_PROBE_PASS` are in `.env` and the probe has run successfully. No action left for mail until Part 2.

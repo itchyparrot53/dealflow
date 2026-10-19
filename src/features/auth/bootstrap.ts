@@ -7,8 +7,9 @@ import { isUploadedAvatarUrl } from "@/features/identity/avatar/avatarStorage";
 import { err, ok, type Result } from "@/types/result";
 import { ensureSeedData, readSeedHandles } from "./seed";
 
-// Stable advisory-lock key for the bootstrap election (any fixed bigint).
-const BOOTSTRAP_LOCK_KEY = 815_274_001n;
+// Stable advisory-lock key for the bootstrap election (any fixed bigint). Exported so the local
+// auth bootstrap holds the SAME lock as the Google first-run path.
+export const BOOTSTRAP_LOCK_KEY = 815_274_001n;
 
 export interface VerifiedIdentity {
   email: string;
