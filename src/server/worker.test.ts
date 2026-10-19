@@ -88,7 +88,7 @@ function makeFakeBoss() {
 }
 
 describe("registerAllJobs", () => {
-  it("creates all three queues and schedules the reaper", async () => {
+  it("creates the queues and schedules the reaper, with the update check off by default", async () => {
     const h = await makeTestDb();
     testDbHolder.db = h;
 
@@ -106,10 +106,11 @@ describe("registerAllJobs", () => {
       expect(scheduled).toBeDefined();
       expect(scheduled?.cron).toBe("0 * * * *");
 
-      // The release-check job is enabled in the test env (DISABLE_UPDATE_CHECK unset), so its
-      // queue is created and scheduled alongside the reaper.
-      expect(queueNames).toContain(PGBOSS_QUEUE_RELEASE_CHECK);
-      expect(fakeBoss.schedules.some((s) => s.name === PGBOSS_QUEUE_RELEASE_CHECK)).toBe(true);
+      // The update check is off unless a deploy opts in (DISABLE_UPDATE_CHECK defaults to true),
+      // so this worker neither creates nor schedules its queue. The opt-in path is covered by
+      // src/features/release/job.test.ts.
+      expect(queueNames).not.toContain(PGBOSS_QUEUE_RELEASE_CHECK);
+      expect(fakeBoss.schedules.some((s) => s.name === PGBOSS_QUEUE_RELEASE_CHECK)).toBe(false);
     } finally {
       testDbHolder.db = null;
       await h.close();

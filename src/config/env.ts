@@ -67,14 +67,16 @@ const base = z.object({
   // NEXT_PUBLIC vars, so this stays the single env boundary. Empty key disables telemetry.
   POSTHOG_KEY: z.string().default(""),
   POSTHOG_HOST: z.string().default(""),
-  DISABLE_TELEMETRY: boolFromString.default(false),
+  // Off unless a deploy opts in: telemetry is opt-in for a self-hosted CRM, so the default keeps
+  // a fresh install silent even when PostHog keys are present.
+  DISABLE_TELEMETRY: boolFromString.default(true),
   // Console.warn/error forwarding is off by default (widens the event surface); opt in per deploy.
   TELEMETRY_CONSOLE_FORWARDING: boolFromString.default(false),
   // Git SHA of the running build, for regression attribution alongside APP_VERSION.
   APP_COMMIT: z.string().default(""),
-  // Kill switch for the GitHub update-check banner. A hosted/managed deployment sets this true;
-  // OSS self-hosters leave it false to get the banner.
-  DISABLE_UPDATE_CHECK: boolFromString.default(false),
+  // Off unless a deploy opts in. On by default would mean every worker polls GitHub without the
+  // operator asking, so set false to get the upstream release banner.
+  DISABLE_UPDATE_CHECK: boolFromString.default(true),
 });
 
 // Production guardrails for the first-run bootstrap (ops spec E6).

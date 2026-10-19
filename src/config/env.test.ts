@@ -57,12 +57,13 @@ describe("env boundary", () => {
     expect(result.ok).toBe(true);
   });
 
-  test("defaults APP_VERSION empty and DISABLE_UPDATE_CHECK false", () => {
+  test("defaults APP_VERSION empty and DISABLE_UPDATE_CHECK true", () => {
     const result = parseEnv({ ...process.env });
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.APP_VERSION).toBe("");
-      expect(result.value.DISABLE_UPDATE_CHECK).toBe(false);
+      // Opt-in, not opt-out: a fresh self-hosted install must not poll GitHub.
+      expect(result.value.DISABLE_UPDATE_CHECK).toBe(true);
     }
   });
 
@@ -72,8 +73,17 @@ describe("env boundary", () => {
     if (!parsed.ok) return;
     expect(parsed.value.POSTHOG_KEY).toBe("");
     expect(parsed.value.POSTHOG_HOST).toBe("");
-    expect(parsed.value.DISABLE_TELEMETRY).toBe(false);
+    expect(parsed.value.DISABLE_TELEMETRY).toBe(true);
     expect(parsed.value.APP_COMMIT).toBe("");
+  });
+
+  test("opts in to both switches when they are set to false", () => {
+    const result = parseEnv({ ...process.env, DISABLE_TELEMETRY: "false", DISABLE_UPDATE_CHECK: "false" });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.DISABLE_TELEMETRY).toBe(false);
+      expect(result.value.DISABLE_UPDATE_CHECK).toBe(false);
+    }
   });
 
   test("parses an APP_VERSION stamp and DISABLE_UPDATE_CHECK=true", () => {
