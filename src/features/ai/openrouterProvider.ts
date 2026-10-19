@@ -25,18 +25,15 @@ export function createOpenRouterProvider(): AiProvider {
     kind: "openrouter",
     async chat(req: AiChatRequest, signal) {
       try {
-        // Cast at this one boundary: our message union mirrors the SDK's request shape, and the
-        // SDK's generic message type cannot narrow a hand-built array.
+        // Our message union mirrors the SDK's request shape, so the array is accepted as-is.
         const completion = await client.chat.completions.create(
           {
             model: env.OPENROUTER_MODEL,
-            messages: req.messages as unknown as Parameters<
-              typeof client.chat.completions.create
-            >[0]["messages"],
+            messages: req.messages,
             temperature: req.temperature ?? 0.3,
             max_tokens: req.maxTokens ?? 1200,
-            ...(req.tools ? { tools: req.tools } : {}),
-            ...(req.json ? { response_format: { type: "json_object" as const } } : {}),
+            ...(req.tools !== undefined ? { tools: req.tools } : {}),
+            ...(req.json === true ? { response_format: { type: "json_object" as const } } : {}),
           },
           { signal },
         );
