@@ -5,7 +5,9 @@ import { describe, expect, test } from "vitest";
 // and is therefore the correct place for HSTS (Next cannot tell, and would emit the header on
 // plain-http dev too). Everything else about the edge config that has a security consequence is
 // pinned here, because a silent edit to this file is invisible to every other test in the repo.
-const text = readFileSync("Caddyfile", "utf8");
+// The proxy is no longer part of the default stack: this is the documented example the owner runs
+// in front of it, so its security consequences still deserve pinning.
+const text = readFileSync("docs/reverse-proxy/Caddyfile.example", "utf8");
 
 // The vhost bodies, split so an assertion about the storage host cannot accidentally be
 // satisfied by a directive that only exists on the app host.

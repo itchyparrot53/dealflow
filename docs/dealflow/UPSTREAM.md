@@ -41,4 +41,36 @@ Keep this list current: it is the conflict surface for every future cherry-pick.
   kit folder, generated test output and a stray `DEALFLOW/` copy of the old app that sits in this
   workspace; and `scripts/dealflow/*.mjs` added to the ESLint default project (Task 0.1, Task 0.3).
 - `.gitignore`, `package.json` (changed): generated paths and the Dealflow scripts from
-  PLAN-PART1.md 6.1 (Task 0.1).
+  PLAN-PART1.md 6.1 (Task 0.1); the package name, description and contributors (Task 1.2); and
+  `dev:up` without the explicit compose project name (Task 1.4, AMENDMENT A1).
+- `src/constants/strings.ts`, `src/constants/settingsStrings.ts`,
+  `src/constants/enrichmentStrings.ts`, `src/app/(app)/settings/email-sync/strings.ts`,
+  `src/app/oauth/authorize/consent.tsx`, `src/features/notifications/email/render.ts`,
+  `src/features/release/ui/VersionBanner.tsx`, `src/features/leads/inbox/SourceOriginInfo.tsx`,
+  `src/features/deal-workspace/composer/VideoCallField.tsx`, `src/app/layout.tsx`,
+  `src/features/email/composer/sendFailure.ts` (changed): user-visible copy now says Dealflow
+  (Task 1.1).
+- `src/components/ui/DatePicker.tsx` (changed): the calendar chunk cache is read instead of being
+  write-only, which the linter required (Task 0.7).
+- `src/features/mcp/server.ts`, `src/app/api/mcp/route.ts` (changed): MCP server name `dealflow`
+  (Task 1.2).
+- `README.md`, `LICENSE`, `docs/mcp-server.md` (changed): Dealflow docs, added copyright line,
+  renamed MCP guide (Task 1.2).
+- `src/config/env.ts`, `.env.example` (changed): telemetry and update check default on, then off
+  (Task 1.3); Docker host-port keys, proxy example section and configurable MinIO images (Task 1.4).
+- `docker-compose.yml` (changed): no proxy service, loopback publishes for app/ws/MinIO, configurable
+  `MINIO_IMAGE`/`MC_IMAGE` and `DEALFLOW_ENV_FILE`, header rewritten (Task 1.4, AMENDMENT A1).
+- `docker-compose.dev.yml` (changed): only the Postgres and MinIO console debug ports (Task 1.4).
+- `docker-compose.local.yml` (changed): this machine's override updated for the new base file, no
+  proxy stanza, no duplicate publishes (Task 1.4, AMENDMENT A1).
+- `Caddyfile` (moved): now `docs/reverse-proxy/Caddyfile.example`, with `$APP_UPSTREAM`,
+  `$WS_UPSTREAM` and `$S3_UPSTREAM` variables (Task 1.4).
+- `Caddyfile.test.ts` (changed): reads the example path above (Task 1.4).
+- `docs/deploy.md` (rewritten): proxy-less topology, host-port variables, first admin via the
+  bootstrap link or an email link (Task 1.4).
+
+## Deploy project names
+
+Task 1.4 supersedes ROADMAP.md's "Compose project: dealflow" line. The dev stack uses the folder's
+own compose project name (this machine: `warpdrive-main`), so it reuses the owner's existing
+containers and volumes; the container smoke test keeps its dedicated `dealflow-smoke` project.

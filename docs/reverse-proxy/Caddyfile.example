@@ -1,6 +1,16 @@
-# Auto-HTTPS reverse proxy for the single-box deploy. APP_DOMAIN / ACME_EMAIL come from the
-# environment (compose passes them from .env). Caddy provisions and renews the Let's Encrypt
-# certificate for APP_DOMAIN automatically.
+# Example Caddy configuration for the single-box topology: Caddy runs on the same box as the
+# Docker stack and terminates TLS for the app domain and the s3. subdomain.
+#
+# The default compose stack has NO proxy. Publish app, ws and MinIO on loopback (the compose
+# defaults) and point the upstreams below at them. Run this file with:
+#
+#   APP_DOMAIN=crm.example.com ACME_EMAIL=you@example.com \
+#   APP_UPSTREAM=127.0.0.1:3000 WS_UPSTREAM=127.0.0.1:8080 S3_UPSTREAM=127.0.0.1:9000 \
+#   caddy run --config docs/reverse-proxy/Caddyfile.example
+#
+# The upstream variables default to localhost, so no overrides are needed when Caddy shares the
+# compose host's loopback. When the proxy runs on another machine, set APP_BIND/WS_BIND/MINIO_BIND
+# to a reachable address in .env and point these at it. See docs/reverse-proxy.md.
 #
 # Security headers split across two layers: the app's own headers (CSP frame-ancestors,
 # X-Frame-Options, nosniff, Referrer-Policy) come from next.config.ts so they apply in dev and
@@ -29,10 +39,10 @@
 	# The WS server binds a port and does not route on path, so proxy straight through (the
 	# upgrade and ?ticket= query are preserved). Browser connects to wss://<domain>/_ws.
 	@ws path /_ws*
-	reverse_proxy @ws ws:8080
+	reverse_proxy @ws {$WS_UPSTREAM:localhost:8080}
 
 	# Everything else is the Next.js app.
-	reverse_proxy app:3000
+	reverse_proxy {$APP_UPSTREAM:localhost:3000}
 }
 
 # Object storage on its own subdomain. The browser POSTs presigned uploads (CSV import, avatars,
@@ -58,5 +68,5 @@ s3.{$APP_DOMAIN} {
 	# Deliberately no request_body cap: presigned uploads land here, and MAX_FILE_BYTES is
 	# deploy-configurable. MinIO enforces the real ceiling through the presigned POST policy's
 	# content-length-range, which the app pins per upload (see storage.presignPost).
-	reverse_proxy minio:9000
+	reverse_proxy {$S3_UPSTREAM:localhost:9000}
 }

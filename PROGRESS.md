@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-19 22:15
+Current: 1.4 · Last updated: 2026-10-19 22:25
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -17,7 +17,7 @@ Current: 1.3 · Last updated: 2026-10-19 22:15
 - [x] 0.7 Phase 0 QA gate
 - [x] 1.1 Dealflow name in the app
 - [x] 1.2 Package, docs, licence and MCP names
-- [ ] 1.3 Telemetry and update check off by default
+- [x] 1.3 Telemetry and update check off by default
 - [ ] 1.4 Compose without Caddy and reverse-proxy docs
 - [ ] 1.5 CLAUDE.md fast profile and project notes
 - [ ] 1.6 Phase 1 QA gate
@@ -84,6 +84,8 @@ Current: 1.3 · Last updated: 2026-10-19 22:15
 - 1.1: left `src/features/mcp/server.ts`, `src/app/api/mcp/route.ts` and every internal identifier (storage keys, event names, `Symbol.for` keys, `RELEASE_REPO`, `warpdrive.invalid`, `DOCS_SITE_URL`, the MinIO bucket default) on the old name; the two MCP names are renamed by Task 1.2.
 
 - 1.2: no MCP test asserted the old server name, so the rename touched only `src/features/mcp/server.ts` and `src/app/api/mcp/route.ts`; README was rewritten for Dealflow (comparison table dropped, screenshots kept with Dealflow alt text), `docs/mcp-server.md` renamed, and the MIT notice keeps Nikita Sawinyh's line above the new Dealflow contributors line.
+
+- 1.3: updated the tests that assumed opt-out defaults: `src/config/env.test.ts` now expects `DISABLE_TELEMETRY`/`DISABLE_UPDATE_CHECK` true by default and gains an explicit opt-in case, and `src/server/worker.test.ts` no longer expects the release-check queue when the flag is unset (its opt-in path stays covered by `src/features/release/job.test.ts`).
 
 ## Owner actions
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in `/tmp/dealflow-tools` because the harness sandbox blocks writes outside the project folder. Not blocking: every command in this run worked through that copy.
