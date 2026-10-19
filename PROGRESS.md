@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-20 02:45
+Current: 4.4 · Last updated: 2026-10-20 03:05
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -38,7 +38,7 @@ Current: 4.3 · Last updated: 2026-10-20 02:45
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 Deal context, summary and score
 - [x] 4.2 Deal AI card
-- [ ] 4.3 Email draft in the composer
+- [x] 4.3 Email draft in the composer
 - [ ] 4.4 Notes to activities
 - [ ] 4.5 Describe a filter
 - [ ] 4.6 Phase 4 QA gate
@@ -148,6 +148,10 @@ Current: 4.3 · Last updated: 2026-10-20 02:45
 
 - 4.2: `DealAiCard` renders as the first child of the sidebar; it reads `ai.status` and `ai.dealInsight`, creates next steps through `createActivityAction`, and carries every 6.12 hook (`deal-ai-card`, summary, health data-health, next-step data-added, score data-score, error).
 - 4.2: `DealSidebar.test.tsx` mocks the AI card because that suite renders the sidebar without a tRPC provider; the sidebar's own nine tests are unchanged and still pass.
+
+- 4.3: `draftEmail` reads the deal through `getWorkspace` and the person through `getPerson` (the person page's own visibility-checked read), uses `settings.companyName` with "our company" as the fallback, and converts the plain-text body to escaped paragraph HTML for the composer.
+- 4.3: `AiDraftButton` is a Popover with the required labels and hooks; it fills the subject only when the composer owns an empty subject on a fresh email, and prepends the body so any signature already in the composer stays below the draft.
+- 4.3: the composer's tRPC mock now includes `ai.status` (unavailable) so its ten tests keep rendering without the real provider; no composer assertion changed.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.

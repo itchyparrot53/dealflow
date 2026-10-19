@@ -8,6 +8,7 @@ import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { type DealAiInsightView, scoreDeal, summarizeDeal } from "../dealInsights";
+import { type NoteProposals, proposeActivitiesFromNote } from "../notesToActivities";
 import { checkAiRateLimit } from "../rateLimit";
 
 const idSchema = z.string().uuid();
@@ -46,4 +47,15 @@ export async function scoreDealAction(
   const parsed = idSchema.safeParse(dealId);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
   return toClientResult(await scoreDeal(db, c.actor, parsed.data, SIG()));
+}
+
+export async function proposeActivitiesFromNoteAction(
+  noteId: string,
+  csrfToken: string | null,
+): Promise<ActionResult<NoteProposals>> {
+  const c = await context(csrfToken);
+  if (!c.ok) return c;
+  const parsed = idSchema.safeParse(noteId);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
+  return toClientResult(await proposeActivitiesFromNote(db, c.actor, parsed.data, SIG()));
 }

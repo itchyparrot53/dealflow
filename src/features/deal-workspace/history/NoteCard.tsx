@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type CommentableEntityType, isCommentableEntityType } from "@/constants/comments";
+import { NotesToActivitiesDialog } from "@/features/ai/ui/NotesToActivitiesDialog";
 import {
   deleteNoteAction,
   togglePinAction,
@@ -57,6 +58,7 @@ export function NoteCard({
   const [draft, setDraft] = useState(body);
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [activitiesOpen, setActivitiesOpen] = useState(false);
   const reportError = useDealActionError();
 
   const togglePin = useCallback(async () => {
@@ -165,6 +167,11 @@ export function NoteCard({
               <Ellipsis aria-hidden="true" className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" aria-label="More actions" className="min-w-40">
+              {entityType === "deal" && (
+                <DropdownMenuItem onSelect={() => setActivitiesOpen(true)}>
+                  Turn into activities
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onSelect={() => setEditing(true)}>Edit</DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => setConfirmOpen(true)}
@@ -183,6 +190,15 @@ export function NoteCard({
           entityType={commentScope.entityType}
           entityId={commentScope.entityId}
           onError={reportError}
+        />
+      )}
+
+      {entityType === "deal" && activitiesOpen && (
+        <NotesToActivitiesDialog
+          noteId={id}
+          open={activitiesOpen}
+          onOpenChange={setActivitiesOpen}
+          onChanged={onChanged}
         />
       )}
 
