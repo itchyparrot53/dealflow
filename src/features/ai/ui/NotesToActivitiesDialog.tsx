@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -44,27 +44,32 @@ export function NotesToActivitiesDialog({
 }: Props): React.ReactNode {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [dealId, setDealId] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState(true);
   const [errorId, setErrorId] = useState<string | null>(null);
   const types = trpc.activities.listTypes.useQuery().data ?? [];
   const utils = trpc.useUtils();
 
-  async function load(): Promise<void> {
-    setRows(null);
-    setErrorId(null);
-    setPending(true);
-    try {
+  // The card mounts this dialog only while it is open, so opening never fires onOpenChange: the
+  // proposals are fetched here instead. A ref (not a local flag) is what keeps the late setState
+  // calls out of a closed dialog; TypeScript cannot narrow a ref's property to a constant.
+  const cancelled = useRef(false);
+  useEffect(() => {
+    cancelled.current = false;
+    void (async () => {
       const result = await proposeActivitiesFromNoteAction(noteId, readCsrfToken());
+      if (cancelled.current) return;
+      setPending(false);
       if (!result.ok) {
         setErrorId(result.error.id);
         return;
       }
       setDealId(result.value.dealId);
       setRows(result.value.proposals.map((proposal) => ({ ...proposal, checked: true })));
-    } finally {
-      setPending(false);
-    }
-  }
+    })();
+    return () => {
+      cancelled.current = true;
+    };
+  }, [noteId]);
 
   function update(index: number, patch: Partial<Row>): void {
     setRows((current) =>
@@ -115,13 +120,7 @@ export function NotesToActivitiesDialog({
   const selected = rows?.filter((row) => row.checked).length ?? 0;
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (next && rows === null) void load();
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Suggested activities</DialogTitle>

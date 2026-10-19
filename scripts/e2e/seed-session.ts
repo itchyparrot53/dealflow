@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "@/db/schema";
 import { deals, users } from "@/db/schema";
+import { setPassword } from "@/features/auth/credentials";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { createSession, SESSION_COOKIE } from "@/features/auth/session";
 
@@ -50,6 +51,16 @@ async function main(): Promise<void> {
   };
 
   writeFileSync(".e2e/admin.json", await storageState(ADMIN_EMAIL));
+
+  // The password sign-in spec needs a known credential (not just the seeded cookie sessions).
+  const [adminUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, ADMIN_EMAIL))
+    .limit(1);
+  if (adminUser === undefined) throw new Error(`seed-session: no user ${ADMIN_EMAIL}`);
+  await setPassword(db, adminUser.id, "correct horse battery staple", signal);
+
   writeFileSync(".e2e/rep.json", await storageState(REP_EMAIL));
 
   // The oldest live open deal: stable across runs, so specs can link to it without guessing.

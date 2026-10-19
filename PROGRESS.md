@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 6.1 · Last updated: 2026-10-20 05:40
+Current: 6.2 · Last updated: 2026-10-20 06:10
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -10,6 +10,7 @@ Current: 6.1 · Last updated: 2026-10-20 05:40
 - Phase 3: 8d34928f96cad337b54e24529e7b7a6de0d34798
 - Phase 4: aa6910ff25e46f4746065f9aad6e77f2734247df
 - Phase 5: 0fb5f7bb5d8586771920b4298ff0740589abc436
+- Phase 6: 680c455948e9e7f75cd641b6ca7eddff569df151
 
 ## Tasks
 - [x] 0.1 Repository, upstream remote and kit
@@ -48,7 +49,7 @@ Current: 6.1 · Last updated: 2026-10-20 05:40
 - [x] 5.3 Assistant actions and reads
 - [x] 5.4 Assistant drawer
 - [x] 5.5 Phase 5 QA gate
-- [ ] 6.1 E2E specs and screenshot gallery
+- [x] 6.1 E2E specs and screenshot gallery
 - [ ] 6.2 Integration suite and container smoke
 - [ ] 6.3 Independent review and hardening
 - [ ] 6.4 Final checklist
@@ -276,11 +277,17 @@ typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10 · `che
 - The 13 locale/UTC-sensitive tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
 - The dev stack still needs `APP_PORT=3001` before it is recreated.
 
+- 6.1: the e2e harness now also starts the worker tier. The production build deliberately rejects activity creates when no pg-boss is published (`requireBoss`), and the worker is what creates the reminder queue, so without it every activity-creating flow 500s in the browser.
+- 6.1: `NotesToActivitiesDialog` fetched its proposals from `onOpenChange`, but the card mounts the dialog already open, so that callback never fires and the dialog stayed empty. It now fetches on mount (ref-guarded cancellation), which was a real product bug the browser proof caught.
+- 6.1: added the `invite-result` hook from 6.12 to the invite success block (the plan requires it; the link was already hooked).
+- 6.1: 01-auth saves its own signed-in storage state at the end because signing out revokes every session for that user, including the seeded `admin.json`; the later specs then start signed in. Selectors avoid tab-content duplication with the form ids and exact labels, and the proposal subject is asserted as an input value.
+- 6.1: `pnpm e2e` is green: 15 tests, 23 screenshots in the (gitignored, local-only) gallery.
+
 ## Phase 5 hand-off (planner summary)
 
 ### Commits
-- `042a1eb`-era 5.1 tools, 5.2 loop, 5.3 actions, 5.4 drawer, then the gate commit below.
-  `pnpm check:progress` is green with 36/41 ticked.
+- `c8930bf` 5.1, `4c7f08e` 5.2, `d95fc38` 5.3, `425f997` 5.4, `bd1214a` fixes round 1,
+  `680c455` 5.5 gate. `pnpm check:progress` is green with 36/41 ticked; Phase 6 starts here.
 
 ### What landed
 - **Tool catalogue (5.1):** `ToolRegistry` keeps each tool's description and input schema; the

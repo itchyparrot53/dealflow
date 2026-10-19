@@ -49,6 +49,10 @@ run("pnpm", ["exec", "tsx", "scripts/e2e/seed-session.ts"]);
 // 4. The app and the WebSocket server.
 const children = [
   spawn("pnpm", ["exec", "tsx", "src/entrypoints/ws.ts"], { env, stdio: "inherit" }),
+  // The worker creates the pg-boss queues. A production build rejects activity creates when no
+  // boss is present (a deliberate guard), so the harness runs the same worker tier the compose
+  // stack runs.
+  spawn("pnpm", ["exec", "tsx", "src/entrypoints/worker.ts"], { env, stdio: "inherit" }),
   spawn("pnpm", ["exec", "next", "start", "-p", "3210"], { env, stdio: "inherit" }),
 ];
 

@@ -178,7 +178,11 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
           </p>
         )}
         {invited !== null && (
-          <div role="status" className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
+          <div
+            role="status"
+            data-testid="invite-result"
+            className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3"
+          >
             <p className="text-sm text-muted-foreground">
               {invited.emailSent
                 ? `Invite sent to ${invited.email}.`
