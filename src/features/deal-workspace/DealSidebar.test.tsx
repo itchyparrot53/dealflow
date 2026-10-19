@@ -5,6 +5,12 @@ import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { DealSidebar } from "./DealSidebar";
 import { hide, makeWorkspace, showAll } from "./dealSidebarFixtures";
 
+// The AI card is a client component that reads tRPC; this suite renders the sidebar without a tRPC
+// provider, so the card is stubbed here. Its own behaviour is proved in the e2e and unit suites.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({
+  DealAiCard: () => null,
+}));
+
 // Radix Popover (labels + participants in the Summary action list) needs these jsdom shims.
 beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();

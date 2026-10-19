@@ -9,6 +9,7 @@ import {
   normalizeDealSidebarSections,
 } from "@/constants/dealSidebarSections";
 import { STRINGS } from "@/constants/strings";
+import { DealAiCard } from "@/features/ai/ui/DealAiCard";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { updateDealAction } from "@/features/deals/updateAction";
@@ -269,6 +270,11 @@ export function DealSidebar({
 
   return (
     <aside className="min-w-0 space-y-2">
+      <DealAiCard
+        dealId={workspace.deal.id}
+        personId={workspace.person?.id ?? null}
+        orgId={workspace.org?.id ?? null}
+      />
       <ManageSectionsDialog
         open={manageSectionsOpen}
         sections={sectionPrefs}

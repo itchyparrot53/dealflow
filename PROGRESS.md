@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-20 02:05
+Current: 4.2 · Last updated: 2026-10-20 02:25
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -36,7 +36,7 @@ Current: 4.1 · Last updated: 2026-10-20 02:05
 - [x] 3.3 Usage, caps and rate limit
 - [x] 3.4 AI router, Settings page and model check
 - [x] 3.5 Phase 3 QA gate
-- [ ] 4.1 Deal context, summary and score
+- [x] 4.1 Deal context, summary and score
 - [ ] 4.2 Deal AI card
 - [ ] 4.3 Email draft in the composer
 - [ ] 4.4 Notes to activities
@@ -141,6 +141,10 @@ Current: 4.1 · Last updated: 2026-10-20 02:05
 - 3.4: the OpenRouter request now relies on the SDK accepting our message union directly (no cast) and uses `req.tools !== undefined` / `req.json === true` so the lint rule about nullable booleans is satisfied without changing behaviour.
 
 - 3.5: gate fixes: `eslint.config.test.ts` now sets a 120s per-file budget because a type-aware ESLint boot inside the full 12-worker run can cross the 60s default on a loaded machine; every assertion is unchanged and the suite passes 4934/4934. The earlier 569s run was machine load, not a suite regression.
+
+- 4.1: `buildDealContext` gates on `getWorkspace` before reading notes or activities, emits the documented JSON (today, deal, upcoming/recent activities, newest 10 notes cut to 400 chars) and reads the base currency through the cached helper.
+- 4.1: summary and score prompts are built from the active activity type keys; model output is fixed up (summary cut to 800 chars, risks/next steps/reasons sliced, unknown type keys become `task`, `dueInDays` rounded into 0..30, score rounded into 0..100) and upserted into `deal_ai_insights`.
+- 4.1: `dealInsights.integration.test.ts` proves storage plus one `ai_usage` row per call, the fix-ups, and that an invisible deal fails before the provider is called (4 tests).
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
