@@ -1,10 +1,11 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.7 · Last updated: 2026-10-19 21:45
+Current: 1.1 · Last updated: 2026-10-19 21:40
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
+- Phase 1: 4644c0b91955cab11565ae97181ce0c4feaeefb4
 
 ## Tasks
 - [x] 0.1 Repository, upstream remote and kit
@@ -13,7 +14,7 @@ Current: 0.7 · Last updated: 2026-10-19 21:45
 - [x] 0.4 Baseline run and health report
 - [x] 0.5 E2E harness and health click-through
 - [x] 0.6 Purelymail probe
-- [ ] 0.7 Phase 0 QA gate
+- [x] 0.7 Phase 0 QA gate
 - [ ] 1.1 Dealflow name in the app
 - [ ] 1.2 Package, docs, licence and MCP names
 - [ ] 1.3 Telemetry and update check off by default
@@ -79,6 +80,8 @@ Current: 0.7 · Last updated: 2026-10-19 21:45
 - 0.5: recorded `/pipeline` as 307 to `/pipeline/{id}` then 200: the spec asserts status below 400 and no `/login` redirect, exactly as 6.12 asks.
 
 - 0.7: fixed three lint blockers the baseline exposed (DatePicker unused-variable error, Biome format of the generated probe JSON, ESLint default-project cap for the new `.mjs` tooling) instead of logging them as pre-existing, because a red `pnpm lint` fails the gate and none of the three changes behaviour.
+
+- 0.6: the real probe run sent to an external `MAIL_PROBE_TO` and also exposed a script bug: nodemailer generates `info.messageId` for raw sends instead of reporting the Message-ID header that reached the wire, so the Sent/APPEND/MOVE searches looked for an id that never existed. The probe now searches its own header id and polls after APPEND (owner-driven fix, same task).
 
 ## Owner actions
 - TODO(owner): put MAIL_PROBE_USER and MAIL_PROBE_PASS (a Purelymail test mailbox and its app password) in .env, run `pnpm mail:probe` and commit `docs/dealflow/mail-probe-result.json`; the probe currently records `skipped`.
