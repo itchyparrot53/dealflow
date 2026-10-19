@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 5.4 · Last updated: 2026-10-20 05:10
+Current: 5.5 · Last updated: 2026-10-20 05:30
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -46,7 +46,7 @@ Current: 5.4 · Last updated: 2026-10-20 05:10
 - [x] 5.1 Tool catalogue from the MCP registry
 - [x] 5.2 Assistant loop and pending actions
 - [x] 5.3 Assistant actions and reads
-- [ ] 5.4 Assistant drawer
+- [x] 5.4 Assistant drawer
 - [ ] 5.5 Phase 5 QA gate
 - [ ] 6.1 E2E specs and screenshot gallery
 - [ ] 6.2 Integration suite and container smoke
@@ -171,6 +171,9 @@ Current: 5.4 · Last updated: 2026-10-20 05:10
 - 5.2: history is the last 40 messages trimmed to the first user row, unknown tools and invalid arguments come back as error tool results, and six tool-calling replies end with the documented step-limit message; the integration suite covers all nine cases.
 
 - 5.3: the four assistant server actions use the 90-second budget, CSRF, actor and the per-user AI rate limit; `ai.conversations.list` returns the caller's newest 30 and `ai.conversations.get` throws NOT_FOUND with `E_AI_008` for someone else's conversation.
+
+- 5.4: the drawer is a `Sheet` with the conversation selector, `New chat`, message bubbles, action cards with Confirm/Reject, three suggestions for an empty conversation and an input that sends on Enter; open state and conversation id persist under `df.assistantOpen` / `df.assistantConversationId` and are restored after mount to keep SSR and hydration identical.
+- 5.4: `renderSimpleText` renders assistant text as React nodes (paragraphs, "- " lists, `**bold**`) so HTML in a model reply stays literal; the launcher sits before the notifications bell and is disabled with a tooltip when AI is unavailable.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
