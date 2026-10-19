@@ -2,9 +2,9 @@ import { mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { authTokens, sessions, settings, userCredentials, users } from "@/db/schema";
+import { authTokens, settings, userCredentials, users } from "@/db/schema";
 import { captureMailer } from "@/features/mailer/captureMailer";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -29,6 +29,9 @@ beforeAll(async () => {
 afterAll(async () => {
   setSystemMailerForTest(null);
   await h.close();
+});
+afterEach(() => {
+  rmSync(captureDir, { recursive: true, force: true });
 });
 beforeEach(async () => {
   await h.db.execute(

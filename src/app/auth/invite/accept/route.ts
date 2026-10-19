@@ -29,10 +29,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!limit.allowed) return redirect("/login?error=rate_limited");
 
   const form = await req.formData();
-  const token = String(form.get("token") ?? "");
-  const name = String(form.get("name") ?? "").trim();
-  const password = String(form.get("password") ?? "");
-  const confirm = String(form.get("confirm") ?? "");
+  // formData values can be Files, so narrow to strings instead of stringifying. A File in any of
+  // these fields is a malformed form and the empty string fails the same checks below.
+  const field = (key: string): string => {
+    const value = form.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  const token = field("token");
+  const name = field("name").trim();
+  const password = field("password");
+  const confirm = field("confirm");
 
   if (token === "") return redirect("/login?error=link_expired");
   if (name === "" || name.length > NAME_MAX) return backToForm(token, "name_missing");
