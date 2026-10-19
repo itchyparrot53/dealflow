@@ -29,7 +29,8 @@
       "!.smoke",
       "!.mail-capture",
       "!DEALFLOW",
-      "!PLAN AND EXECUTE"
+      "!PLAN AND EXECUTE",
+      "!docs/dealflow/mail-probe-result.json"
     ]
   },
   "formatter": {

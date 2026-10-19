@@ -32,7 +32,7 @@ settings and the plan forbids changing tests:
 |---|---|---|---|---|---|
 | 1 | Install | `pnpm install --frozen-lockfile` | pass | 1,398 packages | 27s |
 | 2 | Typecheck | `pnpm typecheck` | pass | 0 errors | 16s |
-| 3 | Lint | `pnpm lint` | pass | Biome 2,663 files / 13 warnings, ESLint 0 problems | 174s + 60s |
+| 3 | Lint | `pnpm lint` | pass after environment fixes | Biome 2,672 files / 12 warnings, ESLint 0 problems | 54s |
 | 4 | Unit tests | `pnpm test:unit` (TZ=UTC, en-US) | pass | 4,889 tests in 783 files | 100s |
 | 4b | Unit tests, machine default | `pnpm test:unit` | 13 failures (locale only, see below) | 4,876 passed / 13 failed | 164s |
 | 5 | Integration tests | `pnpm test:integration` (real Postgres container) | pass | 1,758 tests in 381 files | 204s |
@@ -41,10 +41,14 @@ settings and the plan forbids changing tests:
 
 Notes on the two red results that were fixed in this task rather than logged as pre-existing:
 
-- **Lint, first run.** Biome flagged the kit's own `scripts/check-progress.mjs` (console use, format)
-  and ESLint could not type-parse `scripts/dealflow/env-sync.mjs` because the project service did not
-  include its folder. Fixed by excluding the kit folder and the stray `DEALFLOW/` copy from Biome and
-  ESLint, and adding `scripts/dealflow/*.mjs` to `allowDefaultProject`. No app file was touched.
+- **Lint, first runs.** Biome flagged the kit's own `scripts/check-progress.mjs` (console use, format),
+  the generated `docs/dealflow/mail-probe-result.json` (its JSON formatting), and an unused variable
+  in `src/components/ui/DatePicker.tsx`; ESLint could not type-parse `scripts/dealflow/env-sync.mjs`
+  or `scripts/e2e/*.mjs` because the project service did not include those folders, and then exceeded
+  its default-project file cap. Fixed by ignoring the kit folder, the stray `DEALFLOW/` copy and the
+  generated probe JSON; adding `scripts/dealflow/*.mjs` and `scripts/e2e/*.mjs` to
+  `allowDefaultProject` with a cap of 20; and turning the DatePicker `??=` into an explicit null check
+  that reads the cached chunk (same behaviour). No test or assertion was touched.
 - **Build, first run.** Failed while collecting page data with
   `Invalid environment: ALLOW_FIRST_LOGIN_ADMIN: ALLOW_FIRST_LOGIN_ADMIN must be false in production`,
   because `next build` runs with `NODE_ENV=production` while `.env` holds the dev value. Fixed by

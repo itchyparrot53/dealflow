@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.6 · Last updated: 2026-10-19 21:38
+Current: 0.7 · Last updated: 2026-10-19 21:45
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -12,7 +12,7 @@ Current: 0.6 · Last updated: 2026-10-19 21:38
 - [x] 0.3 Baseline fixes from the OSS export
 - [x] 0.4 Baseline run and health report
 - [x] 0.5 E2E harness and health click-through
-- [ ] 0.6 Purelymail probe
+- [x] 0.6 Purelymail probe
 - [ ] 0.7 Phase 0 QA gate
 - [ ] 1.1 Dealflow name in the app
 - [ ] 1.2 Package, docs, licence and MCP names
@@ -50,6 +50,7 @@ Current: 0.6 · Last updated: 2026-10-19 21:38
 - [ ] 6.5 Final report and completion
 
 ## QA log
+- Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4889/4889
 
 ## Decisions
 - 0.6: the probe prints its summary with `console.warn` (not `console.log`) because the repo's ESLint `no-console` rule allows only warn/error in `scripts/**/*.ts`.
@@ -76,6 +77,8 @@ Current: 0.6 · Last updated: 2026-10-19 21:38
 - 0.5: moved the ws startup into an async `main()` in `src/entrypoints/ws.ts`, because tsx compiles a `.ts` file in a CommonJS package as CJS and the top-level await failed the e2e harness; the 6.14 spawn command is unchanged.
 - 0.5: installed Chromium with `PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` because the default browser cache lives outside the harness file sandbox; every `pnpm e2e` run exports that path.
 - 0.5: recorded `/pipeline` as 307 to `/pipeline/{id}` then 200: the spec asserts status below 400 and no `/login` redirect, exactly as 6.12 asks.
+
+- 0.7: fixed three lint blockers the baseline exposed (DatePicker unused-variable error, Biome format of the generated probe JSON, ESLint default-project cap for the new `.mjs` tooling) instead of logging them as pre-existing, because a red `pnpm lint` fails the gate and none of the three changes behaviour.
 
 ## Owner actions
 - TODO(owner): put MAIL_PROBE_USER and MAIL_PROBE_PASS (a Purelymail test mailbox and its app password) in .env, run `pnpm mail:probe` and commit `docs/dealflow/mail-probe-result.json`; the probe currently records `skipped`.

@@ -90,24 +90,203 @@ function writeResult(): void {
   writeFileSync(OUTPUT, `${JSON.stringify(result, null, 2)}\n`);
 }
 
-function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+function note(step: string, error: unknown): void {
+  result.errors.push(`${step}: ${error instanceof Error ? error.message : String(error)}`);
 }
 
 // a***@example.com: enough to tell which mailbox was probed, not enough to reuse.
 function maskAccount(address: string): string {
   const [local = "", domain = ""] = address.split("@");
-  const head = local.slice(0, 1);
-  return `${head}***@${domain}`;
+  return `${local.slice(0, 1)}***@${domain}`;
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function makeClient(): ImapFlow {
+  return new ImapFlow({
+    host: imapHost,
+    port: imapPort,
+    secure: imapPort === 993,
+    auth: { user, pass },
+    logger: false,
+    qresync: true,
+  });
+}
+
+// 1. Connect and record the capability surface. False means the rest cannot run.
+async function probeConnection(client: ImapFlow): Promise<boolean> {
+  try {
+    await client.connect();
+    const capabilities = [...client.capabilities.keys()].sort();
+    const enabled = [...client.enabled];
+    result.imap.capabilities = capabilities;
+    result.imap.enabled = enabled;
+    result.imap.qresync = capabilities.includes("QRESYNC") || enabled.includes("QRESYNC");
+    result.imap.condstore = capabilities.includes("CONDSTORE") || enabled.includes("CONDSTORE");
+    result.imap.idleAdvertised = capabilities.includes("IDLE");
+    return true;
+  } catch (error) {
+    note("connect", error);
+    return false;
+  }
+}
+
+// 2 and 3. Folders, special-use flags, and the status of each (HIGHESTMODSEQ 0 included).
+async function probeFolders(client: ImapFlow): Promise<void> {
+  try {
+    const folders = await client.list();
+    result.folders = folders.map((folder) => ({
+      path: folder.path,
+      specialUse: folder.specialUse ?? null,
+      flags: [...folder.flags],
+    }));
+  } catch (error) {
+    note("list", error);
+  }
+
+  const paths = [
+    "INBOX",
+    ...result.folders.filter((folder) => folder.specialUse !== null).map((folder) => folder.path),
+  ];
+  for (const path of paths) {
+    try {
+      const status = await client.status(path, {
+        messages: true,
+        uidNext: true,
+        uidValidity: true,
+        highestModseq: true,
+      });
+      if (status === false) continue;
+      result.folderStatus[path] = {
+        messages: status.messages ?? null,
+        uidNext: status.uidNext ?? null,
+        uidValidity: status.uidValidity === undefined ? null : status.uidValidity.toString(),
+        highestModseq: status.highestModseq === undefined ? null : status.highestModseq.toString(),
+      };
+    } catch (error) {
+      note(`status ${path}`, error);
+    }
+  }
+}
+
+function buildRawMessage(): Promise<Buffer> {
+  const streamTransport = nodemailer.createTransport({ streamTransport: true, buffer: true });
+  const domain = user.split("@")[1] ?? "localhost";
+  return streamTransport
+    .sendMail({
+      from: user,
+      to,
+      subject: `Dealflow mail probe ${new Date().toISOString()}`,
+      text: "Automated probe from Dealflow Part 1. Safe to delete.",
+      messageId: `<probe-${randomUUID()}@${domain}>`,
+    })
+    .then((built) => built.message as Buffer);
+}
+
+async function sendProbe(raw: Buffer): Promise<number> {
+  const smtp = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    auth: { user, pass },
+  });
+  const sentAt = Date.now();
+  const info = await smtp.sendMail({ envelope: { from: user, to: [to] }, raw });
+  result.send = { ok: true, messageId: info.messageId, smtpResponse: info.response };
+  smtp.close();
+  return sentAt;
+}
+
+// 4, 5 and 6. Arm IDLE, send one message, and see whether the server pushes it back.
+async function probeDelivery(client: ImapFlow): Promise<Buffer | null> {
+  let resolveExists: ((at: number) => void) | null = null;
+  const existsSeen = new Promise<number>((resolve) => {
+    resolveExists = resolve;
+  });
+  client.on("exists", () => {
+    resolveExists?.(Date.now());
+  });
+  try {
+    await client.mailboxOpen("INBOX");
+    void client.idle().catch(() => undefined);
+  } catch (error) {
+    note("idle", error);
+  }
+
+  let raw: Buffer | null = null;
+  let sentAt = 0;
+  try {
+    raw = await buildRawMessage();
+    sentAt = await sendProbe(raw);
+  } catch (error) {
+    note("send", error);
+  }
+
+  if (sentAt > 0) {
+    const seen = await Promise.race([existsSeen, sleep(IDLE_WAIT_MS).then(() => null)]);
+    result.idle.worked = seen !== null;
+    result.idle.latencyMs = seen === null ? null : seen - sentAt;
+  }
+  return raw;
+}
+
+async function searchMessageId(client: ImapFlow): Promise<number[]> {
+  const uids = await client.search(
+    { header: { "message-id": result.send.messageId } },
+    { uid: true },
+  );
+  return uids === false || uids === undefined ? [] : uids;
+}
+
+// 7. Does the host save the sent copy itself, and if not, does APPEND work?
+async function probeSentFolder(client: ImapFlow, raw: Buffer | null): Promise<void> {
+  const sent = result.folders.find((folder) => folder.specialUse === "\\Sent");
+  if (sent === undefined || result.send.messageId === "") return;
+  try {
+    const lock = await client.getMailboxLock(sent.path);
+    try {
+      const deadline = Date.now() + SENT_FOLDER_POLL_MS;
+      let found: number[] = [];
+      while (Date.now() < deadline && found.length === 0) {
+        found = await searchMessageId(client);
+        if (found.length === 0) await sleep(POLL_INTERVAL_MS);
+      }
+      result.sentFolder.autoSaved = found.length > 0;
+      if (!result.sentFolder.autoSaved && raw !== null) {
+        await client.append(sent.path, raw, ["\\Seen"]);
+        result.sentFolder.appendWorked = (await searchMessageId(client)).length > 0;
+      }
+    } finally {
+      lock.release();
+    }
+  } catch (error) {
+    note("sentFolder", error);
+  }
+}
+
+// 8. MOVE the probe message from INBOX to \Trash.
+async function probeMove(client: ImapFlow): Promise<void> {
+  const trash = result.folders.find((folder) => folder.specialUse === "\\Trash");
+  if (trash === undefined || result.send.messageId === "") return;
+  try {
+    const lock = await client.getMailboxLock("INBOX");
+    try {
+      const uids = await searchMessageId(client);
+      if (uids.length === 0) return;
+      const moved = await client.messageMove(uids, trash.path, { uid: true });
+      result.move.worked = moved !== false;
+    } finally {
+      lock.release();
+    }
+  } catch (error) {
+    note("move", error);
+  }
+}
+
 async function main(): Promise<void> {
   result.account = maskAccount(user);
-
   if (user === "" || pass === "") {
     result.status = "skipped";
     result.errors.push("MAIL_PROBE_USER/MAIL_PROBE_PASS not set");
@@ -116,179 +295,16 @@ async function main(): Promise<void> {
     return;
   }
 
-  const client = new ImapFlow({
-    host: imapHost,
-    port: imapPort,
-    secure: imapPort === 993,
-    auth: { user, pass },
-    logger: false,
-    qresync: true,
-  });
-
+  const client = makeClient();
   try {
-    // 1. Connect and record the capability surface.
-    try {
-      await client.connect();
-      const capabilities = [...client.capabilities.keys()].sort();
-      const enabled = [...client.enabled];
-      result.imap.capabilities = capabilities;
-      result.imap.enabled = enabled;
-      result.imap.qresync = capabilities.includes("QRESYNC") || enabled.includes("QRESYNC");
-      result.imap.condstore = capabilities.includes("CONDSTORE") || enabled.includes("CONDSTORE");
-      result.imap.idleAdvertised = capabilities.includes("IDLE");
-    } catch (error) {
-      result.errors.push(`connect: ${messageOf(error)}`);
-      result.status = "failed";
+    if (!(await probeConnection(client))) {
       writeResult();
-      console.warn(`mail probe failed: connect: ${messageOf(error)}`);
       return;
     }
-
-    // 2. Folders and their special-use flags.
-    try {
-      const folders = await client.list();
-      result.folders = folders.map((folder) => ({
-        path: folder.path,
-        specialUse: folder.specialUse ?? null,
-        flags: [...folder.flags],
-      }));
-    } catch (error) {
-      result.errors.push(`list: ${messageOf(error)}`);
-    }
-
-    // 3. Status of INBOX and every special-use folder (captures the HIGHESTMODSEQ 0 behaviour).
-    const statusPaths = [
-      "INBOX",
-      ...result.folders.filter((f) => f.specialUse !== null).map((f) => f.path),
-    ];
-    for (const path of statusPaths) {
-      try {
-        const status = await client.status(path, {
-          messages: true,
-          uidNext: true,
-          uidValidity: true,
-          highestModseq: true,
-        });
-        if (status === false) continue;
-        result.folderStatus[path] = {
-          messages: status.messages ?? null,
-          uidNext: status.uidNext ?? null,
-          uidValidity: status.uidValidity === undefined ? null : status.uidValidity.toString(),
-          highestModseq: status.highestModseq === undefined ? null : status.highestModseq.toString(),
-        };
-      } catch (error) {
-        result.errors.push(`status ${path}: ${messageOf(error)}`);
-      }
-    }
-
-    // 4. IDLE: wait for the EXISTS that our own message should trigger.
-    let resolveExists: ((at: number) => void) | null = null;
-    const existsSeen = new Promise<number>((resolve) => {
-      resolveExists = resolve;
-    });
-    client.on("exists", () => {
-      resolveExists?.(Date.now());
-    });
-    try {
-      await client.mailboxOpen("INBOX");
-      void client.idle().catch(() => undefined);
-    } catch (error) {
-      result.errors.push(`idle: ${messageOf(error)}`);
-    }
-
-    // 5. Send a probe message through SMTP, reusing one raw buffer for APPEND and MOVE later.
-    let raw: Buffer | null = null;
-    let sentAt = 0;
-    try {
-      const streamTransport = nodemailer.createTransport({ streamTransport: true, buffer: true });
-      const domain = user.split("@")[1] ?? "localhost";
-      const messageId = `<probe-${randomUUID()}@${domain}>`;
-      const built = await streamTransport.sendMail({
-        from: user,
-        to,
-        subject: `Dealflow mail probe ${new Date().toISOString()}`,
-        text: "Automated probe from Dealflow Part 1. Safe to delete.",
-        messageId,
-      });
-      raw = built.message as Buffer;
-      const smtp = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: { user, pass },
-      });
-      sentAt = Date.now();
-      const info = await smtp.sendMail({ envelope: { from: user, to: [to] }, raw });
-      result.send = { ok: true, messageId: info.messageId, smtpResponse: info.response };
-      smtp.close();
-    } catch (error) {
-      result.errors.push(`send: ${messageOf(error)}`);
-    }
-
-    // 6. Did the server push the new message over IDLE within a minute?
-    if (sentAt > 0) {
-      const seen = await Promise.race([existsSeen, sleep(IDLE_WAIT_MS).then(() => null)]);
-      result.idle.worked = seen !== null;
-      result.idle.latencyMs = seen === null ? null : seen - sentAt;
-    }
-
-    // 7. Did the host save the sent message into \Sent, or can APPEND put it there?
-    const sentFolder = result.folders.find((f) => f.specialUse === "\\Sent");
-    if (sentFolder !== undefined && result.send.messageId !== "") {
-      try {
-        const lock = await client.getMailboxLock(sentFolder.path);
-        try {
-          const deadline = Date.now() + SENT_FOLDER_POLL_MS;
-          let found = false;
-          while (Date.now() < deadline && !found) {
-            const uids = await client.search(
-              { header: { "message-id": result.send.messageId } },
-              { uid: true },
-            );
-            found = uids !== false && uids !== undefined && uids.length > 0;
-            if (!found) await sleep(POLL_INTERVAL_MS);
-          }
-          result.sentFolder.autoSaved = found;
-          if (!found && raw !== null) {
-            await client.append(sentFolder.path, raw, ["\\Seen"]);
-            const after = await client.search(
-              { header: { "message-id": result.send.messageId } },
-              { uid: true },
-            );
-            result.sentFolder.appendWorked =
-              after !== false && after !== undefined && after.length > 0;
-          }
-        } finally {
-          lock.release();
-        }
-      } catch (error) {
-        result.errors.push(`sentFolder: ${messageOf(error)}`);
-      }
-    }
-
-    // 8. MOVE: the probe message from INBOX to \Trash.
-    const trash = result.folders.find((f) => f.specialUse === "\\Trash");
-    if (trash !== undefined && result.send.messageId !== "") {
-      try {
-        const lock = await client.getMailboxLock("INBOX");
-        try {
-          const uids = await client.search(
-            { header: { "message-id": result.send.messageId } },
-            { uid: true },
-          );
-          const list = uids === false || uids === undefined ? [] : uids;
-          if (list.length > 0) {
-            const moved = await client.messageMove(list, trash.path, { uid: true });
-            result.move.worked = moved !== false;
-          }
-        } finally {
-          lock.release();
-        }
-      } catch (error) {
-        result.errors.push(`move: ${messageOf(error)}`);
-      }
-    }
-
+    await probeFolders(client);
+    const raw = await probeDelivery(client);
+    await probeSentFolder(client, raw);
+    await probeMove(client);
     result.status = result.send.ok && result.idle.worked ? "ok" : "failed";
   } finally {
     try {
@@ -308,8 +324,8 @@ main()
   })
   .catch((error: unknown) => {
     result.status = "failed";
-    result.errors.push(`fatal: ${messageOf(error)}`);
+    note("fatal", error);
     writeResult();
-    console.error(`mail probe failed: ${messageOf(error)}`);
+    console.error(`mail probe failed: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   });

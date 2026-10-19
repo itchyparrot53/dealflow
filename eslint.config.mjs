@@ -53,9 +53,14 @@ export default tseslint.config(
             "*.mjs",
             "scripts/*.mjs",
             "scripts/dealflow/*.mjs",
+            "scripts/e2e/*.mjs",
             ".env.example.test.ts",
             "src/features/demo/*.ts",
           ],
+          // Tooling scripts now include the env-sync and e2e helpers (2026-10). The default cap is
+          // 8 matched files, which this list exceeds; raise it rather than pull non-app .mjs files
+          // into the app's tsconfig.
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 20,
         },
       },
     },

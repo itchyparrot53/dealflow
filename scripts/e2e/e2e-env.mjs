@@ -27,7 +27,10 @@ export function readDevMinioCreds() {
     }
     return "";
   };
-  return { MINIO_ACCESS_KEY: value("MINIO_ACCESS_KEY"), MINIO_SECRET_KEY: value("MINIO_SECRET_KEY") };
+  return {
+    MINIO_ACCESS_KEY: value("MINIO_ACCESS_KEY"),
+    MINIO_SECRET_KEY: value("MINIO_SECRET_KEY"),
+  };
 }
 
 export function e2eEnv(secrets) {

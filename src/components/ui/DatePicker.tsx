@@ -20,7 +20,9 @@ const DayPicker = dynamic(async () => (await import("react-day-picker")).DayPick
 
 let dayPickerChunk: Promise<unknown> | null = null;
 function preloadDayPicker(): void {
-  dayPickerChunk ??= import("react-day-picker");
+  // Explicit null check instead of `??=`: the chunk cache is read here, which keeps the intent
+  // (warm the module once) visible to the linter's unused-variable rule.
+  if (dayPickerChunk === null) dayPickerChunk = import("react-day-picker");
 }
 
 // react-day-picker v10's captionLayout="dropdown" defaults navEnd to Dec 31
