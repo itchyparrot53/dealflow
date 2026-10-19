@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 5.1 · Last updated: 2026-10-20 04:10
+Current: 5.2 · Last updated: 2026-10-20 04:30
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -43,7 +43,7 @@ Current: 5.1 · Last updated: 2026-10-20 04:10
 - [x] 4.4 Notes to activities
 - [x] 4.5 Describe a filter
 - [x] 4.6 Phase 4 QA gate
-- [ ] 5.1 Tool catalogue from the MCP registry
+- [x] 5.1 Tool catalogue from the MCP registry
 - [ ] 5.2 Assistant loop and pending actions
 - [ ] 5.3 Assistant actions and reads
 - [ ] 5.4 Assistant drawer
@@ -163,6 +163,9 @@ Current: 5.1 · Last updated: 2026-10-20 04:10
 - 4.5: `AiFilterBox` fills the existing dialog's rows and combinator for the deal entity only; the modal and its 16 tests keep passing with `ai.status` mocked unavailable.
 
 - 4.6: gate fixes: the AI card was split into Summary/Score sections to stay under the cognitive-complexity limit, its clock read moved to module scope for the purity rule, and the tRPC-dependent AI components are stubbed in the sidebar, composer and filter-dialog suites that render without a provider (test-only, no assertions weakened).
+
+- 5.1: `ToolRegistry` now keeps the description and input schema of every registered tool, filled by `registerTool`; the assistant builds a fresh `dealflow-assistant` McpServer and exposes only the 25 allow-listed tools, so permission checks and visibility stay identical to external MCP clients.
+- 5.1: `toToolDef` uses `z.toJSONSchema(..., { io: "input", unrepresentable: "any" })` and removes `$schema`; the catalogue test asserts 25 definitions, an object schema each, the write summaries and the 8,000-character tool-result cut.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
