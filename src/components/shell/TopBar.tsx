@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type React from "react";
 import { STRINGS } from "@/constants/strings";
+import { AssistantLauncher } from "@/features/ai/ui/AssistantLauncher";
 import { NotificationsBell } from "@/features/notifications/ui/NotificationsBell";
 import { GlobalAddMenu } from "@/features/quick-add/GlobalAddMenu";
 import type { Appearance } from "@/features/theme/appearance";
@@ -34,7 +35,8 @@ export function TopBar({
         {/* Global quick-add: opens Deal/Lead/Person/Organization create modals from any page. */}
         <GlobalAddMenu />
       </div>
-      <div className="flex w-44 shrink-0 items-center justify-end gap-3">
+      <div className="flex w-52 shrink-0 items-center justify-end gap-3">
+        <AssistantLauncher />
         <NotificationsBell userId={userId} />
         <UserMenu
           userId={userId}
