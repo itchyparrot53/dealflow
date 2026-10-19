@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 2.7 · Last updated: 2026-10-20 00:20
+Current: 3.1 · Last updated: 2026-10-20 00:35
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -28,7 +28,7 @@ Current: 2.7 · Last updated: 2026-10-20 00:20
 - [x] 2.4 Auth routes and safe dev-login
 - [x] 2.5 Login, magic-link and invite pages
 - [x] 2.6 Invite email, profile password and bootstrap link
-- [ ] 2.7 Phase 2 QA gate
+- [x] 2.7 Phase 2 QA gate
 - [ ] 3.1 AI env, dependency and schema
 - [ ] 3.2 Provider layer and JSON helper
 - [ ] 3.3 Usage, caps and rate limit
@@ -54,6 +54,7 @@ Current: 2.7 · Last updated: 2026-10-20 00:20
 ## QA log
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4889/4889
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4902/4902
+- Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
 
 ## Decisions
@@ -116,6 +117,9 @@ Current: 2.7 · Last updated: 2026-10-20 00:20
 - 2.6: tests updated for the new invite result and copy: `src/app/(app)/settings/users/InviteUserForm.test.tsx` (both mail states, link contents, clipboard) still passes; no assertion was weakened.
 - 2.6: `changePasswordAction` verifies the current password only when a hash exists (E_AUTH_013 otherwise), enforces the policy, then revokes every other session while keeping the current one. The profile page passes `hasPassword` from `getCredentials` and mounts the card below the existing profile form.
 - 2.6: `pnpm auth:bootstrap-link` ran against the dev database with the A5 overrides and printed an `Admin setup link (valid 24 hours, single use): {BASE_URL}/login/invite?token=...` line; the token itself was never pasted into PROGRESS.md.
+
+- 2.7: gate fixes: biome export order in `src/db/schema/index.ts` (round 1); the two new auth pages had to use the `text-display` type token or `src/typeScale.test.ts` failed, the invite action test needed mocks for the new link/mailer calls, and ESLint rejected an async-without-await log mailer plus an unnecessary cast in `systemMailer.ts` (round 2). No assertion was weakened.
+- 2.7: QA focus verified: auth tokens are stored as sha256 base64url only, `consumeAuthToken` is one UPDATE ... RETURNING, the magic-link route always answers `sent=1` and the password route always answers `invalid_credentials`, and `devLoginCore` is unreachable unless development/test, the flag is on, and the Host is loopback.
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
@@ -181,6 +185,40 @@ These are not in the plan and were all needed to get Phase 0 green:
 
 ### Next session at the time of writing
 Phase 0 handed over at **Task 1.1**; Phase 1 is now complete (see the Phase 1 hand-off below).
+
+## Phase 2 hand-off (planner summary)
+
+### Commits
+- `9fd0756` 2.1, `df02e58` 2.2, `19be649` 2.3, `98c0e77` + `c3ca5e3` 2.4, `61f3b96` 2.5,
+  `687cd7f` 2.6, `5d216de` + `f74c7e5` 2.7 fixes, gate commit below. `pnpm check:progress` is green.
+
+### What changed
+- **Env, schema, IDs (2.1):** Google is all-or-nothing and optional, production requires one sign-in
+  method, `AUTH_*`/`SMTP_*`/`MAIL_*` keys added, error ids `E_AUTH_007..014` and `E_MAIL_001/002`,
+  rate limits for password/link/token, `auth_tokens` + `user_credentials` schema and migration `0075`.
+- **System mailer (2.2):** SMTP, log and capture modes behind `getSystemMailer()`, cached on
+  globalThis; magic-link and invite templates with escaped HTML; capture tests.
+- **Auth services (2.3):** argon2id passwords with lockout, hashed single-use tokens (one-statement
+  consume), credentials, bootstrap with the shared advisory lock, magic links, invites, session
+  revocation. `localAuth.integration.test.ts` covers all nine required cases (10 tests).
+- **Routes (2.4):** POST `/auth/password`, `/auth/magic-link`, `/auth/magic/verify`,
+  `/auth/invite/accept`; `/auth/start` 404s without Google; dev-login requires dev/test + flag +
+  loopback Host.
+- **Pages (2.5):** login tabs (password / email link, Google only when configured), magic-link
+  confirm card, invite set-password card, all on the design system (standard `Label` wrapper added).
+- **Invites, profile password, bootstrap CLI (2.6):** invite emails a set-password link or shows it,
+  profile password card changes the password and signs out other sessions, `pnpm auth:bootstrap-link`
+  prints an admin setup link.
+
+### Gate evidence
+typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10 · `check:progress` green.
+
+### Carried forward for Phase 3
+- `.env` is still half-configured for Google (client id and secret set, domain empty). Anything that
+  loads `.env` needs the three `GOOGLE_*=` empty overrides on the command line: `pnpm build`, host
+  DB commands, `pnpm auth:bootstrap-link`. The owner action below resolves it.
+- The 13 locale/UTC-sensitive tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
+- The dev stack still needs `APP_PORT=3001` before it is recreated.
 
 ## Phase 1 hand-off (planner summary)
 
