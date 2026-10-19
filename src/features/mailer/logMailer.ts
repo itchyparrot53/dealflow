@@ -7,10 +7,10 @@ import type { SystemMailer } from "./types";
 export function logMailer(): SystemMailer {
   return {
     mode: "log",
-    async send(mail, signal) {
+    send(mail, signal) {
       signal.throwIfAborted();
       console.warn(`[mailer:log] to=${mail.to} subject=${mail.subject}\n${mail.text}`);
-      return ok({ messageId: randomUUID() });
+      return Promise.resolve(ok({ messageId: randomUUID() }));
     },
   };
 }

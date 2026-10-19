@@ -7,7 +7,7 @@ import type { SystemMailer } from "./types";
 const CACHE_KEY = Symbol.for("dealflow.systemMailer");
 
 function cache(): Record<symbol, SystemMailer | undefined> {
-  return globalThis as unknown as Record<symbol, SystemMailer | undefined>;
+  return globalThis;
 }
 
 function build(): SystemMailer {
