@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-19 23:20
+Current: 2.5 · Last updated: 2026-10-19 23:40
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -25,7 +25,7 @@ Current: 2.4 · Last updated: 2026-10-19 23:20
 - [x] 2.1 Auth env, schema and error IDs
 - [x] 2.2 System mailer
 - [x] 2.3 Local auth services
-- [ ] 2.4 Auth routes and safe dev-login
+- [x] 2.4 Auth routes and safe dev-login
 - [ ] 2.5 Login, magic-link and invite pages
 - [ ] 2.6 Invite email, profile password and bootstrap link
 - [ ] 2.7 Phase 2 QA gate
@@ -103,6 +103,11 @@ Current: 2.4 · Last updated: 2026-10-19 23:20
 - 2.2: wrote the system mailer exactly as 6.6, with `captureMailer(dir = env.MAIL_CAPTURE_DIR)` taking an optional directory so the unwritable-directory test does not need to mutate the frozen env object; templates return `MailContent` (the mail without a recipient) because 6.6 gives them only the URL.
 - 2.3: argon2 hashing, token mint/peek/consume, credentials, password login with lockout, bootstrap, magic links, invites and session revocation are in place; `localAuth.integration.test.ts` covers all nine required cases (10 tests) against the real Postgres test database and passes.
 - 2.3: `mintAuthToken` retires the user's open `invite` tokens only, exactly as 6.5 says; `admin_setup` links are single-use but a new one does not invalidate an older one (the invite page accepts both kinds).
+
+- 2.4: `/auth/start` answers 404 before the rate limiter when Google is unconfigured, and `devLoginCore` now requires development/test, the first-login flag, and a loopback Host header (a missing Host counts as non-loopback); the route passes the Host header through.
+- 2.4: added `loginReturnTarget` to `loginReturn.ts` so password, magic-link and invite sign-in default to `/pipeline` while the existing Google flow keeps `/`, both through `safeLoginReturnPath`.
+- 2.4: `sessionCookies.ts` is the single place that sets the `wd_sid` + `wd_csrf` cookie pair for the four new routes, so their options cannot drift from the OAuth callback.
+- 2.4: the invite route narrows form fields to strings with a helper instead of `String(form.get(...))`, because ESLint's `no-base-to-string` correctly refuses to stringify a possible `File`.
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).

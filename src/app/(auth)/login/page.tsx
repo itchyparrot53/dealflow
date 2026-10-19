@@ -1,18 +1,33 @@
 import type React from "react";
-import { STRINGS } from "@/constants/strings";
+import { AUTH_STRINGS } from "@/constants/authStrings";
+import { authMethods } from "@/features/auth/authMethods";
+import { safeLoginReturnPath } from "@/features/auth/loginReturn";
+import { LoginPanel } from "./LoginPanel";
 
-export default function LoginPage(): React.ReactNode {
+type Params = Record<string, string | string[] | undefined>;
+
+function first(value: string | string[] | undefined): string | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<Params>;
+}): Promise<React.ReactNode> {
+  const params = await searchParams;
   return (
-    <main className="flex h-screen items-center justify-center">
-      <div className="w-80 space-y-4 rounded-lg border p-6 text-center">
-        <h1 className="text-balance text-xl font-semibold">{STRINGS.auth.loginTitle}</h1>
-        <p className="text-pretty text-sm text-muted-foreground">{STRINGS.auth.domainOnly}</p>
-        <a
-          href="/auth/start"
-          className="inline-flex w-full items-center justify-center rounded-md bg-action px-4 py-2 text-sm text-action-foreground transition-transform active:scale-[0.96]"
-        >
-          {STRINGS.auth.signInWithGoogle}
-        </a>
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <div className="w-full max-w-[400px] rounded-lg border bg-background p-6">
+        <h1 className="text-balance text-xl font-semibold">{AUTH_STRINGS.signInTitle}</h1>
+        <LoginPanel
+          methods={authMethods()}
+          error={first(params.error)}
+          sent={first(params.sent) === "1"}
+          method={first(params.method)}
+          next={safeLoginReturnPath(first(params.next))}
+        />
       </div>
     </main>
   );
