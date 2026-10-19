@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-20 03:05
+Current: 4.5 · Last updated: 2026-10-20 03:25
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -39,7 +39,7 @@ Current: 4.4 · Last updated: 2026-10-20 03:05
 - [x] 4.1 Deal context, summary and score
 - [x] 4.2 Deal AI card
 - [x] 4.3 Email draft in the composer
-- [ ] 4.4 Notes to activities
+- [x] 4.4 Notes to activities
 - [ ] 4.5 Describe a filter
 - [ ] 4.6 Phase 4 QA gate
 - [ ] 5.1 Tool catalogue from the MCP registry
@@ -152,6 +152,9 @@ Current: 4.4 · Last updated: 2026-10-20 03:05
 - 4.3: `draftEmail` reads the deal through `getWorkspace` and the person through `getPerson` (the person page's own visibility-checked read), uses `settings.companyName` with "our company" as the fallback, and converts the plain-text body to escaped paragraph HTML for the composer.
 - 4.3: `AiDraftButton` is a Popover with the required labels and hooks; it fills the subject only when the composer owns an empty subject on a fresh email, and prepends the body so any signature already in the composer stays below the draft.
 - 4.3: the composer's tRPC mock now includes `ai.status` (unavailable) so its ten tests keep rendering without the real provider; no composer assertion changed.
+
+- 4.4: `proposeActivitiesFromNoteAction` only accepts deal notes (others return E_AI_007), gates on the note's deal through `getWorkspace`, clamps past due dates to today, maps unknown type keys to `task` and slices to five proposals.
+- 4.4: the dialog edits proposals inline (checkbox, subject, type, date) and creates only the selected rows through `createActivityAction`; the note menu item appears for deal notes only and the dialog is mounted on first open so note-card tests keep their provider-free render.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.

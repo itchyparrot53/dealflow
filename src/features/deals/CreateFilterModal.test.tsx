@@ -14,6 +14,11 @@ vi.mock("@/lib/trpc-client", () => ({
       listByTarget: { useQuery: () => ({ data: [{ name: "Hot" }] }) },
       appliedNames: { useQuery: () => ({ data: [] }) },
     },
+    ai: {
+      status: {
+        useQuery: () => ({ data: { available: false, enabled: true, providerKind: "none" } }),
+      },
+    },
   },
 }));
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { type ConditionRow, ConditionRows } from "@/components/filters/ConditionRows";
 import { type ActionErrorContent, actionErrorContent } from "@/components/shell/actionError";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import {
@@ -146,6 +147,14 @@ export function CreateFilterModal({
           <DialogTitle className="text-base font-semibold">{copy.title}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[70vh] space-y-2 overflow-y-auto px-5 py-4">
+          <AiFilterBox
+            entity="deal"
+            onDefinition={(definition) => {
+              const def = definition as FilterDefinition;
+              setRows(definitionToRows(def));
+              setCombinator(def.combinator ?? "and");
+            }}
+          />
           {copy.note !== null ? <p className="text-sm text-muted-foreground">{copy.note}</p> : null}
           <ConditionRows
             fields={fields}
