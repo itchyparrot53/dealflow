@@ -5,14 +5,14 @@ import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { authTokens, sessions, settings, userCredentials, users } from "@/db/schema";
-import { makeTestDb, type TestDb } from "@/test/db";
 import { captureMailer } from "@/features/mailer/captureMailer";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
+import { makeTestDb, type TestDb } from "@/test/db";
+import { consumeAuthToken, mintAuthToken } from "./authTokens";
+import { ensureBootstrapAdmin } from "./bootstrapLocal";
+import { getCredentials, markEmailVerified, setPassword } from "./credentials";
 import { acceptInvite, issueInviteLink } from "./invites";
 import { requestMagicLink } from "./magicLink";
-import { ensureBootstrapAdmin } from "./bootstrapLocal";
-import { consumeAuthToken, mintAuthToken } from "./authTokens";
-import { getCredentials, markEmailVerified, setPassword } from "./credentials";
 import { checkPasswordPolicy, hashPassword, verifyPassword } from "./password";
 import { passwordLogin } from "./passwordLogin";
 
@@ -39,7 +39,13 @@ beforeEach(async () => {
 });
 
 async function seedAdminUser(): Promise<string> {
-  const created = await ensureBootstrapAdmin(h.db, SEED, SEED, { allowAfterBootstrap: true }, SIG());
+  const created = await ensureBootstrapAdmin(
+    h.db,
+    SEED,
+    SEED,
+    { allowAfterBootstrap: true },
+    SIG(),
+  );
   if (!created.ok || created.value === null) throw new Error("bootstrap admin was not created");
   return created.value.userId;
 }
@@ -75,7 +81,11 @@ describe("passwordLogin", () => {
     expect(okLogin.ok).toBe(true);
     if (okLogin.ok) expect(okLogin.value.userId).toBe(userId);
 
-    const unknown = await passwordLogin(h.db, { email: "nobody@example.com", password: GOOD }, SIG());
+    const unknown = await passwordLogin(
+      h.db,
+      { email: "nobody@example.com", password: GOOD },
+      SIG(),
+    );
     expect(unknown.ok).toBe(false);
     if (!unknown.ok) expect(unknown.error.id).toBe(ERROR_IDS.AUTH_INVALID_CREDENTIALS);
 
@@ -110,7 +120,10 @@ describe("passwordLogin", () => {
       .where(eq(userCredentials.userId, userId));
     const after = await passwordLogin(h.db, { email: SEED, password: GOOD }, SIG());
     expect(after.ok).toBe(true);
-    const [row] = await h.db.select().from(userCredentials).where(eq(userCredentials.userId, userId));
+    const [row] = await h.db
+      .select()
+      .from(userCredentials)
+      .where(eq(userCredentials.userId, userId));
     expect(row?.failedLoginCount).toBe(0);
     expect(row?.lockedUntil).toBeNull();
   });
@@ -159,7 +172,11 @@ describe("requestMagicLink", () => {
     const result = await requestMagicLink(
       h.db,
       { email: "nobody@example.com", next: "/pipeline" },
-      { mailer: captureMailer(captureDir), baseUrl: "https://app.example.com", seedAdminEmail: SEED },
+      {
+        mailer: captureMailer(captureDir),
+        baseUrl: "https://app.example.com",
+        seedAdminEmail: SEED,
+      },
       SIG(),
     );
     expect(result.ok).toBe(true);
@@ -170,7 +187,13 @@ describe("requestMagicLink", () => {
 
 describe("bootstrap", () => {
   test("creates the seed admin, closes bootstrap, and ignores other emails", async () => {
-    const created = await ensureBootstrapAdmin(h.db, SEED, SEED, { allowAfterBootstrap: false }, SIG());
+    const created = await ensureBootstrapAdmin(
+      h.db,
+      SEED,
+      SEED,
+      { allowAfterBootstrap: false },
+      SIG(),
+    );
     expect(created.ok).toBe(true);
     if (!created.ok) return;
     expect(created.value).not.toBeNull();
@@ -194,11 +217,23 @@ describe("bootstrap", () => {
     const userId = await seedAdminUser();
     await h.db.delete(users).where(eq(users.id, userId));
 
-    const closed = await ensureBootstrapAdmin(h.db, SEED, SEED, { allowAfterBootstrap: false }, SIG());
+    const closed = await ensureBootstrapAdmin(
+      h.db,
+      SEED,
+      SEED,
+      { allowAfterBootstrap: false },
+      SIG(),
+    );
     expect(closed.ok).toBe(true);
     if (closed.ok) expect(closed.value).toBeNull();
 
-    const recovered = await ensureBootstrapAdmin(h.db, SEED, SEED, { allowAfterBootstrap: true }, SIG());
+    const recovered = await ensureBootstrapAdmin(
+      h.db,
+      SEED,
+      SEED,
+      { allowAfterBootstrap: true },
+      SIG(),
+    );
     expect(recovered.ok).toBe(true);
     if (recovered.ok) expect(recovered.value).not.toBeNull();
     const [user] = await h.db.select().from(users).where(eq(users.email, SEED));
@@ -241,7 +276,11 @@ describe("invites", () => {
 
     const stale = await acceptInvite(h.db, { token: firstToken, name: "A", password: GOOD }, SIG());
     expect(stale.ok).toBe(false);
-    const fresh = await acceptInvite(h.db, { token: secondToken, name: "B", password: GOOD }, SIG());
+    const fresh = await acceptInvite(
+      h.db,
+      { token: secondToken, name: "B", password: GOOD },
+      SIG(),
+    );
     expect(fresh.ok).toBe(true);
 
     await markEmailVerified(h.db, userId, SIG());

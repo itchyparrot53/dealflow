@@ -16,11 +16,7 @@ export async function revokeOtherSessions(
     .update(sessions)
     .set({ revokedAt: sql`now()` })
     .where(
-      and(
-        eq(sessions.userId, userId),
-        ne(sessions.id, keepSessionId),
-        isNull(sessions.revokedAt),
-      ),
+      and(eq(sessions.userId, userId), ne(sessions.id, keepSessionId), isNull(sessions.revokedAt)),
     );
   signal.throwIfAborted();
 }

@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
+import { authMethods } from "@/features/auth/authMethods";
 import { buildAuthUrl, generatePkce } from "@/features/auth/google";
 import { LOGIN_RETURN_COOKIE, safeLoginReturnPath } from "@/features/auth/loginReturn";
 import { checkRateLimit, tooManyRequestsResponse } from "@/server/rateLimitGuard";
@@ -20,6 +21,10 @@ const COOKIE_OPTS = {
 
 // GET /auth/start: build the Google OAuth redirect, set state/nonce/PKCE cookies.
 export async function GET(req: NextRequest): Promise<Response> {
+  // Google is optional now. Without the three GOOGLE_* values there is no client to redirect to,
+  // so the route must not exist rather than bounce the browser to a broken consent screen.
+  if (!authMethods().google) return new NextResponse(null, { status: 404 });
+
   // Starting a login is a human act with a redirect in the middle; nobody legitimately does it
   // twenty times a minute. Each call mints two 32-byte secrets, a PKCE pair and four cookies.
   const limit = checkRateLimit("authStart", req.headers);

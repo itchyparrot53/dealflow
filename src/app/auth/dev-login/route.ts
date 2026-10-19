@@ -36,6 +36,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       workspaceDomain: env.GOOGLE_WORKSPACE_DOMAIN,
     },
     signal,
+    host: req.headers.get("host"),
   });
 
   if (!result.ok) {

@@ -28,6 +28,20 @@ export interface DevLoginDeps {
   db: Db;
   appEnv: DevLoginEnv;
   signal: AbortSignal;
+  // The request's Host header. A dev login must only work when the browser is on the same machine:
+  // exposing it through a tunnel or a public hostname would hand anyone an admin session.
+  host: string | null;
+}
+
+const LOOPBACK = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+function isLoopbackHost(host: string | null): boolean {
+  if (host === null) return false;
+  try {
+    return LOOPBACK.has(new URL(`http://${host}`).hostname);
+  } catch {
+    return false;
+  }
 }
 
 export interface DevLoginOk {
@@ -51,8 +65,9 @@ export async function devLoginCore(
 ): Promise<Result<DevLoginOk, string>> {
   const { db, appEnv, signal } = deps;
 
-  // Production guard: refuse unless dev/test environment with the flag explicitly set.
-  if (appEnv.nodeEnv === "production" || !appEnv.allowFirstLoginAdmin) {
+  // Guard: development or test only, the flag explicitly set, and a loopback Host header.
+  const devEnv = appEnv.nodeEnv === "development" || appEnv.nodeEnv === "test";
+  if (!devEnv || !appEnv.allowFirstLoginAdmin || !isLoopbackHost(deps.host)) {
     return err("disabled");
   }
 

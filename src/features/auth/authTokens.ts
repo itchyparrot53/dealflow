@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { authTokens, type AuthTokenKind, users } from "@/db/schema";
+import { type AuthTokenKind, authTokens, users } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
 
 // Auth tokens are bearer credentials delivered by email. Only their sha256 digest is stored, so a

@@ -40,6 +40,7 @@ function makeDeps(overrides: Partial<DevLoginDeps["appEnv"]> = {}): DevLoginDeps
       ...overrides,
     },
     signal: SIG(),
+    host: "localhost:3000",
   };
 }
 
@@ -64,6 +65,24 @@ describe("devLoginCore: production guard", () => {
 
     const rows = await h.db.select().from(users);
     expect(rows).toHaveLength(0);
+  });
+
+  test("returns err('disabled') when the host is not a loopback name", async () => {
+    const result = await devLoginCore("admin@example.com", {
+      ...makeDeps(),
+      host: "crm.example.com",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("disabled");
+
+    const rows = await h.db.select().from(users);
+    expect(rows).toHaveLength(0);
+  });
+
+  test("returns err('disabled') when the Host header is missing", async () => {
+    const result = await devLoginCore("admin@example.com", { ...makeDeps(), host: null });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("disabled");
   });
 
   test("returns err('disabled') when both nodeEnv=production AND flag false", async () => {

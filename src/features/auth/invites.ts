@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { AppError } from "@/constants/errorIds";
+import type { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema";
 import { ok, type Result } from "@/types/result";
