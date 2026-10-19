@@ -1,0 +1,62 @@
+# Local-only overrides for this machine.
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# Why this exists instead of docker-compose.dev.yml:
+#   - Host port 3000 is already taken on this machine, so the app publishes on 3001.
+#   - No Google OAuth client is configured, so the app runs in development mode and the
+#     dev-only /auth/dev-login route is enabled. Auxiliary services keep NODE_ENV=production
+#     (their env validation rejects ALLOW_FIRST_LOGIN_ADMIN=true), so the flag is overridden
+#     back to false for them.
+#   - Caddy (TLS) is disabled; everything is plain HTTP on localhost.
+services:
+  caddy:
+    profiles: ["never"]
+
+  postgres:
+    ports: ["5433:5432"]
+
+  minio:
+    # Upstream minio/minio images were removed from Docker Hub and quay.io; pgsty/minio is a
+    # community build of the same server. pgsty/mc is the matching client for createbuckets.
+    image: pgsty/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  createbuckets:
+    image: pgsty/mc:latest
+
+  app:
+    ports: ["3001:3000"]
+    environment:
+      NODE_ENV: development
+      ALLOW_FIRST_LOGIN_ADMIN: "true"
+
+  migrate:
+    environment:
+      ALLOW_FIRST_LOGIN_ADMIN: "false"
+
+  ws:
+    ports: ["8080:8080"]
+    environment:
+      ALLOW_FIRST_LOGIN_ADMIN: "false"
+
+  worker:
+    environment:
+      ALLOW_FIRST_LOGIN_ADMIN: "false"
+
+  # On-demand demo data seeder. Built from the Dockerfile "build" stage because the runtime
+  # image only ships production deps and no tsx/scripts.
+  #   docker compose -f docker-compose.yml -f docker-compose.local.yml --profile seed run --rm seed
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: build
+      args:
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-}
+    command: ["node_modules/.bin/tsx", "scripts/seed-demo.ts"]
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
