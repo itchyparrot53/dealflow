@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 5.2 · Last updated: 2026-10-20 04:30
+Current: 5.3 · Last updated: 2026-10-20 04:50
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -44,7 +44,7 @@ Current: 5.2 · Last updated: 2026-10-20 04:30
 - [x] 4.5 Describe a filter
 - [x] 4.6 Phase 4 QA gate
 - [x] 5.1 Tool catalogue from the MCP registry
-- [ ] 5.2 Assistant loop and pending actions
+- [x] 5.2 Assistant loop and pending actions
 - [ ] 5.3 Assistant actions and reads
 - [ ] 5.4 Assistant drawer
 - [ ] 5.5 Phase 5 QA gate
@@ -166,6 +166,9 @@ Current: 5.2 · Last updated: 2026-10-20 04:30
 
 - 5.1: `ToolRegistry` now keeps the description and input schema of every registered tool, filled by `registerTool`; the assistant builds a fresh `dealflow-assistant` McpServer and exposes only the 25 allow-listed tools, so permission checks and visibility stay identical to external MCP clients.
 - 5.1: `toToolDef` uses `z.toJSONSchema(..., { io: "input", unrepresentable: "any" })` and removes `$schema`; the catalogue test asserts 25 definitions, an object schema each, the write summaries and the 8,000-character tool-result cut.
+
+- 5.2: the assistant loop runs read tools immediately and turns every write tool into a pending `ai_actions` row whose tool result is `{status:"pending_confirmation", actionId, summary}`; confirm and reject require ownership and a pending status, and the confirmed write runs through the same MCP handler.
+- 5.2: history is the last 40 messages trimmed to the first user row, unknown tools and invalid arguments come back as error tool results, and six tool-calling replies end with the documented step-limit message; the integration suite covers all nine cases.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.

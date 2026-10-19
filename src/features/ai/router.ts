@@ -5,6 +5,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { getWorkspace } from "@/features/deal-workspace/summaryRepo";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { getAiSettings } from "./aiSettings";
+import { getConversationView, listConversations } from "./assistant/conversations";
 import { readDealAiInsight } from "./dealInsights";
 import { getAiProvider } from "./provider";
 import type { AiProvider } from "./types";
@@ -38,6 +39,22 @@ export const aiRouter = router({
       if (!workspace.ok) return null;
       return readDealAiInsight(ctx.db, input.dealId, SIG());
     }),
+
+  conversations: router({
+    list: protectedProcedure.query(({ ctx }) => listConversations(ctx.db, ctx.actor.id, SIG())),
+    get: protectedProcedure
+      .input(z.object({ id: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+        const view = await getConversationView(ctx.db, ctx.actor.id, input.id, SIG());
+        if (!view.ok) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: ERROR_IDS.AI_CONVERSATION_NOT_FOUND,
+          });
+        }
+        return view.value;
+      }),
+  }),
 
   // Admins only: provider, real usage and the configured caps for Settings, then AI.
   overview: protectedProcedure.query(async ({ ctx }) => {
