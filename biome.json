@@ -27,7 +27,8 @@
       "!test-results",
       "!playwright-report",
       "!.smoke",
-      "!.mail-capture"
+      "!.mail-capture",
+      "!DEALFLOW"
     ]
   },
   "formatter": {

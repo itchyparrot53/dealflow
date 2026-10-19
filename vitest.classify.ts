@@ -29,6 +29,8 @@ function collectTests(dir: string, acc: string[] = []): string[] {
         entry.name === "node_modules" ||
         entry.name === "site" ||
         entry.name === "docs-site" ||
+        // A stray copy of the old app that appeared in this workspace is not part of this project.
+        entry.name === "DEALFLOW" ||
         entry.name.startsWith(".")
       )
         continue;

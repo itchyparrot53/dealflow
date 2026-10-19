@@ -37,6 +37,7 @@ export default tseslint.config(
       ".mail-capture/**",
       "e2e/**",
       "playwright.config.ts",
+      "DEALFLOW/**",
     ],
   },
   ...tseslint.configs.recommendedTypeChecked,
