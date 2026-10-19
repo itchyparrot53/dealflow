@@ -38,6 +38,7 @@ export default tseslint.config(
       "e2e/**",
       "playwright.config.ts",
       "DEALFLOW/**",
+      "PLAN AND EXECUTE/**",
     ],
   },
   ...tseslint.configs.recommendedTypeChecked,
@@ -51,6 +52,7 @@ export default tseslint.config(
           allowDefaultProject: [
             "*.mjs",
             "scripts/*.mjs",
+            "scripts/dealflow/*.mjs",
             ".env.example.test.ts",
             "src/features/demo/*.ts",
           ],

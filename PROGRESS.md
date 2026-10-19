@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-19 21:32
+Current: 0.4 · Last updated: 2026-10-19 21:40
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-19 21:32
 ## Tasks
 - [x] 0.1 Repository, upstream remote and kit
 - [x] 0.2 Toolchain, install and dev services
-- [ ] 0.3 Baseline fixes from the OSS export
+- [x] 0.3 Baseline fixes from the OSS export
 - [ ] 0.4 Baseline run and health report
 - [ ] 0.5 E2E harness and health click-through
 - [ ] 0.6 Purelymail probe
@@ -62,6 +62,10 @@ Current: 0.3 · Last updated: 2026-10-19 21:32
 - 0.2: reused the already-running dev stack (compose project `warpdrive-main`, started from the repo's `docker-compose.local.yml` before this run) instead of creating the `dealflow` project: its containers hold 5433/9000/9001, quay.io MinIO pulls are unauthorized on this machine and rule 14 forbids touching containers this run did not create; the received `.env` already targets that stack.
 - 0.2: host-side DB commands pass `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` on the command line because the received `.env` uses the compose host name `postgres`, which does not resolve on the host, and rule 17 forbids editing `.env`.
 - 0.2: `pnpm env:sync` appended 0 keys because `.env` already carries every key `.env.example` declares.
+
+- 0.3: deleted `deployWorkflow.test.ts`, trimmed `Dockerfile.test.ts` and recreated the missing `scripts/auditConfig.ts`, because the OSS export dropped `.github/workflows/deploy.yml`, which both tests read.
+- 0.3: typed `auditConfig.SavedFilterRow.targetEntity` as `string` and narrowed it against `SAVED_FILTER_TARGET_ENTITIES`, because `SavedFilterSeed.target` is `string` and the plan's stricter signature failed the existing test's typecheck.
+- 0.3: excluded a stray `DEALFLOW/` copy of the old app (with its own node_modules) from tsc, Biome, ESLint and vitest classification, because it sits inside this workspace and its foreign tests, React types and lint findings broke typecheck, lint and test collection.
 
 ## Owner actions
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in /tmp because the harness sandbox blocks writes outside the project folder.

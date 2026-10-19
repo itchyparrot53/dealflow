@@ -1,7 +1,9 @@
 // Appends keys that .env lacks, with local-dev values; never rewrites or prints existing lines.
 // --migrate blanks only the exact placeholder lines this script wrote in an earlier version.
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+
 import { randomBytes } from "node:crypto";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+
 const hex = (n) => randomBytes(n).toString("hex");
 const b64 = (n) => randomBytes(n).toString("base64");
 const DEV = {
