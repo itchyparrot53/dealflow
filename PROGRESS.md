@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-20 01:50
+Current: 4.1 · Last updated: 2026-10-20 02:05
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -34,7 +34,7 @@ Current: 3.5 · Last updated: 2026-10-20 01:50
 - [x] 3.2 Provider layer and JSON helper
 - [x] 3.3 Usage, caps and rate limit
 - [x] 3.4 AI router, Settings page and model check
-- [ ] 3.5 Phase 3 QA gate
+- [x] 3.5 Phase 3 QA gate
 - [ ] 4.1 Deal context, summary and score
 - [ ] 4.2 Deal AI card
 - [ ] 4.3 Email draft in the composer
@@ -56,6 +56,7 @@ Current: 3.5 · Last updated: 2026-10-20 01:50
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4889/4889
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4902/4902
 - Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10
+- Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4934/4934 · usage 7/7
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
 
 ## Decisions
@@ -137,6 +138,8 @@ Current: 3.5 · Last updated: 2026-10-20 01:50
 - 3.4: `pnpm ai:check-model` reached the public OpenRouter list: `deepseek/deepseek-v4.1-flash` is `CONFIGURED MODEL LISTED` with `tools=yes` and `response_format=yes` (prompt 0.000000028, completion 0.00000008 per token); the dated snapshot `deepseek/deepseek-v4.1-flash-1017` (0.00000015 / 0.0000006) and the `:batch` variant are also listed. No `--chat` request was made.
 - 3.4: `ai.status` maps a scripted test provider to `fake` because the public contract exposes three kinds only; the Settings page is admin-gated with `notFound()` and reads `ai.overview` through `createCaller`, then re-renders with `router.refresh()` after a save.
 - 3.4: the OpenRouter request now relies on the SDK accepting our message union directly (no cast) and uses `req.tools !== undefined` / `req.json === true` so the lint rule about nullable booleans is satisfied without changing behaviour.
+
+- 3.5: gate fixes: `eslint.config.test.ts` now sets a 120s per-file budget because a type-aware ESLint boot inside the full 12-worker run can cross the 60s default on a loaded machine; every assertion is unchanged and the suite passes 4934/4934. The earlier 569s run was machine load, not a suite regression.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
