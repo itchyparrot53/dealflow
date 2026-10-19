@@ -33,6 +33,57 @@ describe("env boundary", () => {
     expect(result.ok).toBe(false);
   });
 
+  test("rejects a partially configured Google client", () => {
+    const result = parseEnv({
+      ...process.env,
+      GOOGLE_OAUTH_CLIENT_ID: "client-id",
+      GOOGLE_OAUTH_CLIENT_SECRET: "",
+      GOOGLE_WORKSPACE_DOMAIN: "example.com",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("must be set together");
+  });
+
+  test("accepts all three Google vars empty (Google SSO off)", () => {
+    const result = parseEnv({
+      ...process.env,
+      GOOGLE_OAUTH_CLIENT_ID: "",
+      GOOGLE_OAUTH_CLIENT_SECRET: "",
+      GOOGLE_WORKSPACE_DOMAIN: "",
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  test("rejects production with every sign-in method disabled", () => {
+    const result = parseEnv({
+      ...process.env,
+      NODE_ENV: "production",
+      SEED_ADMIN_EMAIL: "admin@example.com",
+      ALLOW_FIRST_LOGIN_ADMIN: "false",
+      GOOGLE_OAUTH_CLIENT_ID: "",
+      GOOGLE_OAUTH_CLIENT_SECRET: "",
+      GOOGLE_WORKSPACE_DOMAIN: "",
+      AUTH_PASSWORD_ENABLED: "false",
+      AUTH_MAGIC_LINK_ENABLED: "false",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("at least one sign-in method");
+  });
+
+  test("accepts production with Google off but password sign-in on", () => {
+    const result = parseEnv({
+      ...process.env,
+      NODE_ENV: "production",
+      SEED_ADMIN_EMAIL: "admin@example.com",
+      ALLOW_FIRST_LOGIN_ADMIN: "false",
+      GOOGLE_OAUTH_CLIENT_ID: "",
+      GOOGLE_OAUTH_CLIENT_SECRET: "",
+      GOOGLE_WORKSPACE_DOMAIN: "",
+      AUTH_PASSWORD_ENABLED: "true",
+    });
+    expect(result.ok).toBe(true);
+  });
+
   test("accepts production with SEED_ADMIN_EMAIL and dev flag false", () => {
     const result = parseEnv({
       ...process.env,

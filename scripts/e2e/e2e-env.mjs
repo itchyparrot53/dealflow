@@ -49,10 +49,11 @@ export function e2eEnv(secrets) {
     TOKEN_ENCRYPTION_KEY: secrets.token,
     OAUTH_SIGNING_KEY: secrets.oauth,
     MCP_ENABLED: "true",
-    // Task 2.1 sets all three to "" when Google SSO becomes optional.
-    GOOGLE_OAUTH_CLIENT_ID: "placeholder-e2e",
-    GOOGLE_OAUTH_CLIENT_SECRET: "placeholder-e2e",
-    GOOGLE_WORKSPACE_DOMAIN: "example.com",
+    // Google SSO stays off for the e2e stack: password and email-link sign-in are what the specs
+    // exercise, and /auth/start must 404 so the login page hides the Google button.
+    GOOGLE_OAUTH_CLIENT_ID: "",
+    GOOGLE_OAUTH_CLIENT_SECRET: "",
+    GOOGLE_WORKSPACE_DOMAIN: "",
     SEED_ADMIN_EMAIL: "demo1@example.com",
     ALLOW_FIRST_LOGIN_ADMIN: "false",
     BASE_CURRENCY: "USD",

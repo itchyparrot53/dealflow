@@ -39,6 +39,7 @@ describe("error IDs", () => {
       "LABEL",
       "LOSTREASON",
       "ENRICH",
+      "MAIL",
       "UI",
     ];
     for (const id of Object.values(ERROR_IDS)) {

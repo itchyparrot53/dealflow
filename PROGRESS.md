@@ -6,7 +6,7 @@ Current: 2.1 · Last updated: 2026-10-19 22:50
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
 - Phase 1: 4644c0b91955cab11565ae97181ce0c4feaeefb4
-- Phase 2: 4a00bf13c1f7f8c25645781e50701c797a2e9b51
+- Phase 2: b6f0667
 
 ## Tasks
 - [x] 0.1 Repository, upstream remote and kit

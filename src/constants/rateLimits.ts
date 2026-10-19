@@ -21,6 +21,14 @@ export const RATE_LIMITS = {
   oauthToken: { limit: 60, windowMs: MINUTE },
   // Starting a Google login is a human act with a redirect in the middle.
   authStart: { limit: 20, windowMs: MINUTE },
+  // Password sign-in: 10 attempts per minute per address. The account-level lockout (10 failures,
+  // 15 minutes) is the real throttle; this only stops one address grinding many accounts.
+  authPassword: { limit: 10, windowMs: MINUTE },
+  // Requesting a sign-in link also sends mail, so the ceiling is low and the window long.
+  authMagicRequest: { limit: 5, windowMs: 15 * MINUTE },
+  // Opening a link or accepting an invite: a human act, but the token is a secret, so allow
+  // retries without allowing a fast grind (30 per minute).
+  authTokenVerify: { limit: 30, windowMs: MINUTE },
   // The container healthcheck polls every 15s (4/min). The rest of the headroom is for
   // whatever external monitoring an operator points at it.
   health: { limit: 60, windowMs: MINUTE },

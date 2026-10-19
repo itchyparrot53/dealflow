@@ -8,6 +8,14 @@ export const ERROR_IDS = {
   AUTH_BOOTSTRAP_NO_SEED: "E_AUTH_004", // first-run with no SEED_ADMIN_EMAIL in prod
   AUTH_EMAIL_TAKEN: "E_AUTH_005", // inviteUser: email already belongs to an existing/placeholder user
   AUTH_INVITE_INPUT_INVALID: "E_AUTH_006", // inviteUserAction input failed Zod validation
+  AUTH_INVALID_CREDENTIALS: "E_AUTH_007", // email/password pair rejected (also unknown email)
+  AUTH_LOCKED: "E_AUTH_008", // too many failed password attempts; locked until lockedUntil
+  AUTH_TOKEN_INVALID: "E_AUTH_009", // magic/invite/setup token unknown, expired, used or wrong kind
+  AUTH_PASSWORD_WEAK: "E_AUTH_010", // password outside 12..128 characters
+  AUTH_METHOD_DISABLED: "E_AUTH_011", // sign-in method turned off by env
+  AUTH_ORIGIN_REJECTED: "E_AUTH_012", // unauthenticated POST failed the same-origin check
+  AUTH_PASSWORD_MISMATCH: "E_AUTH_013", // current password wrong on change
+  AUTH_INPUT_INVALID: "E_AUTH_014", // auth form or action input failed Zod validation
   // PERM
   PERM_DENIED: "E_PERM_001", // channel subscribe / action denied: not visible
   PERM_SELF_ESCALATION: "E_PERM_002", // non-admin tried to escalate via permission system
@@ -180,6 +188,10 @@ export const ERROR_IDS = {
   ENRICH_REVEAL_INCOMPLETE: "E_ENRICH_019",
   ENRICH_APPLIED_PERSON_GONE: "E_ENRICH_020",
   ENRICH_PROSPECT_MISMATCH: "E_ENRICH_021",
+
+  // MAIL (system mail)
+  MAIL_SEND_FAILED: "E_MAIL_001", // SMTP send rejected or failed
+  MAIL_CAPTURE_FAILED: "E_MAIL_002", // capture mailer could not write its file
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

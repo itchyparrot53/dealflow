@@ -5,6 +5,8 @@ import { err, ok, type Result } from "@/types/result";
 // Secret vars may be supplied as <VAR>_FILE pointing at a Docker secret file.
 const SECRET_FILE_VARS = [
   "GOOGLE_OAUTH_CLIENT_SECRET",
+  "SMTP_PASS",
+  "OPENROUTER_API_KEY",
   "WS_TICKET_SECRET",
   "TOKEN_ENCRYPTION_KEY",
   "MINIO_SECRET_KEY",
@@ -27,9 +29,10 @@ const boolFromString = z.enum(["true", "false"]).transform((v) => v === "true");
 
 const base = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  GOOGLE_OAUTH_CLIENT_ID: z.string().min(1),
-  GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1),
-  GOOGLE_WORKSPACE_DOMAIN: z.string().min(1),
+  // Google SSO is optional: all three set = enabled, all three empty = disabled (superRefine below).
+  GOOGLE_OAUTH_CLIENT_ID: z.string().default(""),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().default(""),
+  GOOGLE_WORKSPACE_DOMAIN: z.string().default(""),
   BASE_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
   WS_TICKET_SECRET: z.string().min(32),
@@ -60,6 +63,8 @@ const base = z.object({
   BASE_CURRENCY: z.string().length(3).default("USD"),
   SEED_ADMIN_EMAIL: z.string().email().or(z.literal("")).default(""),
   ALLOW_FIRST_LOGIN_ADMIN: boolFromString.default(false),
+  AUTH_PASSWORD_ENABLED: boolFromString.default(true),
+  AUTH_MAGIC_LINK_ENABLED: boolFromString.default(true),
   // Optional build-time stamp of the running version (e.g. a release tag). Empty when unstamped;
   // the release feature then falls back to package.json, then "dev". See resolveVersion.
   APP_VERSION: z.string().default(""),
@@ -74,6 +79,18 @@ const base = z.object({
   TELEMETRY_CONSOLE_FORWARDING: boolFromString.default(false),
   // Git SHA of the running build, for regression attribution alongside APP_VERSION.
   APP_COMMIT: z.string().default(""),
+  // System mail (magic links, invites, the first-admin setup link). An empty SMTP_HOST means log
+  // mode: links are printed to the server log instead of sent, which is the local default.
+  SMTP_HOST: z.string().default(""),
+  SMTP_PORT: z.coerce.number().int().positive().default(465),
+  SMTP_SECURE: boolFromString.default(true),
+  SMTP_USER: z.string().default(""),
+  SMTP_PASS: z.string().default(""),
+  SMTP_FROM: z.string().default("Dealflow <no-reply@localhost>"),
+  // Capture mode writes system mail to MAIL_CAPTURE_DIR as JSON. Allowed in production because
+  // the e2e harness runs a production build with it on; the captured mail never leaves the box.
+  MAIL_FAKE: boolFromString.default(false),
+  MAIL_CAPTURE_DIR: z.string().default(".mail-capture"),
   // Off unless a deploy opts in. On by default would mean every worker polls GitHub without the
   // operator asking, so set false to get the upstream release banner.
   DISABLE_UPDATE_CHECK: boolFromString.default(true),
@@ -81,6 +98,22 @@ const base = z.object({
 
 // Production guardrails for the first-run bootstrap (ops spec E6).
 const schema = base.superRefine((v, ctx) => {
+  // Google is all-or-nothing: a half-configured client would fail at the first redirect with a
+  // confusing error, so reject it at boot instead.
+  const googleConfigured = [
+    v.GOOGLE_OAUTH_CLIENT_ID,
+    v.GOOGLE_OAUTH_CLIENT_SECRET,
+    v.GOOGLE_WORKSPACE_DOMAIN,
+  ];
+  const googleSet = googleConfigured.filter((value) => value !== "").length;
+  if (googleSet > 0 && googleSet < 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["GOOGLE_OAUTH_CLIENT_ID"],
+      message:
+        "GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET and GOOGLE_WORKSPACE_DOMAIN must be set together",
+    });
+  }
   if (v.MCP_ENABLED && Buffer.from(v.OAUTH_SIGNING_KEY, "base64").length !== 32) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -101,6 +134,13 @@ const schema = base.superRefine((v, ctx) => {
         code: z.ZodIssueCode.custom,
         path: ["SEED_ADMIN_EMAIL"],
         message: "SEED_ADMIN_EMAIL is required in production",
+      });
+    }
+    if (!v.AUTH_PASSWORD_ENABLED && !v.AUTH_MAGIC_LINK_ENABLED && googleSet < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["AUTH_PASSWORD_ENABLED"],
+        message: "at least one sign-in method must be enabled",
       });
     }
   }
