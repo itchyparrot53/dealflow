@@ -52,6 +52,7 @@ Current: 1.6 · Last updated: 2026-10-19 22:45
 
 ## QA log
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4889/4889
+- Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4902/4902
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
 
 ## Decisions
