@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 1.6 · Last updated: 2026-10-19 22:45
+Current: 2.1 · Last updated: 2026-10-19 22:50
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
 - Phase 1: 4644c0b91955cab11565ae97181ce0c4feaeefb4
+- Phase 2: 4a00bf13c1f7f8c25645781e50701c797a2e9b51
 
 ## Tasks
 - [x] 0.1 Repository, upstream remote and kit
@@ -20,7 +21,7 @@ Current: 1.6 · Last updated: 2026-10-19 22:45
 - [x] 1.3 Telemetry and update check off by default
 - [x] 1.4 Compose without Caddy and reverse-proxy docs
 - [x] 1.5 CLAUDE.md fast profile and project notes
-- [ ] 1.6 Phase 1 QA gate
+- [x] 1.6 Phase 1 QA gate
 - [ ] 2.1 Auth env, schema and error IDs
 - [ ] 2.2 System mailer
 - [ ] 2.3 Local auth services
@@ -156,8 +157,44 @@ These are not in the plan and were all needed to get Phase 0 green:
 - `src/entrypoints/ws.ts` needed a `main()` wrapper for tsx (CommonJS package).
 - A stray `DEALFLOW/` copy of the old app sits in this workspace; it is ignored by git and by every toolchain.
 
-### Next session
-Start at **Task 1.1** (`Dealflow name in the app`). Phase 1 base commit is `4644c0b`. Nothing in Phase 0 is blocking; the only outstanding owner action is the optional global pnpm install.
+### Next session at the time of writing
+Phase 0 handed over at **Task 1.1**; Phase 1 is now complete (see the Phase 1 hand-off below).
+
+## Phase 1 hand-off (planner summary)
+
+### Commits
+- `655d95d` 1.1 brand copy, `2909ef9` 1.2 package/docs/licence/MCP, `d7b395d` 1.3 defaults,
+  `db9ad7e` 1.4 compose/proxy docs, `3c6754e` 1.5 CLAUDE.md, `50cc9d4` 1.6 fixes round 1,
+  `4a00bf1` 1.6 gate. Phase 2 starts from `4a00bf1`.
+- `pnpm check:progress` reports `12/41 tasks ticked, all with commits`.
+
+### What changed
+- **Brand (1.1):** every user-visible string says Dealflow (login and crash titles, connected apps,
+  consent heading, email-sync intro, notification subjects and link, lead source-origin sentence,
+  video call base now `https://meet.jit.si/dealflow-`). `src/features/branding/brand.test.ts` pins
+  `STRINGS.app.name`, the mention email, and that the ten copy files keep the old name only in
+  comments or the allowed internal identifiers. Two tests were updated for the new copy (Decision).
+- **Package, docs, licence, MCP (1.2):** package name `dealflow`, description, contributors line;
+  README rewritten (comparison table dropped, screenshots kept); LICENSE keeps Nikita Sawinyh and
+  adds Dealflow contributors; MCP server names are `dealflow`.
+- **Defaults (1.3):** `DISABLE_TELEMETRY` and `DISABLE_UPDATE_CHECK` default `true`, `.env.example`
+  matches, and the worker no longer creates the release-check queue unless a deploy opts in.
+- **Deploy shape (1.4, AMENDMENT A1):** default compose has no proxy service, app/ws/MinIO publish
+  on `127.0.0.1` with configurable ports, MinIO images are configurable, `env_file` is
+  `$DEALFLOW_ENV_FILE`, `Caddyfile` moved to `docs/reverse-proxy/Caddyfile.example` with upstream
+  variables, `docs/reverse-proxy.md` added, `docs/deploy.md` rewritten, `docker-compose.local.yml`
+  updated. No compose project name is forced, so the owner's stack is reused.
+- **Instructions (1.5):** CLAUDE.md now describes the fast verification profile and Dealflow
+  conventions; the test-first section is gone.
+- **Gate:** typecheck, lint (one formatting fix round), build and unit all green; unit 4902/4902.
+
+### New owner action
+`APP_PORT=3001` in `.env` and a stack recreate (no `-v`), because the base compose now publishes the
+app on `127.0.0.1:${APP_PORT:-3000}` and 3000 is taken. Everything else from Phase 0 stands.
+
+### Carried forward
+The 13 locale/UTC-sensitive unit tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`; the
+container smoke (Task 6.2, A2) and the subagent review (Task 6.3, A3) carry their amendments.
 
 ## Final report
 (written in Task 6.5)
