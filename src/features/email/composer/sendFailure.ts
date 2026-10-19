@@ -4,7 +4,7 @@ import { COMPOSER_STRINGS } from "./composer.constants";
 
 const MESSAGES: Record<string, string> = {
   [ERROR_IDS.UI_STALE_BUILD]:
-    "Warpdrive was updated while this page was open. Reload the page, then send again.",
+    "Dealflow was updated while this page was open. Reload the page, then send again.",
   [ERROR_IDS.UI_ACTION_UNCONFIRMED]: COMPOSER_STRINGS.sendUnconfirmed,
   [ERROR_IDS.PERM_DENIED]: "Your session is no longer valid. Reload the page and sign in again.",
   [ERROR_IDS.GMAIL_GRANT_REVOKED]:

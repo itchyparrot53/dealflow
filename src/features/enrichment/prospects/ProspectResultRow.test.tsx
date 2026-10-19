@@ -80,7 +80,7 @@ describe("ProspectResultRow", () => {
         }),
       ),
     );
-    expect(screen.getByRole("link", { name: "Already in Warpdrive" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Already in Dealflow" })).toHaveAttribute(
       "href",
       "/contacts/people/abc",
     );
@@ -89,7 +89,7 @@ describe("ProspectResultRow", () => {
 
   it("shows no badge for a person we do not hold", () => {
     render(row(profile()));
-    expect(screen.queryByText("Already in Warpdrive")).not.toBeInTheDocument();
+    expect(screen.queryByText("Already in Dealflow")).not.toBeInTheDocument();
   });
 
   it("disables the checkbox when the selection is full", () => {

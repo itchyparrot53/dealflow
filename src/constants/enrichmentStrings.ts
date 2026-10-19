@@ -153,7 +153,7 @@ export const ENRICHMENT_STRINGS = {
     hasEmail: "email",
     hasPhone: "phone",
     hasNothing: "nothing on file",
-    alreadyHeld: "Already in Warpdrive",
+    alreadyHeld: "Already in Dealflow",
     openPerson: "Open",
     selectAllOnPage: "Select everyone on this page",
     selectedCount: (n: number) => (n === 1 ? "1 selected" : `${n} selected`),

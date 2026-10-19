@@ -2,7 +2,7 @@
 // so that shared file stays within its size budget; this page is the only consumer.
 export const EMAIL_SYNC_STRINGS = {
   title: "Email sync",
-  intro: "Connect your Google Workspace mailbox to sync email into Warpdrive.",
+  intro: "Connect your Google Workspace mailbox to sync email into Dealflow.",
   statusConnected: "Connected",
   statusDisconnected: "Disconnected",
   statusError: "Needs attention",

@@ -26,7 +26,7 @@ const inter = localFont({
 });
 
 // Child routes set a bare title (e.g. "Pipeline"); the template appends the app
-// name so every tab reads "<where> · Warpdrive". Routes with no title fall back
+// name so every tab reads "<where> · Dealflow". Routes with no title fall back
 // to `default`.
 export const metadata = {
   title: { default: STRINGS.app.name, template: `%s · ${STRINGS.app.name}` },

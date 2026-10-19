@@ -14,7 +14,7 @@ export function SourceOriginInfo(): React.ReactNode {
     >
       {() => (
         <p className="px-2 py-1 text-xs font-normal text-pretty text-muted-foreground">
-          Source origin records how a lead entered warpdrive: manually created, imported, captured
+          Source origin records how a lead entered Dealflow: manually created, imported, captured
           from a web form, or synced from another channel. It is set when the lead is created and is
           not editable.
         </p>

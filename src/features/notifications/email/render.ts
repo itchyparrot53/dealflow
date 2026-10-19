@@ -17,7 +17,7 @@ function escapeHtml(s: string): string {
 
 function wrap(line: string, link: string): { text: string; html: string } {
   const text = `${line}\n\nOpen: ${link}`;
-  const html = `<p>${escapeHtml(line)}</p><p><a href="${escapeHtml(link)}">Open in Warpdrive</a></p>`;
+  const html = `<p>${escapeHtml(line)}</p><p><a href="${escapeHtml(link)}">Open in Dealflow</a></p>`;
   return { text, html };
 }
 
@@ -37,11 +37,11 @@ export function renderNotificationEmail(
 
   switch (row.type) {
     case "mention":
-      subject = "Somebody mentioned you in Warpdrive";
+      subject = "Somebody mentioned you in Dealflow";
       line = `${recipientName}, somebody mentioned you.`;
       break;
     case "activity_assigned":
-      subject = "An activity was assigned to you in Warpdrive";
+      subject = "An activity was assigned to you in Dealflow";
       line = `${recipientName}, an activity was assigned to you.`;
       break;
     case "activity_reminder": {
@@ -72,7 +72,7 @@ export function renderNotificationEmail(
       line = `${recipientName}, a deal was marked as lost.`;
       break;
     case "comment_reply":
-      subject = "Someone replied to your comment in Warpdrive";
+      subject = "Someone replied to your comment in Dealflow";
       line = `${recipientName}, somebody replied to your comment.`;
       break;
     case "deal_email_received": {
@@ -84,7 +84,7 @@ export function renderNotificationEmail(
     }
     default: {
       // Unknown future type: render a generic fallback. Never throw (pg-boss resilience).
-      subject = "Warpdrive notification";
+      subject = "Dealflow notification";
       line = `${recipientName}, you have a new notification.`;
     }
   }

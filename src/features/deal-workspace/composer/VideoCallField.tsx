@@ -8,9 +8,10 @@ interface Props {
 }
 
 // Base for the generated video-call link. This is a plain token-based URL stored on the activity,
-// NOT a Google Meet / Zoom OAuth integration (out of scope): we mint an opaque room token so the
-// link is unique and shareable without any external provider.
-const VIDEO_CALL_LINK_BASE = "https://meet.warpdrive.app/";
+// NOT a Google Meet / Zoom OAuth integration (out of scope): Jitsi Meet hosts free rooms at a
+// guessable path, so we append an opaque room token to make the link unique and shareable without
+// any external provider account.
+const VIDEO_CALL_LINK_BASE = "https://meet.jit.si/dealflow-";
 
 function generateVideoCallLink(): string {
   return `${VIDEO_CALL_LINK_BASE}${crypto.randomUUID()}`;

@@ -26,7 +26,7 @@ function redirectDisplay(redirectUri: string): string {
  * Approving mints a token that can read and write the entire CRM through /api/mcp, and with
  * dynamic registration open (the default, since it is what lets an MCP client self-onboard)
  * `clientName` is a string an unauthenticated stranger POSTed to /oauth/register. So the screen
- * deliberately does NOT say "Allow <name> to access warpdrive?": phrasing it that way puts the
+ * deliberately does NOT say "Allow <name> to access Dealflow?": phrasing it that way puts the
  * product's own voice behind a name the product has not verified, which is the whole mechanism
  * of consent phishing. The name is shown as a self-reported label, the destination host is shown
  * next to it, and the user is told to deny if they did not start this.
@@ -38,7 +38,7 @@ export function Consent({ action, clientName, redirectUri }: ConsentProps): Reac
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">Connection request</p>
           <h1 className="text-balance text-2xl font-semibold">
-            Connect an application to warpdrive?
+            Connect an application to Dealflow?
           </h1>
           <p className="text-pretty text-sm text-muted-foreground">
             It will be able to read and update CRM data your permissions allow. It cannot delete

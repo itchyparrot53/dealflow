@@ -6,7 +6,7 @@ import { INBOX_STRINGS } from "./inboxStrings";
 import { SETTINGS_STRINGS } from "./settingsStrings";
 
 export const STRINGS = {
-  app: { name: "Warpdrive" },
+  app: { name: "Dealflow" },
   nav: {
     pipeline: "Pipeline",
     leads: "Leads",
@@ -23,7 +23,7 @@ export const STRINGS = {
   },
   auth: {
     signInWithGoogle: "Sign in with Google",
-    loginTitle: "Sign in to Warpdrive",
+    loginTitle: "Sign in to Dealflow",
     domainOnly: "Use your company Google Workspace account.",
   },
   contacts: {
@@ -224,7 +224,7 @@ export const STRINGS = {
       "This page hit an unexpected error. Trying again may work; if it keeps happening, quote the reference below.",
     referenceLabel: "Reference:",
     retry: "Try again",
-    appCrashTitle: "Warpdrive could not start",
+    appCrashTitle: "Dealflow could not start",
     appCrashBody: "Reload the page. If it keeps happening, check the server logs.",
     reload: "Reload",
     notFoundBody: "That record does not exist, or you do not have access to it.",
