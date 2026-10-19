@@ -22,3 +22,13 @@ docs/parity-captures/
 
 # Impeccable critique snapshots: internal design audits, never publish
 .impeccable/
+.DS_Store
+.e2e/
+.smoke/
+.mail-capture/
+e2e/screenshots/
+test-results/
+playwright-report/
+.dsh/logs/
+.dsh/guard.enabled
+docs/dealflow/*.local.*

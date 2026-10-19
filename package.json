@@ -23,7 +23,17 @@
     "db:seed:smoke": "tsx --env-file .env scripts/seed-smoke.ts",
     "db:seed:smoke:phase5": "tsx --env-file .env scripts/seed-smoke-phase5.ts",
     "db:seed:demo": "tsx --env-file .env scripts/seed-demo.ts",
-    "email:sweep-spam": "tsx --env-file .env src/entrypoints/sweepSpam.ts"
+    "email:sweep-spam": "tsx --env-file .env src/entrypoints/sweepSpam.ts",
+    "check:progress": "node scripts/check-progress.mjs",
+    "env:sync": "node scripts/dealflow/env-sync.mjs",
+    "dev:up": "docker compose -p dealflow -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio createbuckets",
+    "db:migrate:dev": "tsx --env-file=.env src/entrypoints/migrate.ts",
+    "mail:probe": "tsx scripts/dealflow/mail-probe.ts",
+    "ai:check-model": "tsx scripts/dealflow/check-model.ts",
+    "auth:bootstrap-link": "tsx --env-file=.env scripts/dealflow/bootstrap-link.ts",
+    "e2e:build": "node scripts/e2e/build.mjs",
+    "e2e": "pnpm e2e:build && playwright test",
+    "smoke": "node scripts/dealflow/smoke.mjs"
   },
   "keywords": [],
   "author": "Nikita Sawinyh",

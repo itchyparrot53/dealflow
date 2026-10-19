@@ -19,7 +19,15 @@
       "!**/node_modules",
       "!**/globals.css",
       "!**/parity-tools",
-      "!docs/parity-baselines"
+      "!docs/parity-baselines",
+      "!**/.dsh",
+      "!scripts/check-progress.mjs",
+      "!.e2e",
+      "!e2e/screenshots",
+      "!test-results",
+      "!playwright-report",
+      "!.smoke",
+      "!.mail-capture"
     ]
   },
   "formatter": {
