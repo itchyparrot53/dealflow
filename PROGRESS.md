@@ -1,13 +1,13 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.1 · Last updated: 2026-10-19 21:15
+Current: 0.2 · Last updated: 2026-10-19 21:20
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
 
 ## Tasks
-- [ ] 0.1 Repository, upstream remote and kit
+- [x] 0.1 Repository, upstream remote and kit
 - [ ] 0.2 Toolchain, install and dev services
 - [ ] 0.3 Baseline fixes from the OSS export
 - [ ] 0.4 Baseline run and health report
