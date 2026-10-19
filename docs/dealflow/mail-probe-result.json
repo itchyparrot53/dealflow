@@ -1,6 +1,6 @@
 {
-  "status": "failed",
-  "probedAt": "2026-10-19T20:45:10.579Z",
+  "status": "ok",
+  "probedAt": "2026-10-19T20:51:28.218Z",
   "account": "d***@umev.co.uk",
   "imap": {
     "host": "imap.purelymail.com",
@@ -82,15 +82,15 @@
   "folderStatus": {
     "INBOX": {
       "messages": 1,
-      "uidNext": 2,
+      "uidNext": 3,
       "uidValidity": "258859783",
-      "highestModseq": "1"
+      "highestModseq": "5"
     },
     "Sent": {
-      "messages": 0,
-      "uidNext": 1,
+      "messages": 4,
+      "uidNext": 5,
       "uidValidity": "786632358",
-      "highestModseq": "0"
+      "highestModseq": "4"
     },
     "Drafts": {
       "messages": 0,
@@ -111,27 +111,27 @@
       "highestModseq": "0"
     },
     "Trash": {
-      "messages": 0,
-      "uidNext": 1,
+      "messages": 1,
+      "uidNext": 2,
       "uidValidity": "1846000119",
-      "highestModseq": "0"
+      "highestModseq": "1"
     }
   },
   "idle": {
-    "worked": false,
-    "latencyMs": null
+    "worked": true,
+    "latencyMs": 8258
   },
   "send": {
     "ok": true,
-    "messageId": "<0ffa4f1a-328c-122c-c82d-a04a2110653a@umev.co.uk>",
+    "messageId": "<probe-67d7fc31-3cd1-4226-9817-3af12143d758@umev.co.uk>",
     "smtpResponse": "250 2.6.0 Message received"
   },
   "sentFolder": {
     "autoSaved": false,
-    "appendWorked": false
+    "appendWorked": true
   },
   "move": {
-    "worked": false
+    "worked": true
   },
   "errors": []
 }

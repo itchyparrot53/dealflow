@@ -83,8 +83,9 @@ Current: 1.1 · Last updated: 2026-10-19 21:40
 
 - 0.6: the real probe run sent to an external `MAIL_PROBE_TO` and also exposed a script bug: nodemailer generates `info.messageId` for raw sends instead of reporting the Message-ID header that reached the wire, so the Sent/APPEND/MOVE searches looked for an id that never existed. The probe now searches its own header id and polls after APPEND (owner-driven fix, same task).
 
+- 0.6: the probe verifies the Sent folder with `STATUS` counts and the APPEND response instead of SEARCH, because a live run proved Purelymail's search index lags APPEND by more than five seconds and a search-based verdict reported a false failure; owner ran it self-addressed and the committed result is `status: ok` (IDLE 8.3s, no host auto-save, APPEND and MOVE work).
+
 ## Owner actions
-- TODO(owner): put MAIL_PROBE_USER and MAIL_PROBE_PASS (a Purelymail test mailbox and its app password) in .env, run `pnpm mail:probe` and commit `docs/dealflow/mail-probe-result.json`; the probe currently records `skipped`.
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in /tmp because the harness sandbox blocks writes outside the project folder.
 
 ## Open issues

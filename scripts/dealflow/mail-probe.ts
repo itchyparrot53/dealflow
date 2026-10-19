@@ -18,7 +18,6 @@ try {
 const OUTPUT = "docs/dealflow/mail-probe-result.json";
 const IDLE_WAIT_MS = 60_000;
 const SENT_FOLDER_POLL_MS = 15_000;
-const APPEND_POLL_MS = 5_000;
 const POLL_INTERVAL_MS = 2_000;
 
 interface FolderProbe {
@@ -248,32 +247,32 @@ async function searchMessageId(client: ImapFlow): Promise<number[]> {
   return uids === false || uids === undefined ? [] : uids;
 }
 
+async function sentMessageCount(client: ImapFlow, path: string): Promise<number | null> {
+  const status = await client.status(path, { messages: true });
+  return status === false ? null : (status.messages ?? null);
+}
+
 // 7. Does the host save the sent copy itself, and if not, does APPEND work?
+//
+// Both checks use authoritative signals, not SEARCH: Purelymail's search index lags behind APPEND
+// by more than a few seconds (a message appended right now is not findable yet), so a search-based
+// verdict reports a false failure. STATUS counts and the APPEND response are immediate.
 async function probeSentFolder(client: ImapFlow, sent: RawMessage | null): Promise<void> {
   const sentFolder = result.folders.find((folder) => folder.specialUse === "\\Sent");
   if (sentFolder === undefined || result.send.messageId === "") return;
   try {
-    const lock = await client.getMailboxLock(sentFolder.path);
-    try {
-      const deadline = Date.now() + SENT_FOLDER_POLL_MS;
-      let found: number[] = [];
-      while (Date.now() < deadline && found.length === 0) {
-        found = await searchMessageId(client);
-        if (found.length === 0) await sleep(POLL_INTERVAL_MS);
-      }
-      result.sentFolder.autoSaved = found.length > 0;
-      if (!result.sentFolder.autoSaved && sent !== null) {
-        await client.append(sentFolder.path, sent.raw, ["\\Seen"]);
-        const appendDeadline = Date.now() + APPEND_POLL_MS;
-        let appended: number[] = [];
-        while (Date.now() < appendDeadline && appended.length === 0) {
-          appended = await searchMessageId(client);
-          if (appended.length === 0) await sleep(1_000);
-        }
-        result.sentFolder.appendWorked = appended.length > 0;
-      }
-    } finally {
-      lock.release();
+    const before = await sentMessageCount(client, sentFolder.path);
+    const deadline = Date.now() + SENT_FOLDER_POLL_MS;
+    let count = before;
+    while (Date.now() < deadline) {
+      count = await sentMessageCount(client, sentFolder.path);
+      if (before !== null && count !== null && count > before) break;
+      await sleep(POLL_INTERVAL_MS);
+    }
+    result.sentFolder.autoSaved = before !== null && count !== null && count > before;
+    if (!result.sentFolder.autoSaved && sent !== null) {
+      const appended = await client.append(sentFolder.path, sent.raw, ["\\Seen"]);
+      result.sentFolder.appendWorked = appended !== false;
     }
   } catch (error) {
     note("sentFolder", error);

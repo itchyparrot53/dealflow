@@ -106,10 +106,23 @@ Harness notes for later parts:
 
 ## Notes for Part 2
 
-- The mail probe result is recorded in `docs/dealflow/mail-probe-result.json` (Task 0.6): status
-  `skipped`, because the machine has no `MAIL_PROBE_USER`/`MAIL_PROBE_PASS`. Capabilities, special-use
-  folders, IDLE, Sent auto-save, APPEND and MOVE are therefore **unmeasured**; run `pnpm mail:probe`
-  with Purelymail credentials before planning Part 2's sync behaviour.
+- The mail probe result is recorded in `docs/dealflow/mail-probe-result.json` (Task 0.6) and says
+  `status: ok`. It ran against Purelymail (`d***@umev.co.uk`) with owner credentials:
+  - SMTP send works: `250 2.6.0 Message received`, and the message arrives at the recipient.
+  - IMAP IDLE works, but the server push is not instant: measured latency was 8.3s and 11.1s on two
+    runs. Part 2 must not assume sub-second delivery.
+  - The host does **not** save SMTP-sent messages into `\Sent` (`autoSaved: false`), so the app must
+    `APPEND` a copy after sending. `APPEND` itself works and returns a uid (`appendWorked: true`).
+  - `MOVE` from INBOX to `\Trash` works.
+  - The IMAP SEARCH index lags behind `APPEND` by more than five seconds: a message appended right
+    now is not findable by SEARCH yet. Verify appends with `STATUS` counts or the APPEND uid, never
+    with an immediate SEARCH.
+  - Capabilities: `IMAP4rev1 IDLE QRESYNC CONDSTORE MOVE UIDPLUS ESEARCH SORT SORT=DISPLAY`
+    (`ESORT`), `SEARCHRES NAMESPACE CHILDREN COMPRESS=DEFLATE LITERAL+ SASL-IR ENABLE WITHIN
+    AUTH=PLAIN I18NLEVEL=1 RIGHTS= ANNOTATION`; QRESYNC and CONDSTORE are enabled on the session.
+  - Special-use folders all exist: `INBOX`, `Sent`, `Drafts`, `Archive`, `Junk`, `Trash`.
+- Probe artifacts left in the mailbox (safe to delete): the `Dealflow mail probe ...` messages in
+  `\Sent` and `\Trash`, plus one `append diagnostic` message from a one-off APPEND check.
 - The demo seeder requires a clean database: re-running it against a database that holds activities
   owned by non-demo users aborts on `activities_deal_id_deals_id_fk` because its wipe only removes
   demo-owned activities. The baseline seeded a fresh scratch database instead.
