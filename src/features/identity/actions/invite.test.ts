@@ -12,10 +12,22 @@ const { createContext } = vi.hoisted(() => ({
   createContext: vi.fn(() => Promise.resolve({ actor: { id: "admin-1", type: "admin" } })),
 }));
 const { inviteUser } = vi.hoisted(() => ({ inviteUser: vi.fn() }));
+const { issueInviteLink } = vi.hoisted(() => ({ issueInviteLink: vi.fn() }));
+const { mailerSend } = vi.hoisted(() => ({ mailerSend: vi.fn() }));
 
 vi.mock("./shared", () => ({ guardCsrf }));
 vi.mock("@/server/trpc/context", () => ({ createContext }));
 vi.mock("../invite.service", () => ({ inviteUser }));
+// The success branch mints an invite link and sends mail; both are mocked here so the unit test
+// stays database-free and asserts the action's returned shape instead.
+vi.mock("@/features/auth/invites", () => ({ issueInviteLink }));
+vi.mock("@/config/env", () => ({ env: { BASE_URL: "https://app.example.com" } }));
+vi.mock("@/features/mailer/templates", () => ({
+  inviteMail: () => ({ subject: "invite", text: "invite", html: "<p>invite</p>" }),
+}));
+vi.mock("@/features/mailer/systemMailer", () => ({
+  getSystemMailer: () => ({ mode: "log", send: mailerSend }),
+}));
 
 import { inviteUserAction } from "./invite";
 
@@ -49,9 +61,25 @@ describe("inviteUserAction serialization (IDENTITY-02)", () => {
     expect(denied.ok === false && denied.error.id).toBe(ERROR_IDS.PERM_DENIED);
   });
 
-  it("passes the created userId through on success", async () => {
+  it("passes the created userId and invite link through on success", async () => {
     inviteUser.mockResolvedValueOnce(ok({ userId: "u-123" }));
+    issueInviteLink.mockResolvedValueOnce({
+      url: "https://app.example.com/login/invite?token=t",
+      expiresAt: new Date(),
+    });
+    mailerSend.mockResolvedValueOnce(ok({ messageId: "m-1" }));
     const result = await inviteUserAction("csrf", VALID_INPUT);
-    expect(result.ok === true && result.userId).toBe("u-123");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.userId).toBe("u-123");
+    expect(result.inviteUrl).toBe("https://app.example.com/login/invite?token=t");
+    // Log mode means the mail was not actually delivered, so the form must show the link instead.
+    expect(result.emailSent).toBe(false);
+    expect(issueInviteLink).toHaveBeenCalledWith(
+      expect.anything(),
+      "u-123",
+      "https://app.example.com",
+      expect.anything(),
+    );
   });
 });

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 2.6 · Last updated: 2026-10-20 00:00
+Current: 2.7 · Last updated: 2026-10-20 00:20
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -27,7 +27,7 @@ Current: 2.6 · Last updated: 2026-10-20 00:00
 - [x] 2.3 Local auth services
 - [x] 2.4 Auth routes and safe dev-login
 - [x] 2.5 Login, magic-link and invite pages
-- [ ] 2.6 Invite email, profile password and bootstrap link
+- [x] 2.6 Invite email, profile password and bootstrap link
 - [ ] 2.7 Phase 2 QA gate
 - [ ] 3.1 AI env, dependency and schema
 - [ ] 3.2 Provider layer and JSON helper
@@ -111,6 +111,11 @@ Current: 2.6 · Last updated: 2026-10-20 00:00
 
 - 2.5: no `Label` primitive existed and no `@radix-ui/react-label` was installed, so the standard shadcn `Label` wrapper (`src/components/ui/Label.tsx`) was added over the new dependency, as Task 2.5 step 5 allows; the login, magic-link and invite cards use `Tabs`, `Input`, `Label`, `Button` from the design system and plain HTML forms only.
 - 2.5: the login page renders the card with `w-full max-w-[400px] rounded-lg border bg-background p-6`; the magic-link and invite cards reuse it. `next` is sanitised with `safeLoginReturnPath` on both sign-in pages and every form posts it as a hidden field.
+
+- 2.6: `inviteUserAction` now returns `{ userId, inviteUrl, emailSent }`; it mints an `invite` link, sends `inviteMail` through the system mailer, and reports `emailSent` false in log mode so the form says mail is not set up. The form shows the copyable link under `data-testid="invite-link"` in both states, and the old "no email is sent automatically" notice is gone.
+- 2.6: tests updated for the new invite result and copy: `src/app/(app)/settings/users/InviteUserForm.test.tsx` (both mail states, link contents, clipboard) still passes; no assertion was weakened.
+- 2.6: `changePasswordAction` verifies the current password only when a hash exists (E_AUTH_013 otherwise), enforces the policy, then revokes every other session while keeping the current one. The profile page passes `hasPassword` from `getCredentials` and mounts the card below the existing profile form.
+- 2.6: `pnpm auth:bootstrap-link` ran against the dev database with the A5 overrides and printed an `Admin setup link (valid 24 hours, single use): {BASE_URL}/login/invite?token=...` line; the token itself was never pasted into PROGRESS.md.
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
