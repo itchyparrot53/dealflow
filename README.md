@@ -1,8 +1,8 @@
-<h1 align="center">warpdrive</h1>
+<h1 align="center">Dealflow</h1>
 
 <p align="center">
-  An open-source, self-hosted <b>Pipedrive alternative</b> for business-development teams.<br/>
-  Pipeline management, a deal workspace, contacts, and two-way Gmail, running entirely on your own infrastructure.
+  A self-hosted CRM for business development, built on warpdrive.<br/>
+  Pipeline management, a deal workspace, contacts, two-way Gmail, and a built-in AI layer, running on your own infrastructure.
 </p>
 
 <p align="center">
@@ -14,30 +14,29 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/pipeline.png" alt="warpdrive pipeline board" width="100%">
+  <img src="docs/screenshots/pipeline.png" alt="Dealflow pipeline board" width="100%">
 </p>
 
-warpdrive reimplements the core business-development workflow of Pipedrive as software you
-run yourself. It is **single-tenant and self-hosted**: your own box, your own Postgres and
-object storage, authenticated with your own Google Workspace. Your customer data never
-leaves your infrastructure, and there is no per-seat bill.
+Dealflow is a single-tenant, self-hosted CRM that reimplements the core business-development
+workflow of Pipedrive as software you run yourself: your own box, your own Postgres and object
+storage, and sign-in that does not depend on a vendor. Your customer data never leaves your
+infrastructure, and there is no per-seat bill. The information architecture follows the tools BD
+teams already know, the interface ships its own visual layer built on
+[shadcn/ui](https://ui.shadcn.com), and Dealflow is not affiliated with or endorsed by Pipedrive.
 
-The information architecture and workflows follow the tools BD teams already know, but all
-code, styling, and assets are original, and the interface ships its own visual layer built
-on [shadcn/ui](https://ui.shadcn.com). warpdrive is not affiliated with or endorsed by
-Pipedrive.
+Dealflow is built on [warpdrive](https://github.com/sneg55/warpdrive) by Nikita Sawinyh (MIT),
+extended in place.
 
 ## Contents
 
 - [Features](#features)
 - [Screenshots](#screenshots)
-- [warpdrive vs Pipedrive](#warpdrive-vs-pipedrive)
 - [Tech stack](#tech-stack)
 - [Quickstart (local development)](#quickstart-local-development)
 - [Self-hosting](#self-hosting)
+- [AI](#ai)
 - [Tests](#tests)
 - [Project status](#project-status)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Features
@@ -49,6 +48,7 @@ Pipedrive.
 
 **Deals**
 - Deal workspace with a unified timeline: activities, notes, files, email, and full change history
+- AI insights card: summary with health, risks and next steps you can add as activities, plus a 0 to 100 score
 - Participants, followers, labels, lost reasons, and close dates
 - Won / lost handling with a stage-progress bar
 
@@ -59,8 +59,18 @@ Pipedrive.
 
 **Email (two-way Gmail)**
 - Send and receive over the Gmail API, with thread linking to deals and people
-- Open and click tracking, templates, signatures, merge fields, and scheduled send
+- "Write with AI" in the composer, open and click tracking, templates, signatures, merge fields, and scheduled send
 - Personal inbox plus shared, deal- and contact-linked threads
+
+**Sign-in**
+- Email and password, or a single-use magic link sent by email
+- Google Workspace SSO when its three environment variables are set
+- Invites that email a set-password link, and a bootstrap link for the first admin
+
+**AI**
+- An assistant drawer that answers from your CRM data through the MCP tools and asks for confirmation before writing
+- Deal summaries and scores, email drafts, notes to activities, and plain-English deal filters
+- OpenRouter (default model `deepseek/deepseek-v4.1-flash`), with deterministic fake modes for tests
 
 **Team and platform**
 - Role-based permissions, teams, and user management
@@ -71,91 +81,65 @@ Pipedrive.
 
 **Deal workspace:** activities, notes, files, and the full history timeline in one view.
 
-![Deal workspace](docs/screenshots/deal-workspace.png)
+![Dealflow deal workspace](docs/screenshots/deal-workspace.png)
 
 **Inbox:** two-way Gmail with thread linking, follow-up labels, and unread state.
 
-![Email inbox](docs/screenshots/inbox.png)
+![Dealflow email inbox](docs/screenshots/inbox.png)
 
 **Contacts:** people and organizations with custom fields.
 
-![Contacts](docs/screenshots/contacts.png)
-
-## warpdrive vs Pipedrive
-
-warpdrive covers Pipedrive's core BD loop and deliberately leaves the rest out of scope. The
-goal is a focused, self-hosted CRM, not a feature-for-feature clone.
-
-|  | warpdrive | Pipedrive |
-|---|:---:|:---:|
-| License | MIT, open source | Proprietary |
-| Hosting | Self-hosted, single-tenant | Vendor cloud |
-| Pricing | Free (your infrastructure only) | Paid, per seat |
-| Your data | Stays on your infrastructure | Vendor servers |
-| Kanban pipeline + custom stages | ✅ | ✅ |
-| Multiple pipelines | ✅ | ✅ |
-| Deal workspace (activities, notes, files, history) | ✅ | ✅ |
-| Contacts and organizations + custom fields | ✅ | ✅ |
-| Leads inbox + CSV import (with undo) | ✅ | ✅ |
-| Two-way Gmail (send/receive, threads, open/click tracking) | ✅ | ✅ |
-| Email templates, signatures, scheduled send | ✅ | ✅ |
-| Permissions, teams, user management | ✅ | ✅ |
-| Saved filters | ✅ | ✅ |
-| Realtime board / inbox / presence | ✅ | ✅ |
-| Notifications | ✅ | ✅ |
-| Pipeline stats (funnel, performance) | ✅ Basic | ✅ Advanced |
-| Products, Projects, Invoicing, Forecast | ➖ Out of scope | ✅ |
-| Multi-currency | ➖ Out of scope | ✅ |
-| Workflow automation | ➖ Email scheduling only | ✅ |
-| Web forms / chatbot / marketplace | ➖ Out of scope | ✅ |
-| Native mobile apps | ➖ Web app | ✅ |
-
-✅ supported · ➖ intentionally out of scope
+![Dealflow contacts](docs/screenshots/contacts.png)
 
 ## Tech stack
 
 Next.js (App Router) and React with TypeScript, Drizzle ORM on Postgres, tRPC with TanStack
 Query, Next server actions, shadcn/ui with Tailwind, dnd-kit for the board, Zustand for
 board-local state, a self-hosted WebSocket server backed by Postgres LISTEN/NOTIFY, MinIO
-(or any S3-compatible store) for files, and the Gmail API via Google OAuth. Package manager:
-pnpm.
+(or any S3-compatible store) for files, the Gmail API via Google OAuth, OpenRouter through the
+`openai` SDK for AI, and nodemailer for system mail. Package manager: pnpm.
 
 ## Quickstart (local development)
 
-Requires Node, pnpm, and Docker.
+Requires Node 22 or newer, pnpm 9, and Docker.
 
 ```bash
 pnpm install
-cp .env.example .env
-# bring up Postgres and MinIO with host ports and no TLS:
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio
-pnpm db:migrate
+pnpm env:sync          # creates .env from .env.example and fills safe local values
+pnpm dev:up            # Postgres and MinIO in Docker
+pnpm db:migrate:dev    # apply migrations
+pnpm db:seed:demo      # demo pipeline, deals, people and email
 pnpm dev
 ```
 
-The app runs at `http://localhost:3000`. Google sign-in and Gmail need an OAuth client (see
-[`docs/deploy.md`](docs/deploy.md)); for local exploration you can sign in without Google
-using the dev-login route.
+The app runs at `http://localhost:3000`. In development you can skip Google sign-in and use the
+dev login route: `http://localhost:3000/auth/dev-login?email=demo1@example.com`.
 
 ## Self-hosting
 
-The repo ships a single-box Docker topology (app, WebSocket server, background worker,
-Postgres, MinIO, and Caddy for automatic HTTPS):
+The default Docker topology ships the app, WebSocket server, background worker, Postgres and
+MinIO. There is no reverse proxy in the default stack: put your own proxy in front of the app,
+the `/_ws` WebSocket route and the S3 host. See [`docs/reverse-proxy.md`](docs/reverse-proxy.md)
+for the three routes, the headers that must stay on the S3 host, and a worked Caddy example in
+[`docs/reverse-proxy/Caddyfile.example`](docs/reverse-proxy/Caddyfile.example). The full guide,
+including Google OAuth setup and every required environment variable, is in
+[`docs/deploy.md`](docs/deploy.md).
 
-```bash
-cp .env.example .env    # fill in domain, Google OAuth, storage, and secrets
-docker compose up -d --build
-```
+## AI
 
-Caddy provisions TLS for your domain automatically; Postgres and MinIO stay on the internal
-network. See [`docs/deploy.md`](docs/deploy.md) for the full guide, including Google OAuth
-setup, the `s3.` subdomain for file uploads, and every required environment variable.
+Dealflow talks to OpenRouter through the `openai` SDK. Set `OPENROUTER_API_KEY` in the server
+environment and optionally `OPENROUTER_MODEL` (default `deepseek/deepseek-v4.1-flash`; the dated
+snapshot `deepseek/deepseek-v4.1-flash-1017` can be pinned). With no key the AI features are
+simply unavailable, and `AI_FAKE=true` gives deterministic answers for tests and demos. Every
+call is logged, and admins manage the company monthly token cap and an optional per-user cap in
+Settings → AI. The MCP surface is documented in [`docs/mcp-server.md`](docs/mcp-server.md).
 
 ## Tests
 
 ```bash
-pnpm test:unit          # fast unit tests
-pnpm test:integration   # spins up a disposable Postgres via Testcontainers
+pnpm test:unit          # fast unit tests, no containers
+pnpm test:integration   # disposable Postgres via Testcontainers
+pnpm e2e                # Playwright against a production build on port 3210
 ```
 
 Integration tests run against a real Postgres (never a mock) so migrations and queries are
@@ -163,16 +147,11 @@ exercised as they run in production.
 
 ## Project status
 
-warpdrive is used in production for a single team's BD workflow and is actively developed.
-The features listed above are built and working. The out-of-scope rows in the comparison
-table are deliberate and not on the near-term roadmap; the focus is depth and polish on the
-core pipeline, deal, contact, and email surfaces.
-
-## Contributing
-
-Issues and pull requests are welcome. PRs are reviewed and merged upstream, then land back
-here on the next release. Please keep changes focused and include tests for new behavior.
+Dealflow is used in production for a single team's BD workflow and is actively developed. The
+features listed above are built and working. Products, projects, invoicing, forecasting and
+multi-currency are deliberately out of scope; the focus is depth and polish on the core
+pipeline, deal, contact and email surfaces.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE). Dealflow builds on warpdrive, copyright Nikita Sawinyh, also MIT.

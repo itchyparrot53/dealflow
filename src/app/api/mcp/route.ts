@@ -34,7 +34,7 @@ async function handleAuthenticatedRequest(req: Request): Promise<Response> {
 
   const handler = createMcpHandler(
     (server) => registerMcpTools(server, () => ctx, db),
-    { serverInfo: { name: "warpdrive", version: "1.0.0" } },
+    { serverInfo: { name: "dealflow", version: "1.0.0" } },
     { basePath: "/api", disableSse: true, sessionIdGenerator: undefined },
   );
   return handler(req);

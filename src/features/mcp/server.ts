@@ -13,7 +13,7 @@ export function registerMcpTools(server: McpServer, getCtx: GetCtx, db: Db): voi
 }
 
 export function buildMcpServer(getCtx: GetCtx, db: Db): McpServer {
-  const server = new McpServer({ name: "warpdrive", version: "1.0.0" });
+  const server = new McpServer({ name: "dealflow", version: "1.0.0" });
   registerMcpTools(server, getCtx, db);
   return server;
 }

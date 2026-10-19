@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-19 21:53
+Current: 1.2 · Last updated: 2026-10-19 22:05
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -15,7 +15,7 @@ Current: 1.1 · Last updated: 2026-10-19 21:53
 - [x] 0.5 E2E harness and health click-through
 - [x] 0.6 Purelymail probe
 - [x] 0.7 Phase 0 QA gate
-- [ ] 1.1 Dealflow name in the app
+- [x] 1.1 Dealflow name in the app
 - [ ] 1.2 Package, docs, licence and MCP names
 - [ ] 1.3 Telemetry and update check off by default
 - [ ] 1.4 Compose without Caddy and reverse-proxy docs
@@ -78,6 +78,10 @@ Current: 1.1 · Last updated: 2026-10-19 21:53
 - 0.6: the probe verifies the Sent folder with `STATUS` counts and the APPEND response instead of SEARCH, because a live run proved Purelymail's search index lags APPEND by more than five seconds and a search-based verdict reported a false failure. The committed result is `status: ok`.
 - 0.6: owner-driven changes made during the probe: the probe was re-run self-addressed (no `MAIL_PROBE_TO`) and the result committed, and `docs/dealflow/HEALTH-CHECK.md` was updated with the real host facts.
 - 0.7: fixed three lint blockers the baseline exposed (DatePicker unused-variable error, Biome format of the generated probe JSON, ESLint default-project cap for the new `.mjs` tooling) instead of logging them as pre-existing, because a red `pnpm lint` fails the gate and none of the three changes behaviour.
+
+- 1.1: updated the two tests that asserted the old visible text: `src/features/release/ui/VersionBanner.test.tsx` (new copy "A new upstream release ({latest}) is available") and `src/features/enrichment/prospects/ProspectResultRow.test.tsx` ("Already in Dealflow"). No assertion was weakened; only the expected copy changed.
+- 1.1: also renamed the user-visible crash-adjacent copy in `src/features/email/composer/sendFailure.ts` ("Dealflow was updated while this page was open"), which the task's file list does not name but the step 4 grep requires, because it is a visible string rather than an allowed internal identifier.
+- 1.1: left `src/features/mcp/server.ts`, `src/app/api/mcp/route.ts` and every internal identifier (storage keys, event names, `Symbol.for` keys, `RELEASE_REPO`, `warpdrive.invalid`, `DOCS_SITE_URL`, the MinIO bucket default) on the old name; the two MCP names are renamed by Task 1.2.
 
 ## Owner actions
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in `/tmp/dealflow-tools` because the harness sandbox blocks writes outside the project folder. Not blocking: every command in this run worked through that copy.
