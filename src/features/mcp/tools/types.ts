@@ -12,8 +12,16 @@ export type GetCtx = () => ToolCtx;
 
 type Invoke = (input: unknown, signal: AbortSignal) => Promise<CallToolResult>;
 
+export interface ToolDefinition {
+  description: string;
+  inputSchema: z.ZodObject;
+}
+
 export class ToolRegistry {
   readonly names = new Set<string>();
+  // Definitions are kept beside the handlers so the assistant can turn the SAME registered tools
+  // into OpenAI tool definitions without duplicating any description or schema.
+  readonly definitions = new Map<string, ToolDefinition>();
   private readonly handlers = new Map<string, Invoke>();
 
   add(name: string, handler: Invoke): void {
@@ -78,4 +86,8 @@ export function registerTool<S extends z.ZodObject>(
     (input, extra) => invoke(input, AbortSignal.any([extra.signal, AbortSignal.timeout(15_000)])),
   );
   registry.add(definition.name, invoke);
+  registry.definitions.set(definition.name, {
+    description: definition.description,
+    inputSchema: definition.inputSchema,
+  });
 }
