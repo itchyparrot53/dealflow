@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-20 03:25
+Current: 4.6 · Last updated: 2026-10-20 03:45
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -40,7 +40,7 @@ Current: 4.5 · Last updated: 2026-10-20 03:25
 - [x] 4.2 Deal AI card
 - [x] 4.3 Email draft in the composer
 - [x] 4.4 Notes to activities
-- [ ] 4.5 Describe a filter
+- [x] 4.5 Describe a filter
 - [ ] 4.6 Phase 4 QA gate
 - [ ] 5.1 Tool catalogue from the MCP registry
 - [ ] 5.2 Assistant loop and pending actions
@@ -155,6 +155,10 @@ Current: 4.5 · Last updated: 2026-10-20 03:25
 
 - 4.4: `proposeActivitiesFromNoteAction` only accepts deal notes (others return E_AI_007), gates on the note's deal through `getWorkspace`, clamps past due dates to today, maps unknown type keys to `task` and slices to five proposals.
 - 4.4: the dialog edits proposals inline (checkbox, subject, type, date) and creates only the selected rows through `createActivityAction`; the note menu item appears for deal notes only and the dialog is mounted on first open so note-card tests keep their provider-free render.
+
+- 4.5: the filter catalogue is built from the four existing configs, so the prompt, the operator allow-list and `savedFilterDefinitionSchema` cannot drift; the output schema wraps the real saved-filter schema, so an invented field counts as invalid output and gets the retry.
+- 4.5: `describeFilter` accepts a test `deps` object (reference data plus chat deps) so the unit suite runs without a database; the four cases cover a valid definition, an unknown field with the repair retry, two invalid replies, and the prompt listing `value`/`expectedCloseDate`.
+- 4.5: `AiFilterBox` fills the existing dialog's rows and combinator for the deal entity only; the modal and its 16 tests keep passing with `ai.status` mocked unavailable.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.

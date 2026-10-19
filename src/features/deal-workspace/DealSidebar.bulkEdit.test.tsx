@@ -203,3 +203,6 @@ it("the Source section pencil bulk-edits channel + channel id in one action call
     "csrf",
   );
 });
+
+// The AI card is a tRPC client component; these suites render the sidebar without a tRPC provider.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({ DealAiCard: () => null }));

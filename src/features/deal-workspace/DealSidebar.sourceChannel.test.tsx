@@ -128,3 +128,6 @@ it("inline-edits the Channel ID row through the deal update action", async () =>
     ),
   );
 });
+
+// The AI card is a tRPC client component; these suites render the sidebar without a tRPC provider.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({ DealAiCard: () => null }));

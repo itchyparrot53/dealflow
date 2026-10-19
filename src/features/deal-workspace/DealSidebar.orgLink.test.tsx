@@ -122,3 +122,6 @@ it("surfaces the error and does not refresh when unlinking the organization is d
   await waitFor(() => expect(reportError).toHaveBeenCalledWith("E_PERM_001"));
   expect(refresh).not.toHaveBeenCalled();
 });
+
+// The AI card is a tRPC client component; these suites render the sidebar without a tRPC provider.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({ DealAiCard: () => null }));

@@ -153,3 +153,6 @@ describe("resuming a draft from the deal timeline", () => {
     expect(screen.getByTestId("composer")).toHaveTextContent("resumed:Unsent outreach");
   });
 });
+
+// The AI card is a tRPC client component; these suites render the sidebar without a tRPC provider.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({ DealAiCard: () => null }));

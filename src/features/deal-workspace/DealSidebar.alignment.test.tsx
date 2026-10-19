@@ -154,3 +154,6 @@ it("renders representative sidebar values through the shared left-aligned FieldR
   expectSharedLeftValue("Person", "Name");
   expectSharedLeftValue("Source", "Channel");
 });
+
+// The AI card is a tRPC client component; these suites render the sidebar without a tRPC provider.
+vi.mock("@/features/ai/ui/DealAiCard", () => ({ DealAiCard: () => null }));
