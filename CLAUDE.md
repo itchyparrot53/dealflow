@@ -2,8 +2,8 @@
 
 Guidance for working in this codebase (with an AI coding assistant or by hand).
 
-**Project:** warpdrive
-**Description:** Open-source, single-tenant, self-hosted business-development CRM that reimplements Pipedrive's BD workflow: pipeline management, deal workspace, contacts/organizations, Gmail two-way email, user management, notifications, and basic stats.
+**Project:** Dealflow (built on warpdrive)
+**Description:** Single-company, self-hosted business-development CRM: pipeline management, deal workspace, contacts/organizations, two-way email, user management, notifications, and basic stats, with email + password and email-link sign-in (Google optional), IMAP/SMTP mail planned, and a built-in AI layer.
 
 ## Stack
 
@@ -12,8 +12,10 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - tRPC (typesafe reads) + TanStack Query; Next server actions for mutations/forms
 - shadcn/ui + Tailwind; dnd-kit for the board; Zustand for board-local state
 - Self-hosted WebSocket server + Postgres LISTEN/NOTIFY for realtime
-- Gmail API via OAuth (Google Workspace); Google SSO for auth
+- Gmail API via OAuth (Google Workspace); Google SSO optional
 - pg-boss for background jobs; MinIO (S3-compatible) for file storage
+- AI: OpenRouter through the `openai` SDK; system mail: `nodemailer`; mail probing: `imapflow`; passwords: `@node-rs/argon2`
+- Playwright for end-to-end tests
 - pnpm
 
 ## Conventions
@@ -24,22 +26,24 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - Comments explain WHY, not what.
 - No em dashes in any file. Use commas, colons, parentheses, or "vs."/"or"/"to".
 
-## Test-Driven Development (required)
+## Verification profile (fast)
 
-Every feature and every bugfix is written test-first. No production code before a failing test exists for it.
+- Per change, run `pnpm typecheck`.
+- Before calling a phase done, run `pnpm typecheck`, `pnpm lint`, `pnpm build` and `pnpm test:unit`.
+- Integration tests (`pnpm test:integration`, Docker) run once per part.
+- Write new tests for risky server logic only: money, dates, state machines, permissions, public routes, auth, mail sync, threading. Write those test-first.
+- Playwright end-to-end (`pnpm e2e`) and a screenshot gallery run once at the end of each part.
+- Never mock the database in the tests you do write: integration tests hit a real Postgres and the real Drizzle migrations.
+- Never claim something works without running the check that proves it. Evidence before assertions.
 
-The loop (Red, Green, Refactor):
+## Dealflow conventions
 
-1. **Red:** write the smallest test that expresses the next behavior. Run it. Watch it fail for the right reason. A test that passes on first run is suspect: delete it and write one that fails first.
-2. **Green:** write the minimum code to make it pass. Nothing more.
-3. **Refactor:** clean up with the test as a safety net. Re-run.
-
-Rules:
-
-- **Bugfixes start with a failing test that reproduces the bug.** Fix only after you have seen it fail.
-- **Do not mock the database.** Integration tests hit a real Postgres test database. Mock/prod divergence hides broken queries and migrations, which is exactly the layer a CRM cannot get wrong. Tests spin up a disposable Postgres (Docker) and run against the real Drizzle migrations.
-- **Test runner:** Vitest. Co-locate tests inside the feature directory (`src/features/<feature>/*.test.ts`). The suite is split into a container-less `unit` project and a real-Postgres `integration` project (`pnpm test:unit` / `pnpm test:integration`).
-- Never claim something works without running the test and seeing it pass. Evidence before assertions.
+- **Brand rule.** User-visible text, page metadata, docs and the package name say Dealflow. Internal identifiers keep the upstream name by design: cookie names (`wd_*`), localStorage keys, event names (`warpdrive:open-search`), `Symbol.for("warpdrive.*")`, the release repository and user agent, the invalid base URL in `loginReturn.ts`, the MinIO bucket default and `DOCS_SITE_URL`. Comments may explain the history. `src/features/branding/brand.test.ts` pins the visible copy.
+- **New work goes in new feature folders** (`src/features/<feature>/`) and **new schema files** under `src/db/schema/` (exported from the index), so the upstream diff stays small and reviewable.
+- **Migrations** are named `00NN_dealflow_<topic>.sql` (for example `0075_dealflow_auth.sql`). Never reuse or renumber an upstream migration; take the next free number.
+- **Upstream policy:** `docs/dealflow/UPSTREAM.md` records the base commit, how to bring a fix over, and every upstream file we changed. Read it before cherry-picking anything.
+- **Plans** live in `PLAN-PART<N>.md` at the folder root; `ROADMAP.md` is context only.
+- **Every external service has a fake.** `AI_FAKE=true` gives deterministic AI answers and tests inject `ScriptedAiProvider`; `MAIL_FAKE=true` writes captured mail to a folder and tests may inject `setSystemMailerForTest`. Never call a paid or real external service from a test.
 
 ## Engineering Conventions
 
