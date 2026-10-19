@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 0.5 · Last updated: 2026-10-19 22:35
+Current: 0.6 · Last updated: 2026-10-19 21:38
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -11,7 +11,7 @@ Current: 0.5 · Last updated: 2026-10-19 22:35
 - [x] 0.2 Toolchain, install and dev services
 - [x] 0.3 Baseline fixes from the OSS export
 - [x] 0.4 Baseline run and health report
-- [ ] 0.5 E2E harness and health click-through
+- [x] 0.5 E2E harness and health click-through
 - [ ] 0.6 Purelymail probe
 - [ ] 0.7 Phase 0 QA gate
 - [ ] 1.1 Dealflow name in the app
@@ -52,6 +52,8 @@ Current: 0.5 · Last updated: 2026-10-19 22:35
 ## QA log
 
 ## Decisions
+- 0.6: the probe prints its summary with `console.warn` (not `console.log`) because the repo's ESLint `no-console` rule allows only warn/error in `scripts/**/*.ts`.
+
 - 0.1: chose tag v1.2.0 over upstream/main because the step 3 probe tied exactly (upstream/main points at the same commit as v1.2.0) and the tag matches package.json version 1.2.0.
 - 0.1: kept the kit where it arrived (`PLAN AND EXECUTE/dealflow-wd-part1-kit`) instead of moving it to the folder root, and added a root `PLAN-PART1.md` symlink plus a byte-identical copy of the kit's `scripts/check-progress.mjs` at the path contract 6.1 names, because the kit lives in a subfolder here while the plan assumes the root.
 - 0.1: excluded the snapshot commit from the nested kit folder (the plan's exclusion pathspecs only match root kit paths) so the snapshot is greenfield warpdrive code and the kit arrives in the 0.1 commit, as section 0 intends.
@@ -71,7 +73,12 @@ Current: 0.5 · Last updated: 2026-10-19 22:35
 - 0.4: built with `ALLOW_FIRST_LOGIN_ADMIN=false` in the shell because next build runs NODE_ENV=production while the received `.env` keeps the dev value `true`, and rule 17 forbids editing `.env`.
 - 0.4: seeded demo data into a fresh scratch database `warpdrive_baseline` in the dev Postgres because the pre-existing dev database holds leftover non-demo rows that abort `pnpm db:seed:demo` (`activities_deal_id_deals_id_fk`) and `DROP DATABASE warpdrive` is a guard hard limit.
 
+- 0.5: moved the ws startup into an async `main()` in `src/entrypoints/ws.ts`, because tsx compiles a `.ts` file in a CommonJS package as CJS and the top-level await failed the e2e harness; the 6.14 spawn command is unchanged.
+- 0.5: installed Chromium with `PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` because the default browser cache lives outside the harness file sandbox; every `pnpm e2e` run exports that path.
+- 0.5: recorded `/pipeline` as 307 to `/pipeline/{id}` then 200: the spec asserts status below 400 and no `/login` redirect, exactly as 6.12 asks.
+
 ## Owner actions
+- TODO(owner): put MAIL_PROBE_USER and MAIL_PROBE_PASS (a Purelymail test mailbox and its app password) in .env, run `pnpm mail:probe` and commit `docs/dealflow/mail-probe-result.json`; the probe currently records `skipped`.
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in /tmp because the harness sandbox blocks writes outside the project folder.
 
 ## Open issues

@@ -1,0 +1,35 @@
+{
+  "status": "skipped",
+  "probedAt": "2026-10-19T20:32:55.584Z",
+  "account": "***@",
+  "imap": {
+    "host": "imap.purelymail.com",
+    "port": 993,
+    "capabilities": [],
+    "enabled": [],
+    "qresync": false,
+    "condstore": false,
+    "idleAdvertised": false
+  },
+  "folders": [],
+  "folderStatus": {},
+  "idle": {
+    "worked": false,
+    "latencyMs": null
+  },
+  "send": {
+    "ok": false,
+    "messageId": "",
+    "smtpResponse": ""
+  },
+  "sentFolder": {
+    "autoSaved": false,
+    "appendWorked": null
+  },
+  "move": {
+    "worked": false
+  },
+  "errors": [
+    "MAIL_PROBE_USER/MAIL_PROBE_PASS not set"
+  ]
+}

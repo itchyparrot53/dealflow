@@ -102,7 +102,10 @@ Harness notes for later parts:
 
 ## Notes for Part 2
 
-- The mail probe result is recorded in `docs/dealflow/mail-probe-result.json` (Task 0.6).
+- The mail probe result is recorded in `docs/dealflow/mail-probe-result.json` (Task 0.6): status
+  `skipped`, because the machine has no `MAIL_PROBE_USER`/`MAIL_PROBE_PASS`. Capabilities, special-use
+  folders, IDLE, Sent auto-save, APPEND and MOVE are therefore **unmeasured**; run `pnpm mail:probe`
+  with Purelymail credentials before planning Part 2's sync behaviour.
 - The demo seeder requires a clean database: re-running it against a database that holds activities
   owned by non-demo users aborts on `activities_deal_id_deals_id_fk` because its wipe only removes
   demo-owned activities. The baseline seeded a fresh scratch database instead.
