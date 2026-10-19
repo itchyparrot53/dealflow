@@ -1,5 +1,10 @@
 import { ESLint } from "eslint";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
+
+// Each case boots a type-aware ESLint instance against the real project service. That takes a few
+// seconds alone; inside the full 12-worker unit run on a busy machine it has crossed the 60s
+// default. The assertions are unchanged, only the budget is raised for this file.
+vi.setConfig({ testTimeout: 120_000 });
 
 describe("eslint custom rules", () => {
   test("flags raw process.env outside the env boundary", async () => {

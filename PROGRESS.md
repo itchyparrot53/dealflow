@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-20 01:35
+Current: 3.5 · Last updated: 2026-10-20 01:50
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -33,7 +33,7 @@ Current: 3.4 · Last updated: 2026-10-20 01:35
 - [x] 3.1 AI env, dependency and schema
 - [x] 3.2 Provider layer and JSON helper
 - [x] 3.3 Usage, caps and rate limit
-- [ ] 3.4 AI router, Settings page and model check
+- [x] 3.4 AI router, Settings page and model check
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 Deal context, summary and score
 - [ ] 4.2 Deal AI card
@@ -134,7 +134,12 @@ Current: 3.4 · Last updated: 2026-10-20 01:35
 - 3.3: `getUsage` sums prompt + completion tokens since the UTC month start, grouped by feature and by user (inner join on users, so future system rows with a null user do not appear).
 - 3.3: per-user request limiter is 20/minute on `Symbol.for("dealflow.aiRateLimiter")`; the integration suite covers the provider-null, disabled, company-cap, per-user-cap, previous-month and aggregation cases (7 tests).
 
+- 3.4: `pnpm ai:check-model` reached the public OpenRouter list: `deepseek/deepseek-v4.1-flash` is `CONFIGURED MODEL LISTED` with `tools=yes` and `response_format=yes` (prompt 0.000000028, completion 0.00000008 per token); the dated snapshot `deepseek/deepseek-v4.1-flash-1017` (0.00000015 / 0.0000006) and the `:batch` variant are also listed. No `--chat` request was made.
+- 3.4: `ai.status` maps a scripted test provider to `fake` because the public contract exposes three kinds only; the Settings page is admin-gated with `notFound()` and reads `ai.overview` through `createCaller`, then re-renders with `router.refresh()` after a save.
+- 3.4: the OpenRouter request now relies on the SDK accepting our message union directly (no cast) and uses `req.tools !== undefined` / `req.json === true` so the lint rule about nullable booleans is satisfied without changing behaviour.
+
 ## Owner actions
+- TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
 - TODO(owner): decide the Google SSO config in `.env`. It currently has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set but `GOOGLE_WORKSPACE_DOMAIN` empty, which the new all-or-nothing rule rejects. Either set `GOOGLE_WORKSPACE_DOMAIN` to the Workspace domain (Google on) or blank the client id and secret (Google off). Until then, anything that loads `.env` needs `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on the command line, as this run does.
 - TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in `/tmp/dealflow-tools` because the harness sandbox blocks writes outside the project folder. Not blocking: every command in this run worked through that copy.
