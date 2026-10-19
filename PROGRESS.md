@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-20 02:25
+Current: 4.3 · Last updated: 2026-10-20 02:45
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -37,7 +37,7 @@ Current: 4.2 · Last updated: 2026-10-20 02:25
 - [x] 3.4 AI router, Settings page and model check
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 Deal context, summary and score
-- [ ] 4.2 Deal AI card
+- [x] 4.2 Deal AI card
 - [ ] 4.3 Email draft in the composer
 - [ ] 4.4 Notes to activities
 - [ ] 4.5 Describe a filter
@@ -145,6 +145,9 @@ Current: 4.2 · Last updated: 2026-10-20 02:25
 - 4.1: `buildDealContext` gates on `getWorkspace` before reading notes or activities, emits the documented JSON (today, deal, upcoming/recent activities, newest 10 notes cut to 400 chars) and reads the base currency through the cached helper.
 - 4.1: summary and score prompts are built from the active activity type keys; model output is fixed up (summary cut to 800 chars, risks/next steps/reasons sliced, unknown type keys become `task`, `dueInDays` rounded into 0..30, score rounded into 0..100) and upserted into `deal_ai_insights`.
 - 4.1: `dealInsights.integration.test.ts` proves storage plus one `ai_usage` row per call, the fix-ups, and that an invisible deal fails before the provider is called (4 tests).
+
+- 4.2: `DealAiCard` renders as the first child of the sidebar; it reads `ai.status` and `ai.dealInsight`, creates next steps through `createActivityAction`, and carries every 6.12 hook (`deal-ai-card`, summary, health data-health, next-step data-added, score data-score, error).
+- 4.2: `DealSidebar.test.tsx` mocks the AI card because that suite renders the sidebar without a tRPC provider; the sidebar's own nine tests are unchanged and still pass.
 
 ## Owner actions
 - TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.

@@ -171,7 +171,7 @@ export function DealAiCard({ dealId, personId, orgId }: Props): React.ReactNode 
                     <ul className="space-y-1">
                       {summary.nextSteps.map((step, index) => (
                         <li
-                          key={`${step.subject}-${index}`}
+                          key={`${step.subject}-${step.dueInDays}-${step.typeKey}`}
                           data-testid="deal-ai-next-step"
                           data-added={added.has(index) ? "true" : "false"}
                           className="flex items-center justify-between gap-2 text-sm"

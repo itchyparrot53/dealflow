@@ -23,6 +23,11 @@ vi.mock("@/lib/trpc-client", () => ({
     activities: {
       listTypes: { useQuery: () => ({ data: [] }) },
     },
+    ai: {
+      status: {
+        useQuery: () => ({ data: { available: false, enabled: true, providerKind: "none" } }),
+      },
+    },
   },
 }));
 

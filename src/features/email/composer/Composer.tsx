@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AiDraftButton } from "@/features/ai/ui/AiDraftButton";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { EmailVisibility } from "../threadVisibility";
@@ -241,6 +242,17 @@ export function Composer({
           signatures={signatures.map((s) => ({ id: s.id, name: s.name }))}
           value={signatureId}
           onChange={applySignature}
+        />
+        <AiDraftButton
+          dealId={links.linkDealId ?? null}
+          personId={links.linkPersonId ?? null}
+          recipientEmail={toList[0]}
+          onDraft={(draft) => {
+            // A reply's subject belongs to the thread, so it is only filled when the composer owns
+            // an empty subject (a fresh email, not a follow-up).
+            if (subject === "" && resolvedThreadId === undefined) setSubject(draft.subject);
+            setBody((current) => `${draft.bodyHtml}${current}`);
+          }}
         />
       </div>
       <RichTextBody
