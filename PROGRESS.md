@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 5.5 · Last updated: 2026-10-20 05:30
+Current: 6.1 · Last updated: 2026-10-20 05:40
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -47,7 +47,7 @@ Current: 5.5 · Last updated: 2026-10-20 05:30
 - [x] 5.2 Assistant loop and pending actions
 - [x] 5.3 Assistant actions and reads
 - [x] 5.4 Assistant drawer
-- [ ] 5.5 Phase 5 QA gate
+- [x] 5.5 Phase 5 QA gate
 - [ ] 6.1 E2E specs and screenshot gallery
 - [ ] 6.2 Integration suite and container smoke
 - [ ] 6.3 Independent review and hardening
@@ -60,6 +60,7 @@ Current: 5.5 · Last updated: 2026-10-20 05:30
 - Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10
 - Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4934/4934 · usage 7/7
 - Phase 4 gate: commands green · typecheck ok · lint ok · build ok · unit 4938/4938 · dealInsights 4/4
+- Phase 5 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · usage 7/7 · assistant 9/9
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
 
 ## Decisions
@@ -274,6 +275,34 @@ typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10 · `che
   DB commands, `pnpm auth:bootstrap-link`. The owner action below resolves it.
 - The 13 locale/UTC-sensitive tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
 - The dev stack still needs `APP_PORT=3001` before it is recreated.
+
+## Phase 5 hand-off (planner summary)
+
+### Commits
+- `042a1eb`-era 5.1 tools, 5.2 loop, 5.3 actions, 5.4 drawer, then the gate commit below.
+  `pnpm check:progress` is green with 36/41 ticked.
+
+### What landed
+- **Tool catalogue (5.1):** `ToolRegistry` keeps each tool's description and input schema; the
+  assistant builds a private `dealflow-assistant` server and exposes exactly the 25 allow-listed
+  tools, so permissions and visibility are the MCP ones.
+- **Assistant loop (5.2):** reads run immediately, writes become pending `ai_actions` rows; confirm
+  runs the same MCP handler, reject cancels; six-step limit, 8,000-character tool results, history
+  trimmed to the first user message. Nine integration cases.
+- **Assistant surface (5.3-5.4):** four server actions with CSRF, actor and the per-user AI rate
+  limit; conversation list/get reads; a Sheet drawer with suggestions, message bubbles, action cards
+  with Confirm/Reject, persisted open state and conversation id, and safe text rendering.
+
+### Gate evidence
+typecheck ok · lint ok · build ok · unit 4945/4945 · usage 7/7 · assistant 9/9 ·
+`check:progress` green.
+
+### Carried into Phase 6
+- The e2e harness from Phase 0 has the health spec only; Phase 6 adds the five feature specs and the
+  screenshot gallery, the integration suite plus the container smoke (AMENDMENT A2), the independent
+  review through the harness subagent (AMENDMENT A3), the final checklist and the report.
+- Owner actions still open: `OPENROUTER_API_KEY` (+ `AI_FAKE=false`, then `pnpm ai:check-model --chat`),
+  the Google `.env` choice, and `APP_PORT=3001`.
 
 ## Phase 1 hand-off (planner summary)
 
