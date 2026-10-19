@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { err, ok, type Result } from "@/types/result";
 import type { AiChatResult, AiFeature, AiProvider } from "./types";
+import { assertAiAllowed, recordAiUsage } from "./usage";
 
 // One JSON-shaped AI call with a single repair attempt. The deps are injected so the unit test runs
 // without a database; usage limits themselves live in usage.ts (wired as the defaults there).
@@ -20,6 +21,9 @@ export interface ChatJsonDeps {
   ) => Promise<void>;
 }
 
+// Real defaults: the cap check and the usage row. Tests pass their own deps so they need no database.
+const DEFAULT_DEPS: ChatJsonDeps = { assertAllowed: assertAiAllowed, record: recordAiUsage };
+
 const FENCED_JSON = /^```(?:json)?\s*([\s\S]*?)\s*```$/i;
 
 // Models sometimes wrap JSON in a markdown fence even when asked for JSON only.
@@ -35,7 +39,7 @@ export async function chatJson<T>(
   feature: AiFeature,
   opts: { system: string; user: string; schema: z.ZodType<T>; maxTokens?: number },
   signal: AbortSignal,
-  deps: ChatJsonDeps,
+  deps: ChatJsonDeps = DEFAULT_DEPS,
 ): Promise<Result<T, AppError>> {
   const allowed = await deps.assertAllowed(db, actorId, signal);
   if (!allowed.ok) return allowed;
