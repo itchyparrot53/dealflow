@@ -219,3 +219,6 @@ describe("board toolbar view saved when a control changes", () => {
     expect(setBoardView).not.toHaveBeenCalled();
   });
 });
+
+// The AI filter box reads tRPC; this suite renders the dialog without a tRPC provider.
+vi.mock("@/features/ai/ui/AiFilterBox", () => ({ AiFilterBox: () => null }));

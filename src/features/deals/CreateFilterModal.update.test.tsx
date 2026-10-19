@@ -153,3 +153,6 @@ describe("CreateFilterModal editing a saved filter", () => {
     expect(updateSavedFilterAction.mock.calls[0]![1]).toMatchObject({ isShared: true });
   });
 });
+
+// The AI filter box reads tRPC; this suite renders the dialog without a tRPC provider.
+vi.mock("@/features/ai/ui/AiFilterBox", () => ({ AiFilterBox: () => null }));

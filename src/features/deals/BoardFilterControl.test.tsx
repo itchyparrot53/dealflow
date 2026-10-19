@@ -306,3 +306,6 @@ describe("BoardFilterControl reconciles the applied saved filter with the live r
     expect(onSelectFilter).not.toHaveBeenCalled();
   });
 });
+
+// The AI filter box reads tRPC; this suite renders the dialog without a tRPC provider.
+vi.mock("@/features/ai/ui/AiFilterBox", () => ({ AiFilterBox: () => null }));

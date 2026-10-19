@@ -113,3 +113,7 @@ describe("Composer: a template applied to a reply", () => {
     });
   });
 });
+
+// The AI draft button is a tRPC client component; this suite renders the composer without a tRPC
+// provider, so it is stubbed here (its behaviour is covered by the e2e and unit suites).
+vi.mock("@/features/ai/ui/AiDraftButton", () => ({ AiDraftButton: () => null }));
