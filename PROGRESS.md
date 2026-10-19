@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-20 00:35
+Current: 3.2 · Last updated: 2026-10-20 00:55
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -30,7 +30,7 @@ Current: 3.1 · Last updated: 2026-10-20 00:35
 - [x] 2.5 Login, magic-link and invite pages
 - [x] 2.6 Invite email, profile password and bootstrap link
 - [x] 2.7 Phase 2 QA gate
-- [ ] 3.1 AI env, dependency and schema
+- [x] 3.1 AI env, dependency and schema
 - [ ] 3.2 Provider layer and JSON helper
 - [ ] 3.3 Usage, caps and rate limit
 - [ ] 3.4 AI router, Settings page and model check
@@ -121,6 +121,10 @@ Current: 3.1 · Last updated: 2026-10-20 00:35
 
 - 2.7: gate fixes: biome export order in `src/db/schema/index.ts` (round 1); the two new auth pages had to use the `text-display` type token or `src/typeScale.test.ts` failed, the invite action test needed mocks for the new link/mailer calls, and ESLint rejected an async-without-await log mailer plus an unnecessary cast in `systemMailer.ts` (round 2). No assertion was weakened.
 - 2.7: QA focus verified: auth tokens are stored as sha256 base64url only, `consumeAuthToken` is one UPDATE ... RETURNING, the magic-link route always answers `sent=1` and the password route always answers `invalid_credentials`, and `devLoginCore` is unreachable unless development/test, the flag is on, and the Host is loopback.
+
+- 3.1: `openai@7.39.0` added; `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_MODEL` and `AI_FAKE` land in the env boundary with the key also in `SECRET_FILE_VARS`, and `.env.example` documents the dated-snapshot form `deepseek/deepseek-v4.1-flash-1017`.
+- 3.1: `ai_settings`, `ai_usage`, `ai_conversations`, `ai_messages`, `ai_actions` and `deal_ai_insights` created in migration `0076`, with the singleton settings seed inserted by hand after generation; the migration applied to the dev database.
+- 3.1: `pnpm env:sync` appended the four AI keys to `.env` with the key empty, so the app boots with AI unavailable until the owner adds a key.
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
