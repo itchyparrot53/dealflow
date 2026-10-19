@@ -128,6 +128,28 @@ describe("env boundary", () => {
     expect(parsed.value.APP_COMMIT).toBe("");
   });
 
+  test("defaults the AI keys to off and parses an explicit model", () => {
+    const defaults = parseEnv({ ...process.env });
+    expect(defaults.ok).toBe(true);
+    if (defaults.ok) {
+      expect(defaults.value.OPENROUTER_API_KEY).toBe("");
+      expect(defaults.value.OPENROUTER_MODEL).toBe("deepseek/deepseek-v4.1-flash");
+      expect(defaults.value.OPENROUTER_BASE_URL).toBe("https://openrouter.ai/api/v1");
+      expect(defaults.value.AI_FAKE).toBe(false);
+    }
+    const pinned = parseEnv({
+      ...process.env,
+      OPENROUTER_API_KEY: "sk-test",
+      OPENROUTER_MODEL: "deepseek/deepseek-v4.1-flash-1017",
+      AI_FAKE: "true",
+    });
+    expect(pinned.ok).toBe(true);
+    if (pinned.ok) {
+      expect(pinned.value.OPENROUTER_MODEL).toBe("deepseek/deepseek-v4.1-flash-1017");
+      expect(pinned.value.AI_FAKE).toBe(true);
+    }
+  });
+
   test("opts in to both switches when they are set to false", () => {
     const result = parseEnv({
       ...process.env,

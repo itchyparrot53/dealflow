@@ -91,6 +91,12 @@ const base = z.object({
   // the e2e harness runs a production build with it on; the captured mail never leaves the box.
   MAIL_FAKE: boolFromString.default(false),
   MAIL_CAPTURE_DIR: z.string().default(".mail-capture"),
+  // AI: OpenRouter through the openai SDK. An empty key means the AI features are unavailable
+  // (no client is constructed); AI_FAKE gives deterministic answers for tests and demos.
+  OPENROUTER_API_KEY: z.string().default(""),
+  OPENROUTER_BASE_URL: z.string().url().default("https://openrouter.ai/api/v1"),
+  OPENROUTER_MODEL: z.string().min(1).default("deepseek/deepseek-v4.1-flash"),
+  AI_FAKE: boolFromString.default(false),
   // Off unless a deploy opts in. On by default would mean every worker polls GitHub without the
   // operator asking, so set false to get the upstream release banner.
   DISABLE_UPDATE_CHECK: boolFromString.default(true),

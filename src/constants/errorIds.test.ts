@@ -39,6 +39,7 @@ describe("error IDs", () => {
       "LABEL",
       "LOSTREASON",
       "ENRICH",
+      "AI",
       "MAIL",
       "UI",
     ];

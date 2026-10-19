@@ -189,6 +189,19 @@ export const ERROR_IDS = {
   ENRICH_APPLIED_PERSON_GONE: "E_ENRICH_020",
   ENRICH_PROSPECT_MISMATCH: "E_ENRICH_021",
 
+  // AI
+  AI_UNAVAILABLE: "E_AI_001", // no provider: OPENROUTER_API_KEY empty and AI_FAKE off
+  AI_DISABLED: "E_AI_002", // ai_settings.enabled = false
+  AI_COMPANY_LIMIT: "E_AI_003", // company monthly token cap reached
+  AI_USER_LIMIT: "E_AI_004", // per-user monthly token cap reached
+  AI_BAD_OUTPUT: "E_AI_005", // model reply failed JSON/schema twice
+  AI_PROVIDER_FAILED: "E_AI_006", // provider call failed (network, 4xx/5xx)
+  AI_INPUT_INVALID: "E_AI_007", // AI action input failed Zod validation or unsupported target
+  AI_CONVERSATION_NOT_FOUND: "E_AI_008", // conversation missing or owned by another user
+  AI_ACTION_NOT_FOUND: "E_AI_009", // pending action missing, decided, or owned by another user
+  AI_TOOL_FAILED: "E_AI_010", // confirmed write tool returned an error
+  AI_RATE_LIMITED: "E_AI_011", // more than 20 AI requests per minute for this user
+
   // MAIL (system mail)
   MAIL_SEND_FAILED: "E_MAIL_001", // SMTP send rejected or failed
   MAIL_CAPTURE_FAILED: "E_MAIL_002", // capture mailer could not write its file

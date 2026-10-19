@@ -2,6 +2,7 @@ export * from "./activities";
 export * from "./activityGuests";
 export * from "./activityParticipants";
 export * from "./activityTypes";
+export * from "./ai";
 export * from "./authLocal";
 export * from "./changeLogs";
 export * from "./comments";
