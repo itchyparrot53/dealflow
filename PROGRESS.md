@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-20 01:15
+Current: 3.4 · Last updated: 2026-10-20 01:35
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -32,7 +32,7 @@ Current: 3.3 · Last updated: 2026-10-20 01:15
 - [x] 2.7 Phase 2 QA gate
 - [x] 3.1 AI env, dependency and schema
 - [x] 3.2 Provider layer and JSON helper
-- [ ] 3.3 Usage, caps and rate limit
+- [x] 3.3 Usage, caps and rate limit
 - [ ] 3.4 AI router, Settings page and model check
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 Deal context, summary and score
@@ -129,6 +129,10 @@ Current: 3.3 · Last updated: 2026-10-20 01:15
 - 3.2: provider selection is override, then `AI_FAKE` (one warn), then OpenRouter when a key exists, else null; the OpenRouter adapter casts the hand-built message array once at the SDK boundary instead of using `any`.
 - 3.2: `chatJson` takes its limit and usage dependencies as a required `deps` argument in this task so the unit tests run without a database; Task 3.3 turns them into defaults, which keeps both commits honest.
 - 3.2: `fakeProvider` matches the documented table by joined system text, first match wins, and only emits a tool call while the `/fake-tool` user message is the last one, so the assistant loop terminates after the tool result.
+
+- 3.3: `assertAiAllowed` checks provider, settings, company cap then the optional per-user cap in exactly that order; `chatJson` now uses `assertAiAllowed` and `recordAiUsage` as its default deps, so later features get limits and logging with no extra wiring.
+- 3.3: `getUsage` sums prompt + completion tokens since the UTC month start, grouped by feature and by user (inner join on users, so future system rows with a null user do not appear).
+- 3.3: per-user request limiter is 20/minute on `Symbol.for("dealflow.aiRateLimiter")`; the integration suite covers the provider-null, disabled, company-cap, per-user-cap, previous-month and aggregation cases (7 tests).
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).

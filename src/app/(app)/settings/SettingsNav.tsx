@@ -1,6 +1,7 @@
 "use client";
 import {
   Bell,
+  Bot,
   Building2,
   Eye,
   type LucideIcon,
@@ -19,6 +20,7 @@ import {
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
+import { AI_STRINGS } from "@/constants/aiStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { STRINGS } from "@/constants/strings";
@@ -71,6 +73,13 @@ const ENRICHMENT_ITEM: NavItem = {
   icon: Sparkles,
 };
 
+// Same rule for the AI page: provider, usage and caps are admin-only reads and writes.
+const AI_ITEM: NavItem = {
+  href: "/settings/ai",
+  label: AI_STRINGS.nav,
+  icon: Bot,
+};
+
 // Grouped left secondary menu (Pipedrive settings IA): My account for everyone, Company overview
 // for managers and admins. Replaces the old flat tab bar.
 export function SettingsNav({
@@ -90,7 +99,7 @@ export function SettingsNav({
   };
   const companyItems = [
     ...COMPANY.items,
-    ...(isAdmin ? [ENRICHMENT_ITEM] : []),
+    ...(isAdmin ? [ENRICHMENT_ITEM, AI_ITEM] : []),
     ...(canImport ? [importItem] : []),
   ];
   const sections = canManageCompany

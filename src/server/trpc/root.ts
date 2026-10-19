@@ -1,4 +1,5 @@
 import { activitiesRouter } from "@/features/activities/router";
+import { aiRouter } from "@/features/ai/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
 import { customFieldsRouter } from "@/features/custom-fields/router";
@@ -24,6 +25,7 @@ import { router } from "./trpc";
 
 export const appRouter = router({
   identity: identityRouter,
+  ai: aiRouter,
   realtime: realtimeRouter,
   pipeline: pipelineRouter,
   deal: dealRouter,
