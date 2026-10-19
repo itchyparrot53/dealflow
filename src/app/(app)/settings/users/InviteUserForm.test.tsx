@@ -52,7 +52,12 @@ describe("InviteUserForm inline validation", () => {
   });
 
   it("clears the inline error once the email is corrected", async () => {
-    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-1" });
+    inviteUserAction.mockResolvedValueOnce({
+      ok: true,
+      userId: "u-1",
+      inviteUrl: "https://app.example.com/login/invite?token=tok",
+      emailSent: false,
+    });
     render(<InviteUserForm onInvited={() => {}} />);
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "nope" } });
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "No Pe" } });
@@ -89,7 +94,12 @@ describe("InviteUserForm error mapping (IDENTITY-02)", () => {
   });
 
   it("calls onInvited and shows no error on success", async () => {
-    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-1" });
+    inviteUserAction.mockResolvedValueOnce({
+      ok: true,
+      userId: "u-1",
+      inviteUrl: "https://app.example.com/login/invite?token=tok",
+      emailSent: false,
+    });
     const onInvited = vi.fn();
     render(<InviteUserForm onInvited={onInvited} />);
     fillAndSubmit();
@@ -99,27 +109,56 @@ describe("InviteUserForm error mapping (IDENTITY-02)", () => {
   });
 });
 
-describe("InviteUserForm link invite (no email is sent)", () => {
-  it("after a successful invite, states no email is sent and offers a shareable sign-in link", async () => {
-    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-9" });
+describe("InviteUserForm set-password link", () => {
+  it("says email is not set up and shows the copyable invite link when mail was not sent", async () => {
+    inviteUserAction.mockResolvedValueOnce({
+      ok: true,
+      userId: "u-9",
+      inviteUrl: "https://app.example.com/login/invite?token=tok-9",
+      emailSent: false,
+    });
     render(<InviteUserForm onInvited={() => {}} />);
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
     fireEvent.click(screen.getByRole("button", { name: /invite/i }));
 
     const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent(/no email/i);
-    expect(status).toHaveTextContent(/new@example.com/);
-    // A shareable sign-in link is shown (the login URL, since access is Google SSO).
-    const link = screen.getByRole("textbox", { name: /invite link/i });
-    expect((link as HTMLInputElement).value).toContain("/login");
+    expect(status).toHaveTextContent(/email is not set up/i);
+    expect(status).toHaveTextContent(/New Person/);
+    expect(screen.getByTestId("invite-link")).toHaveValue(
+      "https://app.example.com/login/invite?token=tok-9",
+    );
     expect(screen.getByRole("button", { name: /copy/i })).toBeInTheDocument();
   });
 
-  it("copies the sign-in link to the clipboard", async () => {
+  it("confirms delivery when the invite email went out", async () => {
+    inviteUserAction.mockResolvedValueOnce({
+      ok: true,
+      userId: "u-10",
+      inviteUrl: "https://app.example.com/login/invite?token=tok-10",
+      emailSent: true,
+    });
+    render(<InviteUserForm onInvited={() => {}} />);
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
+    fireEvent.click(screen.getByRole("button", { name: /invite/i }));
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("Invite sent to new@example.com.");
+    expect(screen.getByTestId("invite-link")).toHaveValue(
+      "https://app.example.com/login/invite?token=tok-10",
+    );
+  });
+
+  it("copies the invite link to the clipboard", async () => {
     const writeText = vi.fn<(text: string) => Promise<void>>(() => Promise.resolve());
     Object.assign(navigator, { clipboard: { writeText } });
-    inviteUserAction.mockResolvedValueOnce({ ok: true, userId: "u-9" });
+    inviteUserAction.mockResolvedValueOnce({
+      ok: true,
+      userId: "u-9",
+      inviteUrl: "https://app.example.com/login/invite?token=tok-9",
+      emailSent: false,
+    });
     render(<InviteUserForm onInvited={() => {}} />);
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "new@example.com" } });
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "New Person" } });
@@ -128,6 +167,6 @@ describe("InviteUserForm link invite (no email is sent)", () => {
     await screen.findByRole("status");
     fireEvent.click(screen.getByRole("button", { name: /copy/i }));
     await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
-    expect(writeText.mock.calls[0]?.[0]).toContain("/login");
+    expect(writeText.mock.calls[0]?.[0]).toBe("https://app.example.com/login/invite?token=tok-9");
   });
 });

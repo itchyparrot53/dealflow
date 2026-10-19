@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-10-19 23:40
+Current: 2.6 · Last updated: 2026-10-20 00:00
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -26,7 +26,7 @@ Current: 2.5 · Last updated: 2026-10-19 23:40
 - [x] 2.2 System mailer
 - [x] 2.3 Local auth services
 - [x] 2.4 Auth routes and safe dev-login
-- [ ] 2.5 Login, magic-link and invite pages
+- [x] 2.5 Login, magic-link and invite pages
 - [ ] 2.6 Invite email, profile password and bootstrap link
 - [ ] 2.7 Phase 2 QA gate
 - [ ] 3.1 AI env, dependency and schema
@@ -108,6 +108,9 @@ Current: 2.5 · Last updated: 2026-10-19 23:40
 - 2.4: added `loginReturnTarget` to `loginReturn.ts` so password, magic-link and invite sign-in default to `/pipeline` while the existing Google flow keeps `/`, both through `safeLoginReturnPath`.
 - 2.4: `sessionCookies.ts` is the single place that sets the `wd_sid` + `wd_csrf` cookie pair for the four new routes, so their options cannot drift from the OAuth callback.
 - 2.4: the invite route narrows form fields to strings with a helper instead of `String(form.get(...))`, because ESLint's `no-base-to-string` correctly refuses to stringify a possible `File`.
+
+- 2.5: no `Label` primitive existed and no `@radix-ui/react-label` was installed, so the standard shadcn `Label` wrapper (`src/components/ui/Label.tsx`) was added over the new dependency, as Task 2.5 step 5 allows; the login, magic-link and invite cards use `Tabs`, `Input`, `Label`, `Button` from the design system and plain HTML forms only.
+- 2.5: the login page renders the card with `w-full max-w-[400px] rounded-lg border bg-background p-6`; the magic-link and invite cards reuse it. `next` is sanitised with `safeLoginReturnPath` on both sign-in pages and every form posts it as a hidden field.
 
 ## Owner actions
 - TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).

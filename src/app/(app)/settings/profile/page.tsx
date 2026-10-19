@@ -4,6 +4,7 @@ import { DEFAULT_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { users } from "@/db/schema/identity";
+import { getCredentials } from "@/features/auth/credentials";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { createContext } from "@/server/trpc/context";
@@ -11,6 +12,7 @@ import { SettingsHeading } from "../SettingsHeading";
 import { SettingsPage } from "../SettingsSurface";
 import { DailyActivityTarget } from "./DailyActivityTarget";
 import { InterfacePreferences } from "./InterfacePreferences";
+import { PasswordCard } from "./PasswordCard";
 import { ProfileClient } from "./ProfileClient";
 
 export const metadata = { title: STRINGS.settings.profile };
@@ -22,12 +24,14 @@ export default async function ProfilePage(): Promise<ReactNode> {
   if (actor === null)
     return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
 
-  const [[me], prefs] = await Promise.all([
+  const signal = AbortSignal.timeout(5_000);
+  const [[me], prefs, credentials] = await Promise.all([
     db
       .select({ name: users.name, email: users.email, avatarUrl: users.avatarUrl })
       .from(users)
       .where(eq(users.id, actor.id)),
     getPreferencesForActor(db, actor.id),
+    getCredentials(db, actor.id, signal),
   ]);
 
   return (
@@ -49,6 +53,7 @@ export default async function ProfilePage(): Promise<ReactNode> {
         scheduleFollowUpAfterWon={prefs.ui.scheduleFollowUpAfterWon ?? false}
       />
       <DailyActivityTarget target={prefs.ui.dailyActivityTarget ?? DEFAULT_DAILY_ACTIVITY_TARGET} />
+      <PasswordCard hasPassword={credentials?.passwordHash != null} />
     </SettingsPage>
   );
 }

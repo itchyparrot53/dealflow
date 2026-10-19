@@ -26,13 +26,6 @@ const T = {
   copied: "Copied",
 } as const;
 
-// warpdrive has no outbound email/invite delivery: inviteUser only pre-authorizes the email for
-// Google SSO adoption on first login. So we never silently imply an email was sent. Instead we
-// surface the shareable sign-in link (the app login URL) for the admin to pass along themselves.
-function noEmailNotice(name: string, email: string): string {
-  return `No email is sent automatically. Share the sign-in link below with ${name} (${email}), who signs in with Google using that address.`;
-}
-
 const MESSAGES: Record<string, string> = {
   [ERROR_IDS.AUTH_EMAIL_TAKEN]: "That email is already registered.",
   [ERROR_IDS.PERM_DENIED]: "You do not have permission to invite users.",
@@ -69,8 +62,13 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   // Per-field validation, shown inline instead of the browser's own validation bubble.
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>(NO_FIELD_ERRORS);
-  // Set on a successful invite so we can surface the no-email notice + shareable link.
-  const [invited, setInvited] = useState<{ name: string; email: string } | null>(null);
+  // Set on a successful invite so the admin sees whether mail went out and can copy the link.
+  const [invited, setInvited] = useState<{
+    name: string;
+    email: string;
+    inviteUrl: string;
+    emailSent: boolean;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
@@ -92,15 +90,18 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
       if (nameRef.current !== null) nameRef.current.value = "";
       setIsAdmin(false);
       setCopied(false);
-      setInvited({ name, email });
+      setInvited({
+        name,
+        email,
+        inviteUrl: result.inviteUrl,
+        emailSent: result.emailSent,
+      });
       onInvited();
     });
   }
 
-  const loginUrl = typeof window === "undefined" ? "/login" : `${window.location.origin}/login`;
-
-  async function copyLink(): Promise<void> {
-    await navigator.clipboard.writeText(loginUrl);
+  async function copyLink(url: string): Promise<void> {
+    await navigator.clipboard.writeText(url);
     setCopied(true);
   }
 
@@ -179,13 +180,16 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
         {invited !== null && (
           <div role="status" className="flex flex-col gap-2 rounded-md border bg-muted/40 p-3">
             <p className="text-sm text-muted-foreground">
-              {noEmailNotice(invited.name, invited.email)}
+              {invited.emailSent
+                ? `Invite sent to ${invited.email}.`
+                : `Email is not set up, so no invite was sent. Share this link with ${invited.name}:`}
             </p>
             <div className="flex items-center gap-2">
               <Input
                 readOnly
                 aria-label={T.inviteLinkLabel}
-                value={loginUrl}
+                data-testid="invite-link"
+                value={invited.inviteUrl}
                 onFocus={(e) => e.currentTarget.select()}
                 className="min-w-0 flex-1 bg-background"
               />
@@ -194,7 +198,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
                 variant="outline"
                 size="sm"
                 className="shrink-0"
-                onClick={() => void copyLink()}
+                onClick={() => void copyLink(invited.inviteUrl)}
               >
                 {copied ? T.copied : T.copy}
               </Button>
