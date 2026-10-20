@@ -1,10 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { AI_ACTION_TIMEOUT_MS } from "@/constants/ai";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { type DealAiInsightView, scoreDeal, summarizeDeal } from "../dealInsights";
@@ -35,7 +35,9 @@ export async function generateDealSummaryAction(
   if (!c.ok) return c;
   const parsed = idSchema.safeParse(dealId);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
-  return toClientResult(await summarizeDeal(db, c.actor, parsed.data, SIG()));
+  return toClientResult(
+    await summarizeDeal(db, c.actor, parsed.data, AbortSignal.timeout(AI_ACTION_TIMEOUT_MS)),
+  );
 }
 
 export async function scoreDealAction(
@@ -46,7 +48,9 @@ export async function scoreDealAction(
   if (!c.ok) return c;
   const parsed = idSchema.safeParse(dealId);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
-  return toClientResult(await scoreDeal(db, c.actor, parsed.data, SIG()));
+  return toClientResult(
+    await scoreDeal(db, c.actor, parsed.data, AbortSignal.timeout(AI_ACTION_TIMEOUT_MS)),
+  );
 }
 
 export async function proposeActivitiesFromNoteAction(
@@ -57,5 +61,12 @@ export async function proposeActivitiesFromNoteAction(
   if (!c.ok) return c;
   const parsed = idSchema.safeParse(noteId);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
-  return toClientResult(await proposeActivitiesFromNote(db, c.actor, parsed.data, SIG()));
+  return toClientResult(
+    await proposeActivitiesFromNote(
+      db,
+      c.actor,
+      parsed.data,
+      AbortSignal.timeout(AI_ACTION_TIMEOUT_MS),
+    ),
+  );
 }

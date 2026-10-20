@@ -1,9 +1,9 @@
 "use server";
 
+import { AI_ACTION_TIMEOUT_MS } from "@/constants/ai";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
-import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { draftEmail, type EmailDraft, emailDraftInputSchema } from "../emailDraft";
@@ -27,5 +27,7 @@ export async function draftEmailAction(
   const parsed = emailDraftInputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
 
-  return toClientResult(await draftEmail(db, actor, parsed.data, SIG()));
+  return toClientResult(
+    await draftEmail(db, actor, parsed.data, AbortSignal.timeout(AI_ACTION_TIMEOUT_MS)),
+  );
 }

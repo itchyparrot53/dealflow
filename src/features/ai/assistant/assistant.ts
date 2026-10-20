@@ -171,10 +171,18 @@ export async function sendAssistantMessage(
   return ok(await conversationView(db, conversationId, signal));
 }
 
-async function pendingAction(db: Db, actor: HydratedActor, actionId: string) {
+// Claim the action with one statement before running the write. Two concurrent Confirm clicks
+// then race on the same row: exactly one UPDATE matches `status = 'pending'` and the loser gets
+// E_AI_009 instead of running the write twice.
+async function claimAction(
+  db: Db,
+  actor: HydratedActor,
+  actionId: string,
+  next: "confirmed" | "rejected",
+) {
   const [action] = await db
-    .select()
-    .from(aiActions)
+    .update(aiActions)
+    .set({ status: next, decidedAt: new Date() })
     .where(
       and(
         eq(aiActions.id, actionId),
@@ -182,7 +190,7 @@ async function pendingAction(db: Db, actor: HydratedActor, actionId: string) {
         eq(aiActions.status, "pending"),
       ),
     )
-    .limit(1);
+    .returning();
   return action;
 }
 
@@ -192,7 +200,7 @@ export async function confirmAiAction(
   actionId: string,
   signal: AbortSignal,
 ): Promise<Result<ConversationView, AppError>> {
-  const action = await pendingAction(db, actor, actionId);
+  const action = await claimAction(db, actor, actionId, "confirmed");
   if (action === undefined) {
     return err(new AppError(ERROR_IDS.AI_ACTION_NOT_FOUND, "pending action not found"));
   }
@@ -201,6 +209,7 @@ export async function confirmAiAction(
   const result = await catalogue.writes.invoke(action.tool, action.args);
   const text = toolResultText(result);
   if (result.isError === true) {
+    // The provider was already claimed as confirmed, so downgrade it to failed with the reason.
     await db
       .update(aiActions)
       .set({ status: "failed", result: { error: text }, decidedAt: new Date() })
@@ -214,7 +223,7 @@ export async function confirmAiAction(
   } else {
     await db
       .update(aiActions)
-      .set({ status: "confirmed", result: safeParse(text), decidedAt: new Date() })
+      .set({ result: safeParse(text), decidedAt: new Date() })
       .where(eq(aiActions.id, actionId));
     await appendMessage(
       db,
@@ -232,14 +241,10 @@ export async function rejectAiAction(
   actionId: string,
   signal: AbortSignal,
 ): Promise<Result<ConversationView, AppError>> {
-  const action = await pendingAction(db, actor, actionId);
+  const action = await claimAction(db, actor, actionId, "rejected");
   if (action === undefined) {
     return err(new AppError(ERROR_IDS.AI_ACTION_NOT_FOUND, "pending action not found"));
   }
-  await db
-    .update(aiActions)
-    .set({ status: "rejected", decidedAt: new Date() })
-    .where(eq(aiActions.id, actionId));
   await appendMessage(
     db,
     action.conversationId,

@@ -19,6 +19,10 @@ export function createOpenRouterProvider(): AiProvider {
     apiKey: env.OPENROUTER_API_KEY,
     baseURL: env.OPENROUTER_BASE_URL,
     defaultHeaders: { "HTTP-Referer": env.BASE_URL, "X-Title": "Dealflow" },
+    // One retry inside the SDK, and a ceiling below the 60 s action budget so a slow reply fails
+    // as a value instead of aborting the whole server action.
+    timeout: 55_000,
+    maxRetries: 1,
   });
 
   return {
