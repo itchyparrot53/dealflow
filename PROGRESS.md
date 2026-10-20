@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-21 00:47
+STATUS: COMPLETE
+Current: COMPLETE · Last updated: 2026-10-21 00:52
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -34,7 +34,7 @@ Current: 4.5 · Last updated: 2026-10-21 00:47
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5004/5004
@@ -159,6 +159,19 @@ Current: 4.5 · Last updated: 2026-10-21 00:47
 
 ## Final report
 
+### Definition of done
+
+1. PASS - migration `0081_dealflow_documents` adds exactly document_settings, document_templates, document_counters, documents, document_lines and document_payments, plus `0082` for the three notification enum values; no other table changed.
+2. PASS - markdown-lite parsing and the document state machine are pure, unit-tested functions, and every document body renders as React elements only, never user HTML.
+3. PASS - Settings > Documents edits prefixes, validity and due days, company details, payment instructions and the footer, and manages quote and invoice templates (admins only); a default of each kind exists on first use.
+4. PASS - from a deal, a quote or invoice snapshots the deal's product lines (or one value line) in the deal's currency, computed with `money.ts` on integer minor units.
+5. PASS - issuing assigns `{prefix}-{YYYY}-{NNNN}` from an atomic counter (ten concurrent issues give ten consecutive numbers), drafts consume no number, issued documents cannot be edited, and an issued invoice can only be voided.
+6. PASS - sending emails the customer a link through the sender's connected mailbox and links the message to the deal; without a mailbox the copy-link and mark-as-sent path is offered with `E_DOC_006`'s exact copy.
+7. PASS - the public page needs no sign-in; a quote can be accepted (typed name and checkbox) or declined once, not after expiry; the first view is recorded; the owner is notified; drafts, void documents and quotes of deleted deals return 404.
+8. PASS - payments are hand-recorded, an invoice becomes paid at the total and returns to sent or overdue when a payment is deleted, overpayment is refused, and the 06:00 UTC job marks unpaid past-due invoices overdue.
+9. PASS - `/documents` lists quotes and invoices with status filters and the outstanding total in the base currency (rate-less currencies excluded), and the public page and `/documents/[id]/print` print cleanly on A4.
+10. PASS - typecheck, lint, build, unit 5063/5063, integration 1902/1902, e2e 18/18 (specs `00` to `08`), the 7 `p4-*` screenshots, SMOKE PASS and one independent review (`QA RESULT: PASS`) all hold.
+
 ### Checklist
 
 1. PASS - `git --no-optional-locks status --porcelain` printed nothing at the Task 4.4 boundary.
@@ -173,8 +186,42 @@ Current: 4.5 · Last updated: 2026-10-21 00:47
 10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS; no `dealflow-smoke` container or volume remains (Task 4.2).
 11. PASS - `drizzle/0081_dealflow_documents.sql` creates exactly document_settings, document_templates, document_counters, documents, document_lines and document_payments.
 12. PASS - `git grep -n "dangerouslySetInnerHTML" -- src/features/documents src/app/d` printed nothing.
-13. PASS - the float scan's only real `Number(...)` is `issue.ts:71`, which parses the issue year from an ISO date for numbering; the other hits are the `formatDocNumber` name and its tests. No money is parsed as a float; money stays bigint minor units in `money.ts`.
+13. PASS - the float scan's only real `Number(...)` is `issue.ts:71`, which parses the issue year from an ISO date for numbering; the other hits are the `formatDocNumber` name and its tests. No money is parsed as a float.
 14. PASS - `git grep -c "E_DOC_0" src/constants/errorIds.ts` is 12: the ten 6.2 IDs plus input-invalid and last-template.
-15. PASS - the em dash scan over every changed non-kit file (`git diff --name-only e214c9a..HEAD`, kit files excluded) printed nothing.
+15. PASS - the em dash scan over every changed non-kit file printed nothing.
 16. PASS - `docs/dealflow/DOCUMENTS.md` exists and `UPSTREAM.md` has a Part 4 section listing every upstream file.
-17. PASS - `pnpm check:progress --final` passes (run in Task 4.5 once the report and the final ticks are in place).
+17. PASS - `pnpm check:progress --final` passes (run in Task 4.5).
+
+### Owner actions
+
+1. Rebuild the dev stack so it serves the Part 4 build and applies migrations 0081 and 0082:
+   `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+2. Fill in Settings > Documents with your real company name, address, tax ID, payment instructions and footer, and review the two default templates. If you ever ran the demo seed, the live database now holds the demo company "Northwind Advisory"; replace it.
+3. Add exchange rates in Settings > Currencies for every currency you invoice in. An invoice in a currency without a rate is listed as excluded from the outstanding total, never added unconverted.
+4. Fix the partial Google configuration in `.env` (client id and secret set, workspace domain empty) or blank all three. Until then, commands that load `.env` need `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` in front.
+5. `pnpm db:seed:demo` is optional and destructive for demo data: it replaces documents whose titles start with "Demo: " and upserts the document settings to the demo company.
+6. Note that the demo seed and e2e fixtures assume a USD base; your live database base is GBP by your earlier request.
+
+### Decisions worth reviewing
+
+- No `CONTRACT CHANGE:` lines were needed.
+- Two error IDs were appended beside the ten in 6.2: `E_DOC_011` (input failed Zod) and `E_DOC_012` (delete refused on a kind's last template), following every other feature's `_INPUT_INVALID` convention and because 6.7 requires the last-template refusal without naming an ID.
+- Document notifications use `entityType: "deal"` with the document id in the payload, because `createNotification`'s visibility gate has no `document` entity; `payloadHref` opens `/documents/{id}` for both the feed and the email.
+- Changed tests: `src/constants/errorIds.test.ts` gained the DOC domain; `src/features/notifications/preferences.test.ts` gained the three default email flags; `src/features/notifications/schema.test.ts` now expects the 13-value enum. The documents and public integration files are new, and no assertion was weakened.
+- An invoice of a soft-deleted deal stays visible on its public page but is hidden from the internal list, because internal reads follow deal visibility (6.7's exception is written for the public page and 3.3 requires visible deals only).
+
+### Open issues
+
+- No blocking issues.
+- The demo seed needed a fix to re-run on a database where non-demo users had logged activities on demo records: `wipeDemo` now unlinks those references instead of deleting other users' activities.
+- Docker's VM disk is tight; nothing was pruned.
+- The live dev stack still runs the pre-Part-4 build until owner action 1.
+
+### Notes for Part 5
+
+- New routes: `/documents`, `/documents/[id]`, `/documents/[id]/print`, `/d/[publicId]`, `/api/public/documents/[publicId]/{accept,decline}`, `/settings/documents`.
+- New screenshots: `p4-settings-documents`, `p4-deal-documents`, `p4-document-editor`, `p4-public-quote`, `p4-public-quote-accepted`, `p4-invoice-paid`, `p4-documents-list`.
+- Document status events for automations and webhooks: issued/sent, viewed, accepted, declined, overdue, paid, voided. The transitions live in `src/features/documents/issue.ts`, `payments.ts`, `overdueJob.ts` and `publicDocuments.ts`, and the view/accept/decline notifications already fire.
+- Schema: `src/db/schema/documents.ts`, migrations `0081_dealflow_documents` and `0082_dealflow_document_notifications`.
+- Services: `settings.ts`, `templates.ts`, `documents.ts`, `lines.ts`, `issue.ts`, `payments.ts`, `send.ts`, `overdueJob.ts`, `publicDocuments.ts`, `publicRateLimit.ts`.
+- Upstream files changed in this part are listed in `docs/dealflow/UPSTREAM.md` (Part 4 section).
