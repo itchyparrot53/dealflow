@@ -117,7 +117,7 @@ describe("resolveDealListFooter", () => {
         filteredCount: 2,
         filteredValue: "30000.00",
       }),
-    ).toEqual({ total: 500, totalValue: "1000000.00", filtered: false });
+    ).toEqual({ total: 500, totalValue: "1000000.00", excluded: [], filtered: false });
   });
 
   it("reports the filtered count/value and flags filtered when a client-side filter is active", () => {
@@ -129,7 +129,7 @@ describe("resolveDealListFooter", () => {
         filteredCount: 1,
         filteredValue: "25000.00",
       }),
-    ).toEqual({ total: 1, totalValue: "25000.00", filtered: true });
+    ).toEqual({ total: 1, totalValue: "25000.00", excluded: [], filtered: true });
   });
 });
 

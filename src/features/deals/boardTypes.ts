@@ -17,6 +17,9 @@ export interface BoardProps {
   pipelines: Array<{ id: string; name: string; stages: Array<{ id: string; name: string }> }>;
   density: "comfortable" | "compact";
   baseCurrency?: string;
+  // Manual rates for the converted and weighted sums (server-read; the board converts
+  // client-side from its loaded cards, as 6.8 allows).
+  rates?: { base: string; rates: Array<{ code: string; rate: string }> };
   // Toolbar view restored from user_preferences.ui.boardView (server-read); absent means defaults.
   initialView?: BoardViewState;
   // Request timestamp, so rot tint and activity state are right in the server render. Without it

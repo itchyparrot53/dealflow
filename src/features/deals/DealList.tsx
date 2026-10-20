@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { Tip } from "@/components/ui/tooltip";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { DealListBulkBar } from "./DealListBulkBar";
 import { DealListTableBody } from "./DealListTableBody";
@@ -39,12 +40,15 @@ export interface DealListProps {
   // they are still the view the user built.
   filtered?: boolean;
   currency: string;
+  // Deals in the full filtered set whose currency has no rate. The total excludes them
+  // and the footer says how many, so nothing is silently dropped.
+  excluded?: { id: string; currency: string }[];
 }
 
 export function DealList(props: DealListProps) {
   const { pipelineId, rows, total, totalValue, stages, currency } = props;
   const { onBulkStage, onBulkArchive, onUnarchive } = props;
-  const { visibleColumns, columnsMenu, empty, filtered = false } = props;
+  const { visibleColumns, columnsMenu, empty, filtered = false, excluded = [] } = props;
   const { editCell } = useInlineEdit(pipelineId);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   // Which row's title is in inline-edit mode. Pipedrive opens the deal on title
@@ -168,6 +172,15 @@ export function DealList(props: DealListProps) {
               <td colSpan={bodyColSpan} className="px-3 py-2 tabular-nums">
                 {total} {total === 1 ? "deal" : "deals"} &middot; total value{" "}
                 {formatCurrency(totalValue)}
+                {excluded.length > 0 && (
+                  <Tip
+                    label={`No rate for ${[...new Set(excluded.map((row) => row.currency))].join(", ")}`}
+                  >
+                    <span data-testid="totals-excluded" className="ml-2 text-muted-foreground">
+                      {excluded.length} excluded
+                    </span>
+                  </Tip>
+                )}
               </td>
             </tr>
           </tfoot>

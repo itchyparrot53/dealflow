@@ -3,12 +3,13 @@ import type React from "react";
 import { BoardColumn } from "./BoardColumn";
 import type { BoardProps } from "./boardTypes";
 import type { BoardCard } from "./dealRepo";
+import type { StageTotals } from "./useBoardDerived";
 
 type Stage = BoardProps["stages"][number];
 
 interface BoardStagesProps {
   stages: Stage[];
-  sumsByStage: Map<string, { dealCount: number; total: number }>;
+  sumsByStage: Map<string, StageTotals>;
   sortedByStage: Map<string, BoardCard[]>;
   density: BoardProps["density"];
   now: Date;
@@ -57,7 +58,9 @@ export function BoardStages({
               rottingDays={s.rottingDays}
               cards={sortedByStage.get(s.id) ?? []}
               dealCount={stageSum?.dealCount ?? 0}
-              totalValue={String(stageSum?.total ?? 0)}
+              totalValue={stageSum?.total ?? "0.00"}
+              weightedValue={stageSum?.weighted ?? "0.00"}
+              excludedCurrencies={stageSum?.excluded ?? []}
               density={density}
               now={now}
               pipelineId={pipelineId}

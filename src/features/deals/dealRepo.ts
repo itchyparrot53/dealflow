@@ -3,6 +3,9 @@
 // p.visibility_group_id; none leak hidden deals into counts or totals.
 import { sql } from "drizzle-orm";
 import type { DealStatus } from "@/constants/dealStatus";
+import { formatCents } from "@/features/currency/money";
+import { loadRateMap } from "@/features/currency/rates";
+import { summarize } from "@/features/currency/totals";
 import { filterToSql } from "@/features/saved-filters/filterAst";
 import { hasStatusCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
@@ -74,6 +77,11 @@ export interface BoardCard {
   stageEnteredAt: Date;
   // deal's updated_at: used as the compare-and-swap precondition for optimistic updates.
   updatedAt: Date;
+  // Part 3: the deal's currency (deal_terms, else settings.base_currency) and effective
+  // probability (override, else stage, else 100), so the board can convert and weight
+  // client-side from the loaded cards. Optional for hand-built fixtures.
+  currency?: string;
+  probability?: number;
 }
 
 export type DealListCard = BoardCard & { customFields: Record<string, unknown> };
@@ -114,13 +122,17 @@ export async function getBoardColumns(
       d.last_activity_at   AS "lastActivityAt",
       d.expected_close_date AS "expectedCloseDate",
       d.stage_entered_at   AS "stageEnteredAt",
-      d.updated_at         AS "updatedAt"
+      d.updated_at         AS "updatedAt",
+      coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+      coalesce(dt.probability, sp.probability, 100)::int AS probability
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN stages s ON s.id = d.stage_id
     LEFT JOIN users u ON u.id = d.owner_id
     LEFT JOIN persons pe ON pe.id = d.person_id
     LEFT JOIN organizations o ON o.id = d.org_id
+    LEFT JOIN deal_terms dt ON dt.deal_id = d.id
+    LEFT JOIN stage_probabilities sp ON sp.stage_id = d.stage_id
     -- Soonest OPEN, DATED activity's subject: the same predicate recomputeNextActivity uses, so the
     -- title always pairs with next_activity_at. LATERAL keeps it one row per deal (no fan-out).
     LEFT JOIN LATERAL (
@@ -197,7 +209,13 @@ export async function listDeals(
     timeZone?: string | null;
   },
   signal: AbortSignal,
-): Promise<{ rows: DealListCard[]; total: number; totalValue: string }> {
+): Promise<{
+  rows: DealListCard[];
+  total: number;
+  totalValue: string;
+  weightedValue: string;
+  excluded: { id: string; currency: string }[];
+}> {
   signal.throwIfAborted();
   const pipelineFilter =
     opts.pipelineId !== undefined ? sql`AND d.pipeline_id = ${opts.pipelineId}` : sql``;
@@ -215,6 +233,8 @@ export async function listDeals(
     LEFT JOIN users u ON u.id = d.owner_id
     LEFT JOIN persons pe ON pe.id = d.person_id
     LEFT JOIN organizations o ON o.id = d.org_id
+    LEFT JOIN deal_terms dt ON dt.deal_id = d.id
+    LEFT JOIN stage_probabilities sp ON sp.stage_id = d.stage_id
     WHERE d.deleted_at IS NULL
       ${statusGate}
       AND ${archiveGate}
@@ -228,7 +248,7 @@ export async function listDeals(
   // so run them concurrently. On a pooled read connection (the only caller path) this is two
   // parallel round trips instead of two serial ones; on a single tx connection node-postgres
   // queues them, so it is never worse.
-  const [rowsRes, aggRes] = await Promise.all([
+  const [rowsRes, moneyRes] = await Promise.all([
     db.execute(sql`
       SELECT
         d.id,
@@ -250,30 +270,40 @@ export async function listDeals(
         d.expected_close_date AS "expectedCloseDate",
         d.stage_entered_at   AS "stageEnteredAt",
         d.updated_at         AS "updatedAt",
-        d.custom_fields       AS "customFields"
+        d.custom_fields       AS "customFields",
+        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+        coalesce(dt.probability, sp.probability, 100)::int AS probability
       ${base}
       ORDER BY d.updated_at DESC
       LIMIT ${opts.limit} OFFSET ${opts.offset}
     `),
+    // The full filtered set, one row per deal, so summarize() can convert each deal
+    // before weighting and sum: no unconverted amount ever enters the footer total.
     db.execute(sql`
       SELECT
-        count(*)::int                                    AS total,
-        coalesce(sum(d.value), 0)::numeric(14,2)        AS "totalValue"
+        d.id,
+        d.value,
+        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+        coalesce(dt.probability, sp.probability, 100)::int AS probability
       ${base}
     `),
   ]);
   signal.throwIfAborted();
 
-  const agg = (aggRes as unknown as { rows: Array<{ total: number; totalValue: string }> }).rows[0];
-  if (agg === undefined) {
-    return { rows: [], total: 0, totalValue: "0.00" };
-  }
   const rawRows = (
     rowsRes as unknown as { rows: (RawCard & { customFields: Record<string, unknown> })[] }
   ).rows;
+  const moneyRows = (
+    moneyRes as unknown as {
+      rows: Array<{ id: string; value: string | null; currency: string; probability: number }>;
+    }
+  ).rows;
+  const summary = summarize(moneyRows, await loadRateMap(db, signal));
   return {
     rows: rawRows.map(normalizeCard),
-    total: agg.total,
-    totalValue: agg.totalValue,
+    total: moneyRows.length,
+    totalValue: formatCents(summary.total),
+    weightedValue: formatCents(summary.weighted),
+    excluded: summary.excluded,
   };
 }

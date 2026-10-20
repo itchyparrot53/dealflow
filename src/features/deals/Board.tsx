@@ -12,6 +12,8 @@ import {
 } from "@dnd-kit/core";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { parseRate } from "@/features/currency/money";
+import type { RateMap } from "@/features/currency/totals";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
@@ -41,6 +43,7 @@ export type { BoardProps } from "./boardTypes";
 
 export function Board(props: BoardProps): React.ReactNode {
   const { pipelineId, selfActorId, stages, cards, pipelines, density, baseCurrency } = props;
+  const { rates } = props;
   const { serverNow } = props;
   const { move } = useDealMove(pipelineId);
   const { close } = useDealClose(pipelineId);
@@ -102,6 +105,10 @@ export function Board(props: BoardProps): React.ReactNode {
 
   // All display derivations (owner + saved-filter + quick-condition narrowing, per-stage sums,
   // board total, per-column sorting) live in one hook. Drag math still reads raw liveCards.
+  const rateMap: RateMap = {
+    base: rates?.base ?? baseCurrency ?? "USD",
+    rates: new Map((rates?.rates ?? []).map((row) => [row.code, parseRate(row.rate)])),
+  };
   const { owners, shownCards, sumsByStage, boardTotal, sortedByStage } = useBoardDerived({
     liveCards,
     stages,
@@ -111,6 +118,7 @@ export function Board(props: BoardProps): React.ReactNode {
     conditions: [],
     sortKey,
     sortDirection,
+    rateMap,
   });
 
   // Clock for time-derived visuals, seeded from the request so SSR and hydration agree on a real
@@ -211,7 +219,7 @@ export function Board(props: BoardProps): React.ReactNode {
         stages={stages}
         selfActorId={selfActorId}
         owners={owners}
-        totalValue={String(boardTotal)}
+        totalValue={boardTotal}
         dealCount={shownCards.length}
         view={view}
         addSlot={addDeal}

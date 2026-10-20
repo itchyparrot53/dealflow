@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
+import { listRates } from "@/features/currency/rates";
 import { Board } from "@/features/deals/Board";
 import { boardViewDefinition } from "@/features/deals/boardView";
 import { resolveInitialBoardView } from "@/features/deals/initialBoardView";
@@ -10,7 +11,6 @@ import { getPreferencesForActor } from "@/features/identity/preferencesForActor"
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
 import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
-import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
 
@@ -79,9 +79,9 @@ export default async function PipelineBoardPage({
   // A nonexistent (or hidden) pipeline 404s like the entity detail routes, not a 200 soft-404.
   const pipeline = resolveVisiblePipeline(pipelines, id);
 
-  const [board, baseCurrency, prefs, initialView] = await Promise.all([
+  const [board, rateList, prefs, initialView] = await Promise.all([
     boardPromise,
-    readBaseCurrency(db, AbortSignal.timeout(8000)),
+    listRates(db, AbortSignal.timeout(8000)),
     prefsPromise,
     viewPromise,
   ]);
@@ -108,7 +108,11 @@ export default async function PipelineBoardPage({
           stages: p.stages.map((s) => ({ id: s.id, name: s.name })),
         }))}
         density={prefs.density}
-        baseCurrency={baseCurrency}
+        baseCurrency={rateList.base}
+        rates={{
+          base: rateList.base,
+          rates: rateList.rates.map((r) => ({ code: r.code, rate: r.rate })),
+        }}
         initialView={initialView}
         canManagePipelines={canManagePipelines(actor)}
       />

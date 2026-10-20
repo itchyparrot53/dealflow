@@ -8,6 +8,7 @@ export interface DealListPage {
   rows: DealListRow[];
   total: number;
   totalValue: string;
+  excluded: { id: string; currency: string }[];
   refLabels: CustomFieldRefLabels;
 }
 
@@ -33,6 +34,7 @@ export async function fetchDealListRows(
     rows: res.rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() })),
     total: res.total,
     totalValue: res.totalValue,
+    excluded: res.excluded,
     refLabels: res.refLabels,
   };
 }

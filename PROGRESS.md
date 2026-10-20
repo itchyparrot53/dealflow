@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-10-20 20:58
+Current: 2.6 · Last updated: 2026-10-20 21:02
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -22,7 +22,7 @@ Current: 2.5 · Last updated: 2026-10-20 20:58
 - [x] 2.2 Settings → Products
 - [x] 2.3 Deal Products section and terms fields
 - [x] 2.4 Stage probability in the stage editor
-- [ ] 2.5 Converted and weighted totals on the board and list
+- [x] 2.5 Converted and weighted totals on the board and list
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Forecast service (test-first)
 - [ ] 3.2 Forecast page and navigation
@@ -90,6 +90,11 @@ Current: 2.5 · Last updated: 2026-10-20 20:58
 
 - 2.4: a stage probability saves immediately through `setStageProbabilityAction` on blur instead of joining the page's stage diff, because it lives in its own table with no ordering or deletion semantics; the edit page preloads the rows and defaults a missing one to 100.
 - 2.4: a newly added, not-yet-saved stage has no id, so its probability input is disabled until the page Save creates the stage (the value is then 100 until edited).
+
+- 2.5: board totals are derived client-side from the loaded cards, which 6.8 explicitly allows: the board query now selects each deal's currency and effective probability, and `useBoardDerived` runs the shared `summarize` with a rate map passed from the pipeline page, so the column header and board total never sum unconverted amounts.
+- 2.5: the deals list total and weighted total are computed server-side over the full filtered set by selecting one money row per deal and calling `summarize`; the footer shows `totals-excluded` with a Tooltip naming the currencies that lack a rate.
+- 2.5: `DealListClient` reuses the rate list supplied by the server for the client-side owner-filtered subset instead of opening a new tRPC read, which keeps the existing list tests' tRPC mocks valid.
+- 2.5: `resolveDealListFooter` gained an `excluded` field; the two existing expectations were updated to include `excluded: []` (new contract field, no assertion weakened), and a new integration case proves a mixed USD/EUR set converts and lists the JPY deal as excluded.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

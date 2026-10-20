@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { currencyRates, settings } from "@/db/schema";
-import { seedUser } from "@/db/testing/factories";
+import { currencyRates, deals, dealTerms, settings } from "@/db/schema";
+import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { listDeals } from "@/features/deals/dealRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
+import type { DealVisibilitySession } from "@/types/session";
 import { deleteRate, listRates, loadRateMap, saveRate, setBaseCurrency } from "./rates";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
@@ -171,5 +173,80 @@ describe("setBaseCurrency", () => {
     expect(result.ok === false && result.error.id).toBe(ERROR_IDS.PERM_DENIED);
     const [row] = await h.db.select({ base: settings.baseCurrency }).from(settings);
     expect(row?.base).toBe("USD");
+  });
+});
+
+describe("converted and weighted list totals", () => {
+  it("converts a mixed-currency set, weights each deal and lists the one with no rate", async () => {
+    const adminRow = await seedUser(h.db, { isAdmin: true });
+    const seeded = await seedPipelineWithStages(h.db, ["Lead"]);
+    const stageId = seeded.stages[0]?.id ?? "";
+    await saveRate(h.db, admin, { code: "EUR", rate: "1.08" }, sig());
+
+    const [usd] = await h.db
+      .insert(deals)
+      .values({
+        title: "USD deal",
+        pipelineId: seeded.pipeline.id,
+        stageId,
+        ownerId: adminRow.id,
+        visibilityLevel: "all",
+        boardPosition: "0",
+        value: "100.00",
+      })
+      .returning();
+    const [eur] = await h.db
+      .insert(deals)
+      .values({
+        title: "EUR deal",
+        pipelineId: seeded.pipeline.id,
+        stageId,
+        ownerId: adminRow.id,
+        visibilityLevel: "all",
+        boardPosition: "1",
+        value: "100.00",
+      })
+      .returning();
+    const [jpy] = await h.db
+      .insert(deals)
+      .values({
+        title: "JPY deal",
+        pipelineId: seeded.pipeline.id,
+        stageId,
+        ownerId: adminRow.id,
+        visibilityLevel: "all",
+        boardPosition: "2",
+        value: "500.00",
+      })
+      .returning();
+    if (usd === undefined || eur === undefined || jpy === undefined) {
+      throw new Error("deal seed failed");
+    }
+    await h.db.insert(dealTerms).values([
+      { dealId: usd.id, currency: "USD", probability: 50 },
+      { dealId: eur.id, currency: "EUR", probability: null },
+      { dealId: jpy.id, currency: "JPY", probability: null },
+    ]);
+
+    const session: DealVisibilitySession = {
+      userId: adminRow.id,
+      isAdmin: true,
+      isActive: true,
+      sessionLive: true,
+      visibilityGroupIds: [],
+      managedUserIds: [],
+    };
+    const list = await listDeals(
+      h.db,
+      session,
+      { pipelineId: seeded.pipeline.id, offset: 0, limit: 50 },
+      sig(),
+    );
+    expect(list.total).toBe(3);
+    // 100.00 USD + (100.00 EUR * 1.08) = 208.00; the JPY deal is excluded, not summed.
+    expect(list.totalValue).toBe("208.00");
+    // 50.00 (USD at 50%) + 108.00 (EUR at 100%) = 158.00.
+    expect(list.weightedValue).toBe("158.00");
+    expect(list.excluded).toEqual([{ id: jpy.id, currency: "JPY" }]);
   });
 });

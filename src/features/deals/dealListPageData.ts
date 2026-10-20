@@ -1,3 +1,4 @@
+import { listRates } from "@/features/currency/rates";
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
@@ -18,6 +19,7 @@ export async function loadDealListPageData(
   prefs: Awaited<ReturnType<typeof getPreferencesForActor>>;
   customFieldDefs: Awaited<ReturnType<typeof listDefs>>;
   baseCurrency: Awaited<ReturnType<typeof readBaseCurrency>>;
+  rates: Awaited<ReturnType<typeof listRates>>;
   initialView: BoardViewState;
   unfilteredTotal: number | undefined;
 }> {
@@ -51,14 +53,15 @@ export async function loadDealListPageData(
   );
   void unfilteredPromise.catch(() => {});
 
-  const [list, prefs, customFieldDefs, baseCurrency, initialView, unfilteredTotal] =
+  const [list, prefs, customFieldDefs, baseCurrency, rates, initialView, unfilteredTotal] =
     await Promise.all([
       listPromise,
       prefsPromise,
       listDefs(ctx.db, "deal", {}, AbortSignal.timeout(8000)),
       readBaseCurrency(ctx.db, AbortSignal.timeout(8000)),
+      listRates(ctx.db, AbortSignal.timeout(8000)),
       viewPromise,
       unfilteredPromise,
     ]);
-  return { list, prefs, customFieldDefs, baseCurrency, initialView, unfilteredTotal };
+  return { list, prefs, customFieldDefs, baseCurrency, rates, initialView, unfilteredTotal };
 }

@@ -49,7 +49,7 @@ export default async function PipelineArchivedPage({
   // A nonexistent (or hidden) pipeline 404s like the entity detail routes, not a 200 soft-404.
   const pipeline = resolveVisiblePipeline(pipelines, id);
 
-  const { list, prefs, customFieldDefs, baseCurrency, initialView, unfilteredTotal } =
+  const { list, prefs, customFieldDefs, baseCurrency, rates, initialView, unfilteredTotal } =
     await loadDealListPageData({ ...ctx, actor: ctx.actor }, { pipelineId: id, archived: true });
   const stages = pipeline.stages.map((s) => ({ id: s.id, name: s.name }));
   const pipelineOptions = pipelines.map((p) => ({
@@ -67,12 +67,17 @@ export default async function PipelineArchivedPage({
           rows: list.rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() })),
           total: list.total,
           totalValue: list.totalValue,
+          excluded: list.excluded,
           stages,
           pipelines: pipelineOptions,
           initialColumns: prefs.ui.dealsListView,
           customFieldDefs,
           refLabels: list.refLabels,
           baseCurrency,
+          rates: {
+            base: rates.base,
+            rates: rates.rates.map((row) => ({ code: row.code, rate: row.rate })),
+          },
           canManagePipelines: canManagePipelines(ctx.actor),
           initialView,
           unfilteredTotal,

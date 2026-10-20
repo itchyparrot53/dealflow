@@ -7,6 +7,8 @@ import type { ColumnDef } from "@/components/data-table/columnModel";
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { formatCents, parseRate } from "@/features/currency/money";
+import { type RateMap, summarize } from "@/features/currency/totals";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
@@ -55,6 +57,8 @@ type InitialData = Omit<
   canManagePipelines?: boolean;
   initialView?: BoardViewState;
   unfilteredTotal?: number;
+  excluded?: { id: string; currency: string }[];
+  rates?: { base: string; rates: Array<{ code: string; rate: string }> };
 };
 
 interface DealListClientProps {
@@ -67,6 +71,7 @@ interface DealListClientProps {
 export interface DealListFooter {
   total: number;
   totalValue: string;
+  excluded: { id: string; currency: string }[];
   filtered: boolean;
 }
 
@@ -78,12 +83,24 @@ export function resolveDealListFooter(args: {
   filtered: boolean;
   serverTotal: number;
   serverTotalValue: string;
+  serverExcluded?: { id: string; currency: string }[];
   filteredCount: number;
   filteredValue: string;
+  filteredExcluded?: { id: string; currency: string }[];
 }): DealListFooter {
   return args.filtered
-    ? { total: args.filteredCount, totalValue: args.filteredValue, filtered: true }
-    : { total: args.serverTotal, totalValue: args.serverTotalValue, filtered: false };
+    ? {
+        total: args.filteredCount,
+        totalValue: args.filteredValue,
+        excluded: args.filteredExcluded ?? [],
+        filtered: true,
+      }
+    : {
+        total: args.serverTotal,
+        totalValue: args.serverTotalValue,
+        excluded: args.serverExcluded ?? [],
+        filtered: false,
+      };
 }
 
 function sameDefinition(a: FilterDefinition | undefined, b: FilterDefinition | undefined): boolean {
@@ -96,6 +113,10 @@ export function DealListClient({
 }: DealListClientProps): React.ReactNode {
   const { pipelineId, stages, pipelines, baseCurrency } = initial;
   const currency = baseCurrency ?? DEFAULT_BASE_CURRENCY;
+  const rateMap: RateMap = {
+    base: initial.rates?.base ?? currency,
+    rates: new Map((initial.rates?.rates ?? []).map((row) => [row.code, parseRate(row.rate)])),
+  };
   const actions = useDealListActions();
   const utils = trpc.useUtils();
   const view = useBoardView(initial.initialView);
@@ -142,6 +163,7 @@ export function DealListClient({
           rows: initial.rows,
           total: initial.total,
           totalValue: initial.totalValue,
+          excluded: initial.excluded ?? [],
           refLabels: initial.refLabels ?? EMPTY_REF_LABELS,
         }
       : undefined,
@@ -173,16 +195,25 @@ export function DealListClient({
   // when it is on, it shows the narrowed subset and is labelled so the count is not read as the whole
   // pipeline. Value tracks the same set as the count so the two numbers never disagree.
   const clientFiltered = selectedOwnerId !== null;
-  const shownTotalValue = useMemo(
-    () => String(shownRows.reduce((s, r) => s + (r.value !== null ? Number(r.value) : 0), 0)),
-    [shownRows],
+  // The visible subset converts per deal too (owner filter), using the same rate map.
+  const shownSummary = summarize(
+    shownRows.map((row) => ({
+      id: row.id,
+      value: row.value,
+      currency: row.currency ?? rateMap.base,
+      probability: row.probability ?? 100,
+    })),
+    rateMap,
   );
+  const shownTotalValue = formatCents(shownSummary.total);
   const footer = resolveDealListFooter({
     filtered: clientFiltered,
     serverTotal: data?.total ?? 0,
     serverTotalValue: data?.totalValue ?? "0",
+    serverExcluded: data?.excluded ?? [],
     filteredCount: shownRows.length,
     filteredValue: shownTotalValue,
+    filteredExcluded: shownSummary.excluded,
   });
 
   // Any narrowing at all, server-side or client-side.
@@ -262,6 +293,7 @@ export function DealListClient({
           totalValue={footer.totalValue}
           stages={stages}
           currency={currency}
+          excluded={footer.excluded}
           onBulkStage={actions.bulkStage}
           onBulkArchive={variant === "archived" ? undefined : actions.bulkArchive}
           onUnarchive={variant === "archived" ? actions.unarchive : undefined}

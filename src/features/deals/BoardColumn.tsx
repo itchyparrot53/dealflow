@@ -4,6 +4,7 @@ import { Scale } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import { Tip } from "@/components/ui/tooltip";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { stageSubtitle } from "./boardColumnSubtitle";
@@ -60,6 +61,8 @@ export interface BoardColumnProps {
   cards: BoardCard[];
   dealCount: number;
   totalValue: string;
+  weightedValue: string;
+  excludedCurrencies: string[];
   density: "comfortable" | "compact";
   // null until the client clock is set (see Board). Threads down to each DealCard's time visuals.
   now: Date;
@@ -70,8 +73,19 @@ export interface BoardColumnProps {
 }
 
 export function BoardColumn(props: BoardColumnProps): React.ReactNode {
-  const { stageId, stageName, order, rottingDays, cards, dealCount, totalValue, density, now } =
-    props;
+  const {
+    stageId,
+    stageName,
+    order,
+    rottingDays,
+    cards,
+    dealCount,
+    totalValue,
+    weightedValue,
+    excludedCurrencies,
+    density,
+    now,
+  } = props;
   const { pipelineId, pipelines, baseCurrency } = props;
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
   const accent = accentForOrder(order);
@@ -127,9 +141,22 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
         <div className="mt-1 flex items-center gap-1 px-1 text-xs text-muted-foreground">
           {/* Balance/scale glyph before the value line (Pipedrive convention). */}
           <Scale data-stage-metric-icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-          <span className="tabular-nums">
+          <span data-testid="board-column-total" className="tabular-nums">
             {stageSubtitle(formatCurrency(totalValue), dealCount)}
           </span>
+        </div>
+        <div className="mt-0.5 px-1 text-xs text-muted-foreground">
+          <span>Weighted </span>
+          <span data-testid="board-column-weighted" className="tabular-nums">
+            {formatCurrency(weightedValue)}
+          </span>
+          {excludedCurrencies.length > 0 && (
+            <Tip label={`No rate for ${excludedCurrencies.join(", ")}`}>
+              <span data-testid="totals-excluded" className="ml-1 cursor-default">
+                {excludedCurrencies.length} excluded
+              </span>
+            </Tip>
+          )}
         </div>
       </header>
 
