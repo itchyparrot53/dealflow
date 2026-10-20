@@ -1,4 +1,5 @@
 import { ERROR_IDS } from "@/constants/errorIds";
+import { MAIL_SEND_MAX_RECIPIENTS_DEFAULT } from "@/constants/mail";
 import { STRINGS } from "@/constants/strings";
 import { COMPOSER_STRINGS } from "./composer.constants";
 
@@ -16,9 +17,9 @@ const MESSAGES: Record<string, string> = {
   [ERROR_IDS.GMAIL_SEND_INPUT_INVALID]:
     "Something in this message was rejected before sending. Check the recipients and subject.",
   [ERROR_IDS.GMAIL_API_EXHAUSTED]: STRINGS.inbox.errorSend,
-  // The number is server-configurable, so the copy stays client-safe and does not quote it.
-  [ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS]:
-    "This email has too many recipients. Split it into smaller sends.",
+  // The UI cannot know the configured server cap; it quotes the documented default and the server
+  // enforces the real value before this message is ever shown.
+  [ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS]: `This email has more than ${MAIL_SEND_MAX_RECIPIENTS_DEFAULT} recipients. Split it into smaller sends.`,
 };
 
 export function sendFailureMessage(errorId: string): string {

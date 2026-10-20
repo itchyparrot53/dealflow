@@ -39,6 +39,9 @@ export const MAIL_APPEND_MAX_TRIES = 12;
 export const MAIL_RELIST_MINUTES = 15;
 // Subject-plus-participant threading only looks this far back.
 export const MAIL_THREAD_FALLBACK_DAYS = 30;
+// The document default for MAIL_SEND_MAX_RECIPIENTS. The composer copy quotes it because the real
+// value lives in the server env and must not reach the client bundle.
+export const MAIL_SEND_MAX_RECIPIENTS_DEFAULT = 250;
 // Interactive send budget for IMAP accounts (SMTP plus the inline Sent APPEND).
 export const MAIL_SEND_TIMEOUT_MS = 30_000;
 // The Sent APPEND after a successful SMTP send has its own budget so a slow APPEND can never

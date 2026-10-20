@@ -84,9 +84,9 @@ test.describe("IMAP mailbox", () => {
     await body.click();
     await page.keyboard.type("Thanks, sending details shortly.");
     await page.getByRole("button", { name: "Send", exact: true }).click();
-    await expect(page.getByText("Thanks, sending details shortly.").first()).toBeVisible({
-      timeout: 30_000,
-    });
+    const sentReply = page.getByText("Thanks, sending details shortly.").first();
+    await expect(sentReply).toBeVisible({ timeout: 30_000 });
+    await sentReply.scrollIntoViewIfNeeded();
     await shot(page, "p2-thread-reply");
 
     // The reply reached the contact's mailbox with an In-Reply-To header, and our Sent copy holds
@@ -113,18 +113,14 @@ test.describe("IMAP mailbox", () => {
     await openThreadWithMessages(page, subject, 3);
     await shot(page, "p2-thread-three-messages");
 
-    // The thread shows on the linked deal's timeline; when the demo data does not link the thread
-    // to a deal, the contact page carries the same timeline and is the documented fallback.
-    let onDeal = false;
+    // The thread shows on the linked deal's timeline; the contact page is the documented fallback
+    // only when the seeded contact has no deal.
     if (personDealId !== null) {
       await page.goto(`/deals/${personDealId}`);
-      onDeal = await page
-        .getByText(subject, { exact: false })
-        .first()
-        .isVisible({ timeout: 15_000 })
-        .catch(() => false);
-    }
-    if (!onDeal) {
+      await expect(page.getByText(subject, { exact: false }).first()).toBeVisible({
+        timeout: 30_000,
+      });
+    } else {
       if (personId === null) throw new Error("no contact for the email timeline screenshot");
       await page.goto(`/contacts/people/${personId}`);
       await expect(page.getByText(subject, { exact: false }).first()).toBeVisible({
@@ -146,7 +142,9 @@ test.describe("IMAP mailbox", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page).toHaveURL(/\/pipeline/);
     await page.goto("/settings/profile");
-    await expect(page.getByTestId("password-reset-note")).toBeVisible();
+    const resetNote = page.getByTestId("password-reset-note");
+    await expect(resetNote).toBeVisible();
+    await resetNote.scrollIntoViewIfNeeded();
     await shot(page, "p2-profile-password-reset");
   });
 });

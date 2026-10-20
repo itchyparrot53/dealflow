@@ -28,6 +28,19 @@ export async function recordAppendAttempt(
     .onConflictDoNothing();
 }
 
+// Count one failed APPEND attempt, including the ones that never reached the server (no Sent
+// folder, no session, bad credentials), so a row always reaches got_up instead of retrying forever.
+async function bumpTriesById(db: Db, attemptId: string, errorId: string): Promise<void> {
+  await db
+    .update(mailSentAppends)
+    .set({
+      tries: sql`${mailSentAppends.tries} + 1`,
+      lastErrorId: errorId,
+      updatedAt: new Date(),
+    })
+    .where(eq(mailSentAppends.attemptId, attemptId));
+}
+
 async function setAppendState(
   db: Db,
   attemptId: string,
@@ -54,9 +67,7 @@ export interface AppendArgs {
 export async function appendToSent(args: AppendArgs): Promise<boolean> {
   const folder = await sentFolderPath(args.session, args.signal);
   if (folder === null) {
-    await setAppendState(args.db, args.attemptId, {
-      lastErrorId: ERROR_IDS.MAIL_APPEND_FAILED,
-    });
+    await bumpTriesById(args.db, args.attemptId, ERROR_IDS.MAIL_APPEND_FAILED);
     return false;
   }
   const appended = await args.session.append(
@@ -66,10 +77,7 @@ export async function appendToSent(args: AppendArgs): Promise<boolean> {
     args.signal,
   );
   if (!appended.ok) {
-    await args.db
-      .update(mailSentAppends)
-      .set({ tries: sql`${mailSentAppends.tries} + 1`, lastErrorId: appended.error.id })
-      .where(eq(mailSentAppends.attemptId, args.attemptId));
+    await bumpTriesById(args.db, args.attemptId, appended.error.id);
     return false;
   }
   await setAppendState(args.db, args.attemptId, { status: "done", lastErrorId: null });
@@ -195,9 +203,12 @@ async function retryOne(
   signal: AbortSignal,
 ): Promise<"done" | "gaveUp" | "skipped"> {
   const credentials = await loadImapCredentials(db, append.accountId, signal);
-  if (!credentials.ok || credentials.value === null) return "skipped";
+  if (!credentials.ok) return bumpTries(db, append, credentials.error.id);
+  if (credentials.value === null) {
+    return bumpTries(db, append, ERROR_IDS.MAIL_CREDENTIALS_UNREADABLE);
+  }
   const opened = await transports.openImap(credentials.value.imap, signal);
-  if (!opened.ok) return "skipped";
+  if (!opened.ok) return bumpTries(db, append, opened.error.id);
   try {
     const attachments = await attachmentBytes(append.payload, signal).catch(() => null);
     if (attachments === null) return bumpTries(db, append, ERROR_IDS.MAIL_APPEND_FAILED);

@@ -169,7 +169,7 @@ Purelymail facts the check confirmed or added:
 | `pnpm typecheck` | exit 0 |
 | `pnpm lint` | exit 0 (14 warnings, 0 errors) |
 | `pnpm build` | exit 0 |
-| `pnpm test:unit` | 4963/4963 (final count after the last test additions) |
+| `pnpm test:unit` | 4975/4975 in 795 files |
 | `pnpm test:integration` | 1819/1819 in 389 files, 161.7 s |
 | `pnpm e2e` | 16/16 across specs 00 to 06; 8 `p2-*` screenshots, 23 Part 1 screenshots intact |
 | `DOCKER_BUILDKIT=0 pnpm smoke` | SMOKE PASS; no `dealflow-smoke` container or volume left |
