@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-20 09:05
+Current: 3.3 · Last updated: 2026-10-20 09:15
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -30,7 +30,7 @@ Current: 3.2 · Last updated: 2026-10-20 09:05
 - [x] 2.5 Email sync settings: connect form and Gmail option
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Folders, cursors and locations
-- [ ] 3.2 Inbound apply and threading
+- [x] 3.2 Inbound apply and threading
 - [ ] 3.3 Incremental sync and UIDVALIDITY reset
 - [ ] 3.4 Initial window and background backfill
 - [ ] 3.5 IDLE manager and sync cadence
@@ -60,6 +60,9 @@ Current: 3.2 · Last updated: 2026-10-20 09:05
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 3.2: `resolveThreadKey` looks up stored headers first (In-Reply-To, then References newest to oldest), then falls back to a same-subject thread within 30 days that shares a non-self participant; the participant list is aggregated in one SQL query so the fallback never runs a query per thread.
+- 3.2: `applyFolderMessages` checks existence per message, and only writes a location when the message is already known; a new message resolves its thread key, stores message and location in one transaction, so a failure never advances a cursor past an unstored message. A too-large message is parsed from its headers plus the fixed preview.
+- 3.2: `reconcileTrash` leaves a thread with no locations untouched, marks a thread trashed only when every location is junk or trash, and clears `trashed_at` as soon as one message is visible again.
 - 3.1: `discoverFolders` treats an unflagged INBOX as the inbox by path and drops drafts and unknown folders; the cursor and location helpers are typed on the schema, and `deleteFolderState` removes the folder's locations before the cursor so a UIDVALIDITY reset cannot leave orphan UIDs.
 - 2.5: `ActorMailboxStatus` carries `provider` ("imap" when a credentials row exists) and `imapHost` from a LEFT JOIN; the settings page passes `googleEnabled = authMethods().google` and the provider, and the client shows the connect form for a missing, disconnected or failing mailbox plus "Update password" for a connected IMAP one.
 - 2.5: the form pre-selects "Other IMAP/SMTP server" when the stored host is not the Purelymail preset, prefills the address and host for an update, and maps `E_MAIL_003/004/005/006` to the copy in 6.11; the Gmail alternative lives inside the form so it only appears when Google is configured.
