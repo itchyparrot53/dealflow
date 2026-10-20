@@ -13,6 +13,8 @@ export const AUTH_STRINGS = {
   nameLabel: "Name",
   signIn: "Sign in",
   emailMeLink: "Email me a sign-in link",
+  forgotPassword:
+    "Forgot your password? Use the Email link tab, then set a new password in Settings → Profile.",
   continue: "Continue",
   setPasswordAndSignIn: "Set password and sign in",
   orDivider: "or",

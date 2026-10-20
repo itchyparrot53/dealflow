@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { userCredentials, users } from "@/db/schema";
@@ -38,15 +38,19 @@ export async function passwordLogin(
     );
   }
   if (!(await verifyPassword(cred.passwordHash, input.password))) {
-    const failures = cred.failedLoginCount + 1;
-    const lock = failures >= LOGIN_MAX_FAILURES;
-    await db
+    // Increment in one statement: reading the counter and writing it back lets concurrent wrong
+    // guesses all read the same value and undercount, which would dodge the lockout.
+    const [counted] = await db
       .update(userCredentials)
-      .set({
-        failedLoginCount: lock ? 0 : failures,
-        lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : cred.lockedUntil,
-      })
-      .where(eq(userCredentials.userId, u.id));
+      .set({ failedLoginCount: sql`${userCredentials.failedLoginCount} + 1` })
+      .where(eq(userCredentials.userId, u.id))
+      .returning({ failedLoginCount: userCredentials.failedLoginCount });
+    if ((counted?.failedLoginCount ?? 0) >= LOGIN_MAX_FAILURES) {
+      await db
+        .update(userCredentials)
+        .set({ failedLoginCount: 0, lockedUntil: new Date(Date.now() + LOGIN_LOCK_MS) })
+        .where(eq(userCredentials.userId, u.id));
+    }
     return err(new AppError(ERROR_IDS.AUTH_INVALID_CREDENTIALS, "invalid credentials"));
   }
   await db

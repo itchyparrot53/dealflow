@@ -7,6 +7,7 @@ import { loginReturnTarget } from "@/features/auth/loginReturn";
 import { isSameOriginPost } from "@/features/auth/originCheck";
 import { passwordLogin } from "@/features/auth/passwordLogin";
 import { createSession } from "@/features/auth/session";
+import { recordSessionAuth } from "@/features/auth/sessionAuth";
 import { applySessionCookies } from "@/features/auth/sessionCookies";
 import { checkRateLimit } from "@/server/rateLimitGuard";
 
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const session = await createSession(db, result.value.userId, signal);
   if (!session.ok) return redirect("/login?error=invalid_credentials&method=password");
+  await recordSessionAuth(db, session.value.sessionId, "password", signal);
 
   const res = redirect(loginReturnTarget(parsed.data.next));
   applySessionCookies(res, session.value.sid, session.value.expiresAt);

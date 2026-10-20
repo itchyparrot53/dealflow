@@ -5,6 +5,7 @@ import { acceptInvite } from "@/features/auth/invites";
 import { isSameOriginPost } from "@/features/auth/originCheck";
 import { checkPasswordPolicy } from "@/features/auth/password";
 import { createSession } from "@/features/auth/session";
+import { recordSessionAuth } from "@/features/auth/sessionAuth";
 import { applySessionCookies } from "@/features/auth/sessionCookies";
 import { checkRateLimit } from "@/server/rateLimitGuard";
 
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const session = await createSession(db, accepted.value.userId, signal);
   if (!session.ok) return redirect("/login?error=link_expired");
+  await recordSessionAuth(db, session.value.sessionId, "invite", signal);
 
   const res = redirect("/pipeline");
   applySessionCookies(res, session.value.sid, session.value.expiresAt);

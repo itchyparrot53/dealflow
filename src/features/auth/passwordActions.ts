@@ -3,9 +3,7 @@
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
-import { getCredentials, setPassword } from "@/features/auth/credentials";
-import { checkPasswordPolicy, verifyPassword } from "@/features/auth/password";
-import { revokeOtherSessions } from "@/features/auth/sessionsAdmin";
+import { changePasswordForSession } from "@/features/auth/passwordChange";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
@@ -33,21 +31,16 @@ export async function changePasswordAction(
   const parsed = inputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AUTH_INPUT_INVALID } };
 
-  const policy = checkPasswordPolicy(parsed.data.newPassword);
-  if (!policy.ok) return { ok: false, error: { id: policy.error.id } };
-
-  const signal = SIG();
-  const credentials = await getCredentials(db, actor.id, signal);
-  if (credentials?.passwordHash != null) {
-    const matches = await verifyPassword(
-      credentials.passwordHash,
-      parsed.data.currentPassword ?? "",
-    );
-    if (!matches) return { ok: false, error: { id: ERROR_IDS.AUTH_PASSWORD_MISMATCH } };
-  }
-
-  await setPassword(db, actor.id, parsed.data.newPassword, signal);
-  // A stolen session must not survive the password change; keep the one that made it.
-  await revokeOtherSessions(db, actor.id, session.sessionId, signal);
+  const changed = await changePasswordForSession(
+    db,
+    {
+      actorId: actor.id,
+      sessionId: session.sessionId,
+      currentPassword: parsed.data.currentPassword,
+      newPassword: parsed.data.newPassword,
+    },
+    SIG(),
+  );
+  if (!changed.ok) return { ok: false, error: { id: changed.error.id } };
   return { ok: true, value: { ok: true } };
 }

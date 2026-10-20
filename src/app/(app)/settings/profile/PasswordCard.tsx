@@ -18,6 +18,8 @@ const T = {
   saving: "Saving...",
   saved: "Password saved. Other sessions were signed out.",
   mismatch: "The passwords don't match.",
+  resetNote:
+    "You signed in with an email link, so you can set a new password without the current one.",
   generic: "Could not save the password. Try again.",
 } as const;
 
@@ -28,12 +30,15 @@ const MESSAGES: Record<string, string> = {
 };
 
 interface Props {
+  /** Whether the account already has a password (the field is hidden when it does not). */
   hasPassword: boolean;
+  /** False for a password set after a recent link sign-in, where the old password is not asked. */
+  requiresCurrent: boolean;
 }
 
 // Sets the first password or changes an existing one. Only the success state is shared with the
 // page (the other card fields are local to the form).
-export function PasswordCard({ hasPassword }: Props): React.ReactNode {
+export function PasswordCard({ hasPassword, requiresCurrent }: Props): React.ReactNode {
   const id = useId();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -79,7 +84,7 @@ export function PasswordCard({ hasPassword }: Props): React.ReactNode {
         <p className="mt-0.5 text-sm text-muted-foreground">{T.description}</p>
       </div>
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4 p-5">
-        {hasPassword && (
+        {requiresCurrent && (
           <div className="space-y-1.5">
             <Label htmlFor={`${id}-current`}>{T.current}</Label>
             <Input
@@ -120,6 +125,11 @@ export function PasswordCard({ hasPassword }: Props): React.ReactNode {
             disabled={saving}
           />
         </div>
+        {hasPassword && !requiresCurrent && (
+          <p data-testid="password-reset-note" className="text-sm text-muted-foreground">
+            {T.resetNote}
+          </p>
+        )}
         {error !== null && (
           <p role="alert" className="text-sm text-destructive">
             {error}

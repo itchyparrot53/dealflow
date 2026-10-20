@@ -95,6 +95,7 @@ export function LoginPanel({
                 <Button type="submit" className="w-full">
                   {AUTH_STRINGS.signIn}
                 </Button>
+                <p className="text-xs text-muted-foreground">{AUTH_STRINGS.forgotPassword}</p>
               </form>
             </TabsContent>
           )}

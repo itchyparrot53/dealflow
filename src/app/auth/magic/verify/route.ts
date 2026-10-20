@@ -7,6 +7,7 @@ import { markEmailVerified } from "@/features/auth/credentials";
 import { loginReturnTarget } from "@/features/auth/loginReturn";
 import { isSameOriginPost } from "@/features/auth/originCheck";
 import { createSession } from "@/features/auth/session";
+import { recordSessionAuth } from "@/features/auth/sessionAuth";
 import { applySessionCookies } from "@/features/auth/sessionCookies";
 import { checkRateLimit } from "@/server/rateLimitGuard";
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   await markEmailVerified(db, consumed.value.userId, signal);
   const session = await createSession(db, consumed.value.userId, signal);
   if (!session.ok) return redirect("/login?error=link_expired&method=link");
+  await recordSessionAuth(db, session.value.sessionId, "magic_link", signal);
 
   const res = redirect(loginReturnTarget(parsed.data.next));
   applySessionCookies(res, session.value.sid, session.value.expiresAt);

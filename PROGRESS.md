@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-20 02:36
+Current: 0.5 · Last updated: 2026-10-20 02:46
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -10,7 +10,7 @@ Current: 0.4 · Last updated: 2026-10-20 02:36
 - [x] 0.1 Start Part 2: progress files, kit and baseline
 - [x] 0.2 Independent audit of Part 1
 - [x] 0.3 Assistant confirm race and AI timeouts
-- [ ] 0.4 Password reset after email-link sign-in and atomic lockout
+- [x] 0.4 Password reset after email-link sign-in and atomic lockout
 - [ ] 0.5 Scripts, release tests and audit leftovers
 - [ ] 0.6 Phase 0 QA gate
 - [ ] 1.1 Rename the Gmail columns
@@ -54,6 +54,10 @@ Current: 0.4 · Last updated: 2026-10-20 02:36
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 0.4: extracted the password change into `src/features/auth/passwordChange.ts`, not `passwordActions.ts`, because a `"use server"` module may export only server actions and the integration test must call the logic directly; the action keeps CSRF, the session and the Zod parse.
+- 0.4: `PasswordCard` takes both `hasPassword` and `requiresCurrent` instead of the single `requiresCurrent` the plan names, so the "you signed in with an email link" note cannot appear for an account that has no password yet; the field is hidden whenever `requiresCurrent` is false, as specified.
+- 0.4: the 15-minute link window is a SQL `now() - interval '15 minutes'` comparison on `session_auth_events.authenticated_at`; migration `0077_dealflow_session_auth` creates the table (next free number after 0076) and is applied to the dev database.
+- 0.4: verified both new tests fail against the old code before committing: the lockout test leaves `locked_until` null, and the magic-link reset returns `E_AUTH_013`.
 - 0.3: the R1 test warms two pool connections before the concurrent confirms, because with a cold pool the first confirm finishes before the second one's connection is established and the race never happens; with warm connections the old code produced two ok results and two notes, and the claim-first code leaves exactly one of each.
 - 0.3: `confirmAiAction` claims with one `UPDATE ... WHERE status='pending' RETURNING *` and writes the result in a second update; a failed write downgrades the claimed row to `failed` (E_AI_010 stays in the tool result), and `rejectAiAction` uses the same claim.
 - 0.3: the assistant actions already had a 90 s budget, so R2 only touched the five `chatJson` actions plus the OpenRouter client (`timeout: 55_000, maxRetries: 1`); the tRPC reads keep `SIG()` because they are database-only.

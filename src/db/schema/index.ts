@@ -40,6 +40,7 @@ export * from "./prospects";
 export * from "./realtime";
 export * from "./release";
 export * from "./savedFilters";
+export * from "./sessionAuth";
 export * from "./stages";
 export * from "./system";
 export * from "./userPreferences";

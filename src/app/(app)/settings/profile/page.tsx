@@ -5,6 +5,7 @@ import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { getCredentials } from "@/features/auth/credentials";
+import { recentLinkSignIn } from "@/features/auth/sessionAuth";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { createContext } from "@/server/trpc/context";
@@ -20,7 +21,7 @@ export const metadata = { title: STRINGS.settings.profile };
 // Personal preferences (Pipedrive "My account"): display name + avatar are editable (avatar via
 // the presigned-upload handshake); timezone + interface density persist to user_preferences.
 export default async function ProfilePage(): Promise<ReactNode> {
-  const { actor } = await createContext();
+  const { actor, session } = await createContext();
   if (actor === null)
     return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
 
@@ -33,6 +34,12 @@ export default async function ProfilePage(): Promise<ReactNode> {
     getPreferencesForActor(db, actor.id),
     getCredentials(db, actor.id, signal),
   ]);
+
+  const hasPassword = credentials?.passwordHash != null;
+  const linkSignIn =
+    session === null
+      ? false
+      : await recentLinkSignIn(db, session.sessionId, AbortSignal.timeout(5_000));
 
   return (
     <SettingsPage>
@@ -53,7 +60,7 @@ export default async function ProfilePage(): Promise<ReactNode> {
         scheduleFollowUpAfterWon={prefs.ui.scheduleFollowUpAfterWon ?? false}
       />
       <DailyActivityTarget target={prefs.ui.dailyActivityTarget ?? DEFAULT_DAILY_ACTIVITY_TARGET} />
-      <PasswordCard hasPassword={credentials?.passwordHash != null} />
+      <PasswordCard hasPassword={hasPassword} requiresCurrent={hasPassword && !linkSignIn} />
     </SettingsPage>
   );
 }

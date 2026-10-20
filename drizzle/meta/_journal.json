@@ -540,6 +540,13 @@
       "when": 1792445488359,
       "tag": "0076_dealflow_ai",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1792459595507,
+      "tag": "0077_dealflow_session_auth",
+      "breakpoints": true
     }
   ]
 }
