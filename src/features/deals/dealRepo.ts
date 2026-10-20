@@ -123,7 +123,7 @@ export async function getBoardColumns(
       d.expected_close_date AS "expectedCloseDate",
       d.stage_entered_at   AS "stageEnteredAt",
       d.updated_at         AS "updatedAt",
-      coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+      coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true), 'USD') AS currency,
       coalesce(dt.probability, sp.probability, 100)::int AS probability
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
@@ -271,7 +271,7 @@ export async function listDeals(
         d.stage_entered_at   AS "stageEnteredAt",
         d.updated_at         AS "updatedAt",
         d.custom_fields       AS "customFields",
-        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true), 'USD') AS currency,
         coalesce(dt.probability, sp.probability, 100)::int AS probability
       ${base}
       ORDER BY d.updated_at DESC
@@ -283,7 +283,7 @@ export async function listDeals(
       SELECT
         d.id,
         d.value,
-        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true)) AS currency,
+        coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true), 'USD') AS currency,
         coalesce(dt.probability, sp.probability, 100)::int AS probability
       ${base}
     `),
