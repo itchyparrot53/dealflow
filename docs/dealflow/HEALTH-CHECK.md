@@ -145,3 +145,19 @@ Harness notes for later parts:
 - In this harness the smoke build runs with `DOCKER_BUILDKIT=0`: buildx keeps refs under
   `~/.docker/buildx`, which is outside the harness file sandbox (the Docker daemon itself is fine).
   On a normal host plain `pnpm smoke` works.
+
+## Part 2 live check (2026-10-20)
+
+`pnpm mail:live-check` against the owner's Purelymail mailbox returned `status: ok`:
+SMTP send, Sent APPEND (uid 10), inbound arrival in 5.8 s, no `Bcc` on the received copy, the
+reply parsed with `In-Reply-To`/`References` pointing at the first message, Message-ID search in
+Sent found the copy, and both inbound copies moved to Trash. Total 26.7 s.
+Result: `docs/dealflow/mail-live-check.json`.
+
+Purelymail facts the check confirmed or added:
+- **No SPECIAL-USE flags.** Every folder lists with `specialUse: null` (INBOX, Sent, Drafts,
+  Archive, Junk, Trash); folder discovery therefore falls back to the folder name. This was a real
+  gap: before the fallback only INBOX would have synced on this host.
+- SMTP-sent mail is still not saved by the server; the APPEND is required.
+- A new message is in INBOX about 6 s after the SMTP send, which matches the earlier 8 to 11 s
+  IDLE observation closely enough for the poll cadence.

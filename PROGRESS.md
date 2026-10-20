@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 5.1 · Last updated: 2026-10-20 16:45
+Current: 5.3 · Last updated: 2026-10-20 17:25
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -44,8 +44,8 @@ Current: 5.1 · Last updated: 2026-10-20 16:45
 - [x] 4.4 Attachments on demand and trash MOVE
 - [x] 4.5 Send integration tests
 - [x] 4.6 Phase 4 QA gate
-- [ ] 5.1 E2E mail spec and screenshots
-- [ ] 5.2 Live Purelymail check
+- [x] 5.1 E2E mail spec and screenshots
+- [x] 5.2 Live Purelymail check
 - [ ] 5.3 Integration suite, smoke and docs
 - [ ] 5.4 Independent review and hardening
 - [ ] 5.5 Final checklist
@@ -64,6 +64,13 @@ Current: 5.1 · Last updated: 2026-10-20 16:45
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 5.2: `pnpm mail:live-check` returned `status: ok` (send, APPEND uid 10, inbound in 5.8 s, Bcc stripped, reply references the first id, Sent search found it, Trash move done, 26.7 s total), written to `docs/dealflow/mail-live-check.json` and summarised in HEALTH-CHECK.md.
+- 5.2: the check exposed two real issues and both are fixed: the waiter snapshotted INBOX after the send (so a fast arrival looked "known") and parsed Message-IDs are lowercased while the derived id kept the ISO string's case, so the comparison never matched; the script now normalises both sides.
+- 5.2: Purelymail reports `specialUse: null` for every folder, which the live check recorded. `discoverFolders` now falls back to the folder name (including the last path segment), otherwise only INBOX would sync on this host.
+- 5.1: the e2e stack gets `MAIL_PROVIDER_FAKE_DIR=.e2e/fakemail`, a 5 s sync cadence, no IDLE and no backfill; `helpers.ts` gained `deliverFakeMail`, `fakeFolder`, `readFakeMail` and `waitForText`.
+- 5.1: 01-auth now saves a PASSWORD session at the end (it used a magic-link session, which by R3 may change the password without the current one, so 02's current-password step could not find the field).
+- 5.1: 06-mail disconnects the demo data's Gmail mailbox before connecting IMAP (demo1 already had a connected Gmail row), and `seed-session` now picks an open deal whose contact has exactly one open deal so `resolveLink` can auto-link it; the timeline step still falls back to the contact page if the deal page does not show the thread, and both paths assert the subject is visible.
+- 5.1: `pnpm e2e` passes 16/16 across specs 00 to 06; the 8 `p2-*` screenshots exist and all 23 Part 1 screenshots are untouched. The spec retries the whole open-and-count step so a five-second sync cannot race it.
 - 4.5: the nine required cases pass against the fake transport and real Postgres; the APPEND failure test builds a wrapper factory whose session fails only `append`, and the retry job takes an injectable `transports` so it can run on the working fake.
 - 4.5: the daily-limit case seeds two sent attempts with one recipient each and passes `limits: { dailyRecipients: 2 }` to the provider, so the third send defers with a `scheduled_at` more than 20 hours out and no SMTP delivery.
 - 4.4: `fetchAttachment` ranks the message's locations inbox, sent, archive, junk, trash, re-fetches that UID (null source means over the byte cap → `E_MAIL_011`), re-parses with `simpleParser` and returns the `idx:{n}` attachment; no location or no index gives `E_MAIL_013`.

@@ -5,10 +5,21 @@ import type { FolderInfo, ImapSession } from "../transport/types";
 
 const SYNCED = new Set<string>(MAIL_FOLDER_SYNC_USES);
 
+// Purelymail reports NO SPECIAL-USE flags (only INBOX, Sent, Archive, Junk, Trash and Drafts by
+// name), so a missing flag falls back to the folder's last path segment.
+const USE_BY_NAME: Record<string, SpecialUse> = {
+  inbox: "inbox",
+  sent: "sent",
+  archive: "archive",
+  junk: "junk",
+  trash: "trash",
+  drafts: "drafts",
+};
+
 function folderUse(folder: FolderInfo): SpecialUse | null {
   if (folder.specialUse !== null) return folder.specialUse;
-  // An INBOX that the server did not flag is still the inbox by name.
-  return folder.path.toLowerCase() === "inbox" ? "inbox" : null;
+  const lastSegment = folder.path.split(/[./]/).at(-1)?.trim().toLowerCase() ?? "";
+  return USE_BY_NAME[lastSegment] ?? null;
 }
 
 // The folders the CRM mirrors: inbox, sent, archive, junk and trash. Drafts and anything else are

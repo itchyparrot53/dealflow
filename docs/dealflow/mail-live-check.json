@@ -1,0 +1,44 @@
+{
+  "status": "ok",
+  "checkedAt": "2026-10-20T15:58:05.629Z",
+  "account": "de******@umev.co.uk",
+  "folders": [
+    {
+      "path": "INBOX",
+      "specialUse": null
+    },
+    {
+      "path": "Sent",
+      "specialUse": null
+    },
+    {
+      "path": "Drafts",
+      "specialUse": null
+    },
+    {
+      "path": "Archive",
+      "specialUse": null
+    },
+    {
+      "path": "Junk",
+      "specialUse": null
+    },
+    {
+      "path": "Trash",
+      "specialUse": null
+    }
+  ],
+  "sendOk": true,
+  "appendUid": 10,
+  "inboundFound": true,
+  "bccStripped": true,
+  "replyThreadsToA": true,
+  "sentSearchFound": true,
+  "movedToTrash": true,
+  "timingsMs": {
+    "inboundMs": 5800,
+    "replyMs": 6064,
+    "totalMs": 26654
+  },
+  "errors": []
+}

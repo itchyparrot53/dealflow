@@ -134,6 +134,16 @@ simply unavailable, and `AI_FAKE=true` gives deterministic answers for tests and
 call is logged, and admins manage the company monthly token cap and an optional per-user cap in
 Settings → AI. The MCP surface is documented in [`docs/mcp-server.md`](docs/mcp-server.md).
 
+## Email
+
+Connect a mailbox in **Settings → Email sync** with an app password: Purelymail is a preset, and
+any other IMAP/SMTP server can be entered by hand. Gmail remains available when Google is
+configured. Inbound mail syncs into threads, the inbox and record timelines; replies thread with
+`In-Reply-To` and `References`, and a copy of every sent message is APPENDed to the mailbox's Sent
+folder. `pnpm mail:live-check` proves the real transports against the Purelymail test mailbox.
+Details, limits and the fake transport used by tests are in
+[`docs/dealflow/MAIL.md`](docs/dealflow/MAIL.md).
+
 ## Tests
 
 ```bash
