@@ -59,12 +59,17 @@ export async function makeTestDb(): Promise<TestDb> {
     db,
     url,
     pool,
-    // close() only ends this test's pool; the cloned database itself is left for the disposable
-    // container to reclaim on stop. Dropping it here would race a FORCE-drop against connections a
-    // test opened on `url` (e.g. a LISTEN/NOTIFY client), surfacing a 57P01 on their error handler.
-    // Cloned databases hold only the empty migrated schema, so hundreds cost negligibly.
+    // close() ends this test's pool, then drops the clone WITHOUT force. A lingering connection
+    // (a LISTEN/NOTIFY client a test opened on `url`) makes the DROP fail and the database stays
+    // for the disposable container to reclaim, so the old 57P01 race is avoided while a whole suite
+    // no longer accumulates ~400 clones and exhausts the Docker VM disk.
     close: async () => {
       await pool.end();
+      try {
+        await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
+      } catch {
+        // Another connection still holds the clone; container teardown reclaims it.
+      }
     },
   };
 }

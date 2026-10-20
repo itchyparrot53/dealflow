@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 5.5 · Last updated: 2026-10-20 18:15
+Current: 5.6 · Last updated: 2026-10-20 18:35
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -48,7 +48,7 @@ Current: 5.5 · Last updated: 2026-10-20 18:15
 - [x] 5.2 Live Purelymail check
 - [x] 5.3 Integration suite, smoke and docs
 - [x] 5.4 Independent review and hardening
-- [ ] 5.5 Final checklist
+- [x] 5.5 Final checklist
 - [ ] 5.6 Final report and completion
 
 ## QA log
@@ -169,4 +169,26 @@ Current: 5.5 · Last updated: 2026-10-20 18:15
 - Docker 24.0.5 is up; the owner's `warpdrive-main` stack holds 5433/9000/9001.
 
 ## Final report
-(written in Task 5.6)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` is empty at every commit boundary; the tree was clean before this report.
+2. PASS - `pnpm install --frozen-lockfile` exited 0 (771 ms, no changes).
+3. PASS - `pnpm typecheck` exited 0.
+4. PASS - `pnpm lint` exited 0 (biome plus type-aware ESLint, 14 warnings, 0 errors).
+5. PASS - `pnpm test:unit` 4979/4979 in 796 files (Phase 0 baseline was 4945/4945; the 34 new tests cover the provider adapter, parser, fake transport, special-use mapping and the R6/R1/R3/R5 fixes).
+6. PASS - `pnpm test:integration` 1820/1820 in 389 files in 63.3 s after the review fixes; the Task 5.3 run before them was 1819/1819 in 161.7 s.
+7. PASS - `pnpm build` exited 0.
+8. PASS - `pnpm e2e` 16/16 across specs `00` to `06` (1.1 min on the final build).
+9. PASS - 8 `e2e/screenshots/p2-*.png` and all 23 Part 1 screenshots present.
+10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS (Task 5.3) and `docker ps`/`docker volume ls` show no `dealflow-smoke` container or volume.
+11. PASS - `docs/dealflow/mail-live-check.json` has `status: ok` (re-run after the SPECIAL-USE fix; inbound 5.7 s, reply 6.0 s, all six flags read).
+12. PASS - `git grep -nE "gmail_(thread|message|attachment)_id|last_history_id" -- src scripts` returns no lines (the last alias was renamed in 5.5).
+13. PASS - `git grep -n "GmailClient"` on the eight send/sync/attachment/trash files returns no lines.
+14. PASS - `git grep -n "GOOGLE_WORKSPACE_DOMAIN" -- src/features/email/outbox.ts` returns no lines.
+15. PASS - the mail-password grep (`console.` or `AppError(...password`) returns no lines.
+16. PASS - `AUDIT-P1.md` has 0 rows containing OPEN.
+17. PASS - all eight 6.3 env keys appear in `.env.example` (one `KEY=` line each).
+18. PASS - no em dash in any authored file in the diff. The single match is `scripts/check-progress.mjs` line 16, a byte-identical copy of the kit's own checker, which rule 18 forbids editing.
+19. PASS - `pnpm check:progress --final` passes (run in Task 5.6 after this report; recorded there).
+20. PASS - `docs/dealflow/MAIL.md` exists and `docs/dealflow/UPSTREAM.md` lists the `provider_thread_id` rename.

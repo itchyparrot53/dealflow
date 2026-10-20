@@ -96,7 +96,7 @@ export async function loadSendInputs(
         WHERE m.thread_id = t.id AND m.account_id = t.account_id
         ORDER BY m.sent_at DESC NULLS LAST, m.created_at DESC
         LIMIT 1
-      ) AS parent_gmail_message_id
+      ) AS parent_provider_message_id
     FROM email_send_attempts s
     JOIN email_accounts a ON a.id = s.account_id
     LEFT JOIN email_threads t ON t.id = s.thread_id AND t.account_id = s.account_id
@@ -107,7 +107,7 @@ export async function loadSendInputs(
         from_email: string;
         payload: SendPayload;
         provider_thread_id: string | null;
-        parent_gmail_message_id: string | null;
+        parent_provider_message_id: string | null;
       }
     | undefined;
   if (row === undefined) return undefined;
@@ -115,7 +115,7 @@ export async function loadSendInputs(
     from: row.from_email,
     payload: row.payload,
     providerThreadId: row.provider_thread_id,
-    parentProviderMessageId: row.parent_gmail_message_id,
+    parentProviderMessageId: row.parent_provider_message_id,
   };
 }
 
