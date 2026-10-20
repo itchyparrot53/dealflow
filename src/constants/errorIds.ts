@@ -225,12 +225,14 @@ export const ERROR_IDS = {
   PRODUCT_CODE_TAKEN: "E_PRODUCT_003", // product code already used by another product
   PRODUCT_VALUE_CALCULATED: "E_PRODUCT_004", // manual value edit on a deal with product lines
   PRODUCT_LINE_NOT_FOUND: "E_PRODUCT_005", // deal line not found
+  PRODUCT_INPUT_INVALID: "E_PRODUCT_006", // product or deal-line input failed Zod validation
   // CURRENCY
   CURRENCY_RATE_MISSING: "E_CURRENCY_001", // no exchange rate for a needed currency
   CURRENCY_UNKNOWN: "E_CURRENCY_002", // unknown currency code
   CURRENCY_BASE_RATE: "E_CURRENCY_003", // a rate was submitted for the base currency
   CURRENCY_CHANGE_WITH_LINES: "E_CURRENCY_004", // currency change on a deal with product lines
   CURRENCY_PARSE_FAILED: "E_CURRENCY_005", // a pre-validated money string failed the pure parser (programmer error)
+  CURRENCY_INPUT_INVALID: "E_CURRENCY_006", // currency settings input failed Zod validation
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-20 20:27
+Current: 1.2 · Last updated: 2026-10-20 20:31
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -12,7 +12,7 @@ Current: 1.1 · Last updated: 2026-10-20 20:27
 - [x] 0.2 Sales schema and migration
 - [x] 0.3 Money and totals (test-first)
 - [x] 0.4 Phase 0 QA gate
-- [ ] 1.1 Rates, base currency and permissions
+- [x] 1.1 Rates, base currency and permissions
 - [ ] 1.2 Product catalog service
 - [ ] 1.3 Deal lines and the value sync (test-first)
 - [ ] 1.4 Deal terms and stage probabilities
@@ -48,6 +48,12 @@ Current: 1.1 · Last updated: 2026-10-20 20:27
 - 0.3: `parseMilli` accepts a negative decimal (only `quantityString` enforces greater than zero), because the parser is also used by line math where a correction can be negative while user input stays positive.
 - 0.3: `formatMoney` assembles the locale layout from `Intl.NumberFormat.formatToParts` around the exact integer digits, so a displayed money value is never converted to a JS float.
 - 0.4: `src/constants/errorIds.test.ts` gained `PRODUCT` and `CURRENCY` in its domain allow-list, because the registry now carries those domains per 6.2; the per-ID format and uniqueness assertions are unchanged.
+
+- 1.1: the rate permission check lives in `rates.ts` (`can(actor, "permissions.manage")`, the gate the existing base-currency setting uses) and the server actions own only CSRF and the session, so the integration test can prove a non-admin is refused; this mirrors the pipelines services rather than the goals actions.
+- 1.1: added the `products.manage` global capability (granted to admins by default, listed as high-risk so only an admin can hand it to a permission set) and the code-defined registry needed no migration; existing stored sets simply do not carry it yet.
+- 1.1: `setBaseCurrency` is a no-op when the submitted code already is the base, so re-selecting the same currency cannot silently delete every manual rate; a real change updates settings and deletes all rates in one transaction.
+- 1.1: `listRates` returns the Postgres numeric string unchanged (`1.10000000`) for the settings table, while `loadRateMap` parses to the scaled `Rate` bigint for arithmetic; the two never mix formats.
+- 1.1: added `E_PRODUCT_006` and `E_CURRENCY_006` (input failed Zod) beside the named IDs, following every other feature's `_INPUT_INVALID` convention for malformed action input.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

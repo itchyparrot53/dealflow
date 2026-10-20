@@ -2,6 +2,7 @@ import { activitiesRouter } from "@/features/activities/router";
 import { aiRouter } from "@/features/ai/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
+import { currencyRouter } from "@/features/currency/router";
 import { customFieldsRouter } from "@/features/custom-fields/router";
 import { dealRouter } from "@/features/deals/dealRouter";
 import { mailLabelsRouter } from "@/features/email/mailLabelsRouter";
@@ -30,6 +31,7 @@ export const appRouter = router({
   pipeline: pipelineRouter,
   deal: dealRouter,
   contacts: contactsRouter,
+  currency: currencyRouter,
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,
   activities: activitiesRouter,

@@ -29,6 +29,7 @@ type GlobalAction =
   | "pipeline.manage"
   | "metadata.manage"
   | "goals.manage"
+  | "products.manage"
   | "permissions.manage";
 
 export type OwnershipAction = (typeof OWNERSHIP_ACTIONS)[number];
