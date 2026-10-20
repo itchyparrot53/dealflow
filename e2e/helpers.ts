@@ -20,6 +20,9 @@ export interface Fixtures {
   // The USD deal the sales spec adds its first line to; null if the seed did not create it.
   salesDealId: string | null;
   salesDealTitle: string | null;
+  // The deal with product lines the documents spec builds a quote from.
+  documentsDealId: string | null;
+  documentsDealTitle: string | null;
 }
 
 export interface CapturedMail {

@@ -6,7 +6,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { persons, users } from "@/db/schema";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
-import { getActorMailbox } from "@/features/email/mailboxOwnership";
+import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
 import { type SendEmailInput, sendEmail } from "@/features/email/send";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { type ResolveDeps, resolveMailProvider } from "@/features/mail/provider/resolve";
@@ -85,8 +85,9 @@ async function resolveTarget(
       }),
     );
   }
-  const mailbox = await getActorMailbox(db, actor.id, signal);
-  if (mailbox === null) {
+  // A disconnected mailbox is the same user problem as no mailbox: E_DOC_006.
+  const mailbox = await getActorMailboxStatus(db, actor.id, signal);
+  if (mailbox === null || mailbox.status !== "connected") {
     return err(
       new AppError(ERROR_IDS.DOC_NO_MAILBOX, "No connected mailbox", { userId: actor.id }),
     );

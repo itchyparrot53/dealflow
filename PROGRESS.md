@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-21 00:22
+Current: 4.2 · Last updated: 2026-10-21 00:37
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -30,7 +30,7 @@ Current: 4.1 · Last updated: 2026-10-21 00:22
 - [x] 3.4 Print stylesheet and preview
 - [x] 3.5 Demo seed and docs
 - [x] 3.6 Phase 3 QA gate
-- [ ] 4.1 E2E documents spec and screenshots
+- [x] 4.1 E2E documents spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
@@ -126,6 +126,12 @@ Current: 4.1 · Last updated: 2026-10-21 00:22
 - 3.5: the seed creates seven documents on deals with lines (draft quote, sent quote, accepted quote, invoice from the accepted quote, sent invoice due soon, overdue invoice, paid invoice with two payments), and running it on the dev database produced exactly those seven with linked source quote and two payments summing to the total.
 - 3.5: the demo seed's re-run was blocked by a pre-existing bug: activities owned by non-demo users referenced demo deals, persons and organizations, so `wipeDemo` failed on their foreign keys. It now unlinks those references (`deal_id`, `person_id`, `org_id`) instead of deleting another user's activity; this was required to run the seed at all and is logged as a pre-existing fix in the upstream seed file.
 - 3.5: `docs/dealflow/DOCUMENTS.md` covers the model, numbering, transitions, templates and variables, permissions, public page and rate limit, payments, the overdue job, sending and printing; `UPSTREAM.md` has a Part 4 section listing every upstream file, and the README gained a "Quotes and invoices" section.
+- 4.1: the spec reads a new `documentsDealId` fixture: a line-bearing open deal whose contact has an email. The line-free "Demo sales playground" is reserved for the sales spec, and the line-bearing deals belong to other demo users, which is fine because an admin may edit any deal.
+- 4.1: the spec connects the fake IMAP mailbox itself (disconnecting the seeded Gmail account or a previous connection first), so it also passes standalone; the full suite runs it after the mail spec.
+- 4.1: the public URL is read from a new `data-public-url` attribute on the copy-link button instead of the clipboard, which keeps the spec deterministic while the button keeps copying for the user.
+- 4.1: found and fixed a real gap while running the spec: `sendDocument` treated a disconnected mailbox as connected because `getActorMailbox` ignores the account status. It now uses `getActorMailboxStatus` and returns `E_DOC_006` for a disconnected account.
+- 4.1: restored the `public-status` test hook that the 3.2 public-page rewrite dropped (an sr-only element carrying the status), and trimmed the stored scale off quantity and percentage cells for display ("2.000" reads "2").
+- 4.1: `pnpm e2e` passed 18/18 across specs `00` to `08` (1.1 min); the seven `p4-*` screenshots exist and the Part 1 to 3 screenshots are present (23/8/6).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

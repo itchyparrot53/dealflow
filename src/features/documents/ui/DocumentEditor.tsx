@@ -292,6 +292,7 @@ export function DocumentEditor({
             variant="outline"
             size="sm"
             data-testid="document-copy-link"
+            data-public-url={document.publicUrl}
             disabled={pending}
             onClick={() => void copyLink()}
           >

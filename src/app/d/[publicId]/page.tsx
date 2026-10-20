@@ -41,6 +41,11 @@ export default async function PublicDocumentPage({
   const doc = result.value;
   return (
     <main className="mx-auto max-w-[860px] p-8" data-testid="public-document">
+      {/* The machine-readable status is for tests and the outline; the visible status is the
+          invoice line in DocumentView and the accept/decline panel below. */}
+      <p className="sr-only" data-testid="public-status">
+        {doc.status}
+      </p>
       <DocumentView
         document={{
           kind: doc.kind,

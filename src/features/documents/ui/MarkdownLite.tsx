@@ -41,6 +41,13 @@ function Inline({ text }: { text: string }): React.ReactNode {
   );
 }
 
+// Stored numerics carry their column scale ("2.000", "10.00"); the printed
+// document shows the number a reader expects, without touching the stored value.
+function trimZeros(value: string): string {
+  const trimmed = value.replace(/\.?0+$/, "");
+  return trimmed === "" ? "0" : trimmed;
+}
+
 function LinesTable({
   lines,
   currency,
@@ -66,10 +73,10 @@ function LinesTable({
         {lines.map((line) => (
           <tr key={line.id} className="border-b">
             <td className="py-2">{line.name}</td>
-            <td className="py-2">{line.quantity}</td>
+            <td className="py-2">{trimZeros(line.quantity)}</td>
             <td className="py-2 text-right">{money(line.itemPrice)}</td>
-            <td className="py-2 text-right">{line.discountPercent}%</td>
-            <td className="py-2 text-right">{line.taxPercent}%</td>
+            <td className="py-2 text-right">{trimZeros(line.discountPercent)}%</td>
+            <td className="py-2 text-right">{trimZeros(line.taxPercent)}%</td>
             <td className="py-2 text-right">{money(line.gross)}</td>
           </tr>
         ))}

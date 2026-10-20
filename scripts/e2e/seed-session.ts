@@ -119,6 +119,22 @@ async function main(): Promise<void> {
     .from(deals)
     .where(and(eq(deals.title, "Demo sales playground"), isNull(deals.deletedAt)))
     .limit(1);
+  // Part 4: a deal with product lines whose contact has an email, so the documents spec
+  // can create a snapshot quote and send it to a real address in the fake mailbox.
+  const documentsDeals = (
+    await db.execute(sql`
+      SELECT d.id, d.title
+      FROM deals d
+      JOIN persons p ON p.id = d.person_id
+      WHERE d.status = 'open' AND d.deleted_at IS NULL AND d.archived_at IS NULL
+        -- The admin can edit (and so document) a deal owned by any demo user.
+        AND p.primary_email IS NOT NULL AND p.primary_email::text <> ''
+        AND EXISTS (SELECT 1 FROM deal_products dp WHERE dp.deal_id = d.id)
+      ORDER BY d.title ASC
+      LIMIT 1
+    `)
+  ).rows as { id: string; title: string }[];
+
   writeFileSync(
     ".e2e/fixtures.json",
     JSON.stringify({
@@ -132,6 +148,8 @@ async function main(): Promise<void> {
       personId,
       salesDealId: salesDeal?.id ?? null,
       salesDealTitle: salesDeal?.title ?? null,
+      documentsDealId: documentsDeals[0]?.id ?? null,
+      documentsDealTitle: documentsDeals[0]?.title ?? null,
     }),
   );
   await pool.end();
