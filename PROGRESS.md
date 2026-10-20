@@ -128,9 +128,11 @@ Current: 4.3 · Last updated: 2026-10-20 21:41
 - 4.3 round 1: fixed six minors. `setBaseCurrency` invalidates the cached base-currency read; the exact 6.2 copy is used (with the missing currency code carried through a new optional `ClientError.code`); the won list has a title tiebreak; `moveDealToMonth` runs the visibility/edit gate before the status check; the optimistic forecast overlay clears `overdue` for a non-first month and keeps the service `openCount`; the e2e sales spec now adds the EUR rate through the Settings selector using keyboard focus navigation (Radix portals the options where pointer clicks are unreliable).
 - 4.3 round 1: the refused forecast drag keeps its inline `role="alert"` instead of a toast, because this repo has no toast helper or toast dependency; adding one would add UI infrastructure outside the plan's stack rule. Logged as an accepted minor rather than skipped silently.
 
+- OWNER REQUEST (direct, after Task 4.2): set the live dev database's `settings.base_currency` from USD to GBP. It had no `currency_rates` rows, so none were cleared. The code defaults, demo seed and e2e data stay USD so the part's verified contracts and screenshots do not change; a fresh install still starts on USD until the owner asks for a code-level default change.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
-- TODO(owner): rebuild the dev stack so it reads the Part 2 migrations and the Part 3 schema once migration 0080 is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+- TODO(owner): rebuild the dev stack so it reads the Part 2 migrations and the Part 3 schema once migration 0080 is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`). After the rebuild, Settings > Currencies shows GBP as the base currency; the database already carries it.
 
 ## Open issues
 - None
