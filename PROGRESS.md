@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 4.6 · Last updated: 2026-10-20 16:35
+Current: 5.1 · Last updated: 2026-10-20 16:45
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -9,6 +9,7 @@ Current: 4.6 · Last updated: 2026-10-20 16:35
 - Phase 2: 21e78ca3fdbf88845c08ff6014ff662b75435905
 - Phase 3: b016fdcb2b3b98e19c242553ebe00ecc7a8e6d5f
 - Phase 4: 09b1c6ddad022b60b851575d8505c96b18ab4c04
+- Phase 5: 7b0e3ff81e4e6d178850339828aa8afab8901196
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
@@ -42,7 +43,7 @@ Current: 4.6 · Last updated: 2026-10-20 16:35
 - [x] 4.3 Send throttle
 - [x] 4.4 Attachments on demand and trash MOVE
 - [x] 4.5 Send integration tests
-- [ ] 4.6 Phase 4 QA gate
+- [x] 4.6 Phase 4 QA gate
 - [ ] 5.1 E2E mail spec and screenshots
 - [ ] 5.2 Live Purelymail check
 - [ ] 5.3 Integration suite, smoke and docs
@@ -51,6 +52,7 @@ Current: 4.6 · Last updated: 2026-10-20 16:35
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 4 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail/email/notifications integration 410/410
 - Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail/email integration 351/351
 - Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail integration 5/5
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4950/4950 · email/notifications/leads integration 480/480
