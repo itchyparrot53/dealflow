@@ -38,15 +38,15 @@ export default async function PublicDocumentPage({
 
   const doc = result.value;
   return (
-    <main className="mx-auto max-w-[860px] bg-white p-8 text-slate-900">
+    <main className="mx-auto max-w-[860px] bg-background p-8 text-foreground">
       <header className="border-b pb-4">
-        <p className="text-xs uppercase tracking-wide text-slate-500">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">
           {doc.kind === "quote" ? "Quote" : "Invoice"}
         </p>
-        <h1 className="text-2xl font-semibold" data-testid="public-document">
+        <h1 className="text-display font-[450] leading-tight tracking-tight" data-testid="public-document">
           {doc.title}
         </h1>
-        <p className="text-sm text-slate-600">{doc.number ?? "Draft"}</p>
+        <p className="text-sm text-muted-foreground">{doc.number ?? "Draft"}</p>
         <p className="text-sm" data-testid="public-status">
           {doc.status}
         </p>
@@ -98,7 +98,7 @@ export default async function PublicDocumentPage({
       {doc.paymentInstructions !== null && (
         <p className="mt-4 whitespace-pre-wrap text-sm">{doc.paymentInstructions}</p>
       )}
-      {doc.footer !== null && <p className="mt-4 text-xs text-slate-500">{doc.footer}</p>}
+      {doc.footer !== null && <p className="mt-4 text-xs text-muted-foreground">{doc.footer}</p>}
     </main>
   );
 }
