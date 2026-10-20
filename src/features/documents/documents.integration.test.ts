@@ -36,6 +36,8 @@ import {
 } from "./documents";
 import { issueDocument, voidInvoice } from "./issue";
 import { formatDocNumber } from "./numbering";
+import { runOverdueInvoices } from "./overdueJob";
+import { deletePayment, recordPayment } from "./payments";
 import { getDocumentSettings, updateDocumentSettings } from "./settings";
 import { createTemplate, deleteTemplate, listTemplates, setDefaultTemplate } from "./templates";
 
@@ -469,7 +471,8 @@ describe("issue and void", () => {
   it("gives ten concurrent issues ten distinct consecutive numbers", async () => {
     // Warm the pool first so the ten calls reach Postgres together instead of
     // queueing behind ten cold connection handshakes.
-    await Promise.all([1, 2, 3, 4].map(() => h.pool.query("select 1")));
+    const warm = await Promise.all([1, 2, 3, 4].map(() => h.pool.connect()));
+    for (const client of warm) client.release();
 
     const ids: string[] = [];
     for (let i = 0; i < 10; i += 1) {
@@ -605,5 +608,189 @@ describe("issue and void", () => {
     expect(quoteVoid.ok).toBe(false);
     if (quoteVoid.ok) return;
     expect(quoteVoid.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
+  });
+});
+
+describe("payments", () => {
+  it("marks an invoice paid when two payments reach the total", async () => {
+    const deal = await seedDeal({ value: "1000.00" });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const issued = await issueDocument(h.db, admin, created.value.id, { via: "issue" }, sig());
+    expect(issued.ok).toBe(true);
+
+    const first = await recordPayment(
+      h.db,
+      admin,
+      {
+        documentId: created.value.id,
+        amount: "400.00",
+        paidOn: "2026-10-01",
+        method: "bank_transfer",
+      },
+      sig(),
+    );
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.value.status).toBe("sent");
+    expect(first.value.outstanding).toBe("600.00");
+    expect(first.value.payments).toHaveLength(1);
+
+    const second = await recordPayment(
+      h.db,
+      admin,
+      { documentId: created.value.id, amount: "600.00", paidOn: "2026-10-02", method: "card" },
+      sig(),
+    );
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.value.status).toBe("paid");
+    expect(second.value.paidAt).not.toBeNull();
+    expect(second.value.outstanding).toBe("0.00");
+  });
+
+  it("refuses a payment above the outstanding amount with E_DOC_007", async () => {
+    const deal = await seedDeal({ value: "500.00" });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    await issueDocument(h.db, admin, created.value.id, { via: "issue" }, sig());
+    const first = await recordPayment(
+      h.db,
+      admin,
+      { documentId: created.value.id, amount: "300.00", paidOn: "2026-10-01", method: "cash" },
+      sig(),
+    );
+    expect(first.ok).toBe(true);
+
+    const tooMuch = await recordPayment(
+      h.db,
+      admin,
+      { documentId: created.value.id, amount: "300.00", paidOn: "2026-10-02", method: "cash" },
+      sig(),
+    );
+    expect(tooMuch.ok).toBe(false);
+    if (tooMuch.ok) return;
+    expect(tooMuch.error.id).toBe(ERROR_IDS.DOC_OVERPAYMENT);
+  });
+
+  it("returns a past-due paid invoice to overdue when its payment is deleted", async () => {
+    const deal = await seedDeal({ value: "100.00" });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    await issueDocument(h.db, admin, created.value.id, { via: "issue" }, sig());
+    await h.db
+      .update(documents)
+      .set({ dueDate: "2020-01-01" })
+      .where(eq(documents.id, created.value.id));
+
+    const paid = await recordPayment(
+      h.db,
+      admin,
+      { documentId: created.value.id, amount: "100.00", paidOn: "2026-10-01", method: "card" },
+      sig(),
+    );
+    expect(paid.ok).toBe(true);
+    if (!paid.ok) return;
+    expect(paid.value.status).toBe("paid");
+    const paymentId = paid.value.payments[0]?.id ?? "";
+
+    const removed = await deletePayment(h.db, admin, paymentId, sig());
+    expect(removed.ok).toBe(true);
+    if (!removed.ok) return;
+    expect(removed.value.status).toBe("overdue");
+    expect(removed.value.paidAt).toBeNull();
+    expect(removed.value.outstanding).toBe("100.00");
+  });
+
+  it("refuses a payment on a draft or a quote", async () => {
+    const deal = await seedDeal({ value: "10.00" });
+    const draft = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(draft.ok).toBe(true);
+    if (!draft.ok) return;
+    const draftPay = await recordPayment(
+      h.db,
+      admin,
+      { documentId: draft.value.id, amount: "1.00", paidOn: "2026-10-01", method: "cash" },
+      sig(),
+    );
+    expect(draftPay.ok).toBe(false);
+    if (draftPay.ok) return;
+    expect(draftPay.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
+
+    const quoteDeal = await seedDeal({ value: "20.00" });
+    const quote = await createDocument(h.db, admin, { dealId: quoteDeal.id, kind: "quote" }, sig());
+    expect(quote.ok).toBe(true);
+    if (!quote.ok) return;
+    await issueDocument(h.db, admin, quote.value.id, { via: "issue" }, sig());
+    const quotePay = await recordPayment(
+      h.db,
+      admin,
+      { documentId: quote.value.id, amount: "1.00", paidOn: "2026-10-01", method: "cash" },
+      sig(),
+    );
+    expect(quotePay.ok).toBe(false);
+    if (quotePay.ok) return;
+    expect(quotePay.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
+  });
+});
+
+describe("the overdue job", () => {
+  it("marks only sent invoices past due", async () => {
+    async function issuedInvoice(value: string): Promise<string> {
+      const deal = await seedDeal({ value });
+      const created = await createDocument(
+        h.db,
+        admin,
+        { dealId: deal.id, kind: "invoice" },
+        sig(),
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return "";
+      const issued = await issueDocument(h.db, admin, created.value.id, { via: "issue" }, sig());
+      expect(issued.ok).toBe(true);
+      return created.value.id;
+    }
+
+    const pastDueId = await issuedInvoice("10.00");
+    await h.db.update(documents).set({ dueDate: "2020-01-01" }).where(eq(documents.id, pastDueId));
+
+    const paidId = await issuedInvoice("20.00");
+    await h.db.update(documents).set({ dueDate: "2020-01-01" }).where(eq(documents.id, paidId));
+    await recordPayment(
+      h.db,
+      admin,
+      { documentId: paidId, amount: "20.00", paidOn: "2026-10-01", method: "card" },
+      sig(),
+    );
+
+    const futureId = await issuedInvoice("30.00");
+
+    const quoteDeal = await seedDeal({ value: "40.00" });
+    const quote = await createDocument(h.db, admin, { dealId: quoteDeal.id, kind: "quote" }, sig());
+    expect(quote.ok).toBe(true);
+    if (!quote.ok) return;
+    await issueDocument(h.db, admin, quote.value.id, { via: "issue" }, sig());
+    await h.db
+      .update(documents)
+      .set({ validUntil: "2020-01-01" })
+      .where(eq(documents.id, quote.value.id));
+
+    const marked = await runOverdueInvoices(h.db, sig());
+    expect(marked).toBe(1);
+
+    const read = async (id: string): Promise<string | undefined> => {
+      const [row] = await h.db
+        .select({ status: documents.status })
+        .from(documents)
+        .where(eq(documents.id, id));
+      return row?.status;
+    };
+    expect(await read(pastDueId)).toBe("overdue");
+    expect(await read(paidId)).toBe("paid");
+    expect(await read(futureId)).toBe("sent");
+    expect(await read(quote.value.id)).toBe("sent");
   });
 });

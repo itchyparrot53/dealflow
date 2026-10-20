@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-20 23:26
+Current: 1.5 · Last updated: 2026-10-20 23:27
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -15,7 +15,7 @@ Current: 1.4 · Last updated: 2026-10-20 23:26
 - [x] 1.1 Settings, templates and the capability
 - [x] 1.2 Create, edit, refresh, duplicate, delete (test-first)
 - [x] 1.3 Issue, numbering and void
-- [ ] 1.4 Payments and the overdue job
+- [x] 1.4 Payments and the overdue job
 - [ ] 1.5 Sending through the mailbox
 - [ ] 1.6 Phase 1 QA gate
 - [ ] 2.1 Public reads, accept and decline (test-first)
@@ -70,6 +70,11 @@ Current: 1.4 · Last updated: 2026-10-20 23:26
 - 1.3: `markSent` follows the same path as `issue` (draft to sent, number assigned if missing), and both refuse a document that is already issued with `E_DOC_003`.
 - 1.3: an invoice's `due_date` is recomputed at issue from the current `invoice_due_days`, so a draft created before a settings change gets the window in force when it is issued.
 - 1.3: `voidInvoice` refuses quotes and drafts with `E_DOC_003` and keeps the number on the row; `deleteDraft` refuses an issued invoice with `E_DOC_008` and an issued quote with `E_DOC_003`.
+- 1.4: the payment and overdue cases were added first and run red (missing modules), then all 25 cases passed; the job case seeds a past-due sent invoice, a past-due paid invoice, a future sent invoice and a past-expiry quote, and only the first changes.
+- 1.4: `recordPayment` locks the invoice row `FOR UPDATE` before summing the existing payments, so two concurrent payments cannot both pass the overpayment check; `E_DOC_007` carries the outstanding amount in its context.
+- 1.4: an invoice becomes `paid` when the summed payments reach or pass the stored total (they can only equal it under the lock); `deletePayment` on a paid invoice applies `unpay` and then swaps in `overdue` when `due_date` is before today, without waiting for the job.
+- 1.4: the overdue job is one `UPDATE ... WHERE due_date < (now() at time zone 'utc')::date`, registered on the worker at `0 6 * * *` and exported as `runOverdueInvoices` so the test calls the exact SQL; the queue name is `documents.overdue` in `jobNames.ts`.
+- 1.4: fixed a real concurrency defect found by a pg deprecation warning: `getDocument` ran its three reads in `Promise.all`, and inside a transaction those run on one client, which cannot execute two queries at once. They are sequential now, and the warning is gone.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

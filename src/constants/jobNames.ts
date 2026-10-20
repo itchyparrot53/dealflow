@@ -30,6 +30,10 @@ export const EMAIL_NOTIFICATION_QUEUE = "notification.email";
 // cron-scheduled (see RELEASE_CHECK_CRON) plus one immediate run on worker boot. No payload.
 export const PGBOSS_QUEUE_RELEASE_CHECK = "release.check";
 
+// Daily overdue-invoice sweep: marks sent invoices past their due date overdue.
+// Fixed queue name, cron-scheduled at 06:00 UTC. No payload.
+export const PGBOSS_QUEUE_DOCUMENT_OVERDUE = "documents.overdue";
+
 // Import overhaul: four background phases, each its own queue (payload { batchId }),
 // deduped by singletonKey = batchId.
 export const PGBOSS_QUEUE_IMPORT_PREPARE = "import.prepare";

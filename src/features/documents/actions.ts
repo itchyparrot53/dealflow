@@ -19,6 +19,7 @@ import {
   updateDraft,
 } from "./documents";
 import { issueDocument, voidInvoice } from "./issue";
+import { deletePayment, recordPayment } from "./payments";
 import { type DocumentSettingsView, updateDocumentSettings } from "./settings";
 import {
   createTemplate,
@@ -156,4 +157,22 @@ export async function voidInvoiceAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await voidInvoice(db, g.value, id, SIG()));
+}
+
+export async function recordPaymentAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await recordPayment(db, g.value, input, SIG()));
+}
+
+export async function deletePaymentAction(
+  id: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await deletePayment(db, g.value, id, SIG()));
 }

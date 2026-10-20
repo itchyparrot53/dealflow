@@ -588,11 +588,14 @@ export async function getDocument(
   const visible = await assertDealVisible(db, actor, row.dealId, signal);
   if (!visible.ok) return err(toDocumentError(visible.error));
 
-  const [dealTitle, lines, payments] = await Promise.all([
-    loadDealTitle(db, row.dealId),
-    readLines(db, id, signal),
-    db.select().from(documentPayments).where(eq(documentPayments.documentId, id)),
-  ]);
+  // Sequential on purpose: inside a transaction these all run on one pg client,
+  // which cannot execute two queries at once.
+  const dealTitle = await loadDealTitle(db, row.dealId);
+  const lines = await readLines(db, id, signal);
+  const payments = await db
+    .select()
+    .from(documentPayments)
+    .where(eq(documentPayments.documentId, id));
   signal.throwIfAborted();
   return ok(toView(row, dealTitle, lines, paymentViews(payments)));
 }
