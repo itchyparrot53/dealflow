@@ -9,6 +9,7 @@ export const STRINGS = {
   app: { name: "Dealflow" },
   nav: {
     pipeline: "Pipeline",
+    forecast: "Forecast",
     leads: "Leads",
     deals: "Deals",
     contacts: "Contacts",

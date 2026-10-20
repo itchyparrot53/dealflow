@@ -7,6 +7,7 @@ import {
   List,
   Settings,
   Sprout,
+  TrendingUp,
   Users,
 } from "lucide-react";
 import type React from "react";
@@ -24,6 +25,10 @@ export function DocsIcon({ className }: IconProps): React.ReactNode {
 
 export function PipelineIcon({ className }: IconProps): React.ReactNode {
   return <Kanban aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
+}
+
+export function ForecastIcon({ className }: IconProps): React.ReactNode {
+  return <TrendingUp aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
 
 export function DealsIcon({ className }: IconProps): React.ReactNode {

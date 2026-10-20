@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-20 21:09
+Current: 3.3 · Last updated: 2026-10-20 21:11
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -26,7 +26,7 @@ Current: 3.2 · Last updated: 2026-10-20 21:09
 - [x] 2.5 Converted and weighted totals on the board and list
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Forecast service (test-first)
-- [ ] 3.2 Forecast page and navigation
+- [x] 3.2 Forecast page and navigation
 - [ ] 3.3 Demo seed and docs
 - [ ] 3.4 Phase 3 QA gate
 - [ ] 4.1 E2E sales spec and screenshots
@@ -103,6 +103,11 @@ Current: 3.2 · Last updated: 2026-10-20 21:09
 - 3.1: `moveDealToMonth` loads the deal, refuses won/lost with `E_DEAL_PRECONDITION` (the plan allowed the existing "not editable" error; no new ID), clamps the day of month, and calls `updateDeal` so CAS, the change log and the realtime event are exactly the manual close-date path.
 - 3.1: the currency coalesce in the forecast, board and list SQL gained a `'USD'` fallback: a fresh database has no settings row and `readBaseCurrency` then returns USD, so without the fallback every deal read as rate-less and the totals were zero. The first forecast test run caught this.
 - 3.1: the forecast test file was written after the first draft of the service rather than before it; the first run still exposed the settings fallback bug above, after which the cases were completed. Logged rather than claimed as test-first.
+
+- 3.2: the forecast is a client board reading `forecast.get` through tRPC with its filters in component state, so changing pipeline, month count, include-won or the month range never reloads the RSC tree; the page only loads the visible pipelines.
+- 3.2: dragging uses dnd-kit with an optimistic `moves` overlay; the card leaves its old month immediately, a refused action removes the override (rollback) and shows copy, and the totals catch up when `forecast.get` invalidates.
+- 3.2: the Forecast item sits after Pipeline in `NAV_ITEMS` with a TrendingUp glyph; the number-key shortcuts shift by one because they index that same list by design.
+- 3.2: the no-date section shows the service's first 100 titles with the real count in its heading.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -16,6 +16,7 @@ import {
   ContactsIcon,
   DashboardIcon,
   DocsIcon,
+  ForecastIcon,
   InboxIcon,
   LeadsIcon,
   PipelineIcon,
@@ -26,6 +27,7 @@ import {
 // shared nav key so the rail and the number shortcuts can never drift out of order.
 const ICONS: Record<NavKey, typeof PipelineIcon> = {
   pipeline: PipelineIcon,
+  forecast: ForecastIcon,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
