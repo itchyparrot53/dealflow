@@ -11,6 +11,7 @@ export * from "./customFieldDefs";
 export * from "./dealFollowers";
 export * from "./dealParticipants";
 export * from "./deals";
+export * from "./documents";
 export * from "./email";
 export * from "./emailAttachments";
 export * from "./emailAuthoring";

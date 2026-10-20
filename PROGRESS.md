@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 0.1 · Last updated: 2026-10-20 23:06
+Current: 0.3 · Last updated: 2026-10-20 23:07
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
 
 ## Tasks
 - [x] 0.1 Start Part 4: progress files, kit and baseline
-- [ ] 0.2 Documents schema and migration
+- [x] 0.2 Documents schema and migration
 - [ ] 0.3 Markdown-lite, variables, transitions, numbering (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Settings, templates and the capability
@@ -44,6 +44,9 @@ Current: 0.1 · Last updated: 2026-10-20 23:06
 - 0.1: pg-boss schedules are registered in `src/server/worker.ts` (`registerReleaseCheckJob` from `src/features/release/job.ts`, queue name in `src/constants/jobNames.ts`), so `documents.overdue` will be registered from that worker.
 - 0.1: the notifications kind list is the typed `NOTIFICATION_TYPES` tuple in `src/constants/notificationTypes.ts`, so the three document kinds are appended there.
 - 0.1: pnpm 9.15.9 (from `/tmp/dealflow-tools`), Node 24.16.0 and Docker 24.0.5 are available; the `subagent` tool is available, so the Task 4.3 review can use it.
+- 0.2: the self-referencing `documents.source_quote_id` needs the `AnyPgColumn` return annotation on its `references` thunk; a bare `() => documents.id` makes the table type circular (TS7022/TS2577), so the documented escape is used.
+- 0.2: `document_lines` and `document_counters` carry the same positive/bounded checks Part 3's line table has (`quantity > 0`, `item_price >= 0`, percents 0 to 100, `last_number >= 1`) even though 6.4 names checks only for the other tables; a negative quantity or counter is a programmer error that the database now refuses.
+- 0.2: `drizzle-kit generate` produced `0081_dealflow_documents.sql` creating exactly the six tables of 6.4 (document_settings, document_templates, document_counters, documents, document_lines, document_payments), and `pnpm db:migrate:dev` applied it to the host dev database; all six tables were confirmed present.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
