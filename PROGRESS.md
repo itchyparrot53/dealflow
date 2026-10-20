@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
-STATUS: IN PROGRESS
-Current: 5.6 · Last updated: 2026-10-20 18:35
+STATUS: COMPLETE
+Current: COMPLETE · Last updated: 2026-10-20 19:00
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -49,7 +49,7 @@ Current: 5.6 · Last updated: 2026-10-20 18:35
 - [x] 5.3 Integration suite, smoke and docs
 - [x] 5.4 Independent review and hardening
 - [x] 5.5 Final checklist
-- [ ] 5.6 Final report and completion
+- [x] 5.6 Final report and completion
 
 ## QA log
 - Independent review: QA RESULT FAIL (round 3) via fresh-context subagent · 3 rounds · round 1 FAIL (1 major, 5 minor) · round 2 FAIL (1 major, 5 minor) · round 3 FAIL (1 major, 2 minor) · all fixed · typecheck ok · lint ok · build ok · unit 4979/4979 · mail integration 24/24
@@ -192,3 +192,57 @@ Current: 5.6 · Last updated: 2026-10-20 18:35
 18. PASS - no em dash in any authored file in the diff. The single match is `scripts/check-progress.mjs` line 16, a byte-identical copy of the kit's own checker, which rule 18 forbids editing.
 19. PASS - `pnpm check:progress --final` passes (run in Task 5.6 after this report; recorded there).
 20. PASS - `docs/dealflow/MAIL.md` exists and `docs/dealflow/UPSTREAM.md` lists the `provider_thread_id` rename.
+
+### Definition of done
+
+1. PASS - `AUDIT-P1.md` records the fresh-context audit and R1 to R7; every blocker and major is FIXED with a named test (R1 `aiAuthFixes` concurrent confirm; R2 `AI_ACTION_TIMEOUT_MS`; R3 magic-link reset; R5 atomic lockout; R6 `mime.test.ts`), A1/A3/A4 are ACCEPTED with reasons, R7 is the audit itself, and no row is open.
+2. PASS - `aiAuthFixes.integration.test.ts` proves two concurrent confirms run the write once; the five provider actions use `AI_ACTION_TIMEOUT_MS` (60 s); a magic-link session under 15 minutes changes the password without the current one and an older one cannot; ten concurrent wrong passwords lock the account.
+3. PASS - migration `0078_dealflow_mail_rename` renames the four columns; checklist 12 greps clean.
+4. PASS - every send, sync, attachment, reconcile and trash path resolves a `MailProvider`; the Gmail adapter wraps the unchanged `syncMailbox`, and the renamed email tests pass unchanged.
+5. PASS - `deriveMessageId` uses the mailbox domain (R6 test) and notification mail goes through `getSystemMailer()`, with a test that sends for a user who has no mailbox.
+6. PASS - `ConnectMailboxForm` plus `connectImapMailbox` test IMAP and SMTP before writing anything, store the app password encrypted, reset cursors/locations, and keep Gmail when Google is configured; the five connect cases pass against real Postgres.
+7. PASS - `discoverFolders` mirrors INBOX/Sent/Archive/Junk/Trash by SPECIAL-USE flag with a name fallback; cursors store UIDVALIDITY/last UID/UIDNEXT/HIGHESTMODSEQ (0 to null); the 90-day first pass, the 365-day backfill and the UIDVALIDITY reset are covered by the sync suite.
+8. PASS - header threading with a child before its parent, subject-plus-participant fallback within 30 days, cross-folder dedupe and trash/un-trash are four of the nine sync tests.
+9. PASS - the IDLE manager keeps one connection per mailbox (capped by `MAIL_IDLE_MAX`), nudges a sync on `exists`, and the poll re-enqueues on `MAIL_SYNC_CADENCE_SECONDS`.
+10. PASS - SMTP send strips Bcc from the wire copy, APPENDs the full message to Sent (durable row plus five-minute retry, `gave_up` at 12), threads replies, defers over the daily limit and refuses over the per-message limit.
+11. PASS - attachments re-fetch and re-parse on demand (`idx:{n}`), and the trash path MOVEs every copy to the mailbox Trash; both have integration tests.
+12. PASS - the filesystem fake (`MAIL_PROVIDER_FAKE_DIR`) backs the integration and e2e suites, and `pnpm mail:live-check` returned `status: ok` against Purelymail (send, APPEND, inbound 5.7 s, Bcc stripped, references, Sent search, Trash move).
+13. PASS - typecheck, lint and build exit 0; unit 4979/4979; integration 1820/1820; e2e 16/16 for specs 00 to 06; all 8 Part 2 screenshots and 23 Part 1 screenshots exist; smoke PASS; `pnpm check:progress --final` passes.
+
+### Owner actions
+
+1. Rebuild the dev stack so the app reads the renamed columns: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`). The database already has migrations 0077 to 0079.
+2. Connect your mailbox: Settings → Email sync, enter the address and a Purelymail app password, keep the Purelymail preset, press **Test and connect**.
+3. Send yourself one email from the CRM (compose, or a reply from the inbox) and confirm the copy appears in the Sent folder of your mail app.
+4. Reply from your mail app and watch the reply thread in the CRM within about 15 seconds (IDLE) or at most the poll cadence; the thread should show three messages.
+5. Fix the partial Google configuration in `.env` (the client id and secret are set, the workspace domain is empty) or blank all three. Until then, commands that load `.env` need the three `GOOGLE_*=` overrides.
+6. Re-run `pnpm mail:live-check` after changing the probe credentials or the host, and read `docs/dealflow/mail-live-check.json`.
+7. Optional: tune `MAIL_SYNC_CADENCE_SECONDS`, `MAIL_IDLE_MAX`, `MAIL_INITIAL_SYNC_DAYS`, `MAIL_BACKFILL_DAYS`, `MAIL_MAX_MESSAGE_BYTES` and the two recipient limits; the defaults are documented in `docs/dealflow/MAIL.md`.
+
+### Decisions worth reviewing
+
+- `CONTRACT CHANGE:` the compose project keeps the folder-derived name (Part 1 AMENDMENT A1); renaming it would orphan the running `warpdrive-main` volumes.
+- `CONTRACT CHANGE:` the E_MAIL_010 composer copy quotes the documented default of 250 recipients, because the configured server cap must not be imported into client code; the server enforces the real value.
+- Changed tests, all logged with a reason: `release/router.test.ts` now expects the disabled default and tests the enabled path through `computeStatus`; the notification "suppresses when the recipient has no mailbox" test became "sends even without a mailbox" (the feature it was asserting is gone); e2e `01-auth` now saves a password session (a magic-link session may reset a password, so 02 needed one that must prove the current one); e2e `06-mail` disconnects the demo data's Gmail mailbox before connecting IMAP.
+- `storeInboundMessage` also returns the deal-arrival data, so the notification stays outside the transaction while the decision stays next to the write.
+- `SendOutcome` carries the `SentMessage`; the outbound copy writes the headers row, and a Gmail metadata failure after an accepted send is marked `sent` so a delivered message is never reported as failed.
+- The attachment id indexes mailparser's attachment array (`idx:0` is the first attachment), which is what the download re-parse indexes into.
+- `src/test/db.ts` now drops each cloned database after the test pool closes (best effort, no FORCE), because ~400 clones per suite filled the Docker VM disk; a lingering LISTEN connection keeps its clone and the container reclaims it.
+- `ResolveDeps.transports`, `split` of `createImapProvider` options and the folder-name fallback were added where the plan's contract assumed a type or a flag that did not exist or was not sent; each is logged at its task.
+
+### Open issues
+
+- Docker's VM disk is tight (12.4 GB free at the end); the integration harness now reclaims its clones, which took the suite from a disk failure to 63 s. Smoke/e2e image builds still add layers; pruning is left to the owner.
+- The e2e demo data seeds Gmail rows without refresh tokens, so the worker logs expected `[email.sync] failed ... no usable refresh token` lines during e2e. It is demo noise, not a product error.
+- `next build` occasionally fails with `ENOTEMPTY` on `.next` when another process touches the directory; removing `.next` and retrying works. Container builds in this sandbox need `DOCKER_BUILDKIT=0`.
+- Mail password quality, deliverability and the real Purelymail behaviour beyond the live check remain owner-verified.
+
+### Notes for Part 3
+
+- New screens and routes: Settings → Email sync (`/settings/email-sync`, screenshots `p2-email-sync-connect`, `p2-email-sync-error`, `p2-email-sync-connected`); inbox after sync (`/inbox`, `p2-inbox-synced`); thread with the sent reply (`p2-thread-reply`) and with three messages (`p2-thread-three-messages`); the linked deal timeline (`/deals/{id}`, `p2-deal-email-timeline`, contact page as the no-deal fallback); password reset after a link sign-in (`/settings/profile`, `p2-profile-password-reset`).
+- Mail facts for Part 3: Purelymail sends SPECIAL-USE flags with a leading backslash; it does not save SMTP-sent mail (the APPEND is required); SEARCH lags APPEND by seconds, so UID FETCH is used; IDLE delivered in 5.7 s in the final check; HIGHESTMODSEQ is present (13 on a small mailbox) and 0 means unknown.
+- The fake transport, its layout and helpers are in `src/features/mail/transport/fakeStore.ts`; `docs/dealflow/MAIL.md` documents the provider layer, the limits, the fake and the live check.
+- Upstream: `docs/dealflow/UPSTREAM.md` lists the Part 1 files and the Part 2 column rename; future upstream email fixes need a manual port through the provider layer.
+- Environment: the commands, ports and test quirks are in PROGRESS.md → Environment; the new mail env keys are listed in 6.3 and in `.env.example`.
+
+Build finished. Read PROGRESS.md → Final report.
