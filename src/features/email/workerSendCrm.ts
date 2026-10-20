@@ -1,14 +1,14 @@
 // Post-send CRM copy + token backfill for the worker send path.
 // The interactive path (send.ts) has all context in scope and calls storeOutboundCopy
 // + backfillTokens directly. The worker path only has (accountId, idempotencyKey,
-// gmail, signal), so this helper loads what it needs from the DB and delegates.
+// provider, signal), so this helper loads what it needs from the DB and delegates.
 // Idempotent: storeOutboundCopy upserts on (account_id, provider_message_id) and
 // backfillTokens only updates rows where message_id IS NULL, so calling twice is safe.
 import { sql } from "drizzle-orm";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { err, ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
 import type { SendPayload } from "./outboxClaim";
 import type { SendEmailInput } from "./send";
 import { storeOutboundCopy } from "./sendStore";
@@ -19,7 +19,7 @@ export interface WorkerSendCrmArgs {
   accountId: string;
   idempotencyKey: string;
   providerMessageId: string;
-  gmail: GmailClient;
+  provider: MailProvider;
   signal: AbortSignal;
 }
 
@@ -109,7 +109,7 @@ export async function performWorkerSendCrm(
     input,
     resolvedTrackingEnabled,
     bodyHtml: payload.html,
-    gmail: args.gmail,
+    provider: args.provider,
     link,
     // Restore the composer's privacy pick from the stored payload so a SCHEDULED private compose
     // still lands a private thread when the worker delivers it (P1-shaped trap).

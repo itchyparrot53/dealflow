@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
 import { claim } from "./outboxClaim";
@@ -54,7 +55,7 @@ describe("sendEmail with scheduledSendAt", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct.id, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acct.id,

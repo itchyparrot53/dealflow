@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-20 03:14
+Current: 1.5 · Last updated: 2026-10-20 03:34
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -17,7 +17,7 @@ Current: 1.4 · Last updated: 2026-10-20 03:14
 - [x] 1.1 Rename the Gmail columns
 - [x] 1.2 Mail tables
 - [x] 1.3 MailProvider interface and Gmail adapter
-- [ ] 1.4 Send path on MailProvider
+- [x] 1.4 Send path on MailProvider
 - [ ] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
 - [ ] 1.6 Message-ID domain and notification emails via the system mailer
 - [ ] 1.7 Phase 1 QA gate
@@ -56,6 +56,11 @@ Current: 1.4 · Last updated: 2026-10-20 03:14
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 1.4: `SendOutcome` carries the optional `SentMessage`; `storeOutboundCopy` uses it when present and otherwise calls `provider.describeSent` once, which is what the replay-repair path needs.
+- 1.4: the Gmail adapter flags a post-accept metadata failure with `sent: true` and the provider id in the error context, and the outbox records the attempt as sent in that case; only the CRM-copy step fails, preserving the replay-repair behaviour the existing test asserts.
+- 1.4: `storeOutboundCopy` now writes the outbound `email_message_headers` row; the `references` column is a reserved word in raw SQL, so it is quoted and its text[] value is built with `jsonb_array_elements_text` (a plain array parameter was expanded by drizzle).
+- 1.4: `runSyncJob`/`runSendJob` take `resolveProvider` and close the provider in a `finally`; the send action resolves through `resolveMailProvider`, and the future-scheduled path uses a throwing stub provider.
+- 1.4: the 17 affected test files now pass `gmailProviderForTest(db, accountId, fake)`; no assertion changed. Email integration 337/337, email unit 647/647.
 - 1.3: `ResolveDeps` only carries `gmailClient` for now; the contract's optional `transports` field needs `MailTransportFactory`, which Task 2.2 creates, so it is added in Task 2.4 together with `createImapProvider`; the IMAP branch returns `E_MAIL_015` as the plan specifies.
 - 1.3: the Gmail adapter's `send` does the second metadata read (thread id and snippet) and returns its error if that read fails, matching today's `storeOutboundCopy`, which also treats a failed fetch as a failed store; the caller reconciles by Message-ID.
 - 1.3: `SentMessage.headers` for a reply come from the parent's `Reply-Thread` headers (inReplyTo plus the references chain), while `describeSent` reads the message's own Message-ID/In-Reply-To/References, because replay repair has no parent argument.

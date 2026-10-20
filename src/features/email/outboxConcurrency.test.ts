@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -69,7 +70,7 @@ describe("processSendAttempt concurrency", () => {
       const aPromise = processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fakeA,
+        provider: gmailProviderForTest(db, acct, fakeA),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -83,7 +84,7 @@ describe("processSendAttempt concurrency", () => {
       const rB = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fakeB,
+        provider: gmailProviderForTest(db, acct, fakeB),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });

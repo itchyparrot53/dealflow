@@ -9,11 +9,13 @@ import { db } from "@/db/client";
 import { makeStorageClient } from "@/features/files/storage";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
+import { resolveMailProvider } from "@/features/mail/provider/resolve";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, clientErr, toClientResult } from "@/types/actionResult";
 import { ok } from "@/types/result";
 import { softDisconnectMailbox } from "./disconnect";
-import { createGmailClient, type GmailClient } from "./gmailClient";
+import { createGmailClient } from "./gmailClient";
 import { makeRefresh } from "./gmailRefresh";
 import { assertMailboxOwner } from "./mailboxOwnership";
 import { buildAuthUrl, GMAIL_OAUTH_STATE_COOKIE } from "./oauth";
@@ -22,23 +24,23 @@ import { isFutureScheduledSend } from "./sendScheduling";
 import { trashThread } from "./threadTrash";
 import { ensureAccessToken } from "./tokens";
 
-// Stub Gmail client for the future-scheduled path: runSend enqueues + prepares the body
-// then returns before any Gmail I/O, so this is never invoked. Any call is a programmer
-// error (the scheduled path reached Gmail), so it throws.
-function scheduledStubGmail(): GmailClient {
+// Stub provider for the future-scheduled path: runSend enqueues + prepares the body then
+// returns before any mail I/O, so this is never invoked. Any call is a programmer error (the
+// scheduled path reached the network), so it throws.
+function scheduledStubProvider(): MailProvider {
   const unreachable = (): never => {
-    throw new AppError("E_GMAIL_009", "Gmail called on the future-scheduled send path", {});
+    throw new AppError("E_GMAIL_009", "mail provider called on the future-scheduled send path", {});
   };
   return {
-    sendRaw: unreachable,
-    historyList: unreachable,
-    getMessage: unreachable,
-    getThread: unreachable,
-    searchByRfc822: unreachable,
-    getAttachment: unreachable,
-    listMessages: unreachable,
-    getProfile: unreachable,
+    kind: "gmail",
+    sync: unreachable,
+    send: unreachable,
+    describeSent: unreachable,
+    findSent: unreachable,
+    replyHeaders: unreachable,
+    fetchAttachment: unreachable,
     trashThread: unreachable,
+    close: () => Promise.resolve(),
   };
 }
 
@@ -79,7 +81,7 @@ export async function sendEmail(
         actorId: ctx.actor.id,
         actorType: ctx.actor.type,
         actorGroupIds: ctx.actor.groupIds,
-        gmail: scheduledStubGmail(),
+        provider: scheduledStubProvider(),
         storage: makeStorageClient(),
         input,
         signal,
@@ -87,24 +89,24 @@ export async function sendEmail(
     );
   }
 
-  const token = await ensureAccessToken(db, {
-    accountId: input.accountId,
-    deps: { refresh: makeRefresh(signal) },
-  });
-  if (!token.ok) return clientErr(token.error);
+  const provider = await resolveMailProvider(db, input.accountId, signal);
+  if (!provider.ok) return clientErr(provider.error);
 
-  const gmail = createGmailClient(token.value.token);
-  return toClientResult(
-    await orchestrateSend(db, {
-      actorId: ctx.actor.id,
-      actorType: ctx.actor.type,
-      actorGroupIds: ctx.actor.groupIds,
-      gmail,
-      storage: makeStorageClient(),
-      input,
-      signal,
-    }),
-  );
+  try {
+    return toClientResult(
+      await orchestrateSend(db, {
+        actorId: ctx.actor.id,
+        actorType: ctx.actor.type,
+        actorGroupIds: ctx.actor.groupIds,
+        provider: provider.value,
+        storage: makeStorageClient(),
+        input,
+        signal,
+      }),
+    );
+  } finally {
+    await provider.value.close();
+  }
 }
 
 // Reader Delete -> Gmail Trash (P4). CSRF first, then the trusted actor. Resolve the thread's

@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import type { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
 import type { SendPayload } from "./outboxClaim";
 import type { SendEmailInput } from "./send";
 import { storeOutboundCopy } from "./sendStore";
@@ -13,7 +13,7 @@ interface ReplayRepairArgs {
   attemptId: string;
   accountId: string;
   fromEmail: string;
-  gmail: GmailClient;
+  provider: MailProvider;
   signal: AbortSignal;
 }
 
@@ -92,14 +92,21 @@ export async function ensureLocalCopyForReplay(
       }
     : undefined;
 
+  // The replay path has only the stored id, so ask the provider to describe the message once
+  // and hand that same SentMessage to the copy store.
+  const described = await args.provider.describeSent({ providerMessageId, signal: args.signal });
+  args.signal.throwIfAborted();
+  if (!described.ok) return described;
+
   const stored = await storeOutboundCopy(db, {
     accountId: args.accountId,
     fromEmail: args.fromEmail,
     providerMessageId,
+    sent: described.value,
     input,
     resolvedTrackingEnabled,
     bodyHtml: payload.html,
-    gmail: args.gmail,
+    provider: args.provider,
     link,
     // Restore the composer's privacy pick from the stored payload so a repaired thread keeps the
     // author's chosen visibility instead of falling back to the default (matches linkDealId repair).

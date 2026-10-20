@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { FakeGmailClient } from "./gmailFake";
 import type { SendPayload } from "./outboxClaim";
 import { ensureLocalCopyForReplay } from "./sendReplayRepair";
@@ -102,7 +103,7 @@ describe("ensureLocalCopyForReplay", () => {
         attemptId,
         accountId: acctId,
         fromEmail: "owner-replay@gunsnation.com",
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         signal: AbortSignal.timeout(8000),
       });
       expect(result.ok).toBe(true);
@@ -142,7 +143,7 @@ describe("ensureLocalCopyForReplay", () => {
         attemptId,
         accountId: acctId,
         fromEmail: "owner-replay2@gunsnation.com",
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         signal: AbortSignal.timeout(8000),
       });
       expect(result.ok).toBe(true);

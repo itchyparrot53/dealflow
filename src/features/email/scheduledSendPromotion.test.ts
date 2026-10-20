@@ -16,6 +16,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -75,7 +76,7 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: setupFake,
+        provider: gmailProviderForTest(db, acctId, setupFake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -111,7 +112,9 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
       const jobResult = await runSendJob(
         db,
         { accountId: acctId, idempotencyKey, signal: AbortSignal.timeout(8000) },
-        { resolveClient: () => Promise.resolve(ok(workerFake)) },
+        {
+          resolveProvider: () => Promise.resolve(ok(gmailProviderForTest(db, acctId, workerFake))),
+        },
       );
       expect(jobResult.ok).toBe(true);
       if (jobResult.ok) expect(jobResult.value.status).toBe("sent");
@@ -170,7 +173,7 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: setupFake,
+        provider: gmailProviderForTest(db, acctId, setupFake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -190,7 +193,9 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
       const jobResult = await runSendJob(
         db,
         { accountId: acctId, idempotencyKey, signal: AbortSignal.timeout(8000) },
-        { resolveClient: () => Promise.resolve(ok(workerFake)) },
+        {
+          resolveProvider: () => Promise.resolve(ok(gmailProviderForTest(db, acctId, workerFake))),
+        },
       );
       // processSendAttempt returns err(E_GMAIL_008) for a not-yet-claimable row.
       expect(jobResult.ok).toBe(false);

@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { MailProvider, SentMessage } from "@/features/mail/provider/types";
 import { err, ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
 
 export interface AttemptRow {
   id: string;
@@ -17,6 +17,9 @@ export interface AttemptRow {
 export type SendOutcome = {
   status: "sent" | "failed" | "needs_review";
   providerMessageId?: string;
+  // Present on a direct send; absent on a replay or reconcile hit, where the caller can ask the
+  // provider to describe the message by id.
+  sent?: SentMessage;
 };
 
 // Flip the row to sent and record the gmail message id. Idempotent and overwrite-safe:
@@ -50,23 +53,23 @@ export async function reconcile(
   db: Db,
   args: {
     attempt: AttemptRow;
-    gmail: GmailClient;
+    provider: MailProvider;
     signal: AbortSignal;
     now: number;
     windowMs: number;
   },
 ): Promise<Result<SendOutcome, AppError>> {
-  const found = await args.gmail.searchByRfc822({
+  const found = await args.provider.findSent({
     messageIdHeader: args.attempt.message_id_header,
     signal: args.signal,
   });
   args.signal.throwIfAborted();
   if (!found.ok) return found;
 
-  const hit = found.value.messages[0];
-  if (hit !== undefined) {
-    await markSent(db, args.attempt.id, hit.id, args.signal);
-    return ok({ status: "sent", providerMessageId: hit.id });
+  const hit = found.value;
+  if (hit !== null) {
+    await markSent(db, args.attempt.id, hit.providerMessageId, args.signal);
+    return ok({ status: "sent", providerMessageId: hit.providerMessageId });
   }
 
   // Not found. The send_started_at timestamp anchors the reconcile deadline. Raw SQL

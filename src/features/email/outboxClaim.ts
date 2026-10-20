@@ -77,11 +77,11 @@ export async function loadAttempt(
 export interface SendInputs {
   from: string;
   payload: SendPayload;
-  // Gmail conversation this send replies into, plus the newest message already in it. Both null
-  // for a fresh compose. The worker turns them into the Gmail threadId and the RFC 5322
+  // Provider conversation this send replies into, plus the newest message already in it. Both
+  // null for a fresh compose. The provider turns them into its thread id and the RFC 5322
   // In-Reply-To/References headers, without which a reply lands as a standalone message.
   providerThreadId: string | null;
-  parentGmailMessageId: string | null;
+  parentProviderMessageId: string | null;
 }
 
 export async function loadSendInputs(
@@ -115,7 +115,7 @@ export async function loadSendInputs(
     from: row.from_email,
     payload: row.payload,
     providerThreadId: row.provider_thread_id,
-    parentGmailMessageId: row.parent_gmail_message_id,
+    parentProviderMessageId: row.parent_gmail_message_id,
   };
 }
 

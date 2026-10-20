@@ -1,3 +1,4 @@
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 // Real-DB integration test for attachment send (Task 6.1 / Phase 6).
 // Uses storageFake for file bytes, gmailFake for send assertions.
 // Do NOT mock the database; all writes hit the real test Postgres.
@@ -28,7 +29,7 @@ describe("sendEmail with attachments (Task 6.1)", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage,
         input: {
           accountId: acctId,
@@ -85,7 +86,7 @@ describe("sendEmail with attachments (Task 6.1)", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage,
         input: {
           accountId: acctId,
@@ -144,7 +145,7 @@ describe("sendEmail with attachments (Task 6.1)", () => {
         actorId: attacker.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, attackerAcctId, fake),
         storage,
         input: {
           accountId: attackerAcctId,

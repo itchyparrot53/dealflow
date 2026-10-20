@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -56,7 +57,10 @@ async function deliverScheduled(
       idempotencyKey: args.idempotencyKey,
       signal: AbortSignal.timeout(8000),
     },
-    { resolveClient: () => Promise.resolve(ok(args.workerFake)) },
+    {
+      resolveProvider: () =>
+        Promise.resolve(ok(gmailProviderForTest(db, args.accountId, args.workerFake))),
+    },
   );
   expect(jobResult.ok).toBe(true);
   if (jobResult.ok) expect(jobResult.value.status).toBe("sent");
@@ -102,7 +106,7 @@ describe("compose visibility survives every send path", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -130,7 +134,7 @@ describe("compose visibility survives every send path", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
+        provider: gmailProviderForTest(db, acctId, new FakeGmailClient()),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -191,7 +195,7 @@ describe("compose visibility survives every send path", () => {
         attemptId,
         accountId: acctId,
         fromEmail: "owner-vis3@gunsnation.com",
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         signal: AbortSignal.timeout(8000),
       });
       expect(result.ok).toBe(true);
@@ -217,7 +221,7 @@ describe("compose visibility survives every send path", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,

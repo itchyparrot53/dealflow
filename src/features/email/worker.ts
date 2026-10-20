@@ -4,12 +4,10 @@ import type { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { db as prodDb } from "@/db/client";
 import { makeStorageClient } from "@/features/files/storage";
+import { resolveMailProvider } from "@/features/mail/provider/resolve";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { err, ok, type Result } from "@/types/result";
-import { createGmailClient, type GmailClient } from "./gmailClient";
-import { makeRefresh } from "./gmailRefresh";
 import { processSendAttempt } from "./outbox";
-import { syncMailbox } from "./sync";
-import { ensureAccessToken } from "./tokens";
 import { performWorkerSendCrm } from "./workerSendCrm";
 
 // Deterministic per-mailbox jitter (seconds) to spread sync starts and avoid a
@@ -25,28 +23,20 @@ export function jitterFor(accountId: string): number {
   return hash % SYNC_JITTER_MODULO_SECONDS;
 }
 
-// Resolve a fresh Gmail client for an account (default dep). Injectable so tests pass a
-// fake transport with no real OAuth. Never logs tokens.
+// Resolve the account's mail provider (default dep). Injectable so tests pass a fake transport
+// with no real OAuth. Never logs tokens or mailbox passwords.
 export interface SyncDeps {
-  resolveClient: (accountId: string, signal: AbortSignal) => Promise<Result<GmailClient, AppError>>;
+  resolveProvider: (
+    accountId: string,
+    signal: AbortSignal,
+  ) => Promise<Result<MailProvider, AppError>>;
 }
 
-async function defaultResolveClient(
-  accountId: string,
-  signal: AbortSignal,
-): Promise<Result<GmailClient, AppError>> {
-  signal.throwIfAborted();
-  const token = await ensureAccessToken(prodDb, {
-    accountId,
-    deps: { refresh: makeRefresh(signal) },
-  });
-  if (!token.ok) return token;
-  return ok(createGmailClient(token.value.token));
-}
+const defaultSyncDeps: SyncDeps = {
+  resolveProvider: (accountId, signal) => resolveMailProvider(prodDb, accountId, signal),
+};
 
-const defaultSyncDeps: SyncDeps = { resolveClient: defaultResolveClient };
-
-// Per-job sync handler. Resolves a client, runs syncMailbox, and on ANY error stamps
+// Per-job sync handler. Resolves the provider, runs its sync, and on ANY error stamps
 // last_error_id and RETURNS the err (never throws raw, never logs tokens). The pg-boss
 // handler converts a returned err into a sanitized throw for backoff.
 export async function runSyncJob(
@@ -55,16 +45,16 @@ export async function runSyncJob(
   deps: SyncDeps = defaultSyncDeps,
 ): Promise<Result<{ applied: number }, AppError>> {
   args.signal.throwIfAborted();
-  const client = await deps.resolveClient(args.accountId, args.signal);
-  if (!client.ok) return stampError(db, args.accountId, client.error, args.signal);
+  const resolved = await deps.resolveProvider(args.accountId, args.signal);
+  if (!resolved.ok) return stampError(db, args.accountId, resolved.error, args.signal);
 
-  const synced = await syncMailbox(db, {
-    accountId: args.accountId,
-    gmail: client.value,
-    signal: args.signal,
-  });
-  if (!synced.ok) return stampError(db, args.accountId, synced.error, args.signal);
-  return ok(synced.value);
+  try {
+    const synced = await resolved.value.sync(args.signal);
+    if (!synced.ok) return stampError(db, args.accountId, synced.error, args.signal);
+    return ok(synced.value);
+  } finally {
+    await resolved.value.close();
+  }
 }
 
 // Per-job send handler. Resolves a client, processes one outbox attempt, and on success
@@ -78,34 +68,38 @@ export async function runSendJob(
   deps: SyncDeps = defaultSyncDeps,
 ): Promise<Result<{ status: string }, AppError>> {
   args.signal.throwIfAborted();
-  const client = await deps.resolveClient(args.accountId, args.signal);
-  if (!client.ok) return client;
+  const resolved = await deps.resolveProvider(args.accountId, args.signal);
+  if (!resolved.ok) return resolved;
 
-  const outcome = await processSendAttempt(db, {
-    accountId: args.accountId,
-    idempotencyKey: args.idempotencyKey,
-    gmail: client.value,
-    storage: makeStorageClient(),
-    signal: args.signal,
-  });
-  if (!outcome.ok) return outcome;
-
-  // Store the CRM copy and backfill tracking tokens for every worker-delivered send
-  // (including scheduled sends promoted by the delayed pg-boss job). The interactive
-  // path (send.ts runSend step g) does this inline; the worker path defers to here.
-  // Idempotent: storeOutboundCopy upserts and backfillTokens is a no-op when already done.
-  if (outcome.value.status === "sent" && outcome.value.providerMessageId !== undefined) {
-    const crm = await performWorkerSendCrm(db, {
+  try {
+    const outcome = await processSendAttempt(db, {
       accountId: args.accountId,
       idempotencyKey: args.idempotencyKey,
-      providerMessageId: outcome.value.providerMessageId,
-      gmail: client.value,
+      provider: resolved.value,
+      storage: makeStorageClient(),
       signal: args.signal,
     });
-    if (!crm.ok) return crm;
-  }
+    if (!outcome.ok) return outcome;
 
-  return ok({ status: outcome.value.status });
+    // Store the CRM copy and backfill tracking tokens for every worker-delivered send
+    // (including scheduled sends promoted by the delayed pg-boss job). The interactive
+    // path (send.ts runSend step g) does this inline; the worker path defers to here.
+    // Idempotent: storeOutboundCopy upserts and backfillTokens is a no-op when already done.
+    if (outcome.value.status === "sent" && outcome.value.providerMessageId !== undefined) {
+      const crm = await performWorkerSendCrm(db, {
+        accountId: args.accountId,
+        idempotencyKey: args.idempotencyKey,
+        providerMessageId: outcome.value.providerMessageId,
+        provider: resolved.value,
+        signal: args.signal,
+      });
+      if (!crm.ok) return crm;
+    }
+
+    return ok({ status: outcome.value.status });
+  } finally {
+    await resolved.value.close();
+  }
 }
 
 // Stamp last_error_id for a failed sync and return the original error. Errors here are

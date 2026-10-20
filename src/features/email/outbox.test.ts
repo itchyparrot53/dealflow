@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { AppError } from "@/constants/errorIds";
 import { withTestDb } from "@/db/testing";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { err, ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -91,7 +92,7 @@ describe("processSendAttempt", () => {
       const r = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -117,7 +118,7 @@ describe("processSendAttempt", () => {
       await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -142,7 +143,7 @@ describe("processSendAttempt", () => {
       const r1 = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -154,7 +155,7 @@ describe("processSendAttempt", () => {
       const r2 = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -193,7 +194,7 @@ describe("processSendAttempt", () => {
       const r = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -229,7 +230,7 @@ describe("processSendAttempt", () => {
       const r = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
         windowMs: 1, // tiny window: the deadline is already in the past
@@ -258,7 +259,7 @@ describe("processSendAttempt", () => {
       const r = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -286,7 +287,7 @@ describe("processSendAttempt", () => {
       const r1 = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -298,7 +299,7 @@ describe("processSendAttempt", () => {
       const r2 = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -319,7 +320,7 @@ describe("processSendAttempt", () => {
       const r1 = await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });
@@ -331,7 +332,7 @@ describe("processSendAttempt", () => {
       await processSendAttempt(db, {
         accountId: acct,
         idempotencyKey: KEY,
-        gmail: fake,
+        provider: gmailProviderForTest(db, acct, fake),
         storage: new FakeStorageClient(),
         signal: newSignal(),
       });

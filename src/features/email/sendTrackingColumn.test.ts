@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -36,7 +37,7 @@ describe("sendEmail tracking_enabled column", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -74,7 +75,7 @@ describe("sendEmail tracking_enabled column", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,

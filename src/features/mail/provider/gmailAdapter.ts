@@ -1,10 +1,11 @@
+import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { GmailClient } from "@/features/email/gmailClient";
 import type { GmailMessage } from "@/features/email/gmailSchemas";
 import { toRawBase64 } from "@/features/email/mime";
 import { type ReplyThreadHeaders, replyThreadHeaders } from "@/features/email/replyHeaders";
 import { syncMailbox } from "@/features/email/sync";
-import { ok } from "@/types/result";
+import { err, ok } from "@/types/result";
 import type { MailProvider, SentMessage } from "./types";
 
 // Reads one RFC 822 header out of a Gmail message payload. Header names are case-insensitive.
@@ -58,9 +59,19 @@ export function createGmailProvider(db: Db, accountId: string, gmail: GmailClien
       if (!sent.ok) return sent;
 
       // The send call only returns ids, so one metadata read supplies the thread id and snippet
-      // the outbound copy stores. A failure here is reported: the caller reconciles by Message-ID.
+      // the outbound copy stores. Gmail already accepted the message at this point, so a read
+      // failure is marked `sent` in the context: the outbox records the send and the CRM copy
+      // step is the one that fails, never the send itself.
       const fetched = await gmail.getMessage({ id: sent.value.id, signal: args.signal });
-      if (!fetched.ok) return fetched;
+      if (!fetched.ok) {
+        return err(
+          new AppError(fetched.error.id, fetched.error.message, {
+            ...fetched.error.context,
+            sent: true,
+            providerMessageId: sent.value.id,
+          }),
+        );
+      }
 
       const thread = await parentThreadHeaders(gmail, args.parentProviderMessageId, args.signal);
       return ok({

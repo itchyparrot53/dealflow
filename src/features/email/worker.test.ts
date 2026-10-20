@@ -4,6 +4,7 @@ import { SYNC_JITTER_MODULO_SECONDS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { err, ok } from "@/types/result";
 import { FakeGmailClient } from "./gmailFake";
 import { jitterFor, runSyncJob } from "./worker";
@@ -48,7 +49,7 @@ describe("runSyncJob", () => {
         db,
         { accountId, signal: SIG() },
         {
-          resolveClient: () =>
+          resolveProvider: () =>
             Promise.resolve(err(new AppError("E_GMAIL_001", "refresh failed", {}))),
         },
       );
@@ -71,7 +72,7 @@ describe("runSyncJob", () => {
         db,
         { accountId, signal: SIG() },
         {
-          resolveClient: () => Promise.resolve(ok(fake)),
+          resolveProvider: () => Promise.resolve(ok(gmailProviderForTest(db, accountId, fake))),
         },
       );
       expect(r.ok).toBe(true);

@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
 import { sendEmail } from "./send";
@@ -48,7 +49,7 @@ describe("sendEmail with signatureId", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail,
+        provider: gmailProviderForTest(db, accountId, gmail),
         storage: new FakeStorageClient(),
         input: {
           accountId,
@@ -106,7 +107,7 @@ describe("sendEmail with signatureId", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
+        provider: gmailProviderForTest(db, accountId, new FakeGmailClient()),
         storage: new FakeStorageClient(),
         input: {
           accountId,
@@ -143,7 +144,7 @@ describe("sendEmail with signatureId", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail,
+        provider: gmailProviderForTest(db, accountId, gmail),
         storage: new FakeStorageClient(),
         input: {
           accountId,
@@ -184,7 +185,7 @@ describe("sendEmail with signatureId", () => {
         actorId: user.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
+        provider: gmailProviderForTest(db, accountId, new FakeGmailClient()),
         storage: new FakeStorageClient(),
         input: {
           accountId,

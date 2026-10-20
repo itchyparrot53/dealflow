@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { ok } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -81,7 +82,10 @@ async function deliverScheduled(
       idempotencyKey: args.idempotencyKey,
       signal: AbortSignal.timeout(8000),
     },
-    { resolveClient: () => Promise.resolve(ok(args.workerFake)) },
+    {
+      resolveProvider: () =>
+        Promise.resolve(ok(gmailProviderForTest(db, args.accountId, args.workerFake))),
+    },
   );
   expect(jobResult.ok).toBe(true);
   if (jobResult.ok) expect(jobResult.value.status).toBe("sent");
@@ -110,7 +114,7 @@ describe("scheduled send deal linking (linkDealId via the worker path)", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: setupFake,
+        provider: gmailProviderForTest(db, acctId, setupFake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -160,7 +164,7 @@ describe("scheduled send deal linking (linkDealId via the worker path)", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: setupFake,
+        provider: gmailProviderForTest(db, acctId, setupFake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,

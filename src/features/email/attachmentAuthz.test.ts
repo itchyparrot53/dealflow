@@ -1,3 +1,4 @@
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 // Security tests for attachment authorization in resolveAttachments (sendHelpers.ts).
 // Previously the actor was hardcoded as { type: "regular", groupIds: new Set() },
 // which denied admins and group members who should be allowed.
@@ -51,7 +52,7 @@ describe("resolveAttachments actor authz (Phase 6 security)", () => {
         actorId: admin.id,
         actorType: "admin",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, adminAcctId, fake),
         storage,
         input: {
           accountId: adminAcctId,
@@ -116,7 +117,7 @@ describe("resolveAttachments actor authz (Phase 6 security)", () => {
         actorType: "regular",
         // Pass the real group membership so canSee grants access.
         actorGroupIds: new Set<string>([groupId]),
-        gmail: fake,
+        provider: gmailProviderForTest(db, memberAcctId, fake),
         storage,
         input: {
           accountId: memberAcctId,

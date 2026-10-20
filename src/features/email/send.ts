@@ -3,8 +3,8 @@ import { EMAIL_VISIBILITY } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { err, ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
 import { assertMailboxOwner } from "./mailboxOwnership";
 import { applyMergeFields } from "./merge";
 import { buildMergeContext } from "./mergeContext";
@@ -66,7 +66,7 @@ export interface SendEmailArgs {
   // Callers obtain these from the trusted session context (never from client input).
   actorType: "admin" | "regular";
   actorGroupIds: ReadonlySet<string>;
-  gmail: GmailClient;
+  provider: MailProvider;
   // storage is required: every send path must wire in real storage so production
   // attachment sends never silently fail. Tests inject FakeStorageClient.
   storage: StorageClient;
@@ -76,7 +76,7 @@ export interface SendEmailArgs {
 
 // INTERACTIVE, user-facing send: ownership check, durable outbox/idempotency, tracking
 // tokens, and the stored CRM copy. (The lower-level system-send primitive is a separate
-// export added in Task 15.) gmail is injected so tests can supply the fake.
+// export added in Task 15.) the provider is injected so tests can supply the fake.
 export async function sendEmail(
   db: Db,
   args: SendEmailArgs,
@@ -185,7 +185,7 @@ async function runSend(
       attemptId,
       accountId: input.accountId,
       fromEmail: emailAddress,
-      gmail: args.gmail,
+      provider: args.provider,
       signal,
     });
     if (!repaired.ok) return repaired;
@@ -225,7 +225,7 @@ async function runSend(
   const outcome = await processSendAttempt(db, {
     accountId: input.accountId,
     idempotencyKey: input.idempotencyKey,
-    gmail: args.gmail,
+    provider: args.provider,
     storage: args.storage,
     signal,
   });
@@ -237,13 +237,14 @@ async function runSend(
       accountId: input.accountId,
       fromEmail: emailAddress,
       providerMessageId: outcome.value.providerMessageId,
+      sent: outcome.value.sent,
       // Store the CRM copy under the MERGED subject so the thread/message match what was sent.
       input: { ...input, subject: mergedSubject },
       resolvedTrackingEnabled: resolvedTrackOpens || resolvedTrackLinks,
       bodyHtml: bodyForCopy,
       // Create a NEW thread with the composer's chosen visibility (C1).
       visibility: input.visibility,
-      gmail: args.gmail,
+      provider: args.provider,
       link: {
         owner: actor,
         recipients: [...input.to, ...(input.cc ?? []), ...(input.bcc ?? [])],

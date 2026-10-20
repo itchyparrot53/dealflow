@@ -4,27 +4,24 @@ import { RECONCILE_WINDOW_MS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
+import type { MailProvider } from "@/features/mail/provider/types";
 import { err, ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
-import { buildMime, deriveMessageId, type MimeAttachment, toRawBase64 } from "./mime";
+import { buildMime, deriveMessageId, type MimeAttachment } from "./mime";
 import { claim, loadAttempt, loadSendInputs, type SendPayload, stamp } from "./outboxClaim";
 import { markSent, reconcile, type SendOutcome } from "./outboxReconcile";
-import { type ReplyThreadHeaders, replyThreadHeaders } from "./replyHeaders";
+import type { ReplyThreadHeaders } from "./replyHeaders";
 
 // Resolve the RFC 5322 threading headers for a reply. The parent's Message-ID lives only in
 // Gmail (we never stored the header), so it costs one metadata read per reply. A failed read
 // degrades to Gmail-side threading via the threadId rather than failing an otherwise good send.
 async function loadReplyThreadHeaders(
-  gmail: GmailClient,
-  parentGmailMessageId: string | null,
+  provider: MailProvider,
+  parentProviderMessageId: string | null,
   providerThreadId: string | null,
   signal: AbortSignal,
 ): Promise<ReplyThreadHeaders> {
-  if (providerThreadId === null || parentGmailMessageId === null) return {};
-  const parent = await gmail.getMessage({ id: parentGmailMessageId, signal });
-  signal.throwIfAborted();
-  if (!parent.ok) return {};
-  return replyThreadHeaders(parent.value);
+  if (providerThreadId === null || parentProviderMessageId === null) return {};
+  return provider.replyHeaders({ parentProviderMessageId, signal });
 }
 
 // Classify a sendRaw failure. A definite pre-acceptance rejection is an HTTP 4xx: Gmail
@@ -80,7 +77,7 @@ export async function processSendAttempt(
   args: {
     accountId: string;
     idempotencyKey: string;
-    gmail: GmailClient;
+    provider: MailProvider;
     // storage is required: callers must always wire in real (or fake) storage so that
     // attachment sends never silently fail. The TypeScript compiler enforces this.
     storage: StorageClient;
@@ -107,7 +104,7 @@ export async function processSendAttempt(
   if (existing.send_started_at !== null) {
     return reconcile(db, {
       attempt: existing,
-      gmail: args.gmail,
+      provider: args.provider,
       signal: args.signal,
       now,
       windowMs,
@@ -125,7 +122,7 @@ export async function processSendAttempt(
   if (claimed !== undefined && claimed.send_started_at !== null) {
     return reconcile(db, {
       attempt: claimed,
-      gmail: args.gmail,
+      provider: args.provider,
       signal: args.signal,
       now,
       windowMs,
@@ -139,11 +136,11 @@ export async function processSendAttempt(
   const inputs = await loadSendInputs(db, existing.id, args.accountId);
   if (inputs === undefined) return err(new AppError("E_DB_002", "send inputs not found", args));
   args.signal.throwIfAborted();
-  const { from, payload, providerThreadId, parentGmailMessageId } = inputs;
+  const { from, payload, providerThreadId, parentProviderMessageId } = inputs;
 
   const threading = await loadReplyThreadHeaders(
-    args.gmail,
-    parentGmailMessageId,
+    args.provider,
+    parentProviderMessageId,
     providerThreadId,
     args.signal,
   );
@@ -170,38 +167,28 @@ export async function processSendAttempt(
     references: threading.references,
     attachments: attResult.value.length > 0 ? attResult.value : undefined,
   });
-  const sent = await args.gmail.sendRaw({
-    rawBase64: toRawBase64(mime),
-    threadId: providerThreadId ?? undefined,
+  const sent = await args.provider.send({
+    raw: mime,
+    messageIdHeader: existing.message_id_header,
+    envelope: {
+      from,
+      to: [...payload.to, ...(payload.cc ?? []), ...(payload.bcc ?? [])],
+    },
+    providerThreadId,
+    parentProviderMessageId,
+    attemptId: existing.id,
     signal: args.signal,
   });
   args.signal.throwIfAborted();
 
-  if (!sent.ok) {
-    if (isDefiniteRejection(sent.error)) {
-      // DEFINITE pre-acceptance rejection (HTTP 4xx): Gmail did not accept the message, so
-      // it is safe to retry as a fresh send. Clear send_started_at/claim_token (F12) so the
-      // next attempt re-claims and re-sends instead of routing into reconcile (which would
-      // search, find nothing, and eventually needs_review) and stranding a retryable send.
-      await db.execute(sql`
-        UPDATE email_send_attempts
-        SET status='failed', error_id=${sent.error.id}, send_started_at=NULL, claim_token=NULL
-        WHERE id=${existing.id}
-      `);
-    } else {
-      // AMBIGUOUS failure (5xx, timeout, or a schema-parse failure on a 2xx body): Gmail may
-      // have accepted the message. KEEP send_started_at so the next attempt reconciles by
-      // the deterministic Message-ID rather than blind re-sending a possibly-delivered email
-      // (F13). This is the original exactly-once path.
-      await db.execute(sql`
-        UPDATE email_send_attempts SET status='failed', error_id=${sent.error.id} WHERE id=${existing.id}
-      `);
-    }
-    return ok({ status: "failed" });
-  }
+  if (!sent.ok) return recordSendFailure(db, existing.id, sent.error, args.signal);
 
-  await markSent(db, existing.id, sent.value.id, args.signal);
-  return ok({ status: "sent", providerMessageId: sent.value.id });
+  await markSent(db, existing.id, sent.value.providerMessageId, args.signal);
+  return ok({
+    status: "sent",
+    providerMessageId: sent.value.providerMessageId,
+    sent: sent.value,
+  });
 }
 
 // Fetch raw bytes for every attachment in the payload from storage.
@@ -217,4 +204,39 @@ async function fetchAttachmentBytes(
     result.push({ filename: att.filename, contentType: att.contentType, bytes: bytes.value });
   }
   return ok(result);
+}
+
+// Record a send failure without ever losing an accepted message. A provider error flagged
+// `sent` means the wire copy went out but the provider could not describe it: mark it sent and
+// let the CRM copy step fail instead. A definite rejection is retryable; anything else may have
+// been accepted, so its send_started_at stays and the next attempt reconciles by Message-ID.
+async function recordSendFailure(
+  db: Db,
+  attemptId: string,
+  error: AppError,
+  signal: AbortSignal,
+): Promise<Result<SendOutcome, AppError>> {
+  const delivered = error.context?.sent === true ? error.context.providerMessageId : undefined;
+  if (typeof delivered === "string" && delivered !== "") {
+    await markSent(db, attemptId, delivered, signal);
+    return ok({ status: "sent", providerMessageId: delivered });
+  }
+  if (isDefiniteRejection(error)) {
+    // DEFINITE pre-acceptance rejection (HTTP 4xx): the server did not accept the message, so
+    // it is safe to retry as a fresh send. Clear send_started_at/claim_token (F12) so the next
+    // attempt re-claims and re-sends instead of reconciling into needs_review.
+    await db.execute(sql`
+      UPDATE email_send_attempts
+      SET status='failed', error_id=${error.id}, send_started_at=NULL, claim_token=NULL
+      WHERE id=${attemptId}
+    `);
+  } else {
+    // AMBIGUOUS failure (5xx, timeout, or a schema-parse failure on a 2xx body): the server may
+    // have accepted the message. KEEP send_started_at so the next attempt reconciles by the
+    // deterministic Message-ID rather than blind re-sending a possibly-delivered email (F13).
+    await db.execute(sql`
+      UPDATE email_send_attempts SET status='failed', error_id=${error.id} WHERE id=${attemptId}
+    `);
+  }
+  return ok({ status: "failed" });
 }

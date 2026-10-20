@@ -1,10 +1,10 @@
 import { sql } from "drizzle-orm";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { MailProvider, SentMessage } from "@/features/mail/provider/types";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { canSeeLinkedDeal, canSeeLinkedPerson } from "./emailVisibility";
-import type { GmailClient } from "./gmailClient";
 import { resolveOutboundLink } from "./linking";
 import type { SendEmailInput } from "./send";
 
@@ -30,7 +30,10 @@ export interface StoreOutboundArgs {
   // never needs to repeat the resolution logic.
   resolvedTrackingEnabled: boolean;
   bodyHtml: string;
-  gmail: GmailClient;
+  provider: MailProvider;
+  // The provider's view of the message it just sent. Omitted on replay paths, where the caller
+  // only has the id and this function asks the provider to describe it.
+  sent?: SentMessage;
   // Optional: link a NEW thread to a person/deal. Omitted => thread stays unlinked.
   link?: OutboundLinkContext;
   // Optional compose privacy (C1): applied to a NEW thread only. Omitted => DB default ("private").
@@ -48,11 +51,20 @@ export async function storeOutboundCopy(
   db: Db,
   args: StoreOutboundArgs,
 ): Promise<Result<{ messageId: string }, AppError>> {
-  const fetched = await args.gmail.getMessage({ id: args.providerMessageId, signal: args.signal });
-  args.signal.throwIfAborted();
-  if (!fetched.ok) return fetched;
-  const providerThreadId = fetched.value.threadId;
-  const snippet = fetched.value.snippet ?? null;
+  let sent: SentMessage;
+  if (args.sent !== undefined) {
+    sent = args.sent;
+  } else {
+    const described = await args.provider.describeSent({
+      providerMessageId: args.providerMessageId,
+      signal: args.signal,
+    });
+    args.signal.throwIfAborted();
+    if (!described.ok) return described;
+    sent = described.value;
+  }
+  const providerThreadId = sent.providerThreadId;
+  const snippet = sent.snippet;
 
   const thread = await upsertThread(db, {
     accountId: args.accountId,
@@ -81,6 +93,24 @@ export async function storeOutboundCopy(
   const row = inserted.rows[0] as { id: string } | undefined;
   if (row === undefined) {
     return err(new AppError("E_DB_002", "outbound copy insert returned no row", {}));
+  }
+  // RFC 822 headers for the outbound message, so replies thread even before a resync and the
+  // thread-key resolver can see this message as a parent.
+  if (sent.headers.rfc822MessageId !== "") {
+    await db.execute(sql`
+      INSERT INTO email_message_headers
+        (message_id, account_id, rfc822_message_id, in_reply_to, "references")
+      VALUES (
+        ${row.id}, ${args.accountId}, ${sent.headers.rfc822MessageId},
+        ${sent.headers.inReplyTo},
+        ARRAY(SELECT jsonb_array_elements_text(${JSON.stringify(sent.headers.references)}::jsonb))
+      )
+      ON CONFLICT (message_id) DO UPDATE SET
+        rfc822_message_id=EXCLUDED.rfc822_message_id,
+        in_reply_to=EXCLUDED.in_reply_to,
+        "references"=EXCLUDED."references"
+    `);
+    args.signal.throwIfAborted();
   }
   return ok({ messageId: row.id });
 }

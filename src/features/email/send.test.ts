@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { AppError } from "@/constants/errorIds";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { err, ok, type Result } from "@/types/result";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -54,7 +55,7 @@ describe("sendEmail", () => {
         actorId: other.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
+        provider: gmailProviderForTest(db, acctId, new FakeGmailClient()),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -77,7 +78,11 @@ describe("sendEmail", () => {
         actorId: actor.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: new FakeGmailClient(),
+        provider: gmailProviderForTest(
+          db,
+          "00000000-0000-0000-0000-0000000000aa",
+          new FakeGmailClient(),
+        ),
         storage: new FakeStorageClient(),
         input: {
           accountId: "00000000-0000-0000-0000-0000000000aa",
@@ -112,7 +117,7 @@ describe("sendEmail", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input: {
           accountId: acctId,
@@ -179,7 +184,7 @@ describe("sendEmail", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input,
       });
@@ -190,7 +195,7 @@ describe("sendEmail", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input,
       });
@@ -231,7 +236,7 @@ describe("sendEmail", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input,
       });
@@ -250,7 +255,7 @@ describe("sendEmail", () => {
         actorId: owner.id,
         actorType: "regular",
         actorGroupIds: new Set<string>(),
-        gmail: fake,
+        provider: gmailProviderForTest(db, acctId, fake),
         storage: new FakeStorageClient(),
         input,
       });
