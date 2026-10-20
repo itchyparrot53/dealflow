@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-20 20:31
+Current: 1.3 · Last updated: 2026-10-20 20:34
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -13,7 +13,7 @@ Current: 1.2 · Last updated: 2026-10-20 20:31
 - [x] 0.3 Money and totals (test-first)
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Rates, base currency and permissions
-- [ ] 1.2 Product catalog service
+- [x] 1.2 Product catalog service
 - [ ] 1.3 Deal lines and the value sync (test-first)
 - [ ] 1.4 Deal terms and stage probabilities
 - [ ] 1.5 Phase 1 QA gate
@@ -54,6 +54,11 @@ Current: 1.2 · Last updated: 2026-10-20 20:31
 - 1.1: `setBaseCurrency` is a no-op when the submitted code already is the base, so re-selecting the same currency cannot silently delete every manual rate; a real change updates settings and deletes all rates in one transaction.
 - 1.1: `listRates` returns the Postgres numeric string unchanged (`1.10000000`) for the settings table, while `loadRateMap` parses to the scaled `Rate` bigint for arithmetic; the two never mix formats.
 - 1.1: added `E_PRODUCT_006` and `E_CURRENCY_006` (input failed Zod) beside the named IDs, following every other feature's `_INPUT_INVALID` convention for malformed action input.
+
+- 1.2: catalog reads are open to any signed-in user (the deal page's add-product combobox needs them) while every mutation requires `products.manage`; the check lives in `products.ts` for the same testability reason as rates.
+- 1.2: product prices and tax stay decimal strings end to end (`moneyString`/`percentString` into numeric columns); no product code converts them to a JS number.
+- 1.2: the `ilike` search escapes `%`, `_` and `\` with a backslash so a search term cannot widen the pattern, and archived products sort after active ones.
+- 1.2: `deleteProduct` checks `deal_products` first and still maps a foreign-key violation to `E_PRODUCT_002`, because a line can be added between the check and the delete.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
