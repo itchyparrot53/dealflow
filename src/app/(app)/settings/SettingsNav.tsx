@@ -5,6 +5,7 @@ import {
   Building2,
   Coins,
   Eye,
+  FileText,
   type LucideIcon,
   Mail,
   MailCheck,
@@ -23,6 +24,7 @@ import { usePathname } from "next/navigation";
 import type React from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
 import { AI_STRINGS } from "@/constants/aiStrings";
+import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { CURRENCY_STRINGS, PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -57,6 +59,7 @@ const COMPANY: NavSection = {
     { href: "/settings/company", label: STRINGS.settings.companySettings, icon: Building2 },
     { href: "/settings/currencies", label: CURRENCY_STRINGS.title, icon: Coins },
     { href: "/settings/products", label: PRODUCTS_STRINGS.title, icon: Package },
+    { href: "/settings/documents", label: DOCUMENTS_STRINGS.title, icon: FileText },
     { href: "/settings/users", label: STRINGS.settings.users, icon: Users },
     { href: "/settings/teams", label: STRINGS.settings.teams, icon: UsersRound },
     { href: "/settings/goals", label: SETTINGS_STRINGS.goals, icon: Target },

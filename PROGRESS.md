@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-21 00:02
+Current: 3.2 · Last updated: 2026-10-21 00:06
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -23,7 +23,7 @@ Current: 3.1 · Last updated: 2026-10-21 00:02
 - [x] 2.1 Public reads, accept and decline (test-first)
 - [x] 2.2 Owner notifications
 - [x] 2.3 Phase 2 QA gate
-- [ ] 3.1 Settings → Documents
+- [x] 3.1 Settings → Documents
 - [ ] 3.2 Deal section, document page, view and public actions
 - [ ] 3.3 Documents list and navigation
 - [ ] 3.4 Print stylesheet and preview
@@ -100,6 +100,11 @@ Current: 3.1 · Last updated: 2026-10-21 00:02
 - 2.2: the notification email renderer gained a grouped document case backed by one `documentEmailCopy` helper, because adding three inline cases pushed the existing switch over the cognitive-complexity cap.
 - 2.3: the first full unit run after 2.2 failed the two static policy tests (`paletteTokens`, `typeScale`): the minimal public page used raw `slate` utilities and a `text-2xl` h1. Fixed to semantic tokens (`bg-background`, `text-foreground`, `text-muted-foreground`) and `text-display` in `2.3: fixes round 1`; both tests then passed.
 - 2.3: the host was under extreme external load (load average 190), so the first unit run took 733s and surfaced spurious worker-start timeouts; the re-run with `--maxWorkers=4` passed 5063/5063 in 139s. No test was changed for that.
+- 3.1: the settings page is a server component that loads settings and both template lists from the services (as the products page does), and gates on `actor.type === "admin"` plus `can("documents.manage")`; the nav hides the link for everyone else, but the page gate is the boundary.
+- 3.1: all documents copy lives in `src/constants/documentsStrings.ts`, including the exact 6.2 error strings, so the settings screens, the document page and the public page cannot drift from the contract wording.
+- 3.1: the template dialog previews with sample values for both creation-time variables and `document.*`, so an author sees a document instead of braces; `MarkdownLite` renders React elements only and draws the lines table when lines are supplied, never HTML.
+- 3.1: the settings navigation gained a Documents item (FileText) after Products; the route builds as `/settings/documents` and the 370 unit tests touching settings, documents and the palette/type-scale policies pass.
+- 3.1: the first MarkdownLite draft used array indexes as React keys, which `noArrayIndexKey` rejects; the keys now come from small helpers over the statically rebuilt block list.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
