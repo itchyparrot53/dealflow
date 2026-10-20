@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-20 09:00
+Current: 3.2 · Last updated: 2026-10-20 09:05
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -29,7 +29,7 @@ Current: 3.1 · Last updated: 2026-10-20 09:00
 - [x] 2.4 Credentials and the connect service
 - [x] 2.5 Email sync settings: connect form and Gmail option
 - [x] 2.6 Phase 2 QA gate
-- [ ] 3.1 Folders, cursors and locations
+- [x] 3.1 Folders, cursors and locations
 - [ ] 3.2 Inbound apply and threading
 - [ ] 3.3 Incremental sync and UIDVALIDITY reset
 - [ ] 3.4 Initial window and background backfill
@@ -60,6 +60,7 @@ Current: 3.1 · Last updated: 2026-10-20 09:00
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 3.1: `discoverFolders` treats an unflagged INBOX as the inbox by path and drops drafts and unknown folders; the cursor and location helpers are typed on the schema, and `deleteFolderState` removes the folder's locations before the cursor so a UIDVALIDITY reset cannot leave orphan UIDs.
 - 2.5: `ActorMailboxStatus` carries `provider` ("imap" when a credentials row exists) and `imapHost` from a LEFT JOIN; the settings page passes `googleEnabled = authMethods().google` and the provider, and the client shows the connect form for a missing, disconnected or failing mailbox plus "Update password" for a connected IMAP one.
 - 2.5: the form pre-selects "Other IMAP/SMTP server" when the stored host is not the Purelymail preset, prefills the address and host for an update, and maps `E_MAIL_003/004/005/006` to the copy in 6.11; the Gmail alternative lives inside the form so it only appears when Google is configured.
 - 2.5: the old tests targeted `data-status` on the status dot; the hook now lives on `mailbox-status` as 6.13 requires, so the dot assertion targets `data-health` and keeps its colour intent.
