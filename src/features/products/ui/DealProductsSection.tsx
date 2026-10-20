@@ -48,6 +48,8 @@ function errorText(id: string, code?: string): string {
   switch (id) {
     case ERROR_IDS.CURRENCY_RATE_MISSING:
       return S.rateMissing(code ?? "that currency");
+    case ERROR_IDS.PRODUCT_NOT_FOUND:
+      return S.notFound;
     case ERROR_IDS.PRODUCT_LINE_NOT_FOUND:
       return S.lineNotFound;
     case ERROR_IDS.PRODUCT_VALUE_CALCULATED:

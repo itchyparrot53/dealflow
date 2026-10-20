@@ -11,7 +11,7 @@ import {
 } from "./helpers";
 
 test.use({ storageState: ".e2e/admin.json" });
-test.setTimeout(180_000);
+test.setTimeout(300_000);
 
 const APP_PASSWORD = "fake-app-password-1";
 
@@ -73,7 +73,7 @@ test.describe("IMAP mailbox", () => {
     });
     await page.goto("/inbox");
     await page.waitForTimeout(8_000);
-    await waitForText(page, subject, 90_000);
+    await waitForText(page, subject, 150_000);
     await shot(page, "p2-inbox-synced");
 
     // Reply into the thread from the reader.

@@ -137,13 +137,20 @@ Part 3 builds on the Part 2 result at commit `15ff072` (PROGRESS-P2.md). The new
   `recordDealValueChange`, the line-sync writer that shares the manual edit's change log and
   `dealUpdated` event.
 - `src/features/deals/dealRepo.ts`, `useBoardDerived.ts`, `Board.tsx`, `BoardStages.tsx`,
-  `BoardColumn.tsx`, `boardTypes.ts`: the board/list reads now select the deal currency and
-  effective probability, and the totals convert and weight through `summarize`.
-- `src/features/deals/DealList.tsx`, `DealListClient.tsx`, `fetchDealListRows.ts`,
-  `dealListPageData.ts`: the excluded-deals footer and the base-converted list totals.
+  `BoardColumn.tsx`, `BoardHeader.tsx`, `BoardToolbar.tsx`, `BoardSummary.tsx`, `DealCard.tsx`,
+  `boardTypes.ts`: the board/list reads now select the deal currency and effective probability, and
+  the cards, column totals, weighted total and toolbar total convert and weight through `summarize`.
+- `src/features/deals/DealList.tsx`, `DealListClient.tsx`, `DealListTableBody.tsx`,
+  `fetchDealListRows.ts`, `dealListPageData.ts`: the excluded-deals footer, the deal-currency value
+  cell and the base-converted list totals.
 - `src/features/deal-workspace/summaryRepo.ts`, `DealSidebar.tsx`, `DealSummaryActionList.tsx`,
-  `src/constants/dealSidebarSections.ts`, `src/constants/dealSidebarStrings.ts`: the optional
-  `productSummary`, the Products sidebar section, "Calculated from products" and the "≈ base" value.
+  `src/constants/dealSidebarSections.ts`, `src/constants/dealSidebarStrings.ts`,
+  `src/app/(app)/deals/[dealId]/DealDetailView.tsx`,
+  `src/app/(app)/deals/[dealId]/DealWorkspaceClient.tsx`: the optional `productSummary`, the
+  Products sidebar section, "Calculated from products" and the "≈ base" value, and the edit-rights
+  flag threaded to the section.
+- `src/features/inline-edit/saveError.ts`, `src/types/actionResult.ts`: the `E_PRODUCT_004` copy and
+  the optional error code carried to the client for the missing-rate copy.
 - `src/features/pipelines/StageEditCard.tsx`, `SortableStageCard.tsx`, `EditPipelineClient.tsx`,
   `useStageDeletion.ts`: the per-stage probability input and its immediate save.
 - `src/components/shell/LeftNav.tsx`, `NavIcons.tsx`, `src/constants/nav.ts`,
@@ -155,4 +162,5 @@ Part 3 builds on the Part 2 result at commit `15ff072` (PROGRESS-P2.md). The new
   close-date spread.
 - `src/constants/errorIds.test.ts`, `src/features/deals/DealListClient.test.tsx`: the new domain
   and footer field in existing assertions.
+- `e2e/helpers.ts`, `scripts/e2e/seed-session.ts`: the sales fixture ids the new spec reads.
 - `README.md`: the "Products, currencies and forecast" section.

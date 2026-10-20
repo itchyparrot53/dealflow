@@ -11,7 +11,9 @@ test.describe("deal AI", () => {
     await expect(card).toBeVisible();
 
     await card.getByRole("button", { name: "Generate summary" }).click();
-    await expect(page.getByTestId("deal-ai-summary")).toContainText("FAKE summary of this deal.");
+    await expect(page.getByTestId("deal-ai-summary")).toContainText("FAKE summary of this deal.", {
+      timeout: 20_000,
+    });
     await expect(page.getByTestId("deal-ai-health")).toHaveAttribute("data-health", "at_risk");
 
     const firstStep = page.getByTestId("deal-ai-next-step").first();

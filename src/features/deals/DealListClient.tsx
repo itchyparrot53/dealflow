@@ -239,6 +239,7 @@ export function DealListClient({
         pipelines={pipelines}
         totalValue={footer.totalValue}
         dealCount={footer.total}
+        baseCurrency={currency}
         activeView={variant}
         canManagePipelines={initial.canManagePipelines}
         createSlot={addDeal}

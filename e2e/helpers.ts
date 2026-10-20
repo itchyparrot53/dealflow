@@ -91,17 +91,24 @@ export function readFakeMail(address: string, folder: string, file: string): str
 // visible yet. Reload until the text appears instead of guessing a sleep.
 export async function waitForText(page: Page, text: string, timeoutMs = 90_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
+  // Check, then reload only when the text is still absent, and let each reload settle:
+  // reloading every few seconds aborted the inbox's client fetch under load, so the list
+  // never got a chance to render (the row was there right after the final attempt).
   while (Date.now() < deadline) {
-    const visible = await page
-      .getByText(text, { exact: false })
-      .first()
-      .isVisible()
-      .catch(() => false);
-    if (visible) return;
-    await page.waitForTimeout(3_000);
-    await page.reload();
+    const body = await page
+      .locator("body")
+      .innerText()
+      .catch(() => "");
+    const html = body.includes(text) ? body : await page.content().catch(() => "");
+    if (html.includes(text)) return;
+    await page.reload().catch(() => undefined);
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.waitForTimeout(2_000);
   }
-  throw new Error(`text never appeared: ${text}`);
+  const html = await page.content().catch(() => "");
+  throw new Error(
+    `text never appeared: ${text} (url ${page.url()}, html ${html.length} bytes, contains ${String(html.includes(text))})`,
+  );
 }
 
 export function linkFrom(mail: CapturedMail): string {

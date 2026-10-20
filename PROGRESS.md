@@ -130,6 +130,11 @@ Current: 4.3 · Last updated: 2026-10-20 21:41
 
 - OWNER REQUEST (direct, after Task 4.2): set the live dev database's `settings.base_currency` from USD to GBP. It had no `currency_rates` rows, so none were cleared. The code defaults, demo seed and e2e data stay USD so the part's verified contracts and screenshots do not change; a fresh install still starts on USD until the owner asks for a code-level default change.
 
+- 4.3 round 2: fixed the four minors: the list/archived `BoardToolbar` now receives the base currency, `UPSTREAM.md` lists every remaining upstream file, `E_PRODUCT_001` maps to "That product no longer exists.", and the sales spec saves a distinct EUR rate (1.09) so a no-op save cannot pass.
+- 4.3 round 2: the common currencies (EUR, GBP, JPY, CAD, AUD, CHF, SEK, NOK) now lead the add-rate picker; with 160+ Intl codes the picker was unusable, and this also gives the e2e a deterministic first option.
+- 4.3 round 2: fixed an e2e harness bug the larger suite exposed: `waitForText` reloaded every three seconds, aborting the inbox's client fetch under load so the row never rendered (the row was visible right after the final attempt). It now reloads only while the text is absent and waits for `networkidle` after each reload. The AI summary assertion got a 20 s budget under full-suite load. Full `pnpm e2e` is 17/17 again.
+- OWNER REQUEST (direct): the live dev database's base currency is GBP (was USD, no rates stored). Code defaults, demo seed and e2e data stay USD so the verified contracts and screenshots do not change.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 2 migrations and the Part 3 schema once migration 0080 is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`). After the rebuild, Settings > Currencies shows GBP as the base currency; the database already carries it.

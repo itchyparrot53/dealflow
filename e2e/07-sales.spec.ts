@@ -5,24 +5,10 @@ test.use({ storageState: ".e2e/admin.json" });
 test.setTimeout(240_000);
 
 async function selectEuro(page: Page): Promise<void> {
-  // The Radix list renders 162 options in a portal that pointer clicks cannot reach
-  // reliably. Radix moves DOM focus between the items, so keyboard navigation is the
-  // same path a user has.
+  // Common currencies lead the add-rate picker, so the first option is EUR (USD is
+  // the base and excluded). Enter selects the focused first option.
   const trigger = page.getByRole("combobox", { name: "Currency", exact: true });
   await trigger.click();
-  const activeText = (): Promise<string> =>
-    page.evaluate(() => document.activeElement?.textContent ?? "");
-  await page.keyboard.press("Home");
-  let found = false;
-  for (let step = 0; step < 200; step += 1) {
-    const text = await activeText();
-    if (text.includes("EUR, Euro")) {
-      found = true;
-      break;
-    }
-    await page.keyboard.press("ArrowDown");
-  }
-  expect(found, `EUR never highlighted (last: ${await activeText()})`).toBe(true);
   await page.keyboard.press("Enter");
   await expect(trigger).toContainText("EUR");
 }
@@ -51,10 +37,12 @@ test("currencies, products, deal lines, board totals and the forecast drag", asy
   await page.goto("/settings/currencies");
   await expect(page.getByTestId("currencies-base-select")).toBeVisible();
   await selectEuro(page);
-  await page.getByTestId("currency-rate-input").fill("1.08");
+  // A value distinct from the seed's 1.08 proves the Save actually wrote, not just that
+  // the seeded row exists.
+  await page.getByTestId("currency-rate-input").fill("1.09");
   await page.getByTestId("currency-rate-save").click();
   const eurRow = page.locator('[data-testid="currency-rate-row"][data-code="EUR"]');
-  await expect(eurRow).toContainText("1.08");
+  await expect(eurRow).toContainText("1.09");
   await shot(page, "p3-settings-currencies");
 
   // 2. A product with a 20% tax.
@@ -79,7 +67,9 @@ test("currencies, products, deal lines, board totals and the forecast drag", asy
   const search = page.getByPlaceholder("Search...");
   await expect(search).toBeVisible();
   await search.fill("Onboarding");
-  await page.keyboard.press("Enter");
+  const option = page.getByRole("option", { name: /Onboarding package/ });
+  await expect(option).toBeVisible();
+  await option.click();
   const row = section.getByTestId("deal-product-row").first();
   await expect(row).toBeVisible({ timeout: 15_000 });
   await row.getByLabel("Qty Onboarding package").fill("2");

@@ -39,6 +39,7 @@ interface Props {
 }
 
 const S = CURRENCY_STRINGS;
+const COMMON_RATE_CODES = ["EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK"];
 
 // "1.08000000" -> "1.08", "1.00000000" -> "1". The database keeps eight
 // decimals; the settings table should read like the number the user typed.
@@ -72,7 +73,15 @@ export function CurrenciesSettings({ base, rates, codes }: Props): React.ReactNo
   const [error, setError] = useState<string | null>(null);
 
   const codeOptions = currencyOptions(codes);
-  const rateOptions = codeOptions.filter((option) => option.value !== base);
+  // Common codes lead the add-rate picker: the list is 160+ entries and the codes a
+  // workspace actually needs are almost always one of these. Base is already excluded.
+  const rateOptions = codeOptions
+    .filter((option) => option.value !== base)
+    .sort((a, b) => {
+      const rankA = COMMON_RATE_CODES.indexOf(a.value);
+      const rankB = COMMON_RATE_CODES.indexOf(b.value);
+      return (rankA === -1 ? 999 : rankA) - (rankB === -1 ? 999 : rankB);
+    });
 
   function chooseBase(code: string): void {
     if (code === base) return;
