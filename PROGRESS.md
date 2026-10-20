@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-20 04:08
+Current: 2.2 · Last updated: 2026-10-20 08:02
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -22,7 +22,7 @@ Current: 2.1 · Last updated: 2026-10-20 04:08
 - [x] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
 - [x] 1.6 Message-ID domain and notification emails via the system mailer
 - [x] 1.7 Phase 1 QA gate
-- [ ] 2.1 Parser, Message-IDs, subjects and Bcc stripping
+- [x] 2.1 Parser, Message-IDs, subjects and Bcc stripping
 - [ ] 2.2 Transport interfaces and real transports
 - [ ] 2.3 Filesystem fake transport
 - [ ] 2.4 Credentials and the connect service
@@ -58,6 +58,8 @@ Current: 2.1 · Last updated: 2026-10-20 04:08
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 2.1: `providerAttachmentId` indexes mailparser's `attachments` array, not the MIME tree (the first attachment is `idx:0`), which is exactly what the re-parse on download will index into; the test pins that.
+- 2.1: `parseRawMessage` falls back to stripping tags from the HTML part for the snippet when a message has no text part, and `maxBodyChars` caps both bodies; `parseTooLarge` reuses the same mapping from header bytes and replaces the body and attachments.
 - 1.6: `enqueueSend` reads the account's `email_address` and uses the part after `@` (lowercased) as the Message-ID domain, falling back to `dealflow.invalid` only when the address is empty; the environment import left the outbox. The R6 unit test asserts the `umev.co.uk` tail.
 - 1.6: `SendFn` is now `(to, SystemMail, signal) => Result<{ messageId }>` and the default sends through `getSystemMailer()`; the job's `email_accounts` lookup and connected-status check are gone, so a notification reaches a user with no mailbox. The old "suppresses when the recipient has no connected mailbox" test became "sends even when the recipient has no connected mailbox" (assertions strengthened to a real send to the user's address), and the unused mailbox fixture was removed from the visibility test; this is the plan's contract change, not a weakened assertion.
 - 1.5: `storeInboundMessage` also returns `arrival` (deal id, thread, message, subject, sender) beside the contract's three fields, because the deal notification must run after the transaction commits while the decision (linked deal, not self-sent) belongs with the write; applyMessages only collects and sends it.
