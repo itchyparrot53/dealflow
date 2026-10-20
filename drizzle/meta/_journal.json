@@ -554,6 +554,13 @@
       "when": 1792460591304,
       "tag": "0078_dealflow_mail_rename",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1792460761690,
+      "tag": "0079_dealflow_mail_tables",
+      "breakpoints": true
     }
   ]
 }

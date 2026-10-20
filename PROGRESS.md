@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-20 03:02
+Current: 1.3 · Last updated: 2026-10-20 03:07
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -15,7 +15,7 @@ Current: 1.2 · Last updated: 2026-10-20 03:02
 - [x] 0.5 Scripts, release tests and audit leftovers
 - [x] 0.6 Phase 0 QA gate
 - [x] 1.1 Rename the Gmail columns
-- [ ] 1.2 Mail tables
+- [x] 1.2 Mail tables
 - [ ] 1.3 MailProvider interface and Gmail adapter
 - [ ] 1.4 Send path on MailProvider
 - [ ] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
@@ -56,6 +56,9 @@ Current: 1.2 · Last updated: 2026-10-20 03:02
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 1.2: `drizzle-kit generate --custom` kept the previous snapshot (the five renamed columns still read `gmail_*` in `drizzle/meta/0078_snapshot.json`), so I renamed those keys in the snapshot by hand before generating 0079; that keeps 0079 a pure add and every later diff clean.
+- 1.2: this drizzle-orm version has no `bytea` in `pg-core`, so `mail.ts` defines the same `customType` the email schema uses for encrypted tokens; the encrypted password column is `bytea`.
+- 1.2: env:sync appended the eight `MAIL_*` keys to `.env` (values are the defaults); `.env.example` documents them in a new `# Mail (IMAP/SMTP)` section.
 - 1.1: renamed 89 source files plus 3 scripts (95 paths including the schema, the migration and its snapshot); the only Gmail names left are the allowed `parentGmailMessageId` / `parent_gmail_message_id` aliases, and `docs/dealflow/UPSTREAM.md` now records that upstream email fixes must be ported by hand.
 - 1.1: `drizzle-kit generate --custom` needed the unique constraints updated to the new property names before it could serialize the snapshot; the empty migration was then filled with the five `ALTER TABLE ... RENAME COLUMN` statements from 6.5 and applied to the dev database (columns verified through `information_schema`).
 - 0.6: gate fix round 1 fixed a typecheck error introduced in 0.5 (`readPackageVersion()` may be undefined; the enabled-path test now uses `getCurrentVersion()` and dropped an unused seeded user) and formatted the two test files; the phase gate then passed with the same assertions.

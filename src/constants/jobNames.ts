@@ -10,6 +10,11 @@ export const REMINDER_LEAD_MINUTES = 10;
 export const PGBOSS_QUEUE_EMAIL_SYNC = "email.sync";
 export const PGBOSS_QUEUE_EMAIL_SEND = "email.send.process";
 
+// IMAP mailbox jobs: the backfill walks older mail in windows (payload { accountId }), and the
+// append job retries Sent copies that did not land (no payload; scans mail_sent_appends).
+export const PGBOSS_QUEUE_MAIL_BACKFILL = "mail.backfill";
+export const PGBOSS_QUEUE_MAIL_APPEND = "mail.append-sent";
+
 // Retry budget for transient Gmail failures (429/5xx) before a job is parked.
 export const EMAIL_JOB_RETRY_LIMIT = 8;
 

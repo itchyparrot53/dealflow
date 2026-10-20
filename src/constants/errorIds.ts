@@ -205,6 +205,19 @@ export const ERROR_IDS = {
   // MAIL (system mail)
   MAIL_SEND_FAILED: "E_MAIL_001", // SMTP send rejected or failed
   MAIL_CAPTURE_FAILED: "E_MAIL_002", // capture mailer could not write its file
+  MAIL_CONNECT_FAILED: "E_MAIL_003", // IMAP/SMTP server unreachable, TLS failure or timeout
+  MAIL_AUTH_FAILED: "E_MAIL_004", // IMAP or SMTP rejected the username/password
+  MAIL_INBOX_MISSING: "E_MAIL_005", // mailbox has no INBOX after login
+  MAIL_ADDRESS_TAKEN: "E_MAIL_006", // that address is already connected by another user
+  MAIL_CREDENTIALS_UNREADABLE: "E_MAIL_007", // stored password could not be decrypted; reconnect
+  MAIL_IMAP_FAILED: "E_MAIL_008", // an IMAP command failed after login (context names the command)
+  MAIL_SEND_DEFERRED: "E_MAIL_009", // daily recipient limit reached; attempt rescheduled
+  MAIL_TOO_MANY_RECIPIENTS: "E_MAIL_010", // more recipients than MAIL_SEND_MAX_RECIPIENTS
+  MAIL_MESSAGE_TOO_LARGE: "E_MAIL_011", // message larger than MAIL_MAX_MESSAGE_BYTES (attachment)
+  MAIL_APPEND_FAILED: "E_MAIL_012", // APPEND to Sent failed; queued for retry
+  MAIL_LOCATION_MISSING: "E_MAIL_013", // no known folder/UID for a message (attachment, trash)
+  MAIL_INPUT_INVALID: "E_MAIL_014", // connect form or mail action input failed Zod validation
+  MAIL_UNSUPPORTED: "E_MAIL_015", // operation not supported by this provider
 
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer

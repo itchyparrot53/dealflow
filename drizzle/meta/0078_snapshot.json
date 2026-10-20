@@ -2349,8 +2349,8 @@
           "notNull": true,
           "default": "'[]'"
         },
-        "last_history_id": {
-          "name": "last_history_id",
+        "sync_cursor": {
+          "name": "sync_cursor",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2456,8 +2456,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "gmail_message_id": {
-          "name": "gmail_message_id",
+        "provider_message_id": {
+          "name": "provider_message_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -2564,7 +2564,7 @@
           "name": "uq_msg_acct_gmail",
           "columns": [
             "account_id",
-            "gmail_message_id"
+            "provider_message_id"
           ],
           "nullsNotDistinct": false
         }
@@ -2640,8 +2640,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "gmail_message_id": {
-          "name": "gmail_message_id",
+        "provider_message_id": {
+          "name": "provider_message_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2736,8 +2736,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "gmail_thread_id": {
-          "name": "gmail_thread_id",
+        "provider_thread_id": {
+          "name": "provider_thread_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -2871,7 +2871,7 @@
           "name": "uq_thread_acct_gmail",
           "columns": [
             "account_id",
-            "gmail_thread_id"
+            "provider_thread_id"
           ],
           "nullsNotDistinct": false
         },
@@ -3167,8 +3167,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "gmail_attachment_id": {
-          "name": "gmail_attachment_id",
+        "provider_attachment_id": {
+          "name": "provider_attachment_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true

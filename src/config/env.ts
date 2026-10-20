@@ -91,6 +91,21 @@ const base = z.object({
   // the e2e harness runs a production build with it on; the captured mail never leaves the box.
   MAIL_FAKE: boolFromString.default(false),
   MAIL_CAPTURE_DIR: z.string().default(".mail-capture"),
+  // Filesystem fake for the IMAP/SMTP transports (tests and e2e). Non-empty = fake for every
+  // IMAP account; empty = the real imapflow/nodemailer transports.
+  MAIL_PROVIDER_FAKE_DIR: z.string().default(""),
+  // Sync window: the first pass covers this many days, the background backfill walks back to
+  // MAIL_BACKFILL_DAYS.
+  MAIL_INITIAL_SYNC_DAYS: z.coerce.number().int().min(1).max(3650).default(90),
+  MAIL_BACKFILL_DAYS: z.coerce.number().int().min(0).max(3650).default(365),
+  // Poll cadence for every synced folder, and the cap on live IDLE connections.
+  MAIL_SYNC_CADENCE_SECONDS: z.coerce.number().int().min(5).max(3600).default(90),
+  MAIL_IDLE_MAX: z.coerce.number().int().min(0).max(500).default(50),
+  // Messages above this size store headers and a placeholder body instead of the full source.
+  MAIL_MAX_MESSAGE_BYTES: z.coerce.number().int().positive().default(15_728_640),
+  // Outbound limits: recipients per rolling 24 hours, and per message.
+  MAIL_SEND_DAILY_RECIPIENTS: z.coerce.number().int().positive().default(2800),
+  MAIL_SEND_MAX_RECIPIENTS: z.coerce.number().int().positive().default(250),
   // AI: OpenRouter through the openai SDK. An empty key means the AI features are unavailable
   // (no client is constructed); AI_FAKE gives deterministic answers for tests and demos.
   OPENROUTER_API_KEY: z.string().default(""),
