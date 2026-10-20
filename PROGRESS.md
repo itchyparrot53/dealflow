@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-20 21:41
+Current: 4.4 · Last updated: 2026-10-20 22:50
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -32,11 +32,14 @@ Current: 4.3 · Last updated: 2026-10-20 21:41
 - [x] 3.4 Phase 3 QA gate
 - [x] 4.1 E2E sales spec and screenshots
 - [x] 4.2 Integration suite and smoke
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 0/5/7 · fixed 12
+- Independent review: subagent (fresh context) round 2: QA RESULT FAIL · 0/0/4 · fixed 4
+- Independent review: subagent (fresh context) round 3: QA RESULT PASS · 0/0/2 · fixed 1
 - Baseline: typecheck ok · lint ok (14 warnings, 0 errors) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 4979/4979
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5004/5004 · currency 25/25
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5004/5004 · currency/products/deals integration 159/159
@@ -134,6 +137,9 @@ Current: 4.3 · Last updated: 2026-10-20 21:41
 - 4.3 round 2: the common currencies (EUR, GBP, JPY, CAD, AUD, CHF, SEK, NOK) now lead the add-rate picker; with 160+ Intl codes the picker was unusable, and this also gives the e2e a deterministic first option.
 - 4.3 round 2: fixed an e2e harness bug the larger suite exposed: `waitForText` reloaded every three seconds, aborting the inbox's client fetch under load so the row never rendered (the row was visible right after the final attempt). It now reloads only while the text is absent and waits for `networkidle` after each reload. The AI summary assertion got a 20 s budget under full-suite load. Full `pnpm e2e` is 17/17 again.
 - OWNER REQUEST (direct): the live dev database's base currency is GBP (was USD, no rates stored). Code defaults, demo seed and e2e data stay USD so the verified contracts and screenshots do not change.
+
+- 4.3 round 3: the reviewer passed the part (0 blockers/majors). Its two non-blocking notes: the stage-editor alert rendered `error` while testing `error ?? stageProbabilityError` (fixed to render the fallback), and forecast overdue is flagged only for deals before the window, which is 6.9's literal rule and is a conscious reading.
+- 4.3: the three review rounds are subagent runs with the kit's `.dsh/qa.md` and `Final review of PLAN-PART3.md. Base commit 15ff072...`; the final round passed after 12 findings fixed in round 1 and 4 in round 2.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
