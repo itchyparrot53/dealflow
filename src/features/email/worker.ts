@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { env } from "@/config/env";
 import { SYNC_JITTER_MODULO_SECONDS } from "@/constants/email";
 import type { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -20,7 +21,7 @@ export function jitterFor(accountId: string): number {
     // FNV prime 16777619, kept in 32-bit unsigned range via Math.imul + >>> 0.
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
-  return hash % SYNC_JITTER_MODULO_SECONDS;
+  return hash % Math.min(SYNC_JITTER_MODULO_SECONDS, env.MAIL_SYNC_CADENCE_SECONDS);
 }
 
 // Resolve the account's mail provider (default dep). Injectable so tests pass a fake transport

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
-import { BACKOFF_START_MS, SYNC_CADENCE_SECONDS } from "@/constants/email";
+import { env } from "@/config/env";
+import { BACKOFF_START_MS } from "@/constants/email";
 import { EMAIL_JOB_RETRY_LIMIT, PGBOSS_QUEUE_EMAIL_SYNC } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 
@@ -35,7 +36,7 @@ export async function reEnqueueSync(
     PGBOSS_QUEUE_EMAIL_SYNC,
     { accountId },
     {
-      startAfter: SYNC_CADENCE_SECONDS,
+      startAfter: env.MAIL_SYNC_CADENCE_SECONDS,
       singletonKey: accountId,
       retryLimit: EMAIL_JOB_RETRY_LIMIT,
       retryBackoff: true,

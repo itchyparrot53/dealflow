@@ -5,6 +5,7 @@ import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
+import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleManager";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
@@ -34,6 +35,15 @@ export async function startWorker(): Promise<PgBoss> {
   // during registration (e.g. initial sync enqueues) already see a live boss.
   setBoss(boss);
   await registerAllJobs(boss);
+  const idle: IdleManager = startIdleManager(boss);
+  // One shutdown path: stop the IDLE sessions, then pg-boss's own graceful stop.
+  const shutdown = async (): Promise<void> => {
+    await idle.stop();
+    await boss.stop({ graceful: true });
+    process.exit(0);
+  };
+  process.once("SIGTERM", () => void shutdown());
+  process.once("SIGINT", () => void shutdown());
   console.warn("worker (pg-boss) started");
   return boss;
 }

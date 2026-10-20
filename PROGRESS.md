@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-20 09:45
+Current: 3.6 · Last updated: 2026-10-20 09:55
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -33,7 +33,7 @@ Current: 3.5 · Last updated: 2026-10-20 09:45
 - [x] 3.2 Inbound apply and threading
 - [x] 3.3 Incremental sync and UIDVALIDITY reset
 - [x] 3.4 Initial window and background backfill
-- [ ] 3.5 IDLE manager and sync cadence
+- [x] 3.5 IDLE manager and sync cadence
 - [ ] 3.6 Sync integration tests
 - [ ] 3.7 Phase 3 QA gate
 - [ ] 4.1 SMTP send and the Sent APPEND
@@ -60,6 +60,9 @@ Current: 3.5 · Last updated: 2026-10-20 09:45
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 3.5: the IDLE manager scans every 60 s, caps at `MAIL_IDLE_MAX`, skips fake transports (and remembers them for the process), closes sessions for disconnected accounts, and backs off 1, 2, 4 minutes up to 30 per account after a session ends; a live session's `exists` event enqueues the regular sync job through the same queue, only when no tick is already pending.
+- 3.5: `startWorker` owns the shutdown path: SIGTERM/SIGINT clear the idle timer, abort and close every IDLE session, then stop pg-boss gracefully.
+- 3.5: the poll cadence comes from `env.MAIL_SYNC_CADENCE_SECONDS` and `jitterFor` uses `min(SYNC_JITTER_MODULO_SECONDS, cadence)`, so the default 90 s keeps the existing test numbers.
 - 3.4: a window with more messages than MAIL_BACKFILL_MAX_PER_RUN applies the oldest 300 and moves the cursor ceiling to the earliest processed internal date (new `oldestMessageDate` on the apply result), so the next run continues below it; a complete window moves the ceiling to the window start, and the clamp sets `backfillDone` and clears `backfillBefore`.
 - 3.4: the backfill job is registered from `registerAllJobs` after the email jobs, times out at 120 s, and re-enqueues itself with `startAfter: 30` while any folder remains; the initial enqueue stays singleton per account.
 - 3.3: the initial pass sets `lastUid` to `max(uidNext - 1, newest applied uid)` and keeps `backfillBefore` for inbox/sent/archive only, so older mail is fetched by the backfill job instead of the incremental pass; junk and trash are listed whole and marked backfill-done.
