@@ -6,13 +6,17 @@ import { createGmailClient, type GmailClient } from "@/features/email/gmailClien
 import { makeRefresh } from "@/features/email/gmailRefresh";
 import { ensureAccessToken } from "@/features/email/tokens";
 import { err, ok, type Result } from "@/types/result";
+import { loadImapCredentials } from "../connect/credentials";
+import { getMailTransportFactory } from "../transport/factory";
+import type { MailTransportFactory } from "../transport/types";
 import { createGmailProvider } from "./gmailAdapter";
+import { createImapProvider } from "./imapProvider";
 import type { MailProvider } from "./types";
 
-// Injectable pieces so tests can supply a fake client without a token refresh. `transports` is
-// added in Task 2.4, when the IMAP provider and its factory exist.
+// Injectable pieces so tests can supply a fake client or fake transports without real I/O.
 export interface ResolveDeps {
   gmailClient?: (accountId: string, signal: AbortSignal) => Promise<Result<GmailClient, AppError>>;
+  transports?: MailTransportFactory;
 }
 
 async function defaultGmailClient(
@@ -26,8 +30,7 @@ async function defaultGmailClient(
   return ok(createGmailClient(token.value.token));
 }
 
-// A mailbox is IMAP when it has a credentials row, otherwise Gmail. The IMAP provider arrives in
-// Task 2.4; until then that branch reports E_MAIL_015 instead of silently falling back to Gmail.
+// A mailbox is IMAP when it has a credentials row, otherwise Gmail.
 export async function resolveMailProvider(
   db: Db,
   accountId: string,
@@ -41,7 +44,14 @@ export async function resolveMailProvider(
     .where(eq(mailAccountCredentials.accountId, accountId))
     .limit(1);
   if (credentials !== undefined) {
-    return err(new AppError(ERROR_IDS.MAIL_UNSUPPORTED, "imap provider not wired yet"));
+    const loaded = await loadImapCredentials(db, accountId, signal);
+    if (!loaded.ok) return loaded;
+    if (loaded.value === null) {
+      return err(new AppError(ERROR_IDS.MAIL_CREDENTIALS_UNREADABLE, "mailbox has no credentials"));
+    }
+    return ok(
+      createImapProvider(db, accountId, loaded.value, deps.transports ?? getMailTransportFactory()),
+    );
   }
 
   const resolver = deps.gmailClient ?? ((id, s) => defaultGmailClient(db, id, s));

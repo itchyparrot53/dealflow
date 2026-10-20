@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-20 08:25
+Current: 2.5 · Last updated: 2026-10-20 08:35
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -25,7 +25,7 @@ Current: 2.4 · Last updated: 2026-10-20 08:25
 - [x] 2.1 Parser, Message-IDs, subjects and Bcc stripping
 - [x] 2.2 Transport interfaces and real transports
 - [x] 2.3 Filesystem fake transport
-- [ ] 2.4 Credentials and the connect service
+- [x] 2.4 Credentials and the connect service
 - [ ] 2.5 Email sync settings: connect form and Gmail option
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Folders, cursors and locations
@@ -58,6 +58,10 @@ Current: 2.4 · Last updated: 2026-10-20 08:25
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 2.4: the Purelymail preset stays defined in `src/constants/mail.ts` (as Task 1.2 placed it) and `connect/presets.ts` is the typed lookup, so the UI and the service cannot drift.
+- 2.4: `connectImapMailbox` tests IMAP and SMTP before any write, resets cursors/locations inside the transaction, and enqueues the first sync after commit; an enqueue failure is logged rather than undoing a stored connection, because the worker boot pass picks the mailbox up anyway.
+- 2.4: a unique violation on `email_address` maps to `E_MAIL_006` (another user owns that address); `exchangeAndBind` and `softDisconnectMailbox` now delete the credentials row, which is what switches an account back to the Gmail provider.
+- 2.4: `createImapProvider` ships as a skeleton (every method `E_MAIL_015`, empty headers, no-op close) so `resolveMailProvider` can already return kind "imap"; the connect integration test proves the five required cases against the fake transport and real Postgres.
 - 2.3: the fake's `internalDate` is the .eml file's mtime (tests set it with `utimesSync`, and `fakeDeliver` accepts a `date`), so the initial-window and backfill tests can place mail in the past; the fake reports `highestModseq` null because it has no CONDSTORE, and its `status` reads `meta.json` so `fakeResetUidValidity` is visible.
 - 2.3: the fake SMTP delivers to the envelope recipients, not the parsed To header, because Bcc recipients are exactly the ones missing from the wire copy; every send is logged to `_smtp` and the sender's mailbox is created on the way.
 - 2.2: `fetchSources` fetches metadata first and then the source only for messages within `maxBytes`, one `fetchOne` at a time inside a 25-UID batch (the server rejects overlapping fetches on one selected mailbox); `idle` opens its own connection so the polling session stays usable, and `highestModseq` 0n is mapped to null as the contract requires.

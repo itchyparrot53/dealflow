@@ -130,6 +130,9 @@ export async function exchangeAndBind(args: {
     if (row === undefined) {
       return err(new AppError("E_AUTH_001", "gmail account upsert returned no row", {}));
     }
+    // Switching back from IMAP/SMTP to Gmail drops the stored app password, which is what makes
+    // an account "imap"; the mailbox now resolves to the Gmail adapter.
+    await args.db.execute(sql`DELETE FROM mail_account_credentials WHERE account_id = ${row.id}`);
     return ok({ accountId: row.id });
   } catch (e) {
     // The ON CONFLICT targets user_id, so a collision on the separate

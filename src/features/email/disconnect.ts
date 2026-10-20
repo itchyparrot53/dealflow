@@ -19,4 +19,7 @@ export async function softDisconnectMailbox(
     SET status='disconnected', refresh_token_enc=NULL, last_error_id=NULL, updated_at=now()
     WHERE id=${accountId}
   `);
+  // The stored IMAP/SMTP password is what marks an account as "imap"; a disconnect removes it so a
+  // later Gmail connect is not shadowed by a dead credential.
+  await db.execute(sql`DELETE FROM mail_account_credentials WHERE account_id=${accountId}`);
 }
