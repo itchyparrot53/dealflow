@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-20 20:36
+Current: 2.1 · Last updated: 2026-10-20 20:39
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
 - Phase 1: 7e9e458
+- Phase 2: 644b036
 
 ## Tasks
 - [x] 0.1 Start Part 3: progress files, kit and baseline
@@ -16,7 +17,7 @@ Current: 1.5 · Last updated: 2026-10-20 20:36
 - [x] 1.2 Product catalog service
 - [x] 1.3 Deal lines and the value sync (test-first)
 - [x] 1.4 Deal terms and stage probabilities
-- [ ] 1.5 Phase 1 QA gate
+- [x] 1.5 Phase 1 QA gate
 - [ ] 2.1 Settings → Currencies
 - [ ] 2.2 Settings → Products
 - [ ] 2.3 Deal Products section and terms fields
@@ -36,6 +37,7 @@ Current: 1.5 · Last updated: 2026-10-20 20:36
 ## QA log
 - Baseline: typecheck ok · lint ok (14 warnings, 0 errors) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 4979/4979
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5004/5004 · currency 25/25
+- Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5004/5004 · currency/products/deals integration 159/159
 
 ## Decisions
 - 0.1: starting point is `15ff072` (`5.6: Final report and completion`, Part 2) and the previous PROGRESS.md said `dealflow-wd-p2-v1` with `STATUS: COMPLETE`, so this run starts fresh at Task 0.1 as section 4 expects.
