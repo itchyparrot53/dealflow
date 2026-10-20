@@ -53,7 +53,7 @@ describe("sendEmail tracking_enabled column", () => {
 
       const row = (
         await db.execute(
-          sql`SELECT tracking_enabled FROM email_messages WHERE account_id=${acctId} AND gmail_message_id='g-trk-1'`,
+          sql`SELECT tracking_enabled FROM email_messages WHERE account_id=${acctId} AND provider_message_id='g-trk-1'`,
         )
       ).rows[0] as { tracking_enabled: boolean } | undefined;
       expect(row).toBeDefined();
@@ -91,7 +91,7 @@ describe("sendEmail tracking_enabled column", () => {
 
       const row = (
         await db.execute(
-          sql`SELECT tracking_enabled FROM email_messages WHERE account_id=${acctId} AND gmail_message_id='g-trk-2'`,
+          sql`SELECT tracking_enabled FROM email_messages WHERE account_id=${acctId} AND provider_message_id='g-trk-2'`,
         )
       ).rows[0] as { tracking_enabled: boolean } | undefined;
       expect(row).toBeDefined();

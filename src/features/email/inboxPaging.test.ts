@@ -46,7 +46,7 @@ async function seedUserWithMailbox(tag: string): Promise<{ actor: AuthUser; acco
 // minutesAgo orders the threads deterministically: smaller = newer = earlier in the list.
 async function seedThread(accountId: string, subject: string, minutesAgo: number): Promise<void> {
   await h.db.execute(
-    sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, last_message_at)
+    sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, last_message_at)
         VALUES (${accountId}, ${subject}, ${subject}, 'private',
                 now() - (${minutesAgo} * interval '1 minute'))`,
   );

@@ -35,11 +35,11 @@ describe("Sent correspondent projection", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'Outreach') RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'Outreach') RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES (${thread.id}, ${acctId}, 'm1', 'outbound', 'o@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now())
       `);
 
@@ -55,11 +55,11 @@ describe("Sent correspondent projection", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'Reply') RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'Reply') RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES
           (${thread.id}, ${acctId}, 'm1', 'outbound', 'o@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now() - interval '1 hour'),
           (${thread.id}, ${acctId}, 'm2', 'inbound', 'client@acme.com', 'Ada Client', '["o@gunsnation.com"]'::jsonb, now())
@@ -79,11 +79,11 @@ describe("Archive correspondent projection", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, archived_at) VALUES ('t1', ${acctId}, 'Filed', now()) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, archived_at) VALUES ('t1', ${acctId}, 'Filed', now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES (${thread.id}, ${acctId}, 'm1', 'outbound', 'o@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now())
       `);
 
@@ -104,11 +104,11 @@ describe("Archive correspondent projection", () => {
       ).rows[0] as { id: string };
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, archived_at) VALUES ('t1', ${acctId}, 'Filed', ${person.id}, now()) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, archived_at) VALUES ('t1', ${acctId}, 'Filed', ${person.id}, now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES (${thread.id}, ${acctId}, 'm1', 'outbound', 'o@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now())
       `);
 

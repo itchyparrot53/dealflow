@@ -69,14 +69,14 @@ describe("applyMessageIds attachment persistence", () => {
 
       const rows = (
         await db.execute(
-          sql`SELECT filename, mime_type, size_bytes, gmail_attachment_id, account_id
+          sql`SELECT filename, mime_type, size_bytes, provider_attachment_id, account_id
               FROM email_message_attachments WHERE message_id=${message.id}`,
         )
       ).rows as {
         filename: string;
         mime_type: string;
         size_bytes: number;
-        gmail_attachment_id: string;
+        provider_attachment_id: string;
         account_id: string;
       }[];
 
@@ -86,7 +86,7 @@ describe("applyMessageIds attachment persistence", () => {
         filename: "invoice.pdf",
         mime_type: "application/pdf",
         size_bytes: 88190,
-        gmail_attachment_id: "a1",
+        provider_attachment_id: "a1",
         account_id: acctId,
       });
     });

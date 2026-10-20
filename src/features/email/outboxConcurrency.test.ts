@@ -100,11 +100,11 @@ describe("processSendAttempt concurrency", () => {
       // hardened guard makes the loser a no-op, never an overwrite).
       const finalRow = (
         await db.execute(
-          sql`SELECT status, gmail_message_id FROM email_send_attempts WHERE id=${attemptId}`,
+          sql`SELECT status, provider_message_id FROM email_send_attempts WHERE id=${attemptId}`,
         )
-      ).rows[0] as { status: string; gmail_message_id: string | null };
+      ).rows[0] as { status: string; provider_message_id: string | null };
       expect(finalRow.status).toBe("sent");
-      expect(["gmail-A", "gmail-found"]).toContain(finalRow.gmail_message_id);
+      expect(["gmail-A", "gmail-found"]).toContain(finalRow.provider_message_id);
     });
   });
 
@@ -120,27 +120,27 @@ describe("processSendAttempt concurrency", () => {
       // The status clause alone would NOT protect this; only the id-equality clause does.
       await db.execute(sql`
         UPDATE email_send_attempts
-        SET status='sending', gmail_message_id='gmail-first' WHERE id=${attemptId}
+        SET status='sending', provider_message_id='gmail-first' WHERE id=${attemptId}
       `);
 
       // A markSent carrying a DIFFERENT id must be a no-op (no silent overwrite).
       await markSent(db, attemptId, "gmail-second", signal);
       const row = (
         await db.execute(
-          sql`SELECT status, gmail_message_id FROM email_send_attempts WHERE id=${attemptId}`,
+          sql`SELECT status, provider_message_id FROM email_send_attempts WHERE id=${attemptId}`,
         )
-      ).rows[0] as { status: string; gmail_message_id: string | null };
-      expect(row.gmail_message_id).toBe("gmail-first");
+      ).rows[0] as { status: string; provider_message_id: string | null };
+      expect(row.provider_message_id).toBe("gmail-first");
       expect(row.status).toBe("sending"); // untouched
 
       // markSent with the SAME id is allowed and finalizes the row to sent.
       await markSent(db, attemptId, "gmail-first", signal);
       const again = (
         await db.execute(
-          sql`SELECT status, gmail_message_id FROM email_send_attempts WHERE id=${attemptId}`,
+          sql`SELECT status, provider_message_id FROM email_send_attempts WHERE id=${attemptId}`,
         )
-      ).rows[0] as { status: string; gmail_message_id: string | null };
-      expect(again.gmail_message_id).toBe("gmail-first");
+      ).rows[0] as { status: string; provider_message_id: string | null };
+      expect(again.provider_message_id).toBe("gmail-first");
       expect(again.status).toBe("sent");
     });
   });

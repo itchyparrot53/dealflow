@@ -19,12 +19,12 @@ async function seedAccount(db: TestDb, ownerId: string, email: string): Promise<
 }
 
 // Insert an email_send_attempts row directly, standing in for an attempt Gmail already
-// accepted (status='sent', gmail_message_id set) but whose local copy was never stored
+// accepted (status='sent', provider_message_id set) but whose local copy was never stored
 // (crash between markSent and storeOutboundCopy). ensureLocalCopyForReplay is what a
 // replay of this attempt runs to repair it.
 async function seedSentAttempt(
   db: TestDb,
-  args: { accountId: string; gmailMessageId: string; payload: SendPayload },
+  args: { accountId: string; providerMessageId: string; payload: SendPayload },
 ): Promise<string> {
   const idempotencyKey = crypto.randomUUID();
   const messageIdHeader = `${crypto.randomUUID()}@gunsnation.com`;
@@ -32,9 +32,9 @@ async function seedSentAttempt(
     (
       await db.execute(sql`
         INSERT INTO email_send_attempts
-          (idempotency_key, message_id_header, account_id, payload, status, gmail_message_id, sent_at)
+          (idempotency_key, message_id_header, account_id, payload, status, provider_message_id, sent_at)
         VALUES
-          (${idempotencyKey}, ${messageIdHeader}, ${args.accountId}, ${JSON.stringify(args.payload)}::jsonb, 'sent', ${args.gmailMessageId}, now())
+          (${idempotencyKey}, ${messageIdHeader}, ${args.accountId}, ${JSON.stringify(args.payload)}::jsonb, 'sent', ${args.providerMessageId}, now())
         RETURNING id
       `)
     ).rows[0] as { id: string }
@@ -44,12 +44,12 @@ async function seedSentAttempt(
 async function threadDealId(
   db: TestDb,
   accountId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
 ): Promise<string | null> {
   const row = (
     await db.execute(sql`
       SELECT deal_id FROM email_threads
-      WHERE account_id=${accountId} AND gmail_thread_id=${gmailThreadId}
+      WHERE account_id=${accountId} AND provider_thread_id=${providerThreadId}
     `)
   ).rows[0] as { deal_id: string | null } | undefined;
   return row?.deal_id ?? null;
@@ -75,10 +75,10 @@ describe("ensureLocalCopyForReplay", () => {
         `)
       ).rows[0] as { id: string };
 
-      const gmailMessageId = "g-replay-linked-1";
+      const providerMessageId = "g-replay-linked-1";
       const attemptId = await seedSentAttempt(db, {
         accountId: acctId,
-        gmailMessageId,
+        providerMessageId,
         payload: {
           // Recipient does not match any contact/deal, so a link can only come from linkDealId.
           to: ["stranger@nowhere.com"],
@@ -91,8 +91,8 @@ describe("ensureLocalCopyForReplay", () => {
       });
 
       const fake = new FakeGmailClient();
-      fake.messages.set(gmailMessageId, {
-        id: gmailMessageId,
+      fake.messages.set(providerMessageId, {
+        id: providerMessageId,
         threadId: "th-replay-linked-1",
         labelIds: [],
         snippet: "p",
@@ -117,10 +117,10 @@ describe("ensureLocalCopyForReplay", () => {
       const owner = await seedUser(db, { email: "owner-replay2@gunsnation.com" });
       const acctId = await seedAccount(db, owner.id, "owner-replay2@gunsnation.com");
 
-      const gmailMessageId = "g-replay-unlinked-1";
+      const providerMessageId = "g-replay-unlinked-1";
       const attemptId = await seedSentAttempt(db, {
         accountId: acctId,
-        gmailMessageId,
+        providerMessageId,
         payload: {
           to: ["stranger@nowhere.com"],
           subject: "Hi",
@@ -131,8 +131,8 @@ describe("ensureLocalCopyForReplay", () => {
       });
 
       const fake = new FakeGmailClient();
-      fake.messages.set(gmailMessageId, {
-        id: gmailMessageId,
+      fake.messages.set(providerMessageId, {
+        id: providerMessageId,
         threadId: "th-replay-unlinked-1",
         labelIds: [],
         snippet: "p",

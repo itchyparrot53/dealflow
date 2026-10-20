@@ -94,11 +94,11 @@ export async function runSendJob(
   // (including scheduled sends promoted by the delayed pg-boss job). The interactive
   // path (send.ts runSend step g) does this inline; the worker path defers to here.
   // Idempotent: storeOutboundCopy upserts and backfillTokens is a no-op when already done.
-  if (outcome.value.status === "sent" && outcome.value.gmailMessageId !== undefined) {
+  if (outcome.value.status === "sent" && outcome.value.providerMessageId !== undefined) {
     const crm = await performWorkerSendCrm(db, {
       accountId: args.accountId,
       idempotencyKey: args.idempotencyKey,
-      gmailMessageId: outcome.value.gmailMessageId,
+      providerMessageId: outcome.value.providerMessageId,
       gmail: client.value,
       signal: args.signal,
     });

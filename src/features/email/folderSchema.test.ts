@@ -25,7 +25,7 @@ describe("Unit H additive schema", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id, archived_at`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id, archived_at`,
         )
       ).rows[0] as { id: string; archived_at: string | null };
       expect(thr.archived_at).toBeNull();

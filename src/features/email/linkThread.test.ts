@@ -28,7 +28,7 @@ async function seedAccount(
 async function seedThread(db: TestDb, accountId: string, visibility = "private"): Promise<string> {
   const thr = (
     await db.execute(sql`
-      INSERT INTO email_threads (gmail_thread_id, account_id, visibility)
+      INSERT INTO email_threads (provider_thread_id, account_id, visibility)
       VALUES ('t1', ${accountId}, ${visibility}) RETURNING id
     `)
   ).rows[0] as { id: string };
@@ -116,7 +116,7 @@ describe("applyThreadLink", () => {
       const threadId = (
         (
           await db.execute(sql`
-          INSERT INTO email_threads (gmail_thread_id, account_id, visibility, person_id)
+          INSERT INTO email_threads (provider_thread_id, account_id, visibility, person_id)
           VALUES ('ts1', ${acctId}, 'shared', ${p1.id}) RETURNING id
         `)
         ).rows[0] as { id: string }

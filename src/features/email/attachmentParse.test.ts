@@ -19,7 +19,7 @@ describe("extractAttachments", () => {
         filename: "invoice.pdf",
         mimeType: "application/pdf",
         sizeBytes: 88190,
-        gmailAttachmentId: "a1",
+        providerAttachmentId: "a1",
       },
     ]);
   });

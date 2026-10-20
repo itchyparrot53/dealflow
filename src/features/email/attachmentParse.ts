@@ -4,7 +4,7 @@ export interface ParsedAttachment {
   filename: string;
   mimeType: string;
   sizeBytes: number;
-  gmailAttachmentId: string;
+  providerAttachmentId: string;
 }
 
 // A Gmail part is a real attachment when it carries a non-empty filename and a
@@ -20,7 +20,7 @@ export function extractAttachments(payload: GmailPart | undefined): ParsedAttach
         filename,
         mimeType: part.mimeType ?? "application/octet-stream",
         sizeBytes: part.body?.size ?? 0,
-        gmailAttachmentId: attachmentId,
+        providerAttachmentId: attachmentId,
       });
     }
     for (const child of part.parts ?? []) walk(child);

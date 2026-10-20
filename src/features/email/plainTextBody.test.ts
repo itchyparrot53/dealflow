@@ -27,11 +27,11 @@ describe("thread.get plain-text body fallback", () => {
       ).rows[0] as { id: string };
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_text, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_text, sent_at)
         VALUES (${thr.id}, ${acctId.id}, 'm1', 'inbound', 'a@y.com',
           E'Hello Nick,\nSee https://example.com/x for details.\nReply to support@hetzner.com.', now())
       `);
@@ -63,11 +63,11 @@ describe("thread.get plain-text body fallback", () => {
       ).rows[0] as { id: string };
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_html, body_text, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_html, body_text, sent_at)
         VALUES (${thr.id}, ${acctId.id}, 'm1', 'inbound', 'a@y.com', '<p>rich</p>', 'plain', now())
       `);
 

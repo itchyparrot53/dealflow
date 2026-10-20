@@ -82,7 +82,7 @@ it("emails a team manager who sees the deal only through team.viewMembers", asyn
     const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
     const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
       calls.push({ acct, msg });
-      return Promise.resolve(ok({ gmailMessageId: "x" }));
+      return Promise.resolve(ok({ providerMessageId: "x" }));
     };
 
     const r = await runEmailNotificationJob(

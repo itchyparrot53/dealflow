@@ -65,12 +65,12 @@ describe("processSendAttempt", () => {
       const acct = await seedAccount(db);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject)
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject)
               VALUES ('gt-1', ${acct}, 'Hi') RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(
-        sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+        sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
             VALUES (${thread.id}, ${acct}, 'gm-1', 'outbound', 'o@gunsnation.com', now())`,
       );
       await enqueueSend(db, {
@@ -200,17 +200,17 @@ describe("processSendAttempt", () => {
       expect(r.ok).toBe(true);
       if (r.ok) {
         expect(r.value.status).toBe("sent");
-        expect(r.value.gmailMessageId).toBe("gmail-found");
+        expect(r.value.providerMessageId).toBe("gmail-found");
       }
       // Reconciled, NEVER blind re-sent.
       expect(sendCount(fake)).toBe(0);
       const row = (
         await db.execute(
-          sql`SELECT status, gmail_message_id FROM email_send_attempts WHERE id=${attemptId}`,
+          sql`SELECT status, provider_message_id FROM email_send_attempts WHERE id=${attemptId}`,
         )
-      ).rows[0] as { status: string; gmail_message_id: string | null };
+      ).rows[0] as { status: string; provider_message_id: string | null };
       expect(row.status).toBe("sent");
-      expect(row.gmail_message_id).toBe("gmail-found");
+      expect(row.provider_message_id).toBe("gmail-found");
     });
   });
 

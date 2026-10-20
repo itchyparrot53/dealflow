@@ -43,7 +43,7 @@ async function seedUserWithMailbox(tag: string): Promise<{ actor: AuthUser; acco
 
 async function seedThread(accountId: string, subject: string, visibility: string): Promise<void> {
   await h.db.execute(
-    sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, last_message_at)
+    sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, last_message_at)
         VALUES (${accountId}, ${subject}, ${subject}, ${visibility}, now())`,
   );
 }
@@ -95,7 +95,7 @@ async function seedVisiblePersonLinkedThread(
     )
   ).rows[0] as { id: string };
   await h.db.execute(
-    sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, person_id, last_message_at)
+    sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, person_id, last_message_at)
         VALUES (${ownerAccountId}, ${subject}, ${subject}, 'shared', ${person.id}, now())`,
   );
 }

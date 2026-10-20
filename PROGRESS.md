@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-20 02:58
+Current: 1.2 · Last updated: 2026-10-20 03:02
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -14,7 +14,7 @@ Current: 1.1 · Last updated: 2026-10-20 02:58
 - [x] 0.4 Password reset after email-link sign-in and atomic lockout
 - [x] 0.5 Scripts, release tests and audit leftovers
 - [x] 0.6 Phase 0 QA gate
-- [ ] 1.1 Rename the Gmail columns
+- [x] 1.1 Rename the Gmail columns
 - [ ] 1.2 Mail tables
 - [ ] 1.3 MailProvider interface and Gmail adapter
 - [ ] 1.4 Send path on MailProvider
@@ -56,6 +56,8 @@ Current: 1.1 · Last updated: 2026-10-20 02:58
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 1.1: renamed 89 source files plus 3 scripts (95 paths including the schema, the migration and its snapshot); the only Gmail names left are the allowed `parentGmailMessageId` / `parent_gmail_message_id` aliases, and `docs/dealflow/UPSTREAM.md` now records that upstream email fixes must be ported by hand.
+- 1.1: `drizzle-kit generate --custom` needed the unique constraints updated to the new property names before it could serialize the snapshot; the empty migration was then filled with the five `ALTER TABLE ... RENAME COLUMN` statements from 6.5 and applied to the dev database (columns verified through `information_schema`).
 - 0.6: gate fix round 1 fixed a typecheck error introduced in 0.5 (`readPackageVersion()` may be undefined; the enabled-path test now uses `getCurrentVersion()` and dropped an unused seeded user) and formatted the two test files; the phase gate then passed with the same assertions.
 - CONTRACT CHANGE: 0.5 keeps Part 1's AMENDMENT A1 on `docker-compose.yml` (no `name: dealflow`): adding it now would rename the compose project and orphan the owner's running `warpdrive-main` volumes, so the dev stack keeps the folder-derived project name while the smoke test keeps its dedicated `dealflow-smoke` project. Audit finding A1.
 - 0.5: scripts follow 6.2 (`test:unit` and `test:integration` bake the UTC/en-US environment, `build` sets `ALLOW_FIRST_LOGIN_ADMIN=false`, `mail:live-check` is added now and its script file arrives in Task 5.2).
@@ -74,7 +76,7 @@ Current: 1.1 · Last updated: 2026-10-20 02:58
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
-- TODO(owner): the running dev stack (`warpdrive-main`) still serves the Part 1 build and the Part 1 column names. Rebuild it after Phase 1 lands: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+- TODO(owner): migration `0078_dealflow_mail_rename` is already applied to the dev database, so the running `warpdrive-main` app (still the Part 1 build) reads the old column names and will error on email screens until it is rebuilt: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`). Rebuild once Phase 1 lands.
 
 ## Open issues
 - None

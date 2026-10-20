@@ -58,17 +58,17 @@ async function applyTrashTransitions(
   gmail: GmailClient,
   signal: AbortSignal,
 ): Promise<Result<void, AppError>> {
-  for (const gmailThreadId of threadIds) {
-    const thread = await gmail.getThread({ id: gmailThreadId, signal });
+  for (const providerThreadId of threadIds) {
+    const thread = await gmail.getThread({ id: providerThreadId, signal });
     if (!thread.ok) {
       if (thread.error.context?.status === 404) {
-        await markThreadTrashed(db, accountId, gmailThreadId);
+        await markThreadTrashed(db, accountId, providerThreadId);
         signal.throwIfAborted();
         continue;
       }
       return thread;
     }
-    await reconcileThreadTrash(db, accountId, gmailThreadId, thread.value.messages);
+    await reconcileThreadTrash(db, accountId, providerThreadId, thread.value.messages);
     signal.throwIfAborted();
   }
   return ok(undefined);
@@ -121,13 +121,13 @@ export async function syncMailbox(
 ): Promise<Result<{ applied: number }, AppError>> {
   args.signal.throwIfAborted();
   const acctRow = await db.execute(
-    sql`SELECT last_history_id, status, user_id FROM email_accounts WHERE id=${args.accountId}`,
+    sql`SELECT sync_cursor, status, user_id FROM email_accounts WHERE id=${args.accountId}`,
   );
   const acct = acctRow.rows[0] as
-    | { last_history_id: string | null; status: string; user_id: string }
+    | { sync_cursor: string | null; status: string; user_id: string }
     | undefined;
   if (acct === undefined || acct.status === "disconnected") return ok({ applied: 0 });
-  const startHistoryId = acct.last_history_id;
+  const startHistoryId = acct.sync_cursor;
   if (startHistoryId === null) {
     // First run after connect: the mailbox has no cursor yet. Seed it from the mailbox's
     // current historyId so subsequent ticks poll deltas go-forward. Nothing else seeds this
@@ -139,7 +139,7 @@ export async function syncMailbox(
     if (!profile.ok) return profile;
     await db.execute(sql`
       UPDATE email_accounts
-      SET last_history_id=${profile.value.historyId}, last_sync_at=now(), last_error_id=NULL
+      SET sync_cursor=${profile.value.historyId}, last_sync_at=now(), last_error_id=NULL
       WHERE id=${args.accountId}
     `);
     args.signal.throwIfAborted();
@@ -183,7 +183,7 @@ export async function syncMailbox(
   // Single checkpoint AFTER the last page committed.
   await db.execute(sql`
     UPDATE email_accounts
-    SET last_history_id=${newHistoryId}, last_sync_at=now(), last_error_id=NULL
+    SET sync_cursor=${newHistoryId}, last_sync_at=now(), last_error_id=NULL
     WHERE id=${args.accountId}
   `);
   args.signal.throwIfAborted();

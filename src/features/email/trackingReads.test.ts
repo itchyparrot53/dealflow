@@ -31,12 +31,12 @@ async function seedAttempt(
   ).rows[0] as { id: string };
   const thread = (
     await db.execute(sql`
-      INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acct.id}) RETURNING id
+      INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acct.id}) RETURNING id
     `)
   ).rows[0] as { id: string };
   const msg = (
     await db.execute(sql`
-      INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email)
+      INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email)
       VALUES (${thread.id}, ${acct.id}, 'g1', 'outbound', 'o@gunsnation.com') RETURNING id
     `)
   ).rows[0] as { id: string };

@@ -27,7 +27,7 @@ async function seedThread(db: typeof ctx.db, ownerId: string): Promise<string> {
     VALUES (${ownerId}, ${`${ownerId}@ex.com`}, 'connected') RETURNING id`)
   ).rows[0] as { id: string };
   const th = (
-    await db.execute(sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+    await db.execute(sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
     VALUES ('g1', ${acct.id}, 'Hi', now()) RETURNING id`)
   ).rows[0] as { id: string };
   return th.id;
@@ -66,7 +66,7 @@ it("does not count another user's shared thread in the actor's unread badge (Inb
       VALUES ('Pub', 'pub@ex.com', ${owner.id}, 'all') RETURNING id`)
   ).rows[0] as { id: string };
   // Owner's shared, unread thread linked to a person the viewer can see.
-  await ctx.db.execute(sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, visibility, person_id, last_message_at)
+  await ctx.db.execute(sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, visibility, person_id, last_message_at)
     VALUES ('gshared', ${acct.id}, 'Shared', 'shared', ${person.id}, now())`);
 
   expect(await inboxUnreadCount(ctx.db, { actor: actorOf(viewer.id) }, SIG())).toBe(0);

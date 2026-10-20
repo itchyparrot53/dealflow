@@ -35,11 +35,11 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_html, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_html, sent_at)
         VALUES
           (${thr.id}, ${acctId}, 'm1', 'inbound', 'a@y.com', '<p>old</p><script>x</script>', now()-interval '1 hour'),
           (${thr.id}, ${acctId}, 'm2', 'inbound', 'a@y.com', '<p>new</p>', now())
@@ -54,7 +54,7 @@ describe("email reads", () => {
       if (out.ok) {
         const m0 = out.value.messages[0];
         const m1 = out.value.messages[1];
-        expect(m0?.gmailMessageId).toBe("m2"); // newest first
+        expect(m0?.providerMessageId).toBe("m2"); // newest first
         expect(m1?.bodyHtml).not.toMatch(/<script/i);
       }
     });
@@ -66,11 +66,11 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id, "reply-owner@gunsnation.com");
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, to_emails, cc_emails, body_html, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, to_emails, cc_emails, body_html, sent_at)
         VALUES (${thr.id}, ${acctId}, 'm1', 'inbound', 'ann@acme.com', '["reply-owner@gunsnation.com","bob@acme.com"]'::jsonb, '["carol@acme.com"]'::jsonb, '<p>hi</p>', now())
       `);
 
@@ -95,18 +95,18 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctId}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       const msg = (
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_html, sent_at)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_html, sent_at)
           VALUES (${thr.id}, ${acctId}, 'm1', 'inbound', 'a@y.com', '<p>hi</p>', now())
           RETURNING id
         `)
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
+        INSERT INTO email_message_attachments (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
         VALUES (${msg.id}, ${acctId}, 'a1', 'invoice.pdf', 'application/pdf', 88190)
       `);
 
@@ -137,7 +137,7 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(sql`
-          INSERT INTO email_threads (gmail_thread_id, account_id, visibility) VALUES ('t1', ${acctId}, 'private') RETURNING id
+          INSERT INTO email_threads (provider_thread_id, account_id, visibility) VALUES ('t1', ${acctId}, 'private') RETURNING id
         `)
       ).rows[0] as { id: string };
 
@@ -157,7 +157,7 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(sql`
-          INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+          INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
           VALUES ('t1', ${acctId}, 'Renewal', now()) RETURNING id
         `)
       ).rows[0] as { id: string };
@@ -182,11 +182,11 @@ describe("email reads", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'S') RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject) VALUES ('t1', ${acctId}, 'S') RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
         VALUES (${thr.id}, ${acctId}, 'm1', 'outbound', 'me@x.com', now())
       `);
       await db.execute(sql`

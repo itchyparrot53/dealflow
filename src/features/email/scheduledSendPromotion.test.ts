@@ -129,11 +129,11 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
       // Assertion C: an email_messages CRM copy row exists for this send.
       const msgRow = (
         await db.execute(
-          sql`SELECT id, gmail_message_id FROM email_messages WHERE account_id = ${acctId}`,
+          sql`SELECT id, provider_message_id FROM email_messages WHERE account_id = ${acctId}`,
         )
-      ).rows[0] as { id: string; gmail_message_id: string } | undefined;
+      ).rows[0] as { id: string; provider_message_id: string } | undefined;
       expect(msgRow).toBeDefined();
-      expect(msgRow?.gmail_message_id).toBe("gmail-promo-1");
+      expect(msgRow?.provider_message_id).toBe("gmail-promo-1");
 
       // Assertion D: tracking tokens are backfilled (message_id NOT NULL).
       const tokenRows = (

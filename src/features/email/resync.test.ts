@@ -41,10 +41,10 @@ describe("recoverFrom404", () => {
       // Cursor advanced to new historyId, status connected, error cleared.
       const row = (
         await db.execute(
-          sql`SELECT last_history_id, status, last_error_id FROM email_accounts WHERE id=${acctId}`,
+          sql`SELECT sync_cursor, status, last_error_id FROM email_accounts WHERE id=${acctId}`,
         )
-      ).rows[0] as { last_history_id: string; status: string; last_error_id: string | null };
-      expect(row.last_history_id).toBe("999");
+      ).rows[0] as { sync_cursor: string; status: string; last_error_id: string | null };
+      expect(row.sync_cursor).toBe("999");
       expect(row.status).toBe("connected");
       expect(row.last_error_id).toBeNull();
     });
@@ -70,7 +70,7 @@ describe("recoverFrom404", () => {
 
       // Pre-seed the email thread as it would exist from before the gap.
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, last_message_at)
         VALUES ('oldT', ${acctId}, 'Old thread', ${personRow.id}, ${pastDate.toISOString()}::timestamptz)
       `);
 
@@ -89,7 +89,7 @@ describe("recoverFrom404", () => {
       // Only ONE thread row for "oldT".
       const threadCount = (
         await db.execute(
-          sql`SELECT count(*)::int AS n FROM email_threads WHERE account_id=${acctId} AND gmail_thread_id='oldT'`,
+          sql`SELECT count(*)::int AS n FROM email_threads WHERE account_id=${acctId} AND provider_thread_id='oldT'`,
         )
       ).rows[0] as { n: number };
       expect(threadCount.n).toBe(1);
@@ -97,7 +97,7 @@ describe("recoverFrom404", () => {
       // person_id preserved on the thread.
       const thread = (
         await db.execute(
-          sql`SELECT person_id FROM email_threads WHERE account_id=${acctId} AND gmail_thread_id='oldT'`,
+          sql`SELECT person_id FROM email_threads WHERE account_id=${acctId} AND provider_thread_id='oldT'`,
         )
       ).rows[0] as { person_id: string | null };
       expect(thread.person_id).toBe(personRow.id);
@@ -136,9 +136,9 @@ describe("recoverFrom404", () => {
 
       // Cursor NOT advanced.
       const row = (
-        await db.execute(sql`SELECT last_history_id, status FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string; status: string };
-      expect(row.last_history_id).toBe("300");
+        await db.execute(sql`SELECT sync_cursor, status FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string; status: string };
+      expect(row.sync_cursor).toBe("300");
       expect(row.status).toBe("error");
     });
   });
@@ -166,7 +166,7 @@ describe("recoverFrom404", () => {
       expect(r1.ok).toBe(true);
       if (r1.ok) expect(r1.value.applied).toBe(1);
 
-      // Second run: account is now 'connected' with last_history_id='500'.
+      // Second run: account is now 'connected' with sync_cursor='500'.
       // Simulate the gap appearing again by calling recoverFrom404 directly with same data.
       // Reset status to 'connected' so the function doesn't short-circuit on disconnected.
       const r2 = await recoverFrom404(db, {
@@ -204,10 +204,10 @@ describe("recoverFrom404", () => {
 
       const row = (
         await db.execute(
-          sql`SELECT last_history_id, status, last_error_id FROM email_accounts WHERE id=${acctId}`,
+          sql`SELECT sync_cursor, status, last_error_id FROM email_accounts WHERE id=${acctId}`,
         )
-      ).rows[0] as { last_history_id: string; status: string; last_error_id: string | null };
-      expect(row.last_history_id).toBe("650");
+      ).rows[0] as { sync_cursor: string; status: string; last_error_id: string | null };
+      expect(row.sync_cursor).toBe("650");
       expect(row.status).toBe("connected");
       expect(row.last_error_id).toBeNull();
     });

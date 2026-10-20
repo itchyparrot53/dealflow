@@ -2,7 +2,7 @@ import { extractAttachments, type ParsedAttachment } from "./attachmentParse";
 import type { GmailMessage } from "./gmailSchemas";
 
 export interface ParsedGmailMessage {
-  gmailMessageId: string;
+  providerMessageId: string;
   threadId: string;
   fromEmail: string;
   // Display name from the From header ("Scrape.do Team" in `"Scrape.do Team" <support@scrape.do>`),
@@ -141,7 +141,7 @@ export function parseGmailMessage(msg: GmailMessage): ParsedGmailMessage {
   const participants = [fromEmail, ...toEmails, ...ccEmails].filter((a) => a.length > 0);
 
   return {
-    gmailMessageId: msg.id,
+    providerMessageId: msg.id,
     threadId: msg.threadId,
     fromEmail,
     fromName,

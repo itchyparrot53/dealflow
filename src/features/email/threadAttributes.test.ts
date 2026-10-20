@@ -29,7 +29,7 @@ async function seedAccount(
 async function seedThread(db: TestDb, acctId: string): Promise<string> {
   const t = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at) VALUES ('t1', ${acctId}, 'S', now()) RETURNING id`,
+      sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at) VALUES ('t1', ${acctId}, 'S', now()) RETURNING id`,
     )
   ).rows[0] as { id: string };
   return t.id;

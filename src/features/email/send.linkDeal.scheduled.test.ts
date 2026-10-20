@@ -54,12 +54,12 @@ async function seedPersonWithOpenDeal(
 async function threadDealId(
   db: TestDb,
   accountId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
 ): Promise<string | null> {
   const row = (
     await db.execute(sql`
       SELECT deal_id FROM email_threads
-      WHERE account_id=${accountId} AND gmail_thread_id=${gmailThreadId}
+      WHERE account_id=${accountId} AND provider_thread_id=${providerThreadId}
     `)
   ).rows[0] as { deal_id: string | null } | undefined;
   return row?.deal_id ?? null;

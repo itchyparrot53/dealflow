@@ -11,10 +11,10 @@ export interface AttemptRow {
   // Raw SQL returns timestamptz as an ISO string; coerce with new Date(...) on use.
   send_started_at: string | null;
   claim_token: string | null;
-  gmail_message_id: string | null;
+  provider_message_id: string | null;
 }
 
-export type SendOutcome = { status: "sent" | "failed" | "needs_review"; gmailMessageId?: string };
+export type SendOutcome = { status: "sent" | "failed" | "needs_review"; providerMessageId?: string };
 
 // Flip the row to sent and record the gmail message id. Idempotent and overwrite-safe:
 // the WHERE clause adopts an id only when none is set yet, OR when it equals the id
@@ -24,15 +24,15 @@ export type SendOutcome = { status: "sent" | "failed" | "needs_review"; gmailMes
 export async function markSent(
   db: Db,
   attemptId: string,
-  gmailMessageId: string,
+  providerMessageId: string,
   signal: AbortSignal,
 ): Promise<void> {
   await db.execute(sql`
     UPDATE email_send_attempts
-    SET status='sent', gmail_message_id=${gmailMessageId}, sent_at=now(), error_id=NULL
+    SET status='sent', provider_message_id=${providerMessageId}, sent_at=now(), error_id=NULL
     WHERE id=${attemptId}
       AND status <> 'sent'
-      AND (gmail_message_id IS NULL OR gmail_message_id = ${gmailMessageId})
+      AND (provider_message_id IS NULL OR provider_message_id = ${providerMessageId})
   `);
   signal.throwIfAborted();
 }
@@ -63,7 +63,7 @@ export async function reconcile(
   const hit = found.value.messages[0];
   if (hit !== undefined) {
     await markSent(db, args.attempt.id, hit.id, args.signal);
-    return ok({ status: "sent", gmailMessageId: hit.id });
+    return ok({ status: "sent", providerMessageId: hit.id });
   }
 
   // Not found. The send_started_at timestamp anchors the reconcile deadline. Raw SQL

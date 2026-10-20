@@ -12,7 +12,7 @@ import { trackingForMessages } from "./trackingReads";
 
 interface Row {
   id: string;
-  gmail_message_id: string;
+  provider_message_id: string;
   direction: string;
   from_email: string;
   from_name: string | null;
@@ -54,7 +54,7 @@ export async function getMessage(
   signal.throwIfAborted();
   const row = (
     await db.execute(sql`
-      SELECT m.id, m.gmail_message_id, m.direction, m.from_email, m.from_name, m.to_emails,
+      SELECT m.id, m.provider_message_id, m.direction, m.from_email, m.from_name, m.to_emails,
         m.cc_emails, m.subject, m.body_html, m.body_text, m.sent_at,
         t.account_id, t.visibility, t.deal_id, t.person_id,
         a.user_id AS owner_user_id, a.email_address AS owner_email
@@ -92,7 +92,7 @@ export async function getMessage(
 
   return ok({
     messageId: row.id,
-    gmailMessageId: row.gmail_message_id,
+    providerMessageId: row.provider_message_id,
     direction: row.direction,
     fromEmail: row.from_email,
     fromName: row.from_name,

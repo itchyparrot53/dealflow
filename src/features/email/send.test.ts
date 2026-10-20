@@ -128,15 +128,15 @@ describe("sendEmail", () => {
 
       const msg = (
         await db.execute(
-          sql`SELECT gmail_message_id, direction, from_email, body_html FROM email_messages WHERE account_id=${acctId}`,
+          sql`SELECT provider_message_id, direction, from_email, body_html FROM email_messages WHERE account_id=${acctId}`,
         )
       ).rows[0] as {
-        gmail_message_id: string;
+        provider_message_id: string;
         direction: string;
         from_email: string;
         body_html: string | null;
       };
-      expect(msg.gmail_message_id).toBe("g-out-1");
+      expect(msg.provider_message_id).toBe("g-out-1");
       expect(msg.direction).toBe("outbound");
       expect(msg.from_email).toBe("owner@gunsnation.com");
       // The stored body is the tracking-rewritten html (href points to the click URL).
@@ -259,11 +259,11 @@ describe("sendEmail", () => {
 
       const after = (
         await db.execute(
-          sql`SELECT gmail_message_id, direction FROM email_messages WHERE account_id=${acctId}`,
+          sql`SELECT provider_message_id, direction FROM email_messages WHERE account_id=${acctId}`,
         )
-      ).rows as { gmail_message_id: string; direction: string }[];
+      ).rows as { provider_message_id: string; direction: string }[];
       expect(after.length).toBe(1);
-      expect(after[0]!.gmail_message_id).toBe("g-out-9");
+      expect(after[0]!.provider_message_id).toBe("g-out-9");
       expect(after[0]!.direction).toBe("outbound");
 
       // ...WITHOUT re-sending to Gmail (exactly-once preserved).

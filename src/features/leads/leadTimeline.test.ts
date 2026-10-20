@@ -114,13 +114,13 @@ describe("leadTimeline", () => {
       const mkThread = async (gmailId: string, trashed: boolean): Promise<void> => {
         const t = (
           await db.execute(sql`
-            INSERT INTO email_threads (gmail_thread_id, account_id, lead_id, subject, last_message_at, trashed_at)
+            INSERT INTO email_threads (provider_thread_id, account_id, lead_id, subject, last_message_at, trashed_at)
             VALUES (${gmailId}, ${acct.id}, ${lead.id}, ${gmailId}, now(), ${trashed ? sql`now()` : null})
             RETURNING id
           `)
         ).rows[0] as { id: string };
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, subject, sent_at)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, subject, sent_at)
           VALUES (${t.id}, ${acct.id}, ${`${gmailId}-m`}, 'inbound', 'x@acme.com', ${gmailId}, now())
         `);
       };

@@ -17,7 +17,7 @@ describe("sendGmail (system-send primitive)", () => {
       { resolveClient: () => Promise.resolve(ok(fake)) }, // inject fake transport; no DB, no OAuth
     );
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.gmailMessageId).toBe("sys-out-1");
+    if (r.ok) expect(r.value.providerMessageId).toBe("sys-out-1");
 
     const send = fake.calls.find((c) => c.method === "sendRaw");
     expect(send).toBeTruthy();

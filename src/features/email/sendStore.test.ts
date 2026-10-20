@@ -87,7 +87,7 @@ describe("storeOutboundCopy thread linking", () => {
       const r = await storeOutboundCopy(db, {
         accountId: acctId,
         fromEmail: "me@acme.com",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         input: inputTo("buyer@corp.com"),
         resolvedTrackingEnabled: false,
         bodyHtml: "<p>hi</p>",
@@ -118,7 +118,7 @@ describe("storeOutboundCopy thread linking", () => {
       const r = await storeOutboundCopy(db, {
         accountId: acctId,
         fromEmail: "me@acme.com",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         input: inputTo("buyer@corp.com"),
         resolvedTrackingEnabled: false,
         bodyHtml: "<p>hi</p>",
@@ -149,7 +149,7 @@ describe("storeOutboundCopy thread linking", () => {
       const r = await storeOutboundCopy(db, {
         accountId: acctId,
         fromEmail: "me@acme.com",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         input: inputTo("buyer@corp.com"),
         resolvedTrackingEnabled: false,
         bodyHtml: "<p>hi</p>",
@@ -179,7 +179,7 @@ describe("storeOutboundCopy thread linking", () => {
       const r = await storeOutboundCopy(db, {
         accountId: acctId,
         fromEmail: "me@acme.com",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         input: inputTo("buyer@corp.com"),
         resolvedTrackingEnabled: false,
         bodyHtml: "<p>hi</p>",
@@ -202,14 +202,14 @@ describe("storeOutboundCopy thread linking", () => {
       // A thread already exists for gmail thread t1 (FakeGmailClient default), manually linked
       // to the person but NOT the deal. A reply must keep exactly that link.
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, last_message_at)
         VALUES ('t1', ${acctId}, 'Existing', ${personId}, now())
       `);
 
       const r = await storeOutboundCopy(db, {
         accountId: acctId,
         fromEmail: "me@acme.com",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         input: inputTo("buyer@corp.com"),
         resolvedTrackingEnabled: false,
         bodyHtml: "<p>hi</p>",

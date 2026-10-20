@@ -51,7 +51,7 @@ export async function seedAccount(
 
   const a = (
     await db.execute(
-      sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status, last_sync_at)
+      sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status, last_sync_at)
           VALUES (${u.id}, 'o@gunsnation.com', ${opts.startHistoryId}, ${status}, ${lastSyncSql})
           RETURNING id`,
     )

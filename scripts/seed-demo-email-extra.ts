@@ -28,7 +28,7 @@ export async function seedEmailTracking(db: Db, rng: Rng, userIds: string[]): Pr
     i += 1;
     const [attempt] = await db.q<{ id: string }>(
       `INSERT INTO email_send_attempts
-         (idempotency_key, message_id_header, account_id, thread_id, payload, status, gmail_message_id, sent_at)
+         (idempotency_key, message_id_header, account_id, thread_id, payload, status, provider_message_id, sent_at)
        VALUES (gen_random_uuid(), $1, $2, $3, $4::jsonb, 'sent', $5, now())
        RETURNING id`,
       [

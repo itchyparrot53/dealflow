@@ -40,7 +40,7 @@ async function seedAccount(db: TestDb, startHistoryId: string): Promise<string> 
   ).rows[0] as { id: string };
   const a = (
     await db.execute(
-      sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status)
+      sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status)
           VALUES (${u.id},'o@gunsnation.com',${startHistoryId},'connected') RETURNING id`,
     )
   ).rows[0] as { id: string };
@@ -49,7 +49,7 @@ async function seedAccount(db: TestDb, startHistoryId: string): Promise<string> 
 
 async function seedThread(db: TestDb, acctId: string, trashed: boolean): Promise<void> {
   await db.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, trashed_at)
+    INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, trashed_at)
     VALUES ('t1', ${acctId}, 'S', now(), ${trashed ? sql`now()` : null})
   `);
 }
@@ -57,7 +57,7 @@ async function seedThread(db: TestDb, acctId: string, trashed: boolean): Promise
 async function trashedAt(db: TestDb, acctId: string): Promise<string | null> {
   const r = (
     await db.execute(
-      sql`SELECT trashed_at FROM email_threads WHERE gmail_thread_id='t1' AND account_id=${acctId}`,
+      sql`SELECT trashed_at FROM email_threads WHERE provider_thread_id='t1' AND account_id=${acctId}`,
     )
   ).rows[0] as { trashed_at: string | null };
   return r.trashed_at;
@@ -179,9 +179,9 @@ describe("syncMailbox TRASH handling", () => {
       // Purged thread hidden locally, and the cursor advanced past the page (not stuck at 100).
       expect(await trashedAt(db, acctId)).not.toBeNull();
       const cursor = (
-        await db.execute(sql`SELECT last_history_id FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string };
-      expect(cursor.last_history_id).toBe("150");
+        await db.execute(sql`SELECT sync_cursor FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string };
+      expect(cursor.sync_cursor).toBe("150");
     });
   });
 });

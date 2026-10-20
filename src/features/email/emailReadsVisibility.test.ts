@@ -32,7 +32,7 @@ describe("email reads visibility", () => {
       const other = await seedUser(db, { email: "x@gunsnation.com" });
       const acctId = await seedAccount(db, owner.id);
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, visibility, subject, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, visibility, subject, last_message_at)
         VALUES ('t1', ${acctId}, 'private', 'Secret', now())
       `);
 
@@ -59,7 +59,7 @@ describe("email reads visibility", () => {
       ).rows[0] as { id: string };
       const thr = (
         await db.execute(sql`
-          INSERT INTO email_threads (gmail_thread_id, account_id, visibility, person_id, last_message_at)
+          INSERT INTO email_threads (provider_thread_id, account_id, visibility, person_id, last_message_at)
           VALUES ('t1', ${acctId}, 'shared', ${person.id}, now()) RETURNING id
         `)
       ).rows[0] as { id: string };
@@ -87,7 +87,7 @@ describe("email reads visibility", () => {
       const acctId = await seedAccount(db, owner.id);
       // shared but unlinked: nothing for the non-owner to see through.
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, visibility, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, visibility, last_message_at)
         VALUES ('t1', ${acctId}, 'shared', now())
       `);
 
@@ -104,7 +104,7 @@ describe("email reads visibility", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(sql`
-          INSERT INTO email_threads (gmail_thread_id, account_id, visibility, subject, last_message_at)
+          INSERT INTO email_threads (provider_thread_id, account_id, visibility, subject, last_message_at)
           VALUES ('t1', ${acctId}, 'private', 'Secret', now()) RETURNING id
         `)
       ).rows[0] as { id: string };

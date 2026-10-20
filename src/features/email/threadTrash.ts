@@ -19,15 +19,15 @@ export async function trashThread(
   signal.throwIfAborted();
   const row = (
     await db.execute(sql`
-      SELECT t.id, t.gmail_thread_id
+      SELECT t.id, t.provider_thread_id
       FROM email_threads t JOIN email_accounts a ON a.id = t.account_id
       WHERE t.id = ${args.threadId} AND a.user_id = ${args.actor.id}
     `)
-  ).rows[0] as { id: string; gmail_thread_id: string } | undefined;
+  ).rows[0] as { id: string; provider_thread_id: string } | undefined;
   if (row === undefined)
     return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found", {}));
 
-  const trashed = await args.gmail.trashThread({ threadId: row.gmail_thread_id, signal });
+  const trashed = await args.gmail.trashThread({ threadId: row.provider_thread_id, signal });
   if (!trashed.ok) return trashed;
 
   await db.execute(sql`UPDATE email_threads SET trashed_at = now() WHERE id = ${row.id}`);

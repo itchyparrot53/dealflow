@@ -25,7 +25,7 @@ const actorOf = (id: string): AuthUser => ({
 async function seedThread(
   db: TestDb,
   ownerId: string,
-  gmailThreadId = "gmail-t1",
+  providerThreadId = "gmail-t1",
 ): Promise<string> {
   const acct = (
     await db.execute(
@@ -34,8 +34,8 @@ async function seedThread(
   ).rows[0] as { id: string };
   const t = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
-          VALUES (${gmailThreadId}, ${acct.id}, 'S', now()) RETURNING id`,
+      sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
+          VALUES (${providerThreadId}, ${acct.id}, 'S', now()) RETURNING id`,
     )
   ).rows[0] as { id: string };
   return t.id;

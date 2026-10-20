@@ -53,7 +53,7 @@ export async function sendGmail(
   message: SystemMessage,
   signal: AbortSignal,
   deps: SystemSendDeps = { resolveClient: defaultResolveClient },
-): Promise<Result<{ gmailMessageId: string }, AppError>> {
+): Promise<Result<{ providerMessageId: string }, AppError>> {
   signal.throwIfAborted();
   const client = await deps.resolveClient(account, signal);
   if (!client.ok) return client;
@@ -78,5 +78,5 @@ export async function sendGmail(
   });
   signal.throwIfAborted();
   if (!sent.ok) return sent;
-  return ok({ gmailMessageId: sent.value.id });
+  return ok({ providerMessageId: sent.value.id });
 }

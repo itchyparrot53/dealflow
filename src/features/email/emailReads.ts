@@ -21,7 +21,7 @@ export { toInboxThread } from "./threadShape";
 
 export interface ThreadMessage {
   messageId: string;
-  gmailMessageId: string;
+  providerMessageId: string;
   direction: string;
   fromEmail: string;
   // Parsed From display name for the reader message header (PD shows "Name <email>"), null for bare.
@@ -85,13 +85,13 @@ export async function getThread(
 
   const rows = (
     await db.execute(sql`
-      SELECT id, gmail_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, body_html, body_text, sent_at
+      SELECT id, provider_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, body_html, body_text, sent_at
       FROM email_messages WHERE thread_id=${args.threadId}
       ORDER BY sent_at DESC NULLS LAST, created_at DESC
     `)
   ).rows as {
     id: string;
-    gmail_message_id: string;
+    provider_message_id: string;
     direction: string;
     from_email: string;
     from_name: string | null;
@@ -115,7 +115,7 @@ export async function getThread(
 
   const messages: ThreadMessage[] = rows.map((m) => ({
     messageId: m.id,
-    gmailMessageId: m.gmail_message_id,
+    providerMessageId: m.provider_message_id,
     direction: m.direction,
     fromEmail: m.from_email,
     fromName: m.from_name,

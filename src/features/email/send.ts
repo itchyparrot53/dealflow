@@ -232,11 +232,11 @@ async function runSend(
   if (!outcome.ok) return outcome;
 
   // (g) On success store the CRM copy and backfill tokens; otherwise disable tokens.
-  if (outcome.value.status === "sent" && outcome.value.gmailMessageId !== undefined) {
+  if (outcome.value.status === "sent" && outcome.value.providerMessageId !== undefined) {
     const stored = await storeOutboundCopy(db, {
       accountId: input.accountId,
       fromEmail: emailAddress,
-      gmailMessageId: outcome.value.gmailMessageId,
+      providerMessageId: outcome.value.providerMessageId,
       // Store the CRM copy under the MERGED subject so the thread/message match what was sent.
       input: { ...input, subject: mergedSubject },
       resolvedTrackingEnabled: resolvedTrackOpens || resolvedTrackLinks,
@@ -258,9 +258,9 @@ async function runSend(
       messageId: stored.value.messageId,
       signal,
     });
-    return ok({ status: "sent", messageId: outcome.value.gmailMessageId });
+    return ok({ status: "sent", messageId: outcome.value.providerMessageId });
   }
 
   await disableTokens(db, attemptId, signal);
-  return ok({ status: outcome.value.status, messageId: outcome.value.gmailMessageId });
+  return ok({ status: outcome.value.status, messageId: outcome.value.providerMessageId });
 }

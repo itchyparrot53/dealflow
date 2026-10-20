@@ -42,10 +42,10 @@ export async function sweepSpam(
   // Narrow to threads this mailbox actually synced and still shows: the spam folder is mostly junk
   // that never reached the CRM, and each survivor costs a getThread call.
   const local = await db.execute(sql`
-    SELECT gmail_thread_id FROM email_threads
+    SELECT provider_thread_id FROM email_threads
     WHERE account_id = ${args.accountId}
       AND trashed_at IS NULL
-      AND gmail_thread_id IN (
+      AND provider_thread_id IN (
         SELECT jsonb_array_elements_text(${JSON.stringify([...spamThreadIds])}::jsonb)
       )
   `);
@@ -53,16 +53,16 @@ export async function sweepSpam(
 
   // Pass 2: re-derive each candidate's hidden state from the whole conversation's labels.
   let hidden = 0;
-  for (const row of local.rows as { gmail_thread_id: string }[]) {
-    const thread = await args.gmail.getThread({ id: row.gmail_thread_id, signal: args.signal });
+  for (const row of local.rows as { provider_thread_id: string }[]) {
+    const thread = await args.gmail.getThread({ id: row.provider_thread_id, signal: args.signal });
     args.signal.throwIfAborted();
     if (!thread.ok) return thread;
-    await reconcileThreadTrash(db, args.accountId, row.gmail_thread_id, thread.value.messages);
+    await reconcileThreadTrash(db, args.accountId, row.provider_thread_id, thread.value.messages);
     args.signal.throwIfAborted();
     const stamped = await db.execute(sql`
       SELECT 1 FROM email_threads
       WHERE account_id = ${args.accountId}
-        AND gmail_thread_id = ${row.gmail_thread_id}
+        AND provider_thread_id = ${row.provider_thread_id}
         AND trashed_at IS NOT NULL
     `);
     if (stamped.rows.length > 0) hidden += 1;

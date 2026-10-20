@@ -181,7 +181,7 @@ export function ThreadPane({
             >
               {messages.map((msg) => (
                 <ReaderMessageCard
-                  key={msg.gmailMessageId}
+                  key={msg.providerMessageId}
                   message={msg}
                   allowRemote={allowRemote}
                   onShowRemote={() => setAllowRemote(true)}

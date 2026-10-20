@@ -67,7 +67,7 @@ export async function loadAttempt(
   idempotencyKey: string,
 ): Promise<AttemptRow | undefined> {
   const res = await db.execute(sql`
-    SELECT id, status, message_id_header, send_started_at, claim_token, gmail_message_id
+    SELECT id, status, message_id_header, send_started_at, claim_token, provider_message_id
     FROM email_send_attempts
     WHERE account_id=${accountId} AND idempotency_key=${idempotencyKey}
   `);
@@ -80,7 +80,7 @@ export interface SendInputs {
   // Gmail conversation this send replies into, plus the newest message already in it. Both null
   // for a fresh compose. The worker turns them into the Gmail threadId and the RFC 5322
   // In-Reply-To/References headers, without which a reply lands as a standalone message.
-  gmailThreadId: string | null;
+  providerThreadId: string | null;
   parentGmailMessageId: string | null;
 }
 
@@ -90,9 +90,9 @@ export async function loadSendInputs(
   accountId: string,
 ): Promise<SendInputs | undefined> {
   const res = await db.execute(sql`
-    SELECT a.email_address AS from_email, s.payload, t.gmail_thread_id,
+    SELECT a.email_address AS from_email, s.payload, t.provider_thread_id,
       (
-        SELECT m.gmail_message_id FROM email_messages m
+        SELECT m.provider_message_id FROM email_messages m
         WHERE m.thread_id = t.id AND m.account_id = t.account_id
         ORDER BY m.sent_at DESC NULLS LAST, m.created_at DESC
         LIMIT 1
@@ -106,7 +106,7 @@ export async function loadSendInputs(
     | {
         from_email: string;
         payload: SendPayload;
-        gmail_thread_id: string | null;
+        provider_thread_id: string | null;
         parent_gmail_message_id: string | null;
       }
     | undefined;
@@ -114,7 +114,7 @@ export async function loadSendInputs(
   return {
     from: row.from_email,
     payload: row.payload,
-    gmailThreadId: row.gmail_thread_id,
+    providerThreadId: row.provider_thread_id,
     parentGmailMessageId: row.parent_gmail_message_id,
   };
 }

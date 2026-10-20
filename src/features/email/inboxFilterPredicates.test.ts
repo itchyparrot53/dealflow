@@ -61,7 +61,7 @@ async function seedThread(
   const row = (
     await h.db.execute(
       sql`INSERT INTO email_threads
-            (account_id, gmail_thread_id, subject, visibility, deal_id, person_id, last_message_at)
+            (account_id, provider_thread_id, subject, visibility, deal_id, person_id, last_message_at)
           VALUES (${accountId}, ${subject}, ${subject}, ${opts.visibility ?? "private"},
                   ${opts.dealId ?? null}, ${opts.personId ?? null}, now())
           RETURNING id`,
@@ -77,7 +77,7 @@ async function seedMessage(
 ): Promise<void> {
   await h.db.execute(
     sql`INSERT INTO email_messages
-          (thread_id, account_id, gmail_message_id, direction, from_email, to_emails)
+          (thread_id, account_id, provider_message_id, direction, from_email, to_emails)
         VALUES (${threadId}, ${accountId}, ${randomUUID()}, 'inbound', ${opts.fromEmail},
                 ${JSON.stringify(opts.toEmails ?? [])}::jsonb)`,
   );
@@ -99,7 +99,7 @@ async function seedTrackingToken(threadId: string, accountId: string): Promise<v
   ).rows[0] as { id: string };
   const message = (
     await h.db.execute(
-      sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email)
+      sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email)
           VALUES (${threadId}, ${accountId}, ${randomUUID()}, 'outbound', ${"me@acme.com"})
           RETURNING id`,
     )

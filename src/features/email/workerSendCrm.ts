@@ -2,7 +2,7 @@
 // The interactive path (send.ts) has all context in scope and calls storeOutboundCopy
 // + backfillTokens directly. The worker path only has (accountId, idempotencyKey,
 // gmail, signal), so this helper loads what it needs from the DB and delegates.
-// Idempotent: storeOutboundCopy upserts on (account_id, gmail_message_id) and
+// Idempotent: storeOutboundCopy upserts on (account_id, provider_message_id) and
 // backfillTokens only updates rows where message_id IS NULL, so calling twice is safe.
 import { sql } from "drizzle-orm";
 import { AppError } from "@/constants/errorIds";
@@ -18,7 +18,7 @@ import { backfillTokens } from "./tracking";
 export interface WorkerSendCrmArgs {
   accountId: string;
   idempotencyKey: string;
-  gmailMessageId: string;
+  providerMessageId: string;
   gmail: GmailClient;
   signal: AbortSignal;
 }
@@ -105,7 +105,7 @@ export async function performWorkerSendCrm(
   const stored = await storeOutboundCopy(db, {
     accountId: args.accountId,
     fromEmail: row.from_email,
-    gmailMessageId: args.gmailMessageId,
+    providerMessageId: args.providerMessageId,
     input,
     resolvedTrackingEnabled,
     bodyHtml: payload.html,

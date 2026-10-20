@@ -30,7 +30,7 @@ async function seedLeadThread(db: TestDb, userId: string, leadId: string): Promi
   const [thread] = await db
     .insert(emailThreads)
     .values({
-      gmailThreadId: "t-carry",
+      providerThreadId: "t-carry",
       accountId: account?.id ?? "",
       subject: "Intro",
       leadId,
@@ -234,7 +234,7 @@ describe("convertLead carries the lead's history onto the deal", () => {
       if (!r.ok) return;
 
       const [thread] = await db.select().from(emailThreads).where(eq(emailThreads.id, threadId));
-      // A second row is impossible (unique account_id + gmail_thread_id), so the one thread carries
+      // A second row is impossible (unique account_id + provider_thread_id), so the one thread carries
       // both links and shows on the deal and the archived lead.
       expect(thread?.dealId).toBe(r.value.dealId);
       expect(thread?.leadId).toBe(lead.id);

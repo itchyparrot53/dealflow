@@ -36,11 +36,11 @@ describe("inbox list correspondent (counterparty, not self)", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, last_message_at) VALUES ('t1', ${acctId}, now()) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, last_message_at) VALUES ('t1', ${acctId}, now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES (${thr.id}, ${acctId}, 'm1', 'outbound', 'me@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now())
       `);
 
@@ -59,11 +59,11 @@ describe("inbox list correspondent (counterparty, not self)", () => {
       const acctId = await seedAccount(db, owner.id);
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, last_message_at) VALUES ('t1', ${acctId}, now()) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, last_message_at) VALUES ('t1', ${acctId}, now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES
           (${thr.id}, ${acctId}, 'm1', 'outbound', 'me@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now() - interval '1 hour'),
           (${thr.id}, ${acctId}, 'm2', 'inbound', 'client@acme.com', 'Ada Client', '["me@gunsnation.com"]'::jsonb, now())
@@ -88,11 +88,11 @@ describe("inbox list correspondent (counterparty, not self)", () => {
       ).rows[0] as { id: string };
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, person_id, last_message_at) VALUES ('t1', ${acctId}, ${person.id}, now()) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, person_id, last_message_at) VALUES ('t1', ${acctId}, ${person.id}, now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, sent_at)
         VALUES (${thr.id}, ${acctId}, 'm1', 'outbound', 'me@gunsnation.com', 'Me', '["client@acme.com"]'::jsonb, now())
       `);
 

@@ -86,7 +86,7 @@ async function insertMessages(
     const to = inbound ? [ctx.userEmail] : [ctx.counterEmail];
     const [msg] = await db.q<{ id: string }>(
       `INSERT INTO email_messages
-         (thread_id, account_id, gmail_message_id, direction, from_email, from_name,
+         (thread_id, account_id, provider_message_id, direction, from_email, from_name,
           to_emails, subject, snippet, body_html, body_text, tracking_enabled, sent_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,to_timestamp($13))
        RETURNING id`,
@@ -129,7 +129,7 @@ async function insertAttachments(
     const [filename, mime] = pick(ctx.rng, ATTACHMENTS);
     await db.q(
       `INSERT INTO email_message_attachments
-         (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
+         (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         messageId,
@@ -175,7 +175,7 @@ async function maybeMarkRead(
 export async function seedUserEmails(db: Db, args: UserEmailArgs): Promise<number> {
   const { accountUserId, userEmail, rng, personEmails, personIds, dealIds, count } = args;
   const [acct] = await db.q<{ id: string }>(
-    `INSERT INTO email_accounts (user_id, email_address, status, last_history_id)
+    `INSERT INTO email_accounts (user_id, email_address, status, sync_cursor)
      VALUES ($1, $2, 'connected', '1000')
      ON CONFLICT (user_id) DO UPDATE SET status = 'connected', updated_at = now()
      RETURNING id`,
@@ -196,7 +196,7 @@ export async function seedUserEmails(db: Db, args: UserEmailArgs): Promise<numbe
     const { followUp, labels } = threadAttrs(rng);
     const [thread] = await db.q<{ id: string }>(
       `INSERT INTO email_threads
-         (gmail_thread_id, account_id, subject, visibility, person_id, deal_id,
+         (provider_thread_id, account_id, subject, visibility, person_id, deal_id,
           last_message_at, follow_up_status, labels)
        VALUES ($1, $2, $3, $4::email_visibility, $5, $6, to_timestamp($7), $8, $9::text[])
        RETURNING id`,

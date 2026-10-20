@@ -20,7 +20,7 @@ async function seedAccount(db: TestDb, email: string, status: string): Promise<s
   ).rows[0] as { id: string };
   const a = (
     await db.execute(
-      sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status)
+      sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status)
           VALUES (${u.id},${email},'100',${status}) RETURNING id`,
     )
   ).rows[0] as { id: string };

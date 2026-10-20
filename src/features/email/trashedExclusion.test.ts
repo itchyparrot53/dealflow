@@ -42,7 +42,7 @@ async function seedThread(
 ): Promise<string> {
   const t = (
     await db.execute(sql`
-      INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, archived_at, trashed_at)
+      INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, archived_at, trashed_at)
       VALUES (${gmailId}, ${acctId}, 'Budget review', now(),
               ${opts.archived === true ? sql`now()` : null},
               ${opts.trashed === true ? sql`now()` : null})
@@ -50,7 +50,7 @@ async function seedThread(
     `)
   ).rows[0] as { id: string };
   await db.execute(sql`
-    INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_text, sent_at)
+    INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_text, sent_at)
     VALUES (${t.id}, ${acctId}, ${`${gmailId}-m`}, 'outbound', 'me@gunsnation.com', 'budget numbers', now())
   `);
   return t.id;

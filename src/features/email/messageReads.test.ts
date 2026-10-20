@@ -37,7 +37,7 @@ async function seedThread(
 ): Promise<string> {
   const row = (
     await db.execute(sql`
-      INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, deal_id, person_id, last_message_at)
+      INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, deal_id, person_id, last_message_at)
       VALUES (${args.accountId}, ${`gt-${Math.random()}`}, 'Follow up', ${args.visibility ?? "shared"},
               ${args.dealId ?? null}, ${args.personId ?? null}, now())
       RETURNING id
@@ -53,7 +53,7 @@ async function seedMessage(
   const row = (
     await db.execute(sql`
       INSERT INTO email_messages
-        (thread_id, account_id, gmail_message_id, direction, from_email, from_name,
+        (thread_id, account_id, provider_message_id, direction, from_email, from_name,
          to_emails, cc_emails, subject, snippet, body_html, sent_at)
       VALUES (${args.threadId}, ${args.accountId}, ${`gm-${Math.random()}`}, 'inbound',
               'them@example.com', 'Them', '["o@example.com"]'::jsonb, '[]'::jsonb,

@@ -42,14 +42,14 @@ async function seedMailboxAndMessage(db: Db): Promise<{
 
   const thread = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id)
+      sql`INSERT INTO email_threads (provider_thread_id, account_id)
           VALUES (${`gthread-${Date.now()}`}, ${acct.id}) RETURNING id`,
     )
   ).rows[0] as { id: string };
 
   const msg = (
     await db.execute(
-      sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email)
+      sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email)
           VALUES (${thread.id}, ${acct.id}, ${`gmsg-${Date.now()}`}, 'outbound', ${`track-${Date.now()}@example.com`})
           RETURNING id`,
     )

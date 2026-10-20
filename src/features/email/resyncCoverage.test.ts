@@ -30,7 +30,7 @@ describe("recoverFrom404 coverage", () => {
         await db.execute(sql`SELECT id FROM persons WHERE primary_email='carol@crm.com'`)
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, last_message_at)
         VALUES ('oldT', ${acctId}, 'Old thread', ${personRow.id}, ${pastDate.toISOString()}::timestamptz)
       `);
 
@@ -54,16 +54,16 @@ describe("recoverFrom404 coverage", () => {
 
       const inserted = (
         await db.execute(
-          sql`SELECT count(*)::int AS n FROM email_messages WHERE account_id=${acctId} AND gmail_message_id='old-msg'`,
+          sql`SELECT count(*)::int AS n FROM email_messages WHERE account_id=${acctId} AND provider_message_id='old-msg'`,
         )
       ).rows[0] as { n: number };
       expect(inserted.n).toBe(1);
 
       // Cursor advanced only after the combined coverage applied.
       const acctAfter = (
-        await db.execute(sql`SELECT last_history_id, status FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string; status: string };
-      expect(acctAfter.last_history_id).toBe("750");
+        await db.execute(sql`SELECT sync_cursor, status FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string; status: string };
+      expect(acctAfter.sync_cursor).toBe("750");
       expect(acctAfter.status).toBe("connected");
     });
   });
@@ -98,9 +98,9 @@ describe("recoverFrom404 coverage", () => {
 
       // The message DID apply, but the cursor must stay at the old value.
       const row = (
-        await db.execute(sql`SELECT last_history_id, status FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string; status: string };
-      expect(row.last_history_id).toBe("800");
+        await db.execute(sql`SELECT sync_cursor, status FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string; status: string };
+      expect(row.sync_cursor).toBe("800");
       expect(row.status).toBe("error");
     });
   });
@@ -153,7 +153,7 @@ describe("recoverFrom404 coverage", () => {
         await db.execute(sql`SELECT id FROM persons WHERE primary_email='dave@crm.com'`)
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, last_message_at)
         VALUES ('oldT', ${acctId}, 'Old thread', ${personRow.id}, ${pastDate.toISOString()}::timestamptz)
       `);
 
@@ -168,7 +168,7 @@ describe("recoverFrom404 coverage", () => {
       expect(r.ok).toBe(true);
 
       const row = (
-        await db.execute(sql`SELECT trashed_at FROM email_threads WHERE gmail_thread_id='oldT'`)
+        await db.execute(sql`SELECT trashed_at FROM email_threads WHERE provider_thread_id='oldT'`)
       ).rows[0] as { trashed_at: string | null };
       expect(row.trashed_at).not.toBeNull();
     });
@@ -189,7 +189,7 @@ describe("recoverFrom404 coverage", () => {
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, lead_id, subject, last_message_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, lead_id, subject, last_message_at)
         VALUES ('leadT', ${acctId}, ${leadRow.id}, 'Lead thread', ${pastDate.toISOString()}::timestamptz)
       `);
 
@@ -203,7 +203,7 @@ describe("recoverFrom404 coverage", () => {
       expect(r.ok).toBe(true);
 
       const row = (
-        await db.execute(sql`SELECT trashed_at FROM email_threads WHERE gmail_thread_id='leadT'`)
+        await db.execute(sql`SELECT trashed_at FROM email_threads WHERE provider_thread_id='leadT'`)
       ).rows[0] as { trashed_at: string | null };
       expect(row.trashed_at).not.toBeNull();
     });

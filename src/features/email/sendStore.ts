@@ -23,7 +23,7 @@ interface OutboundLinkContext {
 export interface StoreOutboundArgs {
   accountId: string;
   fromEmail: string;
-  gmailMessageId: string;
+  providerMessageId: string;
   input: SendEmailInput;
   // Resolved tracking flag: true if either trackOpens or trackLinks is on.
   // Callers compute this at the send boundary and pass it here so this function
@@ -48,15 +48,15 @@ export async function storeOutboundCopy(
   db: Db,
   args: StoreOutboundArgs,
 ): Promise<Result<{ messageId: string }, AppError>> {
-  const fetched = await args.gmail.getMessage({ id: args.gmailMessageId, signal: args.signal });
+  const fetched = await args.gmail.getMessage({ id: args.providerMessageId, signal: args.signal });
   args.signal.throwIfAborted();
   if (!fetched.ok) return fetched;
-  const gmailThreadId = fetched.value.threadId;
+  const providerThreadId = fetched.value.threadId;
   const snippet = fetched.value.snippet ?? null;
 
   const thread = await upsertThread(db, {
     accountId: args.accountId,
-    gmailThreadId,
+    providerThreadId,
     subject: args.input.subject,
     fromEmail: args.fromEmail,
     link: args.link,
@@ -68,13 +68,13 @@ export async function storeOutboundCopy(
 
   const inserted = await db.execute(sql`
     INSERT INTO email_messages
-      (thread_id, account_id, gmail_message_id, direction, from_email, to_emails, cc_emails, subject, snippet, body_html, sent_at, tracking_enabled)
+      (thread_id, account_id, provider_message_id, direction, from_email, to_emails, cc_emails, subject, snippet, body_html, sent_at, tracking_enabled)
     VALUES (
-      ${localThreadId}, ${args.accountId}, ${args.gmailMessageId}, 'outbound', ${args.fromEmail},
+      ${localThreadId}, ${args.accountId}, ${args.providerMessageId}, 'outbound', ${args.fromEmail},
       ${JSON.stringify(args.input.to)}::jsonb, ${JSON.stringify(args.input.cc ?? [])}::jsonb,
       ${args.input.subject}, ${snippet}, ${args.bodyHtml}, now(), ${args.resolvedTrackingEnabled}
     )
-    ON CONFLICT (account_id, gmail_message_id) DO UPDATE SET snippet=EXCLUDED.snippet
+    ON CONFLICT (account_id, provider_message_id) DO UPDATE SET snippet=EXCLUDED.snippet
     RETURNING id
   `);
   args.signal.throwIfAborted();
@@ -125,7 +125,7 @@ async function resolveNewThreadLink(
   return { personId, dealId };
 }
 
-// Upsert the thread on (account_id, gmail_thread_id) and return the local id. A reply threads
+// Upsert the thread on (account_id, provider_thread_id) and return the local id. A reply threads
 // into an EXISTING conversation: preserve its link and never re-resolve (a manual link or a
 // prior auto-link must stand). Only a genuinely NEW thread resolves person/deal from the link
 // context. The INSERT keeps ON CONFLICT DO UPDATE so a concurrent send that created the row
@@ -134,7 +134,7 @@ async function upsertThread(
   db: Db,
   args: {
     accountId: string;
-    gmailThreadId: string;
+    providerThreadId: string;
     subject: string;
     fromEmail: string;
     link: OutboundLinkContext | undefined;
@@ -143,7 +143,7 @@ async function upsertThread(
   },
 ): Promise<Result<string, AppError>> {
   const existing = await db.execute(
-    sql`SELECT id FROM email_threads WHERE account_id=${args.accountId} AND gmail_thread_id=${args.gmailThreadId}`,
+    sql`SELECT id FROM email_threads WHERE account_id=${args.accountId} AND provider_thread_id=${args.providerThreadId}`,
   );
   const found = existing.rows[0] as { id: string } | undefined;
   if (found !== undefined) {
@@ -161,19 +161,19 @@ async function upsertThread(
   // place rather than branching the SQL.
   const visibility = args.visibility ?? null;
   const created = await db.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, deal_id, visibility, last_message_at)
+    INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, deal_id, visibility, last_message_at)
     VALUES (
-      ${args.gmailThreadId}, ${args.accountId}, ${args.subject}, ${personId}, ${dealId},
+      ${args.providerThreadId}, ${args.accountId}, ${args.subject}, ${personId}, ${dealId},
       COALESCE(${visibility}::email_visibility, 'private'), now()
     )
-    ON CONFLICT (account_id, gmail_thread_id) DO UPDATE SET updated_at=now()
+    ON CONFLICT (account_id, provider_thread_id) DO UPDATE SET updated_at=now()
     RETURNING id
   `);
   const row = created.rows[0] as { id: string } | undefined;
   if (row === undefined) {
     return err(
       new AppError("E_DB_002", "email_threads upsert returned no row", {
-        gmailThreadId: args.gmailThreadId,
+        providerThreadId: args.providerThreadId,
       }),
     );
   }

@@ -43,7 +43,7 @@ describe("softDisconnectMailbox", () => {
       const u = await seedUser(db);
       const id = await seedConnectedAccount(db, u.id, "rep@example.com");
       await db.execute(
-        sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t-1', ${id})`,
+        sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t-1', ${id})`,
       );
       await softDisconnectMailbox(db, id, new AbortController().signal);
       const acct = await db.execute(sql`SELECT id FROM email_accounts WHERE id=${id}`);

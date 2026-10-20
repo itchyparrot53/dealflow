@@ -21,11 +21,11 @@ function isThreadFullyTrashed(messages: { labelIds: string[] }[]): boolean {
 export async function markThreadTrashed(
   db: Db,
   accountId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
 ): Promise<void> {
   await db.execute(sql`
     UPDATE email_threads SET trashed_at = now()
-    WHERE account_id = ${accountId} AND trashed_at IS NULL AND gmail_thread_id = ${gmailThreadId}
+    WHERE account_id = ${accountId} AND trashed_at IS NULL AND provider_thread_id = ${providerThreadId}
   `);
 }
 
@@ -36,15 +36,15 @@ export async function markThreadTrashed(
 export async function reconcileThreadTrash(
   db: Db,
   accountId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
   messages: { labelIds: string[] }[],
 ): Promise<void> {
   if (isThreadFullyTrashed(messages)) {
-    await markThreadTrashed(db, accountId, gmailThreadId);
+    await markThreadTrashed(db, accountId, providerThreadId);
     return;
   }
   await db.execute(sql`
     UPDATE email_threads SET trashed_at = NULL
-    WHERE account_id = ${accountId} AND gmail_thread_id = ${gmailThreadId}
+    WHERE account_id = ${accountId} AND provider_thread_id = ${providerThreadId}
   `);
 }

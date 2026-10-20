@@ -45,7 +45,7 @@ export const emailAccounts = pgTable("email_accounts", {
   emailAddress: citext("email_address").notNull().unique(),
   refreshTokenEnc: bytea("refresh_token_enc"),
   scopes: jsonb("scopes").notNull().default("[]"),
-  lastHistoryId: text("last_history_id"),
+  syncCursor: text("sync_cursor"),
   watchExpiresAt: timestamp("watch_expires_at", { withTimezone: true }),
   status: emailAccountStatus("status").notNull().default("connected"),
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
@@ -59,7 +59,7 @@ export const emailThreads = pgTable(
   "email_threads",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    gmailThreadId: text("gmail_thread_id").notNull(),
+    providerThreadId: text("provider_thread_id").notNull(),
     accountId: uuid("account_id")
       .notNull()
       .references(() => emailAccounts.id),
@@ -88,7 +88,7 @@ export const emailThreads = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("uq_thread_acct_gmail").on(t.accountId, t.gmailThreadId),
+    unique("uq_thread_acct_gmail").on(t.accountId, t.providerThreadId),
     // Composite target so children can pin messages/attempts to the SAME mailbox.
     unique("uq_thread_id_acct").on(t.id, t.accountId),
     // Partial index backs the not-archived Inbox read (WHERE archived_at IS NULL).
@@ -105,7 +105,7 @@ export const emailMessages = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     threadId: uuid("thread_id").notNull(),
     accountId: uuid("account_id").notNull(),
-    gmailMessageId: text("gmail_message_id").notNull(),
+    providerMessageId: text("provider_message_id").notNull(),
     direction: emailMessageDirection("direction").notNull(),
     fromEmail: citext("from_email").notNull(),
     // Sender display name parsed from the From header ("Scrape.do Team"), null for a bare address.
@@ -122,7 +122,7 @@ export const emailMessages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("uq_msg_acct_gmail").on(t.accountId, t.gmailMessageId),
+    unique("uq_msg_acct_gmail").on(t.accountId, t.providerMessageId),
     foreignKey({
       columns: [t.threadId, t.accountId],
       foreignColumns: [emailThreads.id, emailThreads.accountId],
@@ -147,7 +147,7 @@ export const emailSendAttempts = pgTable(
     claimToken: uuid("claim_token"),
     claimedAt: timestamp("claimed_at", { withTimezone: true }),
     sendStartedAt: timestamp("send_started_at", { withTimezone: true }),
-    gmailMessageId: text("gmail_message_id"),
+    providerMessageId: text("provider_message_id"),
     errorId: text("error_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     sentAt: timestamp("sent_at", { withTimezone: true }),

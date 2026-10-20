@@ -18,7 +18,7 @@ export type SendFn = (
   account: EmailAccountRow,
   message: SystemMessage,
   signal: AbortSignal,
-) => Promise<Result<{ gmailMessageId: string }, AppError>>;
+) => Promise<Result<{ providerMessageId: string }, AppError>>;
 
 export async function runEmailNotificationJob(
   db: Db,

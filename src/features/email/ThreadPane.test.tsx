@@ -49,7 +49,7 @@ const threadData = {
   },
   messages: [] as {
     messageId: string;
-    gmailMessageId: string;
+    providerMessageId: string;
     direction: string;
     fromEmail: string;
     fromName: string | null;
@@ -158,7 +158,7 @@ describe("ThreadPane", () => {
     threadData.messages = [
       {
         messageId: "m1",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         direction: "inbound",
         fromEmail: "a@y.com",
         toEmails: [],
@@ -181,7 +181,7 @@ describe("ThreadPane", () => {
     threadData.messages = [
       {
         messageId: "m1",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         direction: "inbound",
         fromEmail: "support@scrape.do",
         fromName: "Scrape.do Team",
@@ -194,7 +194,7 @@ describe("ThreadPane", () => {
       },
       {
         messageId: "m2",
-        gmailMessageId: "g2",
+        providerMessageId: "g2",
         direction: "inbound",
         fromEmail: "bare@example.com",
         fromName: null,
@@ -218,7 +218,7 @@ describe("ThreadPane", () => {
     threadData.messages = [
       {
         messageId: "m2",
-        gmailMessageId: "g2",
+        providerMessageId: "g2",
         direction: "outbound",
         fromEmail: "me@gunsnation.com",
         toEmails: ["you@y.com"],
@@ -242,7 +242,7 @@ describe("ThreadPane", () => {
     threadData.messages = [
       {
         messageId: "m1",
-        gmailMessageId: "g1",
+        providerMessageId: "g1",
         direction: "outbound",
         fromEmail: "me@gunsnation.com",
         fromName: null,
@@ -282,7 +282,7 @@ describe("ThreadPane", () => {
     threadData.messages = [
       {
         messageId: "m3",
-        gmailMessageId: "g3",
+        providerMessageId: "g3",
         direction: "inbound",
         fromEmail: "a@y.com",
         toEmails: [],

@@ -106,3 +106,15 @@ that touches them needs a manual read first.
   `src/features/deal-workspace/composer/VideoCallField.tsx`,
   `src/features/deals/CreateFilterModal.tsx`, `src/features/email/composer/Composer.tsx`,
   `src/features/identity/actions/invite.ts` (changed): AI entry points and Dealflow copy.
+
+## Part 2 column rename (Task 1.1)
+
+Migration `0078_dealflow_mail_rename` renames the Gmail-specific columns in place: `gmail_thread_id`
+to `provider_thread_id`, `gmail_message_id` to `provider_message_id` (messages and send attempts),
+`gmail_attachment_id` to `provider_attachment_id`, and `last_history_id` to `sync_cursor`. The
+constraint names (`uq_thread_acct_gmail`, `uq_msg_acct_gmail`) are unchanged.
+
+From this commit on, an upstream fix that touches the email layer must be ported by hand: the
+upstream column names no longer exist here. Read the upstream diff, map the old names onto the new
+ones, and prefer the `MailProvider` layer in `src/features/mail/` over adding new `GmailClient`
+call sites. The Gmail adapter keeps the upstream sync engine (`syncMailbox`) unchanged.

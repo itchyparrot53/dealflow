@@ -10,7 +10,7 @@ import { reconcileThreadTrash } from "./trashReconcile";
 
 // Full ops-B3 gap recovery. Called when historyList returns 404 (expired cursor).
 // Invariant: cursor advances ONLY after coverage is complete. If any step fails,
-// status stays 'error' and last_history_id is unchanged so the next tick re-drives.
+// status stays 'error' and sync_cursor is unchanged so the next tick re-drives.
 export async function recoverFrom404(
   db: Db,
   args: { accountId: string; gmail: GmailClient; signal: AbortSignal },
@@ -72,14 +72,14 @@ export async function recoverFrom404(
   // Pass 2: re-fetch every CRM-linked thread for this mailbox and union its message
   // ids in. Already-applied ids are no-ops downstream (ON CONFLICT DO NOTHING).
   const linkedThreads = await db.execute(
-    sql`SELECT gmail_thread_id FROM email_threads
+    sql`SELECT provider_thread_id FROM email_threads
         WHERE account_id=${args.accountId}
           AND (person_id IS NOT NULL OR deal_id IS NOT NULL OR lead_id IS NOT NULL)`,
   );
   args.signal.throwIfAborted();
-  for (const row of linkedThreads.rows as { gmail_thread_id: string }[]) {
+  for (const row of linkedThreads.rows as { provider_thread_id: string }[]) {
     const threadResult = await args.gmail.getThread({
-      id: row.gmail_thread_id,
+      id: row.provider_thread_id,
       signal: args.signal,
     });
     args.signal.throwIfAborted();
@@ -93,7 +93,7 @@ export async function recoverFrom404(
     await reconcileThreadTrash(
       db,
       args.accountId,
-      row.gmail_thread_id,
+      row.provider_thread_id,
       threadResult.value.messages,
     );
     args.signal.throwIfAborted();
@@ -114,7 +114,7 @@ export async function recoverFrom404(
   // Coverage complete: advance cursor and clear error state.
   await db.execute(sql`
     UPDATE email_accounts
-    SET last_history_id=${profileResult.value.historyId},
+    SET sync_cursor=${profileResult.value.historyId},
         status='connected',
         last_error_id=NULL,
         last_sync_at=now()

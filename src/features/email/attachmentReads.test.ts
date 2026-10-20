@@ -21,18 +21,18 @@ async function seedMessageWithAttachment(
   ).rows[0] as { id: string };
   const thr = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acct.id}) RETURNING id`,
+      sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acct.id}) RETURNING id`,
     )
   ).rows[0] as { id: string };
   const msg = (
     await db.execute(sql`
-      INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_html)
+      INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_html)
       VALUES (${thr.id}, ${acct.id}, 'm1', 'inbound', 'a@y.com', '<p>hi</p>')
       RETURNING id
     `)
   ).rows[0] as { id: string };
   await db.execute(sql`
-    INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
+    INSERT INTO email_message_attachments (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
     VALUES (${msg.id}, ${acct.id}, 'a1', 'invoice.pdf', 'application/pdf', 88190)
   `);
   return { messageId: msg.id };
@@ -68,12 +68,12 @@ describe("attachmentsForMessages", () => {
       ).rows[0] as { id: string };
       const thr = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t2', ${acct.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t2', ${acct.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       const msg = (
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_html)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_html)
           VALUES (${thr.id}, ${acct.id}, 'm2', 'inbound', 'a@y.com', '<p>hi</p>')
           RETURNING id
         `)

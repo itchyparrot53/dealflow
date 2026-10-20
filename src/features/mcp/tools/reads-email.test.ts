@@ -77,12 +77,12 @@ test("list_emails returns the messages linked to a deal", async () => {
     const dealId = await seedDeal(db, user.id);
     const thread = (
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, deal_id, visibility)
+        INSERT INTO email_threads (provider_thread_id, account_id, deal_id, visibility)
         VALUES ('t1', ${accountId}, ${dealId}, 'shared') RETURNING id
       `)
     ).rows[0] as { id: string };
     await db.execute(sql`
-      INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, subject, body_html, sent_at)
+      INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, subject, body_html, sent_at)
       VALUES (${thread.id}, ${accountId}, 'm1', 'outbound', 'owner@example.com', 'Sent already', '<p>body</p>', now())
     `);
     const actor = await hydrateActor(db, user.id, AbortSignal.timeout(5_000));

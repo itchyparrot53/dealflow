@@ -86,7 +86,7 @@ it("re-parents S's children to T, dedups followers, soft-deletes S, and logs the
     .returning();
   const [thread] = await h.db
     .insert(emailThreads)
-    .values({ gmailThreadId: uniq("gt"), accountId: acct!.id, dealId: source.id })
+    .values({ providerThreadId: uniq("gt"), accountId: acct!.id, dealId: source.id })
     .returning();
   const personId = randomUUID();
   await h.db.insert(dealParticipants).values({ dealId: source.id, personId });

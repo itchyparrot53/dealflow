@@ -31,14 +31,14 @@ async function seedAccount(
 async function seedThread(
   db: TestDb,
   acctId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
   subject: string,
   visibility = "private",
 ): Promise<string> {
   const t = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, visibility)
-          VALUES (${gmailThreadId}, ${acctId}, ${subject}, now(), ${visibility}) RETURNING id`,
+      sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, visibility)
+          VALUES (${providerThreadId}, ${acctId}, ${subject}, now(), ${visibility}) RETURNING id`,
     )
   ).rows[0] as { id: string };
   return t.id;
@@ -48,13 +48,13 @@ async function seedMessage(
   db: TestDb,
   threadId: string,
   acctId: string,
-  gmailMessageId: string,
+  providerMessageId: string,
   fromEmail: string,
   bodyText: string,
 ): Promise<void> {
   await db.execute(sql`
-    INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_text, sent_at)
-    VALUES (${threadId}, ${acctId}, ${gmailMessageId}, 'inbound', ${fromEmail}, ${bodyText}, now())
+    INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_text, sent_at)
+    VALUES (${threadId}, ${acctId}, ${providerMessageId}, 'inbound', ${fromEmail}, ${bodyText}, now())
   `);
 }
 
@@ -91,7 +91,7 @@ describe("searchInbox", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = await seedThread(db, acctId, "t1", "Catch up");
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, body_text, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, body_text, sent_at)
         VALUES (${thread}, ${acctId}, 'm1', 'inbound', 'support@scrape.do', 'Scrape.do Team', 'hello there', now())
       `);
 
@@ -157,13 +157,13 @@ describe("searchInbox", () => {
       const thread = await seedThread(db, acctId, "t1", "Budget review");
       const msg = (
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, body_text, sent_at)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, body_text, sent_at)
           VALUES (${thread}, ${acctId}, 'm1', 'inbound', 'alice@x.com', 'budget numbers', now())
           RETURNING id
         `)
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
+        INSERT INTO email_message_attachments (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
         VALUES (${msg.id}, ${acctId}, 'att1', 'q3.pdf', 'application/pdf', 1024)
       `);
       // No email_thread_reads row for the owner: the thread is unread.

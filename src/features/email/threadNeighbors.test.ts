@@ -35,7 +35,7 @@ async function seedThreeInbox(
   const mk = async (gmailId: string, at: string): Promise<string> => {
     const r = (
       await db.execute(
-        sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+        sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
             VALUES (${gmailId}, ${acctId}, ${gmailId}, ${at}) RETURNING id`,
       )
     ).rows[0] as { id: string };
@@ -112,12 +112,12 @@ describe("getThreadNeighbors", () => {
       const mk = async (gmailId: string, lastAt: string, sentAt: string): Promise<string> => {
         const r = (
           await db.execute(
-            sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+            sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
                 VALUES (${gmailId}, ${acctId}, ${gmailId}, ${lastAt}) RETURNING id`,
           )
         ).rows[0] as { id: string };
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
           VALUES (${r.id}, ${acctId}, ${`${gmailId}-m`}, 'outbound', 'me@gunsnation.com', ${sentAt})
         `);
         return r.id;

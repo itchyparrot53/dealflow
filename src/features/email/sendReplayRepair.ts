@@ -23,7 +23,7 @@ interface ReplayRepairArgs {
 // permanently diverge from Gmail: no email_messages/thread row, no tracking tokens.
 //
 // Instead, idempotently repair on replay: if the local copy is missing, re-store it
-// (storeOutboundCopy upserts on (account_id, gmail_message_id)) and backfill tokens. The
+// (storeOutboundCopy upserts on (account_id, provider_message_id)) and backfill tokens. The
 // repair reads the STORED payload (the source of truth for what was actually sent), never
 // client input, and never re-sends to Gmail. Returns the gmail message id for the reply.
 export async function ensureLocalCopyForReplay(
@@ -32,34 +32,34 @@ export async function ensureLocalCopyForReplay(
 ): Promise<Result<{ messageId?: string }, AppError>> {
   const row = (
     await db.execute(sql`
-      SELECT s.gmail_message_id, s.idempotency_key, s.payload, a.user_id AS user_id
+      SELECT s.provider_message_id, s.idempotency_key, s.payload, a.user_id AS user_id
       FROM email_send_attempts s
       JOIN email_accounts a ON a.id = s.account_id
       WHERE s.id=${args.attemptId}
     `)
   ).rows[0] as
     | {
-        gmail_message_id: string | null;
+        provider_message_id: string | null;
         idempotency_key: string;
         payload: SendPayload;
         user_id: string;
       }
     | undefined;
   // No gmail id means nothing reached Gmail; there is no accepted send to reconcile against.
-  if (row === undefined || row.gmail_message_id === null) {
-    return ok({ messageId: row?.gmail_message_id ?? undefined });
+  if (row === undefined || row.provider_message_id === null) {
+    return ok({ messageId: row?.provider_message_id ?? undefined });
   }
-  const gmailMessageId = row.gmail_message_id;
+  const providerMessageId = row.provider_message_id;
   args.signal.throwIfAborted();
 
   // Already reconciled: the local copy exists. Skip the redundant Gmail fetch + upsert.
   const existing = (
     await db.execute(sql`
       SELECT id FROM email_messages
-      WHERE account_id=${args.accountId} AND gmail_message_id=${gmailMessageId}
+      WHERE account_id=${args.accountId} AND provider_message_id=${providerMessageId}
     `)
   ).rows[0] as { id: string } | undefined;
-  if (existing !== undefined) return ok({ messageId: gmailMessageId });
+  if (existing !== undefined) return ok({ messageId: providerMessageId });
 
   // Repair from the stored payload. The payload carries the resolved trackOpens/trackLinks
   // that were written at send time (never the raw client field). Derive resolvedTrackingEnabled
@@ -95,7 +95,7 @@ export async function ensureLocalCopyForReplay(
   const stored = await storeOutboundCopy(db, {
     accountId: args.accountId,
     fromEmail: args.fromEmail,
-    gmailMessageId,
+    providerMessageId,
     input,
     resolvedTrackingEnabled,
     bodyHtml: payload.html,
@@ -112,5 +112,5 @@ export async function ensureLocalCopyForReplay(
     messageId: stored.value.messageId,
     signal: args.signal,
   });
-  return ok({ messageId: gmailMessageId });
+  return ok({ messageId: providerMessageId });
 }

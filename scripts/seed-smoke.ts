@@ -142,11 +142,11 @@ async function seedDeal(
 
 async function seedEmailAccount(userId: string): Promise<string> {
   const rows = await q<{ id: string }>(
-    `INSERT INTO email_accounts (user_id, email_address, status, last_history_id)
+    `INSERT INTO email_accounts (user_id, email_address, status, sync_cursor)
      VALUES ($1, $2, 'connected', '1000')
      ON CONFLICT (user_id) DO UPDATE
        SET status          = 'connected',
-           last_history_id = '1000',
+           sync_cursor = '1000',
            updated_at      = now()
      RETURNING id`,
     [userId, SMOKE_EMAIL],
@@ -163,7 +163,7 @@ async function seedEmailThread(
 ): Promise<string> {
   const rows = await q<{ id: string }>(
     `INSERT INTO email_threads
-       (gmail_thread_id, account_id, subject, visibility, person_id, deal_id, last_message_at)
+       (provider_thread_id, account_id, subject, visibility, person_id, deal_id, last_message_at)
      VALUES ($1, $2, $3, 'shared', $4, $5, now())
      ON CONFLICT ON CONSTRAINT uq_thread_acct_gmail DO UPDATE
        SET subject         = EXCLUDED.subject,
@@ -183,7 +183,7 @@ async function seedEmailThread(
 async function seedEmailMessages(threadId: string, accountId: string): Promise<string> {
   await q(
     `INSERT INTO email_messages
-       (thread_id, account_id, gmail_message_id, direction, from_email,
+       (thread_id, account_id, provider_message_id, direction, from_email,
         to_emails, subject, body_html, sent_at)
      VALUES ($1,$2,$3,'inbound','jane@acme.com',$4::jsonb,'Acme renewal',$5,now()-interval '1 hour')
      ON CONFLICT ON CONSTRAINT uq_msg_acct_gmail DO UPDATE SET direction='inbound'`,
@@ -192,7 +192,7 @@ async function seedEmailMessages(threadId: string, accountId: string): Promise<s
 
   const outRows = await q<{ id: string }>(
     `INSERT INTO email_messages
-       (thread_id, account_id, gmail_message_id, direction, from_email,
+       (thread_id, account_id, provider_message_id, direction, from_email,
         to_emails, subject, body_html, tracking_enabled, sent_at)
      VALUES ($1,$2,$3,'outbound',$4,$5::jsonb,'Re: Acme renewal','<p>thanks Jane</p>',true,now())
      ON CONFLICT ON CONSTRAINT uq_msg_acct_gmail DO UPDATE

@@ -547,6 +547,13 @@
       "when": 1792459595507,
       "tag": "0077_dealflow_session_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1792460591304,
+      "tag": "0078_dealflow_mail_rename",
+      "breakpoints": true
     }
   ]
 }

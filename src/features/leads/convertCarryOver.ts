@@ -12,7 +12,7 @@ import type { DbOrTx } from "@/server/realtime/channelVersions";
 //  - activities carry check activity_single_parent (deal XOR lead), so the deal gets a NEW row and
 //    the lead keeps the original. Note this means an open activity now exists twice, once per
 //    parent, and reminders fire for both.
-//  - email_threads cannot be copied at all: unique (account_id, gmail_thread_id) allows exactly one
+//  - email_threads cannot be copied at all: unique (account_id, provider_thread_id) allows exactly one
 //    row per Gmail conversation per mailbox. There is no single-parent check there, so the one row
 //    carries both links and appears on the deal and on the lead.
 export async function carryLeadHistoryToDeal(

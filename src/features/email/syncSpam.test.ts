@@ -40,7 +40,7 @@ async function seedAccount(db: TestDb, startHistoryId: string): Promise<string> 
   ).rows[0] as { id: string };
   const a = (
     await db.execute(
-      sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status)
+      sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status)
           VALUES (${u.id},'o@gunsnation.com',${startHistoryId},'connected') RETURNING id`,
     )
   ).rows[0] as { id: string };
@@ -49,7 +49,7 @@ async function seedAccount(db: TestDb, startHistoryId: string): Promise<string> 
 
 async function seedThread(db: TestDb, acctId: string, hidden: boolean): Promise<void> {
   await db.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, trashed_at)
+    INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, trashed_at)
     VALUES ('t1', ${acctId}, 'S', now(), ${hidden ? sql`now()` : null})
   `);
 }
@@ -58,7 +58,7 @@ async function seedThread(db: TestDb, acctId: string, hidden: boolean): Promise<
 async function hiddenAt(db: TestDb, acctId: string): Promise<string | null> {
   const r = (
     await db.execute(
-      sql`SELECT trashed_at FROM email_threads WHERE gmail_thread_id='t1' AND account_id=${acctId}`,
+      sql`SELECT trashed_at FROM email_threads WHERE provider_thread_id='t1' AND account_id=${acctId}`,
     )
   ).rows[0] as { trashed_at: string | null };
   return r.trashed_at;

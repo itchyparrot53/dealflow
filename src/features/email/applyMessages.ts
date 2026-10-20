@@ -52,7 +52,7 @@ export async function applyMessageIds(
       // A 404 means the message is gone from the mailbox (permanently deleted between the history
       // entry naming it and this fetch). There is nothing to store and no later tick can fetch it,
       // so skip it and let the page finish. Returning here instead wedged the cursor: the page
-      // never completed, so last_history_id never advanced, so every following tick re-listed the
+      // never completed, so sync_cursor never advanced, so every following tick re-listed the
       // same page, re-fetched the same dead id, and took the same 404. That is how one deleted
       // message stopped a mailbox syncing for eight hours. applyTrashTransitions already treats a
       // getThread 404 the same way, for the same reason.
@@ -67,13 +67,13 @@ export async function applyMessageIds(
       const threadId = thread.id;
       const msgRows = await tx.execute(sql`
         INSERT INTO email_messages
-          (thread_id, account_id, gmail_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, snippet, body_html, body_text, sent_at)
+          (thread_id, account_id, provider_message_id, direction, from_email, from_name, to_emails, cc_emails, subject, snippet, body_html, body_text, sent_at)
         VALUES (
-          ${threadId}, ${args.accountId}, ${parsed.gmailMessageId}, 'inbound', ${parsed.fromEmail}, ${parsed.fromName},
+          ${threadId}, ${args.accountId}, ${parsed.providerMessageId}, 'inbound', ${parsed.fromEmail}, ${parsed.fromName},
           ${JSON.stringify(parsed.toEmails)}::jsonb, ${JSON.stringify(parsed.ccEmails)}::jsonb,
           ${parsed.subject}, ${parsed.snippet}, ${parsed.bodyHtml}, ${parsed.bodyText}, ${parsed.sentAt}
         )
-        ON CONFLICT (account_id, gmail_message_id) DO NOTHING
+        ON CONFLICT (account_id, provider_message_id) DO NOTHING
         RETURNING id
       `);
       const row = msgRows.rows[0] as { id: string } | undefined;
@@ -81,8 +81,8 @@ export async function applyMessageIds(
 
       for (const a of parsed.attachments) {
         await tx.execute(sql`
-          INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
-          VALUES (${row.id}, ${args.accountId}, ${a.gmailAttachmentId}, ${a.filename}, ${a.mimeType}, ${a.sizeBytes})
+          INSERT INTO email_message_attachments (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
+          VALUES (${row.id}, ${args.accountId}, ${a.providerAttachmentId}, ${a.filename}, ${a.mimeType}, ${a.sizeBytes})
         `);
       }
 
@@ -165,12 +165,12 @@ async function notifyArrivals(
   }
 }
 
-// Upsert the thread on (account_id, gmail_thread_id). On a NEW thread, run resolveLink
+// Upsert the thread on (account_id, provider_thread_id). On a NEW thread, run resolveLink
 // to set person_id/deal_id scoped to the owner's visibility. Returns the internal id.
 async function upsertThread(
   tx: DbOrTx,
   args: { accountId: string; owner: AuthUser; signal: AbortSignal },
-  gmailThreadId: string,
+  providerThreadId: string,
   parsed: {
     subject: string | null;
     fromEmail: string;
@@ -179,7 +179,7 @@ async function upsertThread(
   },
 ): Promise<{ id: string; dealId: string | null }> {
   const existing = await tx.execute(
-    sql`SELECT id, deal_id FROM email_threads WHERE account_id=${args.accountId} AND gmail_thread_id=${gmailThreadId}`,
+    sql`SELECT id, deal_id FROM email_threads WHERE account_id=${args.accountId} AND provider_thread_id=${providerThreadId}`,
   );
   const found = existing.rows[0] as { id: string; deal_id: string | null } | undefined;
   if (found !== undefined) {
@@ -204,16 +204,16 @@ async function upsertThread(
   const dealId = link.kind === "linked" ? link.dealId : null;
 
   const created = await tx.execute(sql`
-    INSERT INTO email_threads (gmail_thread_id, account_id, subject, person_id, deal_id, last_message_at)
-    VALUES (${gmailThreadId}, ${args.accountId}, ${parsed.subject}, ${personId}, ${dealId}, ${parsed.sentAt})
-    ON CONFLICT (account_id, gmail_thread_id) DO UPDATE SET updated_at=now()
+    INSERT INTO email_threads (provider_thread_id, account_id, subject, person_id, deal_id, last_message_at)
+    VALUES (${providerThreadId}, ${args.accountId}, ${parsed.subject}, ${personId}, ${dealId}, ${parsed.sentAt})
+    ON CONFLICT (account_id, provider_thread_id) DO UPDATE SET updated_at=now()
     RETURNING id, deal_id
   `);
   // deal_id comes from RETURNING, not from the local variable: on the DO UPDATE path the row
   // was inserted concurrently and its stored link is the one that counts.
   const row = created.rows[0] as { id: string; deal_id: string | null } | undefined;
   if (row === undefined) {
-    throw new AppError("E_DB_002", "email_threads upsert returned no row", { gmailThreadId });
+    throw new AppError("E_DB_002", "email_threads upsert returned no row", { providerThreadId });
   }
   return { id: row.id, dealId: row.deal_id };
 }

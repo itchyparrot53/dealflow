@@ -42,7 +42,7 @@ async function seedOwner(tag: string): Promise<{ actor: AuthUser; accountId: str
 
 async function seedArchived(accountId: string, subject: string, minutesAgo: number): Promise<void> {
   await h.db.execute(
-    sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, archived_at)
+    sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, archived_at)
         VALUES (${accountId}, ${subject}, ${subject}, 'private',
                 now() - (${minutesAgo} * interval '1 minute'))`,
   );
@@ -51,13 +51,13 @@ async function seedArchived(accountId: string, subject: string, minutesAgo: numb
 async function seedSent(accountId: string, subject: string, minutesAgo: number): Promise<void> {
   const t = (
     await h.db.execute(
-      sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility)
+      sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility)
           VALUES (${accountId}, ${subject}, ${subject}, 'private') RETURNING id`,
     )
   ).rows[0] as { id: string };
   await h.db.execute(
     sql`INSERT INTO email_messages
-          (thread_id, account_id, gmail_message_id, direction, from_email, to_emails, cc_emails,
+          (thread_id, account_id, provider_message_id, direction, from_email, to_emails, cc_emails,
            subject, body_html, sent_at)
         VALUES (${t.id}, ${accountId}, ${subject}, 'outbound', 'me@acme.com', '[]'::jsonb,
                 '[]'::jsonb, ${subject}, '',

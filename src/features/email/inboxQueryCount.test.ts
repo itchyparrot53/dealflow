@@ -58,7 +58,7 @@ async function seedOwnerWithAccount(): Promise<{ actor: AuthUser; accountId: str
 async function seedThreads(accountId: string, n: number, prefix: string): Promise<void> {
   for (let i = 0; i < n; i++) {
     await h.db.execute(
-      sql`INSERT INTO email_threads (account_id, gmail_thread_id, subject, visibility, last_message_at)
+      sql`INSERT INTO email_threads (account_id, provider_thread_id, subject, visibility, last_message_at)
           VALUES (${accountId}, ${`${prefix}-${i}`}, ${`${prefix}-${i}`}, 'private',
                   now() - (${i} * interval '1 minute'))`,
     );

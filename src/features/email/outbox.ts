@@ -17,10 +17,10 @@ import { type ReplyThreadHeaders, replyThreadHeaders } from "./replyHeaders";
 async function loadReplyThreadHeaders(
   gmail: GmailClient,
   parentGmailMessageId: string | null,
-  gmailThreadId: string | null,
+  providerThreadId: string | null,
   signal: AbortSignal,
 ): Promise<ReplyThreadHeaders> {
-  if (gmailThreadId === null || parentGmailMessageId === null) return {};
+  if (providerThreadId === null || parentGmailMessageId === null) return {};
   const parent = await gmail.getMessage({ id: parentGmailMessageId, signal });
   signal.throwIfAborted();
   if (!parent.ok) return {};
@@ -99,7 +99,7 @@ export async function processSendAttempt(
   }
   // (a) replay short-circuit: already sent.
   if (existing.status === "sent") {
-    return ok({ status: "sent", gmailMessageId: existing.gmail_message_id ?? undefined });
+    return ok({ status: "sent", providerMessageId: existing.provider_message_id ?? undefined });
   }
 
   // (c) branch on send_started_at: a stamped row may have been accepted -> reconcile,
@@ -139,12 +139,12 @@ export async function processSendAttempt(
   const inputs = await loadSendInputs(db, existing.id, args.accountId);
   if (inputs === undefined) return err(new AppError("E_DB_002", "send inputs not found", args));
   args.signal.throwIfAborted();
-  const { from, payload, gmailThreadId, parentGmailMessageId } = inputs;
+  const { from, payload, providerThreadId, parentGmailMessageId } = inputs;
 
   const threading = await loadReplyThreadHeaders(
     args.gmail,
     parentGmailMessageId,
-    gmailThreadId,
+    providerThreadId,
     args.signal,
   );
 
@@ -172,7 +172,7 @@ export async function processSendAttempt(
   });
   const sent = await args.gmail.sendRaw({
     rawBase64: toRawBase64(mime),
-    threadId: gmailThreadId ?? undefined,
+    threadId: providerThreadId ?? undefined,
     signal: args.signal,
   });
   args.signal.throwIfAborted();
@@ -201,7 +201,7 @@ export async function processSendAttempt(
   }
 
   await markSent(db, existing.id, sent.value.id, args.signal);
-  return ok({ status: "sent", gmailMessageId: sent.value.id });
+  return ok({ status: "sent", providerMessageId: sent.value.id });
 }
 
 // Fetch raw bytes for every attachment in the payload from storage.

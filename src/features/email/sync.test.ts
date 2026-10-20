@@ -40,7 +40,7 @@ async function seedAccount(
   ).rows[0] as { id: string };
   const a = (
     await db.execute(
-      sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status)
+      sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status)
           VALUES (${u.id},'o@gunsnation.com',${startHistoryId},'connected') RETURNING id`,
     )
   ).rows[0] as { id: string };
@@ -73,7 +73,7 @@ describe("syncMailbox", () => {
       const acctId = (
         (
           await db.execute(
-            sql`INSERT INTO email_accounts (user_id, email_address, last_history_id, status)
+            sql`INSERT INTO email_accounts (user_id, email_address, sync_cursor, status)
                 VALUES (${u.id},'first@gunsnation.com', NULL, 'connected') RETURNING id`,
           )
         ).rows[0] as { id: string }
@@ -87,10 +87,10 @@ describe("syncMailbox", () => {
 
       const row = (
         await db.execute(
-          sql`SELECT last_history_id, last_sync_at FROM email_accounts WHERE id=${acctId}`,
+          sql`SELECT sync_cursor, last_sync_at FROM email_accounts WHERE id=${acctId}`,
         )
-      ).rows[0] as { last_history_id: string | null; last_sync_at: Date | null };
-      expect(row.last_history_id).toBe("4242");
+      ).rows[0] as { sync_cursor: string | null; last_sync_at: Date | null };
+      expect(row.sync_cursor).toBe("4242");
       expect(row.last_sync_at).not.toBeNull();
     });
   });
@@ -118,10 +118,10 @@ describe("syncMailbox", () => {
       if (r.ok) expect(r.value.applied).toBe(2);
 
       const cursor = (
-        await db.execute(sql`SELECT last_history_id FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string };
+        await db.execute(sql`SELECT sync_cursor FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string };
       // Cursor advanced to the FINAL page historyId, only after both pages applied.
-      expect(cursor.last_history_id).toBe("200");
+      expect(cursor.sync_cursor).toBe("200");
       expect(await count(db, "email_messages", acctId)).toBe(2);
       expect(await count(db, "email_threads", acctId)).toBe(1);
     });
@@ -141,7 +141,7 @@ describe("syncMailbox", () => {
 
       await syncMailbox(db, { accountId: acctId, gmail: fake, signal: newSignal() });
       // Simulate a crash before checkpoint: rewind the cursor and re-run the same page.
-      await db.execute(sql`UPDATE email_accounts SET last_history_id='100' WHERE id=${acctId}`);
+      await db.execute(sql`UPDATE email_accounts SET sync_cursor='100' WHERE id=${acctId}`);
       await syncMailbox(db, { accountId: acctId, gmail: fake, signal: newSignal() });
 
       expect(await count(db, "email_messages", acctId)).toBe(1);
@@ -204,10 +204,10 @@ describe("syncMailbox", () => {
       if (!r.ok) expect(r.error.id).toBe("E_GMAIL_001");
 
       const cursor = (
-        await db.execute(sql`SELECT last_history_id FROM email_accounts WHERE id=${acctId}`)
-      ).rows[0] as { last_history_id: string };
+        await db.execute(sql`SELECT sync_cursor FROM email_accounts WHERE id=${acctId}`)
+      ).rows[0] as { sync_cursor: string };
       // Cursor unchanged so the next run re-drives from the old position.
-      expect(cursor.last_history_id).toBe("100");
+      expect(cursor.sync_cursor).toBe("100");
     });
   });
 
@@ -228,12 +228,12 @@ describe("syncMailbox", () => {
 
       const row = (
         await db.execute(
-          sql`SELECT last_error_id, last_history_id, status FROM email_accounts WHERE id=${acctId}`,
+          sql`SELECT last_error_id, sync_cursor, status FROM email_accounts WHERE id=${acctId}`,
         )
-      ).rows[0] as { last_error_id: string | null; last_history_id: string; status: string };
+      ).rows[0] as { last_error_id: string | null; sync_cursor: string; status: string };
       // Error cleared and cursor advanced to fresh historyId from getProfile.
       expect(row.last_error_id).toBeNull();
-      expect(row.last_history_id).toBe("150");
+      expect(row.sync_cursor).toBe("150");
       expect(row.status).toBe("connected");
     });
   });

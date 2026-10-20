@@ -34,7 +34,7 @@ describe("archive reads", () => {
       const owner = await seedUser(db, { email: "o@gunsnation.com" });
       const acctId = await seedAccount(db, owner.id);
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, archived_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, archived_at)
         VALUES
           ('active', ${acctId}, 'Active', now(), NULL),
           ('gone', ${acctId}, 'Archived', now() - interval '1 hour', now())
@@ -55,7 +55,7 @@ describe("archive reads", () => {
       const acctId = await seedAccount(db, owner.id);
       await db.execute(sql`
         INSERT INTO email_threads
-          (gmail_thread_id, account_id, subject, last_message_at, archived_at, follow_up_status, labels)
+          (provider_thread_id, account_id, subject, last_message_at, archived_at, follow_up_status, labels)
         VALUES
           ('gone', ${acctId}, 'Archived', now(), now(), 'important', ARRAY['to_do'])
       `);
@@ -72,7 +72,7 @@ describe("archive reads", () => {
       const other = await seedUser(db, { email: "x@gunsnation.com" });
       const acctId = await seedAccount(db, owner.id);
       await db.execute(sql`
-        INSERT INTO email_threads (gmail_thread_id, account_id, subject, archived_at)
+        INSERT INTO email_threads (provider_thread_id, account_id, subject, archived_at)
         VALUES ('gone', ${acctId}, 'Archived', now())
       `);
       const view = (await listArchivedThreads(db, actorOf(other.id), SIG())).threads;
@@ -89,14 +89,14 @@ describe("inbox sender projection", () => {
       const mk = async (gt: string, subj: string) =>
         (
           await db.execute(
-            sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+            sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
                 VALUES (${gt}, ${acctId}, ${subj}, now()) RETURNING id`,
           )
         ).rows[0] as { id: string };
       const named = await mk("t1", "Named");
       const bare = await mk("t2", "Bare");
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, sent_at)
         VALUES
           (${named.id}, ${acctId}, 'm1', 'inbound', 'support@scrape.do', 'Scrape.do Team', now()),
           (${bare.id}, ${acctId}, 'm2', 'inbound', 'smoke@example.com', NULL, now())
@@ -120,7 +120,7 @@ describe("inbox sender projection", () => {
       const mk = async (gt: string, subj: string) =>
         (
           await db.execute(
-            sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+            sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
                 VALUES (${gt}, ${acctId}, ${subj}, now()) RETURNING id`,
           )
         ).rows[0] as { id: string };
@@ -128,7 +128,7 @@ describe("inbox sender projection", () => {
       const noAtt = await mk("t2", "NoFile");
       const msg = (
         await db.execute(sql`
-          INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+          INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
           VALUES
             (${withAtt.id}, ${acctId}, 'm1', 'inbound', 'a@y.com', now()),
             (${noAtt.id}, ${acctId}, 'm2', 'inbound', 'b@y.com', now())
@@ -137,7 +137,7 @@ describe("inbox sender projection", () => {
       ).rows as { id: string; thread_id: string }[];
       const attMsg = msg.find((m) => m.thread_id === withAtt.id);
       await db.execute(sql`
-        INSERT INTO email_message_attachments (message_id, account_id, gmail_attachment_id, filename, mime_type, size_bytes)
+        INSERT INTO email_message_attachments (message_id, account_id, provider_attachment_id, filename, mime_type, size_bytes)
         VALUES (${attMsg?.id}, ${acctId}, 'att1', 'invoice.pdf', 'application/pdf', 1234)
       `);
 
@@ -154,12 +154,12 @@ describe("inbox sender projection", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at)
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at)
               VALUES ('t1', ${acctId}, 'Named', now()) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, from_name, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, from_name, sent_at)
         VALUES (${thread.id}, ${acctId}, 'm1', 'inbound', 'support@scrape.do', 'Scrape.do Team', now())
       `);
 
@@ -182,14 +182,14 @@ describe("sent read", () => {
       const mk = async (gt: string, subj: string) =>
         (
           await db.execute(
-            sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject) VALUES (${gt}, ${acctId}, ${subj}) RETURNING id`,
+            sql`INSERT INTO email_threads (provider_thread_id, account_id, subject) VALUES (${gt}, ${acctId}, ${subj}) RETURNING id`,
           )
         ).rows[0] as { id: string };
       const older = await mk("t1", "Older");
       const newer = await mk("t2", "Newer");
       const inboundOnly = await mk("t3", "InboundOnly");
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
         VALUES
           (${older.id}, ${acctId}, 'm1', 'outbound', 'me@x.com', now() - interval '2 hours'),
           (${newer.id}, ${acctId}, 'm2', 'outbound', 'me@x.com', now()),
@@ -206,12 +206,12 @@ describe("sent read", () => {
       const acctId = await seedAccount(db, owner.id);
       const thread = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, follow_up_status, labels)
+          sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, follow_up_status, labels)
               VALUES ('t1', ${acctId}, 'Flagged', 'later', ARRAY['important']) RETURNING id`,
         )
       ).rows[0] as { id: string };
       await db.execute(sql`
-        INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email, sent_at)
+        INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email, sent_at)
         VALUES (${thread.id}, ${acctId}, 'm1', 'outbound', 'me@x.com', now())
       `);
 

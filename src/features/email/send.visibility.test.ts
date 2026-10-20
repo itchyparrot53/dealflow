@@ -29,12 +29,12 @@ async function seedAccount(db: TestDb, ownerId: string, email: string): Promise<
 async function threadVisibility(
   db: TestDb,
   accountId: string,
-  gmailThreadId: string,
+  providerThreadId: string,
 ): Promise<string | undefined> {
   const row = (
     await db.execute(sql`
       SELECT visibility FROM email_threads
-      WHERE account_id=${accountId} AND gmail_thread_id=${gmailThreadId}
+      WHERE account_id=${accountId} AND provider_thread_id=${providerThreadId}
     `)
   ).rows[0] as { visibility: string } | undefined;
   return row?.visibility;
@@ -66,7 +66,7 @@ async function deliverScheduled(
 // storeOutboundCopy), standing in for a replay to repair. Mirrors sendReplayRepair.test.ts.
 async function seedSentAttempt(
   db: TestDb,
-  args: { accountId: string; gmailMessageId: string; payload: SendPayload },
+  args: { accountId: string; providerMessageId: string; payload: SendPayload },
 ): Promise<string> {
   const idempotencyKey = crypto.randomUUID();
   const messageIdHeader = `${crypto.randomUUID()}@gunsnation.com`;
@@ -74,9 +74,9 @@ async function seedSentAttempt(
     (
       await db.execute(sql`
         INSERT INTO email_send_attempts
-          (idempotency_key, message_id_header, account_id, payload, status, gmail_message_id, sent_at)
+          (idempotency_key, message_id_header, account_id, payload, status, provider_message_id, sent_at)
         VALUES
-          (${idempotencyKey}, ${messageIdHeader}, ${args.accountId}, ${JSON.stringify(args.payload)}::jsonb, 'sent', ${args.gmailMessageId}, now())
+          (${idempotencyKey}, ${messageIdHeader}, ${args.accountId}, ${JSON.stringify(args.payload)}::jsonb, 'sent', ${args.providerMessageId}, now())
         RETURNING id
       `)
     ).rows[0] as { id: string }
@@ -165,10 +165,10 @@ describe("compose visibility survives every send path", () => {
       const owner = await seedUser(db, { email: "owner-vis3@gunsnation.com" });
       const acctId = await seedAccount(db, owner.id, "owner-vis3@gunsnation.com");
 
-      const gmailMessageId = "g-vis-3";
+      const providerMessageId = "g-vis-3";
       const attemptId = await seedSentAttempt(db, {
         accountId: acctId,
-        gmailMessageId,
+        providerMessageId,
         payload: {
           to: ["stranger@nowhere.com"],
           subject: "Hi",
@@ -180,8 +180,8 @@ describe("compose visibility survives every send path", () => {
       });
 
       const fake = new FakeGmailClient();
-      fake.messages.set(gmailMessageId, {
-        id: gmailMessageId,
+      fake.messages.set(providerMessageId, {
+        id: providerMessageId,
         threadId: "th-vis-3",
         labelIds: [],
         snippet: "p",

@@ -27,27 +27,27 @@ describe("email schema constraints", () => {
       ).rows[0] as { id: string };
       const thrA = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctA.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctA.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
       const thrB = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t1', ${acctB.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t1', ${acctB.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
 
       // Same Gmail message id may exist in two mailboxes (per-account uniqueness).
       await db.execute(
-        sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email) VALUES (${thrA.id}, ${acctA.id}, 'm1', 'inbound', 's@y.com')`,
+        sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email) VALUES (${thrA.id}, ${acctA.id}, 'm1', 'inbound', 's@y.com')`,
       );
       await db.execute(
-        sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email) VALUES (${thrB.id}, ${acctB.id}, 'm1', 'inbound', 's@y.com')`,
+        sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email) VALUES (${thrB.id}, ${acctB.id}, 'm1', 'inbound', 's@y.com')`,
       );
 
-      // Duplicate within the SAME account violates UNIQUE (account_id, gmail_message_id).
+      // Duplicate within the SAME account violates UNIQUE (account_id, provider_message_id).
       await expect(
         db.execute(
-          sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email) VALUES (${thrA.id}, ${acctA.id}, 'm1', 'inbound', 's@y.com')`,
+          sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email) VALUES (${thrA.id}, ${acctA.id}, 'm1', 'inbound', 's@y.com')`,
         ),
       ).rejects.toThrow();
     });
@@ -77,20 +77,20 @@ describe("email schema constraints", () => {
       ).rows[0] as { id: string };
       const thrA = (
         await db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('t9', ${acctA.id}) RETURNING id`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('t9', ${acctA.id}) RETURNING id`,
         )
       ).rows[0] as { id: string };
 
       // thread belongs to acctA, message claims acctB: composite FK must reject.
       await expect(
         db.execute(
-          sql`INSERT INTO email_messages (thread_id, account_id, gmail_message_id, direction, from_email) VALUES (${thrA.id}, ${acctB.id}, 'mX', 'inbound', 's@y.com')`,
+          sql`INSERT INTO email_messages (thread_id, account_id, provider_message_id, direction, from_email) VALUES (${thrA.id}, ${acctB.id}, 'mX', 'inbound', 's@y.com')`,
         ),
       ).rejects.toThrow();
     });
   });
 
-  it("allows duplicate gmail_thread_id across different accounts (per-account scope)", async () => {
+  it("allows duplicate provider_thread_id across different accounts (per-account scope)", async () => {
     await withTestDb(async (db) => {
       const uE = (
         await db.execute(
@@ -113,18 +113,18 @@ describe("email schema constraints", () => {
         )
       ).rows[0] as { id: string };
 
-      // Same gmail_thread_id is fine across different accounts.
+      // Same provider_thread_id is fine across different accounts.
       await db.execute(
-        sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('shared-thread', ${acctE.id})`,
+        sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('shared-thread', ${acctE.id})`,
       );
       await db.execute(
-        sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('shared-thread', ${acctF.id})`,
+        sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('shared-thread', ${acctF.id})`,
       );
 
       // But duplicate within same account must fail.
       await expect(
         db.execute(
-          sql`INSERT INTO email_threads (gmail_thread_id, account_id) VALUES ('shared-thread', ${acctE.id})`,
+          sql`INSERT INTO email_threads (provider_thread_id, account_id) VALUES ('shared-thread', ${acctE.id})`,
         ),
       ).rejects.toThrow();
     });

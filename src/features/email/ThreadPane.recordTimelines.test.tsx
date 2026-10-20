@@ -44,7 +44,7 @@ const threadData = {
   messages: [
     {
       messageId: "m1",
-      gmailMessageId: "g1",
+      providerMessageId: "g1",
       direction: "inbound",
       fromEmail: "them@example.com",
       fromName: null,

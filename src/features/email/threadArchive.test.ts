@@ -31,7 +31,7 @@ async function seedAccount(
 async function seedThread(db: TestDb, acctId: string): Promise<string> {
   const t = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at) VALUES ('t1', ${acctId}, 'S', now()) RETURNING id`,
+      sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at) VALUES ('t1', ${acctId}, 'S', now()) RETURNING id`,
     )
   ).rows[0] as { id: string };
   return t.id;
@@ -48,7 +48,7 @@ async function seedPublicPerson(db: TestDb, ownerId: string): Promise<string> {
 async function seedSharedThread(db: TestDb, acctId: string, personId: string): Promise<string> {
   const t = (
     await db.execute(
-      sql`INSERT INTO email_threads (gmail_thread_id, account_id, subject, last_message_at, visibility, person_id)
+      sql`INSERT INTO email_threads (provider_thread_id, account_id, subject, last_message_at, visibility, person_id)
           VALUES ('ts', ${acctId}, 'S', now(), 'shared', ${personId}) RETURNING id`,
     )
   ).rows[0] as { id: string };

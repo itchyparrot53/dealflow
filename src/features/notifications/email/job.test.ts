@@ -71,7 +71,7 @@ describe("runEmailNotificationJob", () => {
       // Fake: synchronous return wrapped in Promise.resolve; signal not needed.
       const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
         calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
+        return Promise.resolve(ok({ providerMessageId: "x" }));
       };
 
       const r = await runEmailNotificationJob(
@@ -110,7 +110,7 @@ describe("runEmailNotificationJob", () => {
       const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
       const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
         calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
+        return Promise.resolve(ok({ providerMessageId: "x" }));
       };
 
       const r = await runEmailNotificationJob(
@@ -154,7 +154,7 @@ describe("runEmailNotificationJob", () => {
       const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
       const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
         calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "x" }));
+        return Promise.resolve(ok({ providerMessageId: "x" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -190,7 +190,7 @@ describe("runEmailNotificationJob", () => {
       const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
       const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
         calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "g1" }));
+        return Promise.resolve(ok({ providerMessageId: "g1" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -232,7 +232,7 @@ describe("runEmailNotificationJob", () => {
       const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
       const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
         calls.push({ acct, msg });
-        return Promise.resolve(ok({ gmailMessageId: "dup" }));
+        return Promise.resolve(ok({ providerMessageId: "dup" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -264,7 +264,7 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const fakeSend = () => Promise.resolve(ok({ gmailMessageId: "g1" }));
+      const fakeSend = () => Promise.resolve(ok({ providerMessageId: "g1" }));
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
         send: fakeSend,
       });

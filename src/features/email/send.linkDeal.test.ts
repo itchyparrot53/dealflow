@@ -71,7 +71,7 @@ describe("sendEmail deal linking (linkDealId)", () => {
       const thread = (
         await db.execute(sql`
           SELECT deal_id FROM email_threads
-          WHERE account_id=${acctId} AND gmail_thread_id='th-link1'
+          WHERE account_id=${acctId} AND provider_thread_id='th-link1'
         `)
       ).rows[0] as { deal_id: string | null } | undefined;
       expect(thread?.deal_id).toBe(deal.id);
@@ -114,7 +114,7 @@ describe("sendEmail deal linking (linkDealId)", () => {
       const thread = (
         await db.execute(sql`
           SELECT deal_id FROM email_threads
-          WHERE account_id=${acctId} AND gmail_thread_id='th-link2'
+          WHERE account_id=${acctId} AND provider_thread_id='th-link2'
         `)
       ).rows[0] as { deal_id: string | null } | undefined;
       expect(thread?.deal_id).toBeNull();

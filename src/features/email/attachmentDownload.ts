@@ -49,8 +49,8 @@ export async function resolveAttachmentDownload(
     .select({
       filename: emailMessageAttachments.filename,
       mimeType: emailMessageAttachments.mimeType,
-      gmailAttachmentId: emailMessageAttachments.gmailAttachmentId,
-      gmailMessageId: emailMessages.gmailMessageId,
+      providerAttachmentId: emailMessageAttachments.providerAttachmentId,
+      providerMessageId: emailMessages.providerMessageId,
       accountId: emailThreads.accountId,
       visibility: emailThreads.visibility,
       dealId: emailThreads.dealId,
@@ -82,8 +82,8 @@ export async function resolveAttachmentDownload(
   if (!client.ok) return client;
 
   const data = await client.value.getAttachment({
-    messageId: row.gmailMessageId,
-    attachmentId: row.gmailAttachmentId,
+    messageId: row.providerMessageId,
+    attachmentId: row.providerAttachmentId,
     signal,
   });
   if (!data.ok) return data;
