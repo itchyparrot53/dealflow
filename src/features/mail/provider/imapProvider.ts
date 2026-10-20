@@ -3,10 +3,11 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailAccounts } from "@/db/schema";
 import { hydrateOwner } from "@/features/email/syncCursor";
-import { err, type Result } from "@/types/result";
+import { err, ok, type Result } from "@/types/result";
 import type { MailCredentials } from "../connect/credentials";
-import { sendImapMessage } from "../imap/send";
+import { sendImapMessage, sentFolderPath } from "../imap/send";
 import { syncImapAccount } from "../imap/sync";
+import { normalizeMessageId } from "../parse/messageId";
 import type { MailTransportFactory } from "../transport/types";
 import type { MailProvider } from "./types";
 
@@ -59,7 +60,6 @@ export function createImapProvider(
   transports: MailTransportFactory,
   options: ImapProviderOptions = {},
 ): MailProvider {
-  void options;
   const unsupported = (): Promise<Result<never, AppError>> =>
     Promise.resolve(
       err(new AppError(ERROR_IDS.MAIL_UNSUPPORTED, "imap provider not wired yet", { accountId })),
@@ -85,6 +85,73 @@ export function createImapProvider(
         reply,
         attemptId: args.attemptId,
         signal: args.signal,
+      });
+    },
+
+    replyHeaders(args) {
+      return imapReplyHeaders(db, accountId, args.parentProviderMessageId, args.signal);
+    },
+
+    async findSent(args) {
+      const opened = await transports.openImap(creds.imap, args.signal);
+      if (!opened.ok) return opened;
+      try {
+        const folder = await sentFolderPath(opened.value, args.signal);
+        if (folder === null) return ok(null);
+        const found = await opened.value.findByMessageId(folder, args.messageIdHeader, args.signal);
+        if (!found.ok) return found;
+        if (found.value.length === 0) return ok(null);
+        return ok({
+          providerMessageId: normalizeMessageId(args.messageIdHeader) ?? args.messageIdHeader,
+        });
+      } finally {
+        await opened.value.close();
+      }
+    },
+
+    async describeSent(args) {
+      const rows = (
+        await db.execute(sql`
+          SELECT s.message_id_header, s.payload, s.thread_id, t.provider_thread_id
+          FROM email_send_attempts s
+          LEFT JOIN email_threads t ON t.id = s.thread_id AND t.account_id = s.account_id
+          WHERE s.account_id=${accountId} AND lower(s.message_id_header) = lower(${args.providerMessageId})
+          LIMIT 1
+        `)
+      ).rows as {
+        message_id_header: string;
+        payload: { text?: string; html?: string };
+        thread_id: string | null;
+        provider_thread_id: string | null;
+      }[];
+      const row = rows[0];
+      if (row === undefined) {
+        return err(
+          new AppError(ERROR_IDS.MAIL_LOCATION_MISSING, "no send attempt for that message", {
+            accountId,
+          }),
+        );
+      }
+      const headerRows = (
+        await db.execute(sql`
+          SELECT rfc822_message_id, in_reply_to, "references"
+          FROM email_message_headers
+          WHERE account_id=${accountId} AND (rfc822_message_id=${row.message_id_header}
+            OR rfc822_message_id=${args.providerMessageId})
+          LIMIT 1
+        `)
+      ).rows as { rfc822_message_id: string; in_reply_to: string | null; references: string[] }[];
+      const header = headerRows[0];
+      const text = (row.payload.text ?? "").replace(/\s+/g, " ").trim();
+      return ok({
+        providerMessageId: args.providerMessageId,
+        providerThreadId: row.provider_thread_id ?? `imap:${row.message_id_header}`,
+        snippet: text === "" ? null : text.slice(0, 200),
+        headers: {
+          rfc822MessageId: header?.rfc822_message_id ?? row.message_id_header,
+          inReplyTo: header?.in_reply_to ?? null,
+          references: header?.references ?? [],
+        },
       });
     },
 
@@ -121,9 +188,6 @@ export function createImapProvider(
       }
     },
 
-    describeSent: unsupported,
-    findSent: unsupported,
-    replyHeaders: () => Promise.resolve({}),
     fetchAttachment: unsupported,
     trashThread: unsupported,
     close: () => Promise.resolve(),
