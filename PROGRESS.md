@@ -1,16 +1,17 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-20 23:14
+Current: 1.1 · Last updated: 2026-10-20 23:17
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
+- Phase 1: 9322d5e0677f1253b833249fff70ed9e3c9a6375
 
 ## Tasks
 - [x] 0.1 Start Part 4: progress files, kit and baseline
 - [x] 0.2 Documents schema and migration
 - [x] 0.3 Markdown-lite, variables, transitions, numbering (test-first)
-- [ ] 0.4 Phase 0 QA gate
+- [x] 0.4 Phase 0 QA gate
 - [ ] 1.1 Settings, templates and the capability
 - [ ] 1.2 Create, edit, refresh, duplicate, delete (test-first)
 - [ ] 1.3 Issue, numbering and void
@@ -34,6 +35,7 @@ Current: 0.4 · Last updated: 2026-10-20 23:14
 
 ## QA log
 - Baseline: typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5004/5004
+- Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · no named integration files at this gate
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS-P3.md (formerly PROGRESS.md) said `dealflow-wd-p3-v1` with `STATUS: COMPLETE`, and HEAD is `e214c9a8e17342315ee36e23e0f65588843c1e58`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
