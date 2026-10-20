@@ -8,6 +8,16 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { err, ok, type Result } from "@/types/result";
+import {
+  createDocument,
+  type DocumentSummary,
+  type DocumentView,
+  deleteDraft,
+  duplicateDocument,
+  listDocumentsForDeal,
+  refreshLines,
+  updateDraft,
+} from "./documents";
 import { type DocumentSettingsView, updateDocumentSettings } from "./settings";
 import {
   createTemplate,
@@ -72,4 +82,58 @@ export async function setDefaultDocumentTemplateAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await setDefaultTemplate(db, g.value, id, SIG()));
+}
+
+export async function createDocumentAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await createDocument(db, g.value, input, SIG()));
+}
+
+export async function updateDraftAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await updateDraft(db, g.value, input, SIG()));
+}
+
+export async function refreshDocumentLinesAction(
+  id: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await refreshLines(db, g.value, id, SIG()));
+}
+
+export async function duplicateDocumentAction(
+  id: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await duplicateDocument(db, g.value, id, SIG()));
+}
+
+export async function deleteDraftAction(
+  id: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<void>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await deleteDraft(db, g.value, id, SIG()));
+}
+
+export async function listDealDocumentsAction(
+  dealId: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentSummary[]>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await listDocumentsForDeal(db, g.value, dealId, SIG()));
 }

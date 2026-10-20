@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-20 23:30
+Current: 1.3 · Last updated: 2026-10-20 23:24
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -13,7 +13,7 @@ Current: 1.2 · Last updated: 2026-10-20 23:30
 - [x] 0.3 Markdown-lite, variables, transitions, numbering (test-first)
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Settings, templates and the capability
-- [ ] 1.2 Create, edit, refresh, duplicate, delete (test-first)
+- [x] 1.2 Create, edit, refresh, duplicate, delete (test-first)
 - [ ] 1.3 Issue, numbering and void
 - [ ] 1.4 Payments and the overdue job
 - [ ] 1.5 Sending through the mailbox
@@ -58,6 +58,13 @@ Current: 1.2 · Last updated: 2026-10-20 23:30
 - 1.1: settings and template reads stay open to any signed-in user (document creation and the public page need the company block and the template list), while every mutation checks `documents.manage` inside the service so an integration test can prove refusal.
 - 1.1: `getDocumentSettings` inserts the column-default row on first read, and `listTemplates` inserts the shipped default template for a kind on first list (`onConflictDoNothing` guards two concurrent first callers); the partial unique index keeps one default per kind.
 - 1.1: changed test: `src/constants/errorIds.test.ts` gained `DOC` in its domain allow-list because the registry now carries that domain; the per-ID format and uniqueness assertions are unchanged.
+- 1.2: the integration file was written first and run red (missing module), then the services made all 15 cases pass; the totals case compares the document against Part 3's `dealTotals` over the deal's own lines, not just hard-coded strings.
+- 1.2: document operations map a missing or invisible deal (`E_DEAL_001` from `loadEditableDeal`/`assertDealVisible`) to `E_DOC_001`, so a document call never reveals whether a deal id exists; a visible deal the actor may not edit keeps `PERM_DENIED`.
+- 1.2: `include_products = false` makes the snapshot carry no lines and zero totals; with `true` the deal's product lines are copied and a deal without lines gets one line from the deal value. The flag owns the products block, which is the plan's intent for a template-level switch.
+- 1.2: the body snapshot keeps every `document.*` variable (rendered at display time) and appends `\n\n## Terms\n{terms}` when the template has terms, exactly as 6.5 describes.
+- 1.2: internal document reads keep deal visibility (`assertDealVisible`), so the deal section and the future `/documents` list only show documents of visible deals; the public exception for an issued invoice of a soft-deleted deal belongs to `publicDocuments.ts` (Task 2.1).
+- 1.2: duplicate keeps the body, customer fields, currency and totals, gives a new `public_id`, clears the number and every status date, and recomputes a quote's `valid_until` from the current settings so a copy is a fresh draft.
+- 1.2: added `listDocumentsForActor` and a `documents.list` read ahead of Task 3.3 because the list page and the deal section both need one bounded read; the visibility check runs per row against the shared deal predicate.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
