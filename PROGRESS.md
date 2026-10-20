@@ -1,522 +1,76 @@
-# PROGRESS: dealflow-wd-p1-v1
+# PROGRESS: dealflow-wd-p2-v1
 
-STATUS: COMPLETE
-Current: COMPLETE · Last updated: 2026-10-20 07:40
+STATUS: IN PROGRESS
+Current: 0.2 · Last updated: 2026-10-20 02:22
 
 ## Phase base commits
-- Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
-- Phase 1: 4644c0b91955cab11565ae97181ce0c4feaeefb4
-- Phase 2: b6f0667
-- Phase 3: 8d34928f96cad337b54e24529e7b7a6de0d34798
-- Phase 4: aa6910ff25e46f4746065f9aad6e77f2734247df
-- Phase 5: 0fb5f7bb5d8586771920b4298ff0740589abc436
-- Phase 6: 680c455948e9e7f75cd641b6ca7eddff569df151
+- Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
 
 ## Tasks
-- [x] 0.1 Repository, upstream remote and kit
-- [x] 0.2 Toolchain, install and dev services
-- [x] 0.3 Baseline fixes from the OSS export
-- [x] 0.4 Baseline run and health report
-- [x] 0.5 E2E harness and health click-through
-- [x] 0.6 Purelymail probe
-- [x] 0.7 Phase 0 QA gate
-- [x] 1.1 Dealflow name in the app
-- [x] 1.2 Package, docs, licence and MCP names
-- [x] 1.3 Telemetry and update check off by default
-- [x] 1.4 Compose without Caddy and reverse-proxy docs
-- [x] 1.5 CLAUDE.md fast profile and project notes
-- [x] 1.6 Phase 1 QA gate
-- [x] 2.1 Auth env, schema and error IDs
-- [x] 2.2 System mailer
-- [x] 2.3 Local auth services
-- [x] 2.4 Auth routes and safe dev-login
-- [x] 2.5 Login, magic-link and invite pages
-- [x] 2.6 Invite email, profile password and bootstrap link
-- [x] 2.7 Phase 2 QA gate
-- [x] 3.1 AI env, dependency and schema
-- [x] 3.2 Provider layer and JSON helper
-- [x] 3.3 Usage, caps and rate limit
-- [x] 3.4 AI router, Settings page and model check
-- [x] 3.5 Phase 3 QA gate
-- [x] 4.1 Deal context, summary and score
-- [x] 4.2 Deal AI card
-- [x] 4.3 Email draft in the composer
-- [x] 4.4 Notes to activities
-- [x] 4.5 Describe a filter
-- [x] 4.6 Phase 4 QA gate
-- [x] 5.1 Tool catalogue from the MCP registry
-- [x] 5.2 Assistant loop and pending actions
-- [x] 5.3 Assistant actions and reads
-- [x] 5.4 Assistant drawer
-- [x] 5.5 Phase 5 QA gate
-- [x] 6.1 E2E specs and screenshot gallery
-- [x] 6.2 Integration suite and container smoke
-- [x] 6.3 Independent review and hardening
-- [x] 6.4 Final checklist
-- [x] 6.5 Final report and completion
+- [x] 0.1 Start Part 2: progress files, kit and baseline
+- [ ] 0.2 Independent audit of Part 1
+- [ ] 0.3 Assistant confirm race and AI timeouts
+- [ ] 0.4 Password reset after email-link sign-in and atomic lockout
+- [ ] 0.5 Scripts, release tests and audit leftovers
+- [ ] 0.6 Phase 0 QA gate
+- [ ] 1.1 Rename the Gmail columns
+- [ ] 1.2 Mail tables
+- [ ] 1.3 MailProvider interface and Gmail adapter
+- [ ] 1.4 Send path on MailProvider
+- [ ] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
+- [ ] 1.6 Message-ID domain and notification emails via the system mailer
+- [ ] 1.7 Phase 1 QA gate
+- [ ] 2.1 Parser, Message-IDs, subjects and Bcc stripping
+- [ ] 2.2 Transport interfaces and real transports
+- [ ] 2.3 Filesystem fake transport
+- [ ] 2.4 Credentials and the connect service
+- [ ] 2.5 Email sync settings: connect form and Gmail option
+- [ ] 2.6 Phase 2 QA gate
+- [ ] 3.1 Folders, cursors and locations
+- [ ] 3.2 Inbound apply and threading
+- [ ] 3.3 Incremental sync and UIDVALIDITY reset
+- [ ] 3.4 Initial window and background backfill
+- [ ] 3.5 IDLE manager and sync cadence
+- [ ] 3.6 Sync integration tests
+- [ ] 3.7 Phase 3 QA gate
+- [ ] 4.1 SMTP send and the Sent APPEND
+- [ ] 4.2 Reply headers, thread ids and reconcile for IMAP
+- [ ] 4.3 Send throttle
+- [ ] 4.4 Attachments on demand and trash MOVE
+- [ ] 4.5 Send integration tests
+- [ ] 4.6 Phase 4 QA gate
+- [ ] 5.1 E2E mail spec and screenshots
+- [ ] 5.2 Live Purelymail check
+- [ ] 5.3 Integration suite, smoke and docs
+- [ ] 5.4 Independent review and hardening
+- [ ] 5.5 Final checklist
+- [ ] 5.6 Final report and completion
 
 ## QA log
-- Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4889/4889
-- Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4902/4902
-- Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10
-- Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4934/4934 · usage 7/7
-- Phase 4 gate: commands green · typecheck ok · lint ok · build ok · unit 4938/4938 · dealInsights 4/4
-- Phase 5 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · usage 7/7 · assistant 9/9
-- Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
-- Independent review: qa unavailable (qa.sh failed) - self-review
-  - Why: `qa.sh` is not in the repository and there is no `.dsh/` directory, so `.dsh/qa.md`,
-    `builder.patch.yml`, `qa.patch.yml` and `guard.bash` (Appendices A and C) never existed; a
-    separate `dsh` reviewer could not be started. Two attempts (direct run, then checking the
-    required inputs) both block on the missing harness. Per Task 6.3 the fallback is this evidenced
-    self-review.
-  - Commands: typecheck exit 0; lint exit 0 (14 warnings); unit 4945/4945; build exit 0; e2e 15/15
-    (00-05); integration 1788/1790 with the 2 PRE-EXISTING release tests; smoke SMOKE PASS.
-  - Deliverables: every file named by the Phase 0-6 tasks exists; `git diff --stat ec6a018..HEAD`
-    = 212 files, +29312/-470; screenshots 23/23 with the 6.12 names.
-  - Contracts: `E_AI_001..011` exist with the documented meanings; the AI limiter is 20/min; auth
-    tokens are sha256 base64url (43 chars) and consumed in one UPDATE; dev-login 404, cross-origin
-    POST 403, `/auth/start` 404; no token row with a plaintext-looking hash; the assistant exposes
-    exactly the 25 allow-listed tools and a pending action is confirmable only by its owner.
-  - Hygiene: no OpenRouter key or other secret in the tree; no `.only`/`.skip`; no `console.log`; no
-    `process.env` read outside `env.ts`/`clientEnv.ts`/`instrumentation.ts`; no em dashes in files
-    this part wrote; brand hits are comments and internal identifiers.
-  - Result: 0 blockers, 0 majors, 0 minors, no fixes needed. One formatting error in
-    `e2e/03-ai-deal.spec.ts` was fixed before this review line was written.
+- Baseline: typecheck ok · lint ok · build ok (a first attempt hit an `ENOTEMPTY` race on `.next`; the retry after the tree settled passed) · unit 4945/4945 · integration 1788/1790 (the 2 `src/features/release/router.test.ts` failures are R4, fixed in Task 0.5)
 
 ## Decisions
-- 0.1: chose tag v1.2.0 over upstream/main because the section 4 probe tied exactly (`upstream/main` points at the same commit as `v1.2.0`) and the tag matches `package.json` version 1.2.0.
-- 0.1: kept the kit where it arrived (`PLAN AND EXECUTE/dealflow-wd-part1-kit`) instead of moving it to the folder root, and added a root `PLAN-PART1.md` symlink plus a byte-identical copy of the kit's `scripts/check-progress.mjs` at the path contract 6.1 names, because the kit lives in a subfolder here while the plan assumes the root.
-- 0.1: excluded the nested kit folder from the snapshot commit (the plan's exclusion pathspecs only match root kit paths), so the snapshot is greenfield warpdrive code and the kit arrives in the 0.1 commit, as section 0 intends.
-- 0.1: excluded a stray `DEALFLOW/` folder that sits in this workspace from the repository via `.git/info/exclude` because it is not part of the warpdrive export (it holds copies of old Dealflow kits) and is not ours to add.
-- 0.1: ran pnpm 9.15.9 from `/tmp/dealflow-tools/node_modules/.bin` because `corepack enable pnpm` and `npm install -g pnpm@9.15.9` both fail with EPERM outside this folder under the harness file sandbox; every pnpm command in this run prefixes that PATH.
-- 0.1: did not run the section 4 harness check (`./qa.sh "Reply exactly: QA READY"`) in this phase because the harness is only used in Task 6.3; it is recorded there with the section 4 fallback.
-- 0.2: reused the already-running dev stack (compose project `warpdrive-main`, started from the repo's `docker-compose.local.yml` before this run) instead of creating the `dealflow` project: its containers hold 5433/9000/9001, quay.io MinIO pulls are unauthorized on this machine and rule 14 forbids touching containers this run did not create; the received `.env` already targets that stack.
-- 0.2: host-side DB commands pass `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` on the command line because the received `.env` uses the compose host name `postgres`, which does not resolve on the host, and rule 17 forbids editing `.env`.
-- 0.2: `pnpm env:sync` appended 0 keys because `.env` already carries every key `.env.example` declares.
-- 0.3: deleted `deployWorkflow.test.ts`, trimmed `Dockerfile.test.ts` and recreated the missing `scripts/auditConfig.ts`, because the OSS export dropped `.github/workflows/deploy.yml`, which both tests read.
-- 0.3: typed `auditConfig.SavedFilterRow.targetEntity` as `string` and narrowed it against `SAVED_FILTER_TARGET_ENTITIES`, because `SavedFilterSeed.target` is `string` and the plan's stricter signature failed the existing test's typecheck.
-- 0.3: excluded a stray `DEALFLOW/` copy of the old app (with its own node_modules) from tsc, Biome, ESLint and vitest classification, because it sits inside this workspace and its foreign tests, React types and lint findings broke typecheck, lint and test collection.
-- 0.4: ran verification with `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` because 13 untouched unit tests assert en-US formatting and UTC dates; under the machine default (Europe/London, en-GB) they fail by locale only, so the environment is set instead of editing tests (recorded in `docs/dealflow/HEALTH-CHECK.md`).
-- 0.4: built with `ALLOW_FIRST_LOGIN_ADMIN=false` in the shell because `next build` runs `NODE_ENV=production` while the received `.env` keeps the dev value `true`, and rule 17 forbids editing `.env`.
-- 0.4: seeded demo data into a fresh scratch database `warpdrive_baseline` in the dev Postgres because the pre-existing dev database holds leftover non-demo rows that abort `pnpm db:seed:demo` (`activities_deal_id_deals_id_fk`) and `DROP DATABASE warpdrive` is a guard hard limit.
-- 0.5: moved the ws startup into an async `main()` in `src/entrypoints/ws.ts`, because tsx compiles a `.ts` file in a CommonJS package as CJS and the top-level await failed the e2e harness; the 6.14 spawn command is unchanged.
-- 0.5: installed Chromium with `PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` because the default browser cache lives outside the harness file sandbox; every `pnpm e2e` run exports that path.
-- 0.5: recorded `/pipeline` as 307 to `/pipeline/{id}` then 200: the spec asserts status below 400 and no `/login` redirect, exactly as 6.12 asks.
-- 0.6: the probe prints its summary with `console.warn` (not `console.log`) because the repo's ESLint `no-console` rule allows only warn/error in `scripts/**/*.ts`.
-- 0.6: the first live probe run (owner credentials, sent to an external `MAIL_PROBE_TO`) exposed a script bug: nodemailer generates `info.messageId` for raw sends instead of reporting the Message-ID header that reached the wire, so the Sent/APPEND/MOVE searches looked for an id that never existed. The probe now searches its own header id and polls after APPEND.
-- 0.6: the probe verifies the Sent folder with `STATUS` counts and the APPEND response instead of SEARCH, because a live run proved Purelymail's search index lags APPEND by more than five seconds and a search-based verdict reported a false failure. The committed result is `status: ok`.
-- 0.6: owner-driven changes made during the probe: the probe was re-run self-addressed (no `MAIL_PROBE_TO`) and the result committed, and `docs/dealflow/HEALTH-CHECK.md` was updated with the real host facts.
-- 0.7: fixed three lint blockers the baseline exposed (DatePicker unused-variable error, Biome format of the generated probe JSON, ESLint default-project cap for the new `.mjs` tooling) instead of logging them as pre-existing, because a red `pnpm lint` fails the gate and none of the three changes behaviour.
-
-- 1.1: updated the two tests that asserted the old visible text: `src/features/release/ui/VersionBanner.test.tsx` (new copy "A new upstream release ({latest}) is available") and `src/features/enrichment/prospects/ProspectResultRow.test.tsx` ("Already in Dealflow"). No assertion was weakened; only the expected copy changed.
-- 1.1: also renamed the user-visible crash-adjacent copy in `src/features/email/composer/sendFailure.ts` ("Dealflow was updated while this page was open"), which the task's file list does not name but the step 4 grep requires, because it is a visible string rather than an allowed internal identifier.
-- 1.1: left `src/features/mcp/server.ts`, `src/app/api/mcp/route.ts` and every internal identifier (storage keys, event names, `Symbol.for` keys, `RELEASE_REPO`, `warpdrive.invalid`, `DOCS_SITE_URL`, the MinIO bucket default) on the old name; the two MCP names are renamed by Task 1.2.
-
-- 1.2: no MCP test asserted the old server name, so the rename touched only `src/features/mcp/server.ts` and `src/app/api/mcp/route.ts`; README was rewritten for Dealflow (comparison table dropped, screenshots kept with Dealflow alt text), `docs/mcp-server.md` renamed, and the MIT notice keeps Nikita Sawinyh's line above the new Dealflow contributors line.
-
-- 1.3: updated the tests that assumed opt-out defaults: `src/config/env.test.ts` now expects `DISABLE_TELEMETRY`/`DISABLE_UPDATE_CHECK` true by default and gains an explicit opt-in case, and `src/server/worker.test.ts` no longer expects the release-check queue when the flag is unset (its opt-in path stays covered by `src/features/release/job.test.ts`).
-
-- AMENDMENT A1: Task 1.4 follows the amendment rather than PLAN-PART1.md 6.11: no `name: dealflow`, `dev:up` drops `-p dealflow`, MinIO images default through `MINIO_IMAGE`/`MC_IMAGE`, `docker-compose.local.yml` is updated in the same task, and `pnpm dev:up` was not run (the owner's `warpdrive-main` stack must not be touched). All three compose combinations validate with `docker compose config --quiet`, none lists caddy, and the base file binds app/ws/MinIO to 127.0.0.1.
-- AMENDMENT A5: host-run commands in this and later phases keep the `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` override (Node's `--env-file` never overrides an already-set variable), tests keep `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`, and `pnpm build` keeps `ALLOW_FIRST_LOGIN_ADMIN=false`.
-- 1.4: the proxy example keeps every security header and its pinned tests, but its upstreams are now `{$APP_UPSTREAM:localhost:3000}`, `{$WS_UPSTREAM:localhost:8080}` and `{$S3_UPSTREAM:localhost:9000}` so the file works outside compose; `docs/deploy.md` documents the loopback binds as a rate-limit precondition rather than a Caddy-only claim.
-- 1.4: `docs/dealflow/UPSTREAM.md` now records the ROADMAP supersession: the dev stack uses the folder's compose project name, and only the smoke test uses `dealflow-smoke`.
-
-- 1.5: CLAUDE.md now describes the fast verification profile and the Dealflow conventions; the test-first section it replaced was already contradicted by PLAN-PART1.md section 0 rule 8, so this removes the contradiction without changing any lint or engineering rule.
-
-- 2.1: Google SSO is now optional (all three `GOOGLE_*` set, or all three empty, enforced by superRefine), and production additionally requires at least one sign-in method; unit tests cover the partial-Google, all-empty, every-method-off and password-only production cases.
-- 2.1: the owner's `.env` holds a Google client id and secret but the workspace-domain line was the env-sync placeholder, so after `env:sync -- --migrate` blanked it the file is half-configured. Rule 17 forbids editing `.env`, so this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on the command line for anything that loads `.env` (build, host DB commands, the bootstrap CLI), and the owner decides below whether to finish the Google setup or clear the two values.
-- 2.1: `env:sync` appended 26 keys to `.env` (AUTH_*, SMTP_*, MAIL_*, Docker host ports, MinIO images and the probe host defaults), including `APP_PORT=3000`; the owner action below asks for `3001` on this machine.
-
-- 2.2: wrote the system mailer exactly as 6.6, with `captureMailer(dir = env.MAIL_CAPTURE_DIR)` taking an optional directory so the unwritable-directory test does not need to mutate the frozen env object; templates return `MailContent` (the mail without a recipient) because 6.6 gives them only the URL.
-- 2.3: argon2 hashing, token mint/peek/consume, credentials, password login with lockout, bootstrap, magic links, invites and session revocation are in place; `localAuth.integration.test.ts` covers all nine required cases (10 tests) against the real Postgres test database and passes.
-- 2.3: `mintAuthToken` retires the user's open `invite` tokens only, exactly as 6.5 says; `admin_setup` links are single-use but a new one does not invalidate an older one (the invite page accepts both kinds).
-
-- 2.4: `/auth/start` answers 404 before the rate limiter when Google is unconfigured, and `devLoginCore` now requires development/test, the first-login flag, and a loopback Host header (a missing Host counts as non-loopback); the route passes the Host header through.
-- 2.4: added `loginReturnTarget` to `loginReturn.ts` so password, magic-link and invite sign-in default to `/pipeline` while the existing Google flow keeps `/`, both through `safeLoginReturnPath`.
-- 2.4: `sessionCookies.ts` is the single place that sets the `wd_sid` + `wd_csrf` cookie pair for the four new routes, so their options cannot drift from the OAuth callback.
-- 2.4: the invite route narrows form fields to strings with a helper instead of `String(form.get(...))`, because ESLint's `no-base-to-string` correctly refuses to stringify a possible `File`.
-
-- 2.5: no `Label` primitive existed and no `@radix-ui/react-label` was installed, so the standard shadcn `Label` wrapper (`src/components/ui/Label.tsx`) was added over the new dependency, as Task 2.5 step 5 allows; the login, magic-link and invite cards use `Tabs`, `Input`, `Label`, `Button` from the design system and plain HTML forms only.
-- 2.5: the login page renders the card with `w-full max-w-[400px] rounded-lg border bg-background p-6`; the magic-link and invite cards reuse it. `next` is sanitised with `safeLoginReturnPath` on both sign-in pages and every form posts it as a hidden field.
-
-- 2.6: `inviteUserAction` now returns `{ userId, inviteUrl, emailSent }`; it mints an `invite` link, sends `inviteMail` through the system mailer, and reports `emailSent` false in log mode so the form says mail is not set up. The form shows the copyable link under `data-testid="invite-link"` in both states, and the old "no email is sent automatically" notice is gone.
-- 2.6: tests updated for the new invite result and copy: `src/app/(app)/settings/users/InviteUserForm.test.tsx` (both mail states, link contents, clipboard) still passes; no assertion was weakened.
-- 2.6: `changePasswordAction` verifies the current password only when a hash exists (E_AUTH_013 otherwise), enforces the policy, then revokes every other session while keeping the current one. The profile page passes `hasPassword` from `getCredentials` and mounts the card below the existing profile form.
-- 2.6: `pnpm auth:bootstrap-link` ran against the dev database with the A5 overrides and printed an `Admin setup link (valid 24 hours, single use): {BASE_URL}/login/invite?token=...` line; the token itself was never pasted into PROGRESS.md.
-
-- 2.7: gate fixes: biome export order in `src/db/schema/index.ts` (round 1); the two new auth pages had to use the `text-display` type token or `src/typeScale.test.ts` failed, the invite action test needed mocks for the new link/mailer calls, and ESLint rejected an async-without-await log mailer plus an unnecessary cast in `systemMailer.ts` (round 2). No assertion was weakened.
-- 2.7: QA focus verified: auth tokens are stored as sha256 base64url only, `consumeAuthToken` is one UPDATE ... RETURNING, the magic-link route always answers `sent=1` and the password route always answers `invalid_credentials`, and `devLoginCore` is unreachable unless development/test, the flag is on, and the Host is loopback.
-
-- 3.1: `openai@7.39.0` added; `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_MODEL` and `AI_FAKE` land in the env boundary with the key also in `SECRET_FILE_VARS`, and `.env.example` documents the dated-snapshot form `deepseek/deepseek-v4.1-flash-1017`.
-- 3.1: `ai_settings`, `ai_usage`, `ai_conversations`, `ai_messages`, `ai_actions` and `deal_ai_insights` created in migration `0076`, with the singleton settings seed inserted by hand after generation; the migration applied to the dev database.
-- 3.1: `pnpm env:sync` appended the four AI keys to `.env` with the key empty, so the app boots with AI unavailable until the owner adds a key.
-
-- 3.2: provider selection is override, then `AI_FAKE` (one warn), then OpenRouter when a key exists, else null; the OpenRouter adapter casts the hand-built message array once at the SDK boundary instead of using `any`.
-- 3.2: `chatJson` takes its limit and usage dependencies as a required `deps` argument in this task so the unit tests run without a database; Task 3.3 turns them into defaults, which keeps both commits honest.
-- 3.2: `fakeProvider` matches the documented table by joined system text, first match wins, and only emits a tool call while the `/fake-tool` user message is the last one, so the assistant loop terminates after the tool result.
-
-- 3.3: `assertAiAllowed` checks provider, settings, company cap then the optional per-user cap in exactly that order; `chatJson` now uses `assertAiAllowed` and `recordAiUsage` as its default deps, so later features get limits and logging with no extra wiring.
-- 3.3: `getUsage` sums prompt + completion tokens since the UTC month start, grouped by feature and by user (inner join on users, so future system rows with a null user do not appear).
-- 3.3: per-user request limiter is 20/minute on `Symbol.for("dealflow.aiRateLimiter")`; the integration suite covers the provider-null, disabled, company-cap, per-user-cap, previous-month and aggregation cases (7 tests).
-
-- 3.4: `pnpm ai:check-model` reached the public OpenRouter list: `deepseek/deepseek-v4.1-flash` is `CONFIGURED MODEL LISTED` with `tools=yes` and `response_format=yes` (prompt 0.000000028, completion 0.00000008 per token); the dated snapshot `deepseek/deepseek-v4.1-flash-1017` (0.00000015 / 0.0000006) and the `:batch` variant are also listed. No `--chat` request was made.
-- 3.4: `ai.status` maps a scripted test provider to `fake` because the public contract exposes three kinds only; the Settings page is admin-gated with `notFound()` and reads `ai.overview` through `createCaller`, then re-renders with `router.refresh()` after a save.
-- 3.4: the OpenRouter request now relies on the SDK accepting our message union directly (no cast) and uses `req.tools !== undefined` / `req.json === true` so the lint rule about nullable booleans is satisfied without changing behaviour.
-
-- 3.5: gate fixes: `eslint.config.test.ts` now sets a 120s per-file budget because a type-aware ESLint boot inside the full 12-worker run can cross the 60s default on a loaded machine; every assertion is unchanged and the suite passes 4934/4934. The earlier 569s run was machine load, not a suite regression.
-
-- 4.1: `buildDealContext` gates on `getWorkspace` before reading notes or activities, emits the documented JSON (today, deal, upcoming/recent activities, newest 10 notes cut to 400 chars) and reads the base currency through the cached helper.
-- 4.1: summary and score prompts are built from the active activity type keys; model output is fixed up (summary cut to 800 chars, risks/next steps/reasons sliced, unknown type keys become `task`, `dueInDays` rounded into 0..30, score rounded into 0..100) and upserted into `deal_ai_insights`.
-- 4.1: `dealInsights.integration.test.ts` proves storage plus one `ai_usage` row per call, the fix-ups, and that an invisible deal fails before the provider is called (4 tests).
-
-- 4.2: `DealAiCard` renders as the first child of the sidebar; it reads `ai.status` and `ai.dealInsight`, creates next steps through `createActivityAction`, and carries every 6.12 hook (`deal-ai-card`, summary, health data-health, next-step data-added, score data-score, error).
-- 4.2: `DealSidebar.test.tsx` mocks the AI card because that suite renders the sidebar without a tRPC provider; the sidebar's own nine tests are unchanged and still pass.
-
-- 4.3: `draftEmail` reads the deal through `getWorkspace` and the person through `getPerson` (the person page's own visibility-checked read), uses `settings.companyName` with "our company" as the fallback, and converts the plain-text body to escaped paragraph HTML for the composer.
-- 4.3: `AiDraftButton` is a Popover with the required labels and hooks; it fills the subject only when the composer owns an empty subject on a fresh email, and prepends the body so any signature already in the composer stays below the draft.
-- 4.3: the composer's tRPC mock now includes `ai.status` (unavailable) so its ten tests keep rendering without the real provider; no composer assertion changed.
-
-- 4.4: `proposeActivitiesFromNoteAction` only accepts deal notes (others return E_AI_007), gates on the note's deal through `getWorkspace`, clamps past due dates to today, maps unknown type keys to `task` and slices to five proposals.
-- 4.4: the dialog edits proposals inline (checkbox, subject, type, date) and creates only the selected rows through `createActivityAction`; the note menu item appears for deal notes only and the dialog is mounted on first open so note-card tests keep their provider-free render.
-
-- 4.5: the filter catalogue is built from the four existing configs, so the prompt, the operator allow-list and `savedFilterDefinitionSchema` cannot drift; the output schema wraps the real saved-filter schema, so an invented field counts as invalid output and gets the retry.
-- 4.5: `describeFilter` accepts a test `deps` object (reference data plus chat deps) so the unit suite runs without a database; the four cases cover a valid definition, an unknown field with the repair retry, two invalid replies, and the prompt listing `value`/`expectedCloseDate`.
-- 4.5: `AiFilterBox` fills the existing dialog's rows and combinator for the deal entity only; the modal and its 16 tests keep passing with `ai.status` mocked unavailable.
-
-- 4.6: gate fixes: the AI card was split into Summary/Score sections to stay under the cognitive-complexity limit, its clock read moved to module scope for the purity rule, and the tRPC-dependent AI components are stubbed in the sidebar, composer and filter-dialog suites that render without a provider (test-only, no assertions weakened).
-
-- 5.1: `ToolRegistry` now keeps the description and input schema of every registered tool, filled by `registerTool`; the assistant builds a fresh `dealflow-assistant` McpServer and exposes only the 25 allow-listed tools, so permission checks and visibility stay identical to external MCP clients.
-- 5.1: `toToolDef` uses `z.toJSONSchema(..., { io: "input", unrepresentable: "any" })` and removes `$schema`; the catalogue test asserts 25 definitions, an object schema each, the write summaries and the 8,000-character tool-result cut.
-
-- 5.2: the assistant loop runs read tools immediately and turns every write tool into a pending `ai_actions` row whose tool result is `{status:"pending_confirmation", actionId, summary}`; confirm and reject require ownership and a pending status, and the confirmed write runs through the same MCP handler.
-- 5.2: history is the last 40 messages trimmed to the first user row, unknown tools and invalid arguments come back as error tool results, and six tool-calling replies end with the documented step-limit message; the integration suite covers all nine cases.
-
-- 5.3: the four assistant server actions use the 90-second budget, CSRF, actor and the per-user AI rate limit; `ai.conversations.list` returns the caller's newest 30 and `ai.conversations.get` throws NOT_FOUND with `E_AI_008` for someone else's conversation.
-
-- 5.4: the drawer is a `Sheet` with the conversation selector, `New chat`, message bubbles, action cards with Confirm/Reject, three suggestions for an empty conversation and an input that sends on Enter; open state and conversation id persist under `df.assistantOpen` / `df.assistantConversationId` and are restored after mount to keep SSR and hydration identical.
-- 5.4: `renderSimpleText` renders assistant text as React nodes (paragraphs, "- " lists, `**bold**`) so HTML in a model reply stays literal; the launcher sits before the notifications bell and is disabled with a tooltip when AI is unavailable.
+- 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
+- 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
+- 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 0.1: added `mailparser@3.10.0` and `@types/mailparser@3.9.0` with pnpm 9.15.9 from `/tmp/dealflow-tools`; the peer-dependency warning about `eslint-plugin-import` needing eslint <= 9 predates this task and changes nothing.
 
 ## Owner actions
-- TODO(owner): add `OPENROUTER_API_KEY` to the server `.env`, set `AI_FAKE=false`, then run `pnpm ai:check-model --chat` and try a deal summary, an email draft and the assistant once Phase 4 and 5 land. The AI features stay unavailable until the key is present.
-- TODO(owner): `env:sync` appended `APP_PORT=3000` to `.env` in Task 2.1; change it to `APP_PORT=3001` (port 3000 is taken on this machine), then recreate the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d` (no `-v`; the volumes are kept).
-- TODO(owner): decide the Google SSO config in `.env`. It currently has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set but `GOOGLE_WORKSPACE_DOMAIN` empty, which the new all-or-nothing rule rejects. Either set `GOOGLE_WORKSPACE_DOMAIN` to the Workspace domain (Google on) or blank the client id and secret (Google off). Until then, anything that loads `.env` needs `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on the command line, as this run does.
-- TODO(owner): install pnpm 9.15.9 on the PATH (`corepack enable pnpm` or `npm install -g pnpm@9.15.9`); this run used a temporary copy in `/tmp/dealflow-tools` because the harness sandbox blocks writes outside the project folder. Not blocking: every command in this run worked through that copy.
-- TODO(owner, optional): delete the probe artifacts in the Purelymail mailbox (`Dealflow mail probe ...` messages in `\Sent` and `\Trash`, plus one `append diagnostic` message from the APPEND check). They contain no secrets.
-- Done by owner in Phase 0: `MAIL_PROBE_USER` and `MAIL_PROBE_PASS` are in `.env` and the probe has run successfully. No action left for mail until Part 2.
+- TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
+- TODO(owner): the running dev stack (`warpdrive-main`) still serves the Part 1 build and the Part 1 column names. Rebuild it after Phase 1 lands: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
 
 ## Open issues
-- PRE-EXISTING: `src/features/email/inboxDate.test.ts` (4 tests), `src/features/stats/ui/trendTooltip.test.ts` (3), `src/features/stats/ui/widgets.test.tsx` (2), `src/features/stats/ui/TrendWidget.test.tsx` (1), `src/features/deals/DealList.test.tsx` (1), `src/features/email/ThreadRow.test.tsx` (1), `src/features/activities/AddActivityModal.test.tsx` (1): locale/UTC-sensitive assertions in the untouched export; they pass with `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` (see `docs/dealflow/HEALTH-CHECK.md`). Not fixed on purpose: the plan forbids editing tests for pre-existing failures.
-- Environmental, not fixed: the dev compose project `dealflow` cannot start while the owner's `warpdrive-main` stack holds ports 5433/9000/9001, and quay.io MinIO images are unauthorized here (`docker-compose.local.yml` uses `pgsty/*` mirrors). Task 1.4 must re-run `pnpm dev:up` against the updated compose files; if the ports are still held, use `DEV_PG_PORT`/`MINIO_PORT`/`MINIO_CONSOLE_PORT` and log it.
+- None
 
-## Phase 0 hand-off (planner summary)
-
-### Commits
-- `ec6a018` snapshot of the received warpdrive export (base: tag `v1.2.0`, `upstream` = `https://github.com/sneg55/warpdrive.git`)
-- `5e4fb9d` 0.1, `5a1c5a1` 0.2, `98a168c` 0.3, `c1db59f` 0.4, `a68828b` 0.5, `6e542cd` + `ec5dc99` + `39db424` + `2ec9840` 0.6, `4644c0b` 0.7
-- Phase 1 starts from `4644c0b`; `pnpm check:progress` reports `PROGRESS CHECK OK: 7/41 tasks ticked, all with commits`.
-
-### Baseline of the untouched app (`docs/dealflow/HEALTH-CHECK.md`)
-| Step | Result | Count | Duration |
-|---|---|---|---|
-| `pnpm install --frozen-lockfile` | pass | 1,398 packages | 27s |
-| `pnpm typecheck` | pass | 0 errors | 16s |
-| `pnpm lint` | pass after environment fixes | Biome 2,672 files / 12 warnings, ESLint 0 | 54s |
-| `pnpm test:unit` (TZ=UTC, en-US) | pass | 4,889 tests / 783 files | 100s |
-| `pnpm test:integration` | pass | 1,758 tests / 381 files | 204s |
-| `pnpm build` (`ALLOW_FIRST_LOGIN_ADMIN=false`) | pass | all routes | 38 to 58s |
-| `pnpm db:seed:demo` (fresh DB) | pass | 50 orgs, 100 people, 50 deals, 411 activities | 16s |
-| `pnpm e2e` (`00-health`) | pass | 9/9 pages, 9 screenshots | 51s |
-
-Pre-existing failures: only the 13 locale/UTC-sensitive unit tests above, unchanged and listed in Open issues.
-
-### Real mail host facts (`docs/dealflow/mail-probe-result.json`, `status: ok`)
-This is the Part 2 input the plan asked for:
-- SMTP send works: `250 2.6.0 Message received`.
-- IMAP IDLE works, but push latency measured 8.3s and 11.1s. Do not assume sub-second delivery.
-- The host does **not** auto-save SMTP-sent messages into `\Sent` (`autoSaved: false` twice). The app must `APPEND`.
-- `APPEND` works and returns a uid; `MOVE` INBOX to `\Trash` works.
-- The IMAP SEARCH index lags APPEND by more than five seconds. Verify appends with a `STATUS` count or the APPEND uid, never an immediate SEARCH.
-- Capabilities: `IMAP4rev1 IDLE QRESYNC CONDSTORE MOVE UIDPLUS ESEARCH SORT ESORT SEARCHRES NAMESPACE CHILDREN COMPRESS=DEFLATE LITERAL+ SASL-IR ENABLE WITHIN AUTH=PLAIN I18NLEVEL=1 RIGHTS= ANNOTATION`; QRESYNC and CONDSTORE enabled on the session.
-- Special-use folders present: `INBOX`, `Sent`, `Drafts`, `Archive`, `Junk`, `Trash`. Empty mailboxes report `HIGHESTMODSEQ 0`, `UIDNEXT 1`.
-
-### Environment quirks the next session must reuse
-These are not in the plan and were all needed to get Phase 0 green:
-- pnpm 9.15.9 lives at `/tmp/dealflow-tools/node_modules/.bin`. Prefix every command:
-  `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH` and `export npm_config_store_dir=/tmp/dealflow-pnpm-store`.
-  If `/tmp` was wiped: `npm_config_cache=/tmp/npm-cache npm install --prefix /tmp/dealflow-tools --no-save pnpm@9.15.9`.
-- Tests: `export TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
-- Build: `ALLOW_FIRST_LOGIN_ADMIN=false pnpm build`.
-- Host-side DB commands: `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` (the dev stack is the owner's already-running `warpdrive-main` compose project).
-- E2E: `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers`; `pnpm e2e` builds and starts its own server, recreates `dealflow_e2e`, and writes `.e2e/`; screenshots land in `e2e/screenshots/` (git-ignored).
-- Port 3000 is held by an unrelated container, so `docker-compose.local.yml` publishes the app on 3001; do not start a competing `dealflow` project while that stack runs.
-
-### Deviations from the plan's assumptions
-- The kit arrived nested in `PLAN AND EXECUTE/dealflow-wd-part1-kit`, not at the folder root (handled with the symlink and the copied `check-progress.mjs`).
-- pnpm 9 was not on PATH and could not be installed globally (sandbox EPERM).
-- quay.io MinIO images are unavailable here; the export ships `docker-compose.local.yml` with `pgsty/*` mirrors and port 3001 for the app.
-- The received `.env` targets the container network (`postgres:5432`), so host-run scripts need the `DATABASE_URL` override.
-- The machine defaults to en-GB/Europe-London, which the untouched test suite does not tolerate.
-- `src/entrypoints/ws.ts` needed a `main()` wrapper for tsx (CommonJS package).
-- A stray `DEALFLOW/` copy of the old app sits in this workspace; it is ignored by git and by every toolchain.
-
-### Next session at the time of writing
-Phase 0 handed over at **Task 1.1**; Phase 1 is now complete (see the Phase 1 hand-off below).
-
-## Phase 2 hand-off (planner summary)
-
-### Commits
-- `9fd0756` 2.1, `df02e58` 2.2, `19be649` 2.3, `98c0e77` + `c3ca5e3` 2.4, `61f3b96` 2.5,
-  `687cd7f` 2.6, `5d216de` + `f74c7e5` 2.7 fixes, gate commit below. `pnpm check:progress` is green.
-
-### What changed
-- **Env, schema, IDs (2.1):** Google is all-or-nothing and optional, production requires one sign-in
-  method, `AUTH_*`/`SMTP_*`/`MAIL_*` keys added, error ids `E_AUTH_007..014` and `E_MAIL_001/002`,
-  rate limits for password/link/token, `auth_tokens` + `user_credentials` schema and migration `0075`.
-- **System mailer (2.2):** SMTP, log and capture modes behind `getSystemMailer()`, cached on
-  globalThis; magic-link and invite templates with escaped HTML; capture tests.
-- **Auth services (2.3):** argon2id passwords with lockout, hashed single-use tokens (one-statement
-  consume), credentials, bootstrap with the shared advisory lock, magic links, invites, session
-  revocation. `localAuth.integration.test.ts` covers all nine required cases (10 tests).
-- **Routes (2.4):** POST `/auth/password`, `/auth/magic-link`, `/auth/magic/verify`,
-  `/auth/invite/accept`; `/auth/start` 404s without Google; dev-login requires dev/test + flag +
-  loopback Host.
-- **Pages (2.5):** login tabs (password / email link, Google only when configured), magic-link
-  confirm card, invite set-password card, all on the design system (standard `Label` wrapper added).
-- **Invites, profile password, bootstrap CLI (2.6):** invite emails a set-password link or shows it,
-  profile password card changes the password and signs out other sessions, `pnpm auth:bootstrap-link`
-  prints an admin setup link.
-
-### Gate evidence
-typecheck ok · lint ok · build ok · unit 4919/4919 · localAuth 10/10 · `check:progress` green.
-
-### Carried forward for Phase 3
-- `.env` is still half-configured for Google (client id and secret set, domain empty). Anything that
-  loads `.env` needs the three `GOOGLE_*=` empty overrides on the command line: `pnpm build`, host
-  DB commands, `pnpm auth:bootstrap-link`. The owner action below resolves it.
-- The 13 locale/UTC-sensitive tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
-- The dev stack still needs `APP_PORT=3001` before it is recreated.
-
-- 6.1: the e2e harness now also starts the worker tier. The production build deliberately rejects activity creates when no pg-boss is published (`requireBoss`), and the worker is what creates the reminder queue, so without it every activity-creating flow 500s in the browser.
-- 6.1: `NotesToActivitiesDialog` fetched its proposals from `onOpenChange`, but the card mounts the dialog already open, so that callback never fires and the dialog stayed empty. It now fetches on mount (ref-guarded cancellation), which was a real product bug the browser proof caught.
-- 6.1: added the `invite-result` hook from 6.12 to the invite success block (the plan requires it; the link was already hooked).
-- 6.1: 01-auth saves its own signed-in storage state at the end because signing out revokes every session for that user, including the seeded `admin.json`; the later specs then start signed in. Selectors avoid tab-content duplication with the form ids and exact labels, and the proposal subject is asserted as an input value.
-- 6.1: `pnpm e2e` is green: 15 tests, 23 screenshots in the (gitignored, local-only) gallery.
-
-- 6.2: the full integration suite ran once: 1788/1790. The two failures are the untouched upstream `release/router.test.ts`, which assumes `DISABLE_UPDATE_CHECK` is off; this box's `.env` sets it true (fork default) and the file passes 2/2 with `DISABLE_UPDATE_CHECK=false`. Logged as PRE-EXISTING/environmental rather than editing an upstream test.
-- 6.2: `pnpm smoke` prints SMOKE PASS: build, health 200, magic-link 303 to `/login?sent=1`, app restart, health again, seeded admin count 1, and zero `dealflow-smoke` containers or volumes afterwards. In the harness the build needs `DOCKER_BUILDKIT=0` because buildx writes refs under `~/.docker/buildx`, outside the file sandbox; recorded in `HEALTH-CHECK.md`.
-
-## Phase 5 hand-off (planner summary)
-
-### Commits
-- `c8930bf` 5.1, `4c7f08e` 5.2, `d95fc38` 5.3, `425f997` 5.4, `bd1214a` fixes round 1,
-  `680c455` 5.5 gate. `pnpm check:progress` is green with 36/41 ticked; Phase 6 starts here.
-
-### What landed
-- **Tool catalogue (5.1):** `ToolRegistry` keeps each tool's description and input schema; the
-  assistant builds a private `dealflow-assistant` server and exposes exactly the 25 allow-listed
-  tools, so permissions and visibility are the MCP ones.
-- **Assistant loop (5.2):** reads run immediately, writes become pending `ai_actions` rows; confirm
-  runs the same MCP handler, reject cancels; six-step limit, 8,000-character tool results, history
-  trimmed to the first user message. Nine integration cases.
-- **Assistant surface (5.3-5.4):** four server actions with CSRF, actor and the per-user AI rate
-  limit; conversation list/get reads; a Sheet drawer with suggestions, message bubbles, action cards
-  with Confirm/Reject, persisted open state and conversation id, and safe text rendering.
-
-### Gate evidence
-typecheck ok · lint ok · build ok · unit 4945/4945 · usage 7/7 · assistant 9/9 ·
-`check:progress` green.
-
-### Carried into Phase 6
-- The e2e harness from Phase 0 has the health spec only; Phase 6 adds the five feature specs and the
-  screenshot gallery, the integration suite plus the container smoke (AMENDMENT A2), the independent
-  review through the harness subagent (AMENDMENT A3), the final checklist and the report.
-- Owner actions still open: `OPENROUTER_API_KEY` (+ `AI_FAKE=false`, then `pnpm ai:check-model --chat`),
-  the Google `.env` choice, and `APP_PORT=3001`.
-
-## Phase 1 hand-off (planner summary)
-
-### Commits
-- `655d95d` 1.1 brand copy, `2909ef9` 1.2 package/docs/licence/MCP, `d7b395d` 1.3 defaults,
-  `db9ad7e` 1.4 compose/proxy docs, `3c6754e` 1.5 CLAUDE.md, `50cc9d4` 1.6 fixes round 1,
-  `4a00bf1` 1.6 gate. Phase 2 starts from `4a00bf1`.
-- `pnpm check:progress` reports `12/41 tasks ticked, all with commits`.
-
-### What changed
-- **Brand (1.1):** every user-visible string says Dealflow (login and crash titles, connected apps,
-  consent heading, email-sync intro, notification subjects and link, lead source-origin sentence,
-  video call base now `https://meet.jit.si/dealflow-`). `src/features/branding/brand.test.ts` pins
-  `STRINGS.app.name`, the mention email, and that the ten copy files keep the old name only in
-  comments or the allowed internal identifiers. Two tests were updated for the new copy (Decision).
-- **Package, docs, licence, MCP (1.2):** package name `dealflow`, description, contributors line;
-  README rewritten (comparison table dropped, screenshots kept); LICENSE keeps Nikita Sawinyh and
-  adds Dealflow contributors; MCP server names are `dealflow`.
-- **Defaults (1.3):** `DISABLE_TELEMETRY` and `DISABLE_UPDATE_CHECK` default `true`, `.env.example`
-  matches, and the worker no longer creates the release-check queue unless a deploy opts in.
-- **Deploy shape (1.4, AMENDMENT A1):** default compose has no proxy service, app/ws/MinIO publish
-  on `127.0.0.1` with configurable ports, MinIO images are configurable, `env_file` is
-  `$DEALFLOW_ENV_FILE`, `Caddyfile` moved to `docs/reverse-proxy/Caddyfile.example` with upstream
-  variables, `docs/reverse-proxy.md` added, `docs/deploy.md` rewritten, `docker-compose.local.yml`
-  updated. No compose project name is forced, so the owner's stack is reused.
-- **Instructions (1.5):** CLAUDE.md now describes the fast verification profile and Dealflow
-  conventions; the test-first section is gone.
-- **Gate:** typecheck, lint (one formatting fix round), build and unit all green; unit 4902/4902.
-
-### New owner action
-`APP_PORT=3001` in `.env` and a stack recreate (no `-v`), because the base compose now publishes the
-app on `127.0.0.1:${APP_PORT:-3000}` and 3000 is taken. Everything else from Phase 0 stands.
-
-### Carried forward
-The 13 locale/UTC-sensitive unit tests still need `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`; the
-container smoke (Task 6.2, A2) and the subagent review (Task 6.3, A3) carry their amendments.
+## Environment
+- `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH npm_config_store_dir=/tmp/dealflow-pnpm-store` (pnpm 9.15.9 lives in `/tmp/dealflow-tools`; the global pnpm here is 8.9.2).
+- `export TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` before tests (13 upstream tests assume UTC and en-US).
+- Commands that load `.env` need `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` in front until the owner fixes the partial Google config.
+- Build: `ALLOW_FIRST_LOGIN_ADMIN=false pnpm build`; if `next build` fails with `ENOTEMPTY`, remove `.next` and retry once.
+- Host database commands: `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` (`.env` targets the container network).
+- E2E: `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers`; ports 3210/3211.
+- Smoke: `DOCKER_BUILDKIT=0 pnpm smoke` (the sandbox blocks buildx refs under `~/.docker/buildx`); ports 3310/3311/3312.
+- Docker 24.0.5 is up; the owner's `warpdrive-main` stack holds 5433/9000/9001.
 
 ## Final report
-
-### Definition of done
-
-1. PASS - `main` tracks the snapshot plus one commit per task; `upstream` = https://github.com/sneg55/warpdrive.git (Phase 0, tag v1.2.0). `git log --oneline 0.1..HEAD` holds a `{task}: {title}` commit for every ticked task; `check:progress` verifies it.
-2. PASS - `docs/dealflow/HEALTH-CHECK.md` records the baseline (tool versions, install, typecheck, lint, unit, integration, build, demo seed, the nine `p1-00-*` screenshots) and every pre-existing failure with its treatment.
-3. PASS - `pnpm mail:probe` exists and wrote `docs/dealflow/mail-probe-result.json` (`status: ok`, real Purelymail credentials), with the owner cleanup action listed below.
-4. PASS - UI text, metadata, notification templates, MCP server name, `package.json`, README and docs say Dealflow; LICENSE keeps the original copyright and adds ours; `brand.test.ts` passes.
-5. PASS - `.env.example` sets `DISABLE_TELEMETRY=true` and `DISABLE_UPDATE_CHECK=true`; the worker's release check only runs when the owner enables it.
-6. PASS - compose has app/ws/worker/Postgres/MinIO and one-shot migrate/createbuckets, no Caddy; app/ws/MinIO binds default to `127.0.0.1`; the three-route proxy doc and Caddyfile example exist; `pnpm smoke` printed SMOKE PASS (containers and volumes cleaned up).
-7. PASS - password sign-in (argon2id, 12-128, 10 failures/15 minutes), magic link (15 minutes, single use, confirm page, same notice for unknown emails), Google only when all three vars are set, dev-login only with the loopback + flag guard (404 in the production e2e build), bootstrap via `SEED_ADMIN_EMAIL`.
-8. PASS - invites email or show a set-password link, the invitee sets name/password and is signed in, Settings -> Profile changes the password and revokes other sessions (e2e 02).
-9. PASS - OpenRouter through `openai`, default `deepseek/deepseek-v4.1-flash`, `AI_FAKE` deterministic, every call writes `ai_usage`, company and optional per-user monthly caps, Settings -> AI for admins. The owner key was added and `pnpm ai:check-model --chat` reached OpenRouter (`CONFIGURED MODEL LISTED`, usage prompt=38 completion=20).
-10. PASS - the deal workspace AI card shows summary/health/risks/next steps with Add, and a 0-100 score with reasons (e2e 03; screenshots `p1-deal-ai-card`).
-11. PASS - the composer has Write with AI, a deal note has Turn into activities with editable proposals, the filter dialog has Describe a filter that fills conditions (e2e 03/04; `p1-composer-ai`, `p1-notes-to-activities`, `p1-filter-ai`).
-12. PASS - the assistant drawer persists conversations, reads use visibility-scoped MCP tools, writes become pending actions and do nothing until Confirm, Reject cancels, another user cannot confirm (integration 9/9 + e2e 05).
-13. PASS - `CLAUDE.md` carries the fast verification profile and the Dealflow conventions; no contradicting test-first rule remains.
-14. PASS - all gates green: typecheck ok, lint ok, build ok, unit 4945/4945, integration 1788/1790 (2 PRE-EXISTING), e2e 15/15, 23/23 screenshots, `check:progress --final` (item 19).
-
-### Checklist
-
-1. PASS - `git --no-optional-locks status --porcelain` is empty after the `6.4` commit; only ignored generated folders exist.
-2. PASS - `pnpm install --frozen-lockfile` exits 0 ("Done in 1s", pnpm 9.15.9).
-3. PASS - `pnpm typecheck` exits 0.
-4. PASS - `pnpm lint` exits 0 (14 warnings, no errors).
-5. PASS - `pnpm test:unit` green: 4945/4945 under `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`; the locale-sensitive tests in the `PRE-EXISTING:` note pass with that environment.
-6. PASS - `pnpm test:integration`: 1788/1790, 385 files; the 2 failures are the untouched `release/router.test.ts` pair caused by `.env`'s `DISABLE_UPDATE_CHECK=true` and pass 2/2 with the flag off (recorded as PRE-EXISTING/environmental).
-7. PASS - `pnpm build` exits 0 (with `GOOGLE_*=`, `ALLOW_FIRST_LOGIN_ADMIN=false` overrides because `.env` is half-configured for Google).
-8. PASS - `pnpm e2e` passes 15 tests across specs `00` to `05`.
-9. PASS - 23 screenshots in `e2e/screenshots/`, every name from 6.12 present.
-10. PASS - `pnpm smoke` printed `SMOKE PASS`; `docker ps -a --filter name=dealflow-smoke -q | wc -l` = 0 and the volume filter = 0.
-11. PASS - the `warpdrive` grep lists comments/internal identifiers only (`DealAiCard`, `NotesToActivitiesDialog`, `StageColumnMenu`, `StageSelector`, `ThreadListToolbar`); `brand.test.ts` passes in the unit suite.
-12. PASS - `docker compose config --services` = app, createbuckets, migrate, minio, postgres, worker, ws (no caddy); `docs/reverse-proxy.md` and `docs/reverse-proxy/Caddyfile.example` exist.
-13. PASS - `grep -E "^(DISABLE_TELEMETRY|DISABLE_UPDATE_CHECK)=true$" .env.example | wc -l` = 2.
-14. PASS - Task 6.2 added no env keys; every key the smoke uses exists in `.env.example` (OPENROUTER_API_KEY/BASE_URL/MODEL and AI_FAKE included).
-15. PASS - against the e2e server: dev-login 404, cross-origin `POST /auth/password` 403, `/auth/start` 404 (server stopped afterwards; port 3210 closed).
-16. PASS - `select count(*) from auth_tokens where token_hash like 'ey%' or length(token_hash) <> 43` = 0.
-17. PASS - the only `process.env` match outside `env.ts`, `clientEnv.ts`, `instrumentation.ts` and tests is the comment in `release/currentVersion.ts` ("not process.env"); no reads.
-18. PASS - python scan of every file changed since `ec6a018` for U+2014: none.
-20. PASS - `docs/dealflow/HEALTH-CHECK.md`, `docs/dealflow/UPSTREAM.md` and `docs/dealflow/mail-probe-result.json` exist and are committed.
-
-19. PASS - `pnpm check:progress --final`: "PROGRESS CHECK OK: 41/41 tasks ticked, all with commits, ready to complete".
-
-### Owner actions
-
-1. Google sign-in: `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` but an empty
-   `GOOGLE_WORKSPACE_DOMAIN`, which fails `env.ts` (all three or none). Either set
-   `GOOGLE_WORKSPACE_DOMAIN=your-workspace-domain` or blank the other two, then restart. Every
-   command in this run passed `GOOGLE_*=` overrides because of it.
-2. Update check: `.env` sets `DISABLE_UPDATE_CHECK=true` (the fork default). That is why the two
-   untouched `release/router.test.ts` integration tests fail; with
-   `DISABLE_UPDATE_CHECK=false` they pass 2/2. Set it false if you want the banner and a fully green
-   integration suite.
-3. Real AI pass (key and `AI_FAKE=false` are already in `.env`): run
-   `pnpm ai:check-model --chat`, then in the UI generate a deal summary, draft an email, and ask the
-   assistant "What are my overdue activities?". The chat check already reached OpenRouter
-   (`CONFIGURED MODEL LISTED`); its reply was cut by the script's 20-token cap, not by the model.
-4. SMTP: `SMTP_*` now points at Purelymail. Request one magic link from `/login` to confirm delivery.
-   e2e used the capture mailer and the smoke stack used no mailer, so real delivery was not exercised
-   in this part.
-5. `APP_PORT=3001` is set; the dev server now binds 3001. Keep port 3000 free for other tools or
-   update bookmarks.
-6. Container smoke from this harness needs `DOCKER_BUILDKIT=0 pnpm smoke` (buildx writes refs under
-   `~/.docker/buildx`, outside the file sandbox). A normal host needs no override.
-7. Optional: install pnpm 9.15.9 globally (`npm i -g pnpm@9.15.9`); this run used
-   `/tmp/dealflow-tools/node_modules/.bin` because the global install is blocked here.
-8. Clean up the Purelymail probe artifacts: the `Dealflow mail probe ...` messages in `\Sent` and
-   `\Trash`, plus one `append diagnostic` message.
-9. Host-side DB commands need
-   `DATABASE_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` because `.env` uses the
-   compose host name `postgres`.
-10. For a truly independent next review, create `.dsh/qa.md`, `.dsh/builder.patch.yml`,
-    `.dsh/qa.patch.yml`, `.dsh/guard.bash` and `qa.sh` from Appendices A and C, then run
-    `./qa.sh "Final review of PLAN-PART1.md. Base commit ec6a018."`; this run used the documented
-    self-review fallback because the harness was absent.
-
-### Decisions worth reviewing
-
-- Kit kept in `PLAN AND EXECUTE/dealflow-wd-part1-kit/` with a root `PLAN-PART1.md` symlink and a copy
-  of `check-progress.mjs` at the contracted path (0.1); the nested kit was excluded from the snapshot
-  and arrived with 0.1.
-- pnpm 9.15.9 runs from `/tmp/dealflow-tools` (global install EPERM under the sandbox) (0.1).
-- The pre-existing dev stack (compose project `warpdrive-main`, ports 5433/9000/9001) was reused
-  instead of creating a new project, per the rule about containers this run did not create (0.2).
-- `deployWorkflow.test.ts` was deleted and `Dockerfile.test.ts` trimmed because the OSS export
-  dropped the workflow files they read (0.3).
-- `.env` was never hand-edited; `env-sync` appends missing keys only, and every build passed
-  `GOOGLE_*=` plus `ALLOW_FIRST_LOGIN_ADMIN=false` because of the half-configured Google block (0.2+).
-- OAuth is all-or-nothing; the login page hides Google unless all three vars are set, and password
-  and magic link always the local flow (2.1-2.7).
-- Local sign-in lands on `/pipeline` (`loginReturnTarget`); the Google flow keeps its historical `/`,
-  both through `safeLoginReturnPath` (2.5).
-- Password policy 12-128 with 10 failures locking for 15 minutes; token hashes are sha256 base64url
-  and consumed in a single UPDATE; the dummy verify keeps unknown-email timing close (2.6).
-- AI prompts and schemas are pinned in section 6 and implemented verbatim (deal context, draft,
-  notes, filter, assistant); `chatJson` retries once with "Your previous reply was not valid" and then
-  returns `E_AI_005`.
-- The assistant reuses the MCP registry through a 25-tool allow-list; writes only insert pending
-  actions and run on Confirm through the same handler, owner-checked.
-- The e2e harness starts the worker as well, because a production build rejects activity creates
-  without pg-boss (`requireBoss`) and the worker creates the reminder queue (6.1).
-- `NotesToActivitiesDialog` now fetches proposals on mount: the card mounts it already open, so the
-  old `onOpenChange` fetch never fired (real bug found by e2e, 6.1).
-- Added the `invite-result` hook required by 6.12; the rest of the hooks already existed (6.1).
-- Tests changed only for changed expectations or glue: login/invite page tests (new markup), the
-  sidebar/composer/filter suites stub the tRPC-only AI components they render without a provider,
-  and `eslint.config.test.ts` got a 120s per-file budget after a load-induced timeout; no assertion
-  was weakened and no test was deleted.
-- The e2e specs save a fresh `admin.json` in 01 because signing out revokes every session for that
-  user, including the seeded one.
-
-### Open issues
-
-- PRE-EXISTING (environment): two integration tests in `src/features/release/router.test.ts` fail
-  with `DISABLE_UPDATE_CHECK=true` (the fork default) and pass with it false. Upstream test, left
-  untouched; see Owner action 2.
-- PRE-EXISTING (environment): the locale/UTC-sensitive unit tests listed in `HEALTH-CHECK.md` need
-  `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`; the unit suite is green with that environment.
-- The independent `qa.sh` review could not run (no `.dsh` harness or script in the repo); Task 6.3
-  used the documented self-review fallback with commands and evidence.
-- `.next` sometimes fails to delete with `ENOTEMPTY` between consecutive builds in this sandbox;
-  moving it aside or removing it before a build works. No product impact.
-- Real SMTP delivery and real-model quality after this run are owner checks (3 and 4 above).
-- Screenshots are gitignored by design (local proof only); `e2e/screenshots/` holds 23 files here.
-- The e2e harness writes `.e2e/` (fixtures, storage states, captured mail), also gitignored.
-
-### Notes for Part 2
-
-- Mail probe facts (`docs/dealflow/mail-probe-result.json`): SMTP send works; IMAP IDLE delivers in
-  8-11s, not instantly; the server does not append SMTP-sent mail to `\Sent` (the app must APPEND);
-  APPEND and MOVE work; the IMAP SEARCH index lags an APPEND by more than five seconds, so verify
-  appends with STATUS or the APPEND uid. Capabilities and special-use folders are recorded there.
-- Health-check facts (`docs/dealflow/HEALTH-CHECK.md`): pnpm from `/tmp/dealflow-tools` with
-  `npm_config_store_dir=/tmp/dealflow-pnpm-store`; Playwright browsers at
-  `/tmp/dealflow-pw-browsers`; dev Postgres on 5433 and MinIO on 9000/9001 (project
-  `warpdrive-main`); e2e uses 3210/3211; smoke uses 3310/3311/3312; `.next` may need moving aside;
-  `DATABASE_URL` override for host commands; `TZ=UTC` for the locale tests.
-- Upstream files changed: `docs/dealflow/UPSTREAM.md` (base commit v1.2.0, cherry-pick recipe, every
-  upstream file touched).
-- Screens and their screenshots (23): `/pipeline` `p1-00-pipeline`, `p1-filter-ai`;
-  `/deals/{id}` `p1-00-deal`, `p1-deal-ai-card`, `p1-notes-to-activities`, `p1-composer-ai`;
-  `/contacts/people` `p1-00-people`; `/contacts/orgs` `p1-00-orgs`; `/leads` `p1-00-leads`;
-  `/activities` `p1-00-activities`; `/inbox` `p1-00-inbox`; `/dashboard` `p1-00-dashboard`;
-  `/settings/profile` `p1-00-settings`, `p1-profile-password`; `/settings/users` `p1-users-invite`;
-  `/settings/ai` `p1-settings-ai`; `/login` `p1-login`, `p1-login-sent`; `/login/magic`
-  `p1-magic-confirm`; `/login/invite` `p1-invite-accept`; assistant drawer `p1-assistant-empty`,
-  `p1-assistant-pending`, `p1-assistant-confirmed`.
-- Fake modes for Part 2 tests: `AI_FAKE=true` with the strings in section 6.7 (`FAKE AI: {message}`,
-  `FAKE summary of this deal.`, `FAKE subject`/`FAKE body: {instruction}`, `FAKE follow-up task`,
-  the filter explanation, and `/fake-tool {json}`); `MAIL_FAKE=true` writes JSON under
-  `MAIL_CAPTURE_DIR`; `setAiProviderForTest`/`setSystemMailerForTest` inject scripted providers.
+(written in Task 5.6)

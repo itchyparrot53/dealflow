@@ -74,3 +74,11 @@ Keep this list current: it is the conflict surface for every future cherry-pick.
 Task 1.4 supersedes ROADMAP.md's "Compose project: dealflow" line. The dev stack uses the folder's
 own compose project name (this machine: `warpdrive-main`), so it reuses the owner's existing
 containers and volumes; the container smoke test keeps its dedicated `dealflow-smoke` project.
+
+## Part 2 (mail provider) base
+
+Part 2 builds on the Part 1 result at commit `64363ce` (PROGRESS-P1.md). From here, upstream fixes to
+the email layer need reading before a cherry-pick: Phase 1 replaces `GmailClient` call sites with the
+provider-neutral `MailProvider` in `src/features/mail/provider/`, and Task 1.1 renames the Gmail
+columns to `provider_*` / `sync_cursor`. The Gmail adapter keeps the upstream sync engine
+(`syncMailbox`) unchanged inside `src/features/mail/provider/gmailAdapter.ts`.
