@@ -5,6 +5,7 @@ import type { Db } from "@/db/client";
 import { currencyRates, settings } from "@/db/schema";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { invalidateBaseCurrencyCache } from "@/features/settings/readBaseCurrency";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { parseRate, type Rate } from "./money";
@@ -151,7 +152,7 @@ export async function setBaseCurrency(
   if (!code.success) return err(new AppError(ERROR_IDS.CURRENCY_UNKNOWN, "Unknown currency code"));
   signal.throwIfAborted();
 
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const current = await readBaseCurrency(tx, signal);
     // Re-selecting the same base is a no-op: clearing every manual rate for a
     // non-change would silently wipe the catalog.
@@ -164,4 +165,7 @@ export async function setBaseCurrency(
     await tx.delete(currencyRates);
     return ok({ base: code.data });
   });
+  // The cached read must not keep serving the old base to pages rendered after this.
+  invalidateBaseCurrencyCache(db);
+  return result;
 }

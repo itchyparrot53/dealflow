@@ -66,14 +66,21 @@ function withMoves(data: Forecast, moves: Record<string, string>): Forecast {
     ...month,
     open: month.open.filter((deal) => !movedIds.has(deal.id)),
   }));
+  const firstMonth = data.months[0]?.month;
   for (const [dealId, month] of Object.entries(moves)) {
     const card = cards.get(dealId);
     const target = months.find((entry) => entry.month === month);
     if (card !== undefined && target !== undefined) {
-      target.open.push({ ...card, expectedCloseDate: `${month}-15` });
+      target.open.push({
+        ...card,
+        // Overdue only means "before the first month"; a card moved forward loses the badge.
+        overdue: month === firstMonth ? card.overdue : false,
+        expectedCloseDate: `${month}-15`,
+      });
     }
   }
-  for (const month of months) month.openCount = month.open.length;
+  // openCount stays the service's count until the refetch, so the optimistic card cannot
+  // disagree with the totals beside it.
   return { ...data, months };
 }
 
@@ -131,8 +138,7 @@ export function ForecastBoard({ pipelines }: Props): React.ReactNode {
 
   const data = query.data === undefined ? undefined : withMoves(query.data, moves);
   const isEmpty =
-    data !== undefined &&
-    data.months.every((month) => month.open.length === 0 && month.won.length === 0);
+    data?.months.every((month) => month.open.length === 0 && month.won.length === 0) ?? false;
 
   return (
     <div className="flex h-full flex-col gap-3">

@@ -124,6 +124,10 @@ Current: 4.3 · Last updated: 2026-10-20 21:41
 - 4.2: the full integration suite passed 1857/1857 in 392 files (85.0 s) on the final tree; no pre-existing failure surfaced.
 - 4.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` project and its volumes (verified: no container and no volume with that name remain). Docker has 29.21 GB of images and 718 MB of volumes; no prune was run.
 
+- 4.3 round 1: fixed the five majors. Board cards, list value cells, column totals, the weighted total, the board toolbar total and the list footer now pass the deal or base currency to `formatCurrency`; `StageTotals` carries the excluded deal count plus the distinct codes for the tooltip.
+- 4.3 round 1: fixed six minors. `setBaseCurrency` invalidates the cached base-currency read; the exact 6.2 copy is used (with the missing currency code carried through a new optional `ClientError.code`); the won list has a title tiebreak; `moveDealToMonth` runs the visibility/edit gate before the status check; the optimistic forecast overlay clears `overdue` for a non-first month and keeps the service `openCount`; the e2e sales spec now adds the EUR rate through the Settings selector using keyboard focus navigation (Radix portals the options where pointer clicks are unreliable).
+- 4.3 round 1: the refused forecast drag keeps its inline `role="alert"` instead of a toast, because this repo has no toast helper or toast dependency; adding one would add UI infrastructure outside the plan's stack rule. Logged as an accepted minor rather than skipped silently.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 2 migrations and the Part 3 schema once migration 0080 is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).

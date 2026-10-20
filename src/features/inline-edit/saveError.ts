@@ -9,6 +9,7 @@ const MESSAGES: Record<string, string> = {
   E_CONTACT_008: "That value isn't valid.", // input failed validation
   E_AUTH_003: "Your session expired. Please sign in again.",
   E_AUTH_CSRF: "Your session expired. Please refresh and try again.",
+  E_PRODUCT_004: "This value is calculated from the deal's products.",
 };
 
 export function saveErrorMessage(errorId?: string): string {

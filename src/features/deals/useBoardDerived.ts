@@ -24,7 +24,9 @@ export interface StageTotals {
   dealCount: number;
   total: string;
   weighted: string;
-  excluded: string[];
+  // Number of excluded deals (not currencies), plus the distinct codes for the tooltip.
+  excludedCount: number;
+  excludedCurrencies: string[];
 }
 
 interface Derived {
@@ -71,7 +73,8 @@ export function useBoardDerived(input: DerivedInput): Derived {
       dealCount: deals.length,
       total: formatCents(summary.total),
       weighted: formatCents(summary.weighted),
-      excluded: [...new Set(summary.excluded.map((row) => row.currency))],
+      excludedCount: summary.excluded.length,
+      excludedCurrencies: [...new Set(summary.excluded.map((row) => row.currency))],
     });
   }
 

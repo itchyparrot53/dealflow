@@ -87,5 +87,8 @@ export const PRODUCTS_STRINGS = {
   termsSaveFailed: "Could not save the deal currency or probability.",
   invalidProbability: "Enter a whole number between 0 and 100.",
   unknownCode: "Unknown currency code.",
+  lineNotFound: "That line no longer exists.",
+  calculatedValue: "This value is calculated from the deal's products.",
+  rateMissing: (code: string) => `Add an exchange rate for ${code} first.`,
   approxBase: (amount: string) => `≈ ${amount}`,
 } as const;

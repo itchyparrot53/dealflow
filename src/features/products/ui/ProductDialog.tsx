@@ -77,8 +77,9 @@ function errorText(id: string): string {
       return S.codeTaken;
     case ERROR_IDS.PRODUCT_NOT_FOUND:
       return S.notFound;
-    case ERROR_IDS.PRODUCT_INPUT_INVALID:
     case ERROR_IDS.CURRENCY_UNKNOWN:
+      return S.unknownCode;
+    case ERROR_IDS.PRODUCT_INPUT_INVALID:
       return S.invalid;
     case ERROR_IDS.PERM_DENIED:
       return S.adminOnly;

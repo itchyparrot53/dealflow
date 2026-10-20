@@ -60,7 +60,8 @@ export function BoardStages({
               dealCount={stageSum?.dealCount ?? 0}
               totalValue={stageSum?.total ?? "0.00"}
               weightedValue={stageSum?.weighted ?? "0.00"}
-              excludedCurrencies={stageSum?.excluded ?? []}
+              excludedCount={stageSum?.excludedCount ?? 0}
+              excludedCurrencies={stageSum?.excludedCurrencies ?? []}
               density={density}
               now={now}
               pipelineId={pipelineId}

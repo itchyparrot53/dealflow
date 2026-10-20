@@ -44,10 +44,14 @@ function trimNumeric(value: string): string {
   return trimmed === "" ? "0" : trimmed;
 }
 
-function errorText(id: string): string {
+function errorText(id: string, code?: string): string {
   switch (id) {
     case ERROR_IDS.CURRENCY_RATE_MISSING:
-      return "Add an exchange rate for that product's currency first.";
+      return S.rateMissing(code ?? "that currency");
+    case ERROR_IDS.PRODUCT_LINE_NOT_FOUND:
+      return S.lineNotFound;
+    case ERROR_IDS.PRODUCT_VALUE_CALCULATED:
+      return S.calculatedValue;
     case ERROR_IDS.CURRENCY_CHANGE_WITH_LINES:
       return S.currencyLocked;
     case ERROR_IDS.PRODUCT_IN_USE:
@@ -133,7 +137,7 @@ export function DealProductsSection({ dealId, canEdit, baseCurrency }: Props): R
     const result = await addDealLineAction({ dealId, productId }, readCsrfToken());
     setPending(false);
     if (!result.ok) {
-      setError(errorText(result.error.id));
+      setError(errorText(result.error.id, result.error.code));
       return;
     }
     refresh();
@@ -146,7 +150,7 @@ export function DealProductsSection({ dealId, canEdit, baseCurrency }: Props): R
     setPending(false);
     refresh();
     if (!result.ok) {
-      setError(errorText(result.error.id));
+      setError(errorText(result.error.id, result.error.code));
       return false;
     }
     return true;
@@ -158,7 +162,7 @@ export function DealProductsSection({ dealId, canEdit, baseCurrency }: Props): R
     const result = await removeDealLineAction({ lineId }, readCsrfToken());
     setPending(false);
     if (!result.ok) {
-      setError(errorText(result.error.id));
+      setError(errorText(result.error.id, result.error.code));
       return;
     }
     refresh();

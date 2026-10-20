@@ -4,6 +4,29 @@ import { fixtures, shot } from "./helpers";
 test.use({ storageState: ".e2e/admin.json" });
 test.setTimeout(240_000);
 
+async function selectEuro(page: Page): Promise<void> {
+  // The Radix list renders 162 options in a portal that pointer clicks cannot reach
+  // reliably. Radix moves DOM focus between the items, so keyboard navigation is the
+  // same path a user has.
+  const trigger = page.getByRole("combobox", { name: "Currency", exact: true });
+  await trigger.click();
+  const activeText = (): Promise<string> =>
+    page.evaluate(() => document.activeElement?.textContent ?? "");
+  await page.keyboard.press("Home");
+  let found = false;
+  for (let step = 0; step < 200; step += 1) {
+    const text = await activeText();
+    if (text.includes("EUR, Euro")) {
+      found = true;
+      break;
+    }
+    await page.keyboard.press("ArrowDown");
+  }
+  expect(found, `EUR never highlighted (last: ${await activeText()})`).toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(trigger).toContainText("EUR");
+}
+
 async function dragCardTo(page: Page, card: Locator, target: Locator): Promise<void> {
   const from = await card.boundingBox();
   const to = await target.boundingBox();
@@ -27,6 +50,9 @@ test("currencies, products, deal lines, board totals and the forecast drag", asy
   // 1. The manual EUR rate (the demo seed writes 1.08 against the USD base).
   await page.goto("/settings/currencies");
   await expect(page.getByTestId("currencies-base-select")).toBeVisible();
+  await selectEuro(page);
+  await page.getByTestId("currency-rate-input").fill("1.08");
+  await page.getByTestId("currency-rate-save").click();
   const eurRow = page.locator('[data-testid="currency-rate-row"][data-code="EUR"]');
   await expect(eurRow).toContainText("1.08");
   await shot(page, "p3-settings-currencies");
@@ -50,7 +76,9 @@ test("currencies, products, deal lines, board totals and the forecast drag", asy
   const section = page.getByTestId("deal-products-section");
   await expect(section).toBeAttached();
   await section.getByTestId("deal-product-add").getByRole("button").click();
-  await page.keyboard.type("Onboarding");
+  const search = page.getByPlaceholder("Search...");
+  await expect(search).toBeVisible();
+  await search.fill("Onboarding");
   await page.keyboard.press("Enter");
   const row = section.getByTestId("deal-product-row").first();
   await expect(row).toBeVisible({ timeout: 15_000 });

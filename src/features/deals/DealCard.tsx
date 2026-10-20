@@ -59,6 +59,8 @@ interface DealCardProps {
   onOpen?: () => void;
   // Lifted state for the drag overlay: a strong shadow so the moving card floats above the board.
   elevated?: boolean;
+  // Base currency fallback; the card value is in the deal's own currency (Part 3).
+  baseCurrency?: string;
 }
 
 export function DealCard(props: DealCardProps): React.ReactNode {
@@ -74,7 +76,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
     now,
     onOpen,
   } = props;
-  const { elevated } = props;
+  const { elevated, baseCurrency } = props;
   const compact = density === "compact";
   const activity = activityState(card.nextActivityAt, now);
   // Hover/aria copy for the next-action badge: names the soonest action and its timing.
@@ -119,7 +121,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
         {card.value !== null && (
           <span className="font-semibold tabular-nums text-foreground">
-            {formatCurrency(card.value)}
+            {formatCurrency(card.value, card.currency ?? baseCurrency ?? "USD")}
           </span>
         )}
         {labels.map((label) => (

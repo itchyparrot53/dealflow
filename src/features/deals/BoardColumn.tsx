@@ -19,10 +19,11 @@ interface DraggableCardProps {
   rottingDays: number | null;
   density: "comfortable" | "compact";
   now: Date;
+  baseCurrency?: string;
 }
 
 function DraggableCard(props: DraggableCardProps): React.ReactNode {
-  const { card, rottingDays, density, now } = props;
+  const { card, rottingDays, density, now, baseCurrency } = props;
   const router = useRouter();
   const resolveLabels = useLabelColorResolver("deal");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -47,6 +48,7 @@ function DraggableCard(props: DraggableCardProps): React.ReactNode {
         rottingDays={rottingDays}
         density={density}
         now={now}
+        baseCurrency={baseCurrency}
         onOpen={() => router.push(`/deals/${card.id}`)}
       />
     </div>
@@ -62,6 +64,7 @@ export interface BoardColumnProps {
   dealCount: number;
   totalValue: string;
   weightedValue: string;
+  excludedCount: number;
   excludedCurrencies: string[];
   density: "comfortable" | "compact";
   // null until the client clock is set (see Board). Threads down to each DealCard's time visuals.
@@ -82,6 +85,7 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
     dealCount,
     totalValue,
     weightedValue,
+    excludedCount,
     excludedCurrencies,
     density,
     now,
@@ -142,18 +146,18 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
           {/* Balance/scale glyph before the value line (Pipedrive convention). */}
           <Scale data-stage-metric-icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
           <span data-testid="board-column-total" className="tabular-nums">
-            {stageSubtitle(formatCurrency(totalValue), dealCount)}
+            {stageSubtitle(formatCurrency(totalValue, baseCurrency), dealCount)}
           </span>
         </div>
         <div className="mt-0.5 px-1 text-xs text-muted-foreground">
           <span>Weighted </span>
           <span data-testid="board-column-weighted" className="tabular-nums">
-            {formatCurrency(weightedValue)}
+            {formatCurrency(weightedValue, baseCurrency)}
           </span>
-          {excludedCurrencies.length > 0 && (
+          {excludedCount > 0 && (
             <Tip label={`No rate for ${excludedCurrencies.join(", ")}`}>
               <span data-testid="totals-excluded" className="ml-1 cursor-default">
-                {excludedCurrencies.length} excluded
+                {excludedCount} excluded
               </span>
             </Tip>
           )}
@@ -171,7 +175,13 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
                 key={card.id}
                 className="[content-visibility:auto] [contain-intrinsic-size:auto_96px]"
               >
-                <DraggableCard card={card} rottingDays={rottingDays} density={density} now={now} />
+                <DraggableCard
+                  card={card}
+                  rottingDays={rottingDays}
+                  density={density}
+                  now={now}
+                  baseCurrency={baseCurrency}
+                />
               </li>
             ))}
           </ul>

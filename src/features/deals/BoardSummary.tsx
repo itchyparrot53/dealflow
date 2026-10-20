@@ -7,6 +7,8 @@ import { formatCurrency } from "@/lib/formatCurrency";
 interface BoardSummaryProps {
   totalValue: string;
   dealCount: number;
+  // Base currency of the converted total; defaults keep older call sites/tests valid.
+  currency?: string;
 }
 
 const SHOW_TOTAL_KEY = "wd.board.showTotal:v1";
@@ -17,7 +19,7 @@ const SHOW_TOTAL_KEY_LEGACY = "wd.board.showTotal";
 // to reveal the total. The preference sticks per browser via localStorage. Starts hidden on the
 // server render and hydrates from storage in an effect to avoid an SSR/client mismatch.
 export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
-  const { totalValue, dealCount } = props;
+  const { totalValue, dealCount, currency = "USD" } = props;
   const [showTotal, setShowTotal] = useState(false);
 
   useEffect(() => {
@@ -54,7 +56,9 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
         {dealCount} {dealCount === 1 ? "deal" : "deals"}
       </span>
       {showTotal && (
-        <span className="font-semibold text-foreground">{formatCurrency(totalValue)}</span>
+        <span className="font-semibold text-foreground">
+          {formatCurrency(totalValue, currency)}
+        </span>
       )}
       <button
         type="button"

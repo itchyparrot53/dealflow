@@ -1,12 +1,12 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { deals } from "@/db/schema/deals";
 import { formatCents, parseCents, toBase } from "@/features/currency/money";
 import { loadRateMap } from "@/features/currency/rates";
 import { type MoneyDeal, type RateMap, rateFor, summarize } from "@/features/currency/totals";
 import { updateDeal } from "@/features/deals/dealActions";
+import { loadEditableDeal } from "@/features/deals/dealAuth";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
@@ -268,7 +268,10 @@ export async function getForecast(
     const openTotals = monthTotal(month.open, map);
     month.total = openTotals.total;
     month.weighted = openTotals.weighted;
-    month.won.sort((a, b) => (a.wonAt ?? "").localeCompare(b.wonAt ?? ""));
+    month.won.sort((a, b) => {
+      const byDate = (a.wonAt ?? "").localeCompare(b.wonAt ?? "");
+      return byDate === 0 ? a.title.localeCompare(b.title) : byDate;
+    });
     const wonSummary = summarize(
       month.won.map((deal) => ({
         id: deal.id,
@@ -304,17 +307,11 @@ export async function moveDealToMonth(
   signal: AbortSignal,
 ): Promise<Result<{ dealId: string; expectedCloseDate: string }, AppError>> {
   const input = moveDealToMonthInput.parse(raw);
-  const [deal] = await db
-    .select({
-      status: deals.status,
-      expectedCloseDate: deals.expectedCloseDate,
-      updatedAt: deals.updatedAt,
-    })
-    .from(deals)
-    .where(and(eq(deals.id, input.dealId), isNull(deals.deletedAt)));
-  if (deal === undefined) {
-    return err(new AppError(ERROR_IDS.DEAL_NOT_FOUND, "Deal not found", { dealId: input.dealId }));
-  }
+  // The visibility/edit gate runs first, so an invisible deal is not-found rather than a
+  // status refusal that would reveal it exists.
+  const editable = await loadEditableDeal(db, actor, input.dealId, signal);
+  if (!editable.ok) return err(editable.error);
+  const deal = editable.value.deal;
   // Won and lost deals keep their historical close date; the drag only rearranges the
   // open pipeline, so those drops are refused rather than silently changing history.
   if (deal.status !== "open") {
