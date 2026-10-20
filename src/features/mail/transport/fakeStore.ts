@@ -209,6 +209,16 @@ export function fakeMove(
       });
       map.set(uid, moved);
     }
+    if (map.size > 0) {
+      // Removing a message bumps the source folder's MODSEQ on a real server, which is how a
+      // sync notices that a UID vanished without the message count changing for other folders.
+      const sourceMeta = readMeta(dir, address, folder);
+      writeMeta(dir, address, folder, {
+        uidValidity: sourceMeta.uidValidity,
+        uidNext: sourceMeta.uidNext,
+        modseq: sourceMeta.modseq + 1,
+      });
+    }
     return map;
   });
 }

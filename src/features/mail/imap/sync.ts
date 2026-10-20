@@ -163,17 +163,22 @@ async function runIncremental(
     for (const threadId of stored.value.touchedThreadIds) touched.add(threadId);
   }
 
-  // An empty listing on a non-empty folder is a server hiccup, not "everything vanished".
+  // An empty listing on a non-empty folder is a server hiccup, not "everything vanished". On a
+  // genuinely empty folder every known location is gone; otherwise only UIDs up to the largest
+  // listed one count (a UID above it may just not be visible yet).
   const locations = await folderLocations(
     args.db,
     args.account.id,
     folder.path,
     status.uidValidity,
   );
+  const emptyFolder = listed.value.length === 0 && status.messages === 0;
   const vanished =
     listed.value.length === 0 && status.messages > 0
       ? []
-      : locations.filter((location) => !listedSet.has(location.uid) && location.uid <= maxListed);
+      : locations.filter(
+          (location) => !listedSet.has(location.uid) && (emptyFolder || location.uid <= maxListed),
+        );
   if (vanished.length > 0) {
     const threadIds = await threadIdsFor(
       args.db,

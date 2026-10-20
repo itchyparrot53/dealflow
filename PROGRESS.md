@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.6 · Last updated: 2026-10-20 09:55
+Current: 3.7 · Last updated: 2026-10-20 10:20
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -34,7 +34,7 @@ Current: 3.6 · Last updated: 2026-10-20 09:55
 - [x] 3.3 Incremental sync and UIDVALIDITY reset
 - [x] 3.4 Initial window and background backfill
 - [x] 3.5 IDLE manager and sync cadence
-- [ ] 3.6 Sync integration tests
+- [x] 3.6 Sync integration tests
 - [ ] 3.7 Phase 3 QA gate
 - [ ] 4.1 SMTP send and the Sent APPEND
 - [ ] 4.2 Reply headers, thread ids and reconcile for IMAP
@@ -60,6 +60,9 @@ Current: 3.6 · Last updated: 2026-10-20 09:55
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 3.6: a message that already exists and reappears in another folder now reports its thread id, so the whole-thread trash state is re-evaluated when a location is added; a folder whose listing is empty but which reports zero messages has all its locations treated as vanished, while the "empty listing on a non-empty folder" guard stays.
+- 3.6: the fake transport bumps the SOURCE folder's MODSEQ on `move`, mirroring a real server's expunge, so the sync notices vanished UIDs; without it the unchanged shortcut skipped the emptied folder.
+- 3.6: the nine required cases run against the fake transport and real Postgres, including initial window plus backfill enqueue, header threading with a child before its parent, subject fallback, cross-folder dedupe, trash state both ways, UIDVALIDITY reset, person/deal linking, the no-change skip and the backfill walk to the clamp.
 - 3.5: the IDLE manager scans every 60 s, caps at `MAIL_IDLE_MAX`, skips fake transports (and remembers them for the process), closes sessions for disconnected accounts, and backs off 1, 2, 4 minutes up to 30 per account after a session ends; a live session's `exists` event enqueues the regular sync job through the same queue, only when no tick is already pending.
 - 3.5: `startWorker` owns the shutdown path: SIGTERM/SIGINT clear the idle timer, abort and close every IDLE session, then stop pg-boss gracefully.
 - 3.5: the poll cadence comes from `env.MAIL_SYNC_CADENCE_SECONDS` and `jitterFor` uses `min(SYNC_JITTER_MODULO_SECONDS, cadence)`, so the default 90 s keeps the existing test numbers.

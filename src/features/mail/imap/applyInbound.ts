@@ -48,13 +48,13 @@ async function parseSource(
   return ok(await parseTooLarge(headers.value, source.size, { ownAddress: account.emailAddress }));
 }
 
-async function messageExists(
+async function existingThreadId(
   db: Db,
   accountId: string,
   providerMessageId: string,
-): Promise<boolean> {
+): Promise<string | null> {
   const rows = await db
-    .select({ id: emailMessages.id })
+    .select({ threadId: emailMessages.threadId })
     .from(emailMessages)
     .where(
       and(
@@ -63,7 +63,7 @@ async function messageExists(
       ),
     )
     .limit(1);
-  return rows.length > 0;
+  return rows[0]?.threadId ?? null;
 }
 
 async function applyOne(
@@ -75,7 +75,8 @@ async function applyOne(
   if (parsed.value === null) return ok({ applied: false, threadId: undefined });
   const message = parsed.value;
 
-  if (await messageExists(args.db, args.account.id, message.providerMessageId)) {
+  const knownThreadId = await existingThreadId(args.db, args.account.id, message.providerMessageId);
+  if (knownThreadId !== null) {
     await upsertLocation(args.db, {
       accountId: args.account.id,
       folder: args.folder,
@@ -83,7 +84,9 @@ async function applyOne(
       uid: source.uid,
       providerMessageId: message.providerMessageId,
     });
-    return ok({ applied: false, threadId: undefined });
+    // Report the thread so a new location (same message seen in another folder) still gets its
+    // whole-thread trash state re-evaluated.
+    return ok({ applied: false, threadId: knownThreadId });
   }
 
   const stored = await args.db.transaction(async (tx) => {
