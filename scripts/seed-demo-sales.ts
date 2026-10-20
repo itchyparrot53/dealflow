@@ -116,19 +116,11 @@ async function ensureCurrencyDeal(
   return dealId;
 }
 
-export async function seedSales(
-  db: Db,
-  args: SalesArgs,
-): Promise<{ products: number; lines: number; overdue: number; undated: number }> {
-  const base = await baseCurrency(db);
+async function seedCatalog(db: Db, ownerId: string, base: string): Promise<Map<string, string>> {
   const productIds = new Map<string, string>();
   for (const product of PRODUCTS) {
-    productIds.set(product.code, await ensureProduct(db, product, args.ownerId));
+    productIds.set(product.code, await ensureProduct(db, product, ownerId));
   }
-
-  // Manual rates against the configured base. The demo assumes a USD base; if the
-  // install already uses another base, a rate for that code is skipped (the base
-  // always has rate 1 and the API refuses storing one).
   for (const [code, rate] of [
     ["EUR", "1.08"],
     ["GBP", "1.27"],
@@ -138,33 +130,40 @@ export async function seedSales(
       `INSERT INTO currency_rates (code, rate_to_base, updated_by)
        VALUES ($1, $2, $3)
        ON CONFLICT (code) DO UPDATE SET rate_to_base = EXCLUDED.rate_to_base, updated_at = now()`,
-      [code, rate, args.ownerId],
+      [code, rate, ownerId],
     );
   }
+  return productIds;
+}
 
-  for (let index = 0; index < args.stageIds.length; index += 1) {
+async function seedStageProbabilities(db: Db, stageIds: string[]): Promise<void> {
+  for (let index = 0; index < stageIds.length; index += 1) {
     const probability = STAGE_PROBABILITIES[index] ?? 90;
     await db.q(
       `INSERT INTO stage_probabilities (stage_id, probability)
        VALUES ($1, $2)
        ON CONFLICT (stage_id) DO UPDATE SET probability = EXCLUDED.probability`,
-      [args.stageIds[index], probability],
+      [stageIds[index], probability],
     );
   }
+}
 
-  // Five open demo deals get one line each, alternating quantity and discount.
+async function seedDemoLines(
+  db: Db,
+  args: SalesArgs,
+  productIds: Map<string, string>,
+): Promise<number> {
+  let lineCount = 0;
   const open = await db.q<{ id: string }>(
     `SELECT id FROM deals
      WHERE id = ANY($1::uuid[]) AND status = 'open' AND deleted_at IS NULL
      ORDER BY title LIMIT 5`,
     [args.dealIds],
   );
-  let lineCount = 0;
   for (let index = 0; index < open.length; index += 1) {
     const deal = open[index];
-    if (deal === undefined) continue;
     const product = PRODUCTS[index % 3];
-    if (product === undefined) continue;
+    if (deal === undefined || product === undefined) continue;
     const productId = productIds.get(product.code);
     if (productId === undefined) continue;
     await addLine(
@@ -179,7 +178,6 @@ export async function seedSales(
     lineCount += 1;
   }
 
-  // One EUR and one GBP open deal with lines, plus a JPY deal with no rate.
   const eurDeal = await ensureCurrencyDeal(db, args, "Demo EUR expansion", "EUR", null);
   const euroProduct = productIds.get("EUROW");
   if (euroProduct !== undefined) {
@@ -194,12 +192,14 @@ export async function seedSales(
   }
   const jpyDeal = await ensureCurrencyDeal(db, args, "Demo JPY renewal", "JPY", "500000.00");
   await db.q(`DELETE FROM deal_products WHERE deal_id = $1`, [jpyDeal]);
+  return lineCount;
+}
 
-  // Two overdue, three undated, the rest spread over the next six months.
+async function spreadCloseDates(db: Db, pipelineId: string): Promise<void> {
   const ranked = await db.q<{ id: string; rn: string }>(
     `SELECT id, row_number() OVER (ORDER BY title) AS rn
      FROM deals WHERE pipeline_id = $1 AND status = 'open' AND deleted_at IS NULL`,
-    [args.pipelineId],
+    [pipelineId],
   );
   for (const row of ranked) {
     const rank = Number(row.rn);
@@ -219,6 +219,16 @@ export async function seedSales(
       );
     }
   }
+}
 
-  return { products: PRODUCTS.length, lines: lineCount, overdue: 2, undated: 3 };
+export async function seedSales(
+  db: Db,
+  args: SalesArgs,
+): Promise<{ products: number; lines: number; overdue: number; undated: number }> {
+  const base = await baseCurrency(db);
+  const productIds = await seedCatalog(db, args.ownerId, base);
+  await seedStageProbabilities(db, args.stageIds);
+  const lines = await seedDemoLines(db, args, productIds);
+  await spreadCloseDates(db, args.pipelineId);
+  return { products: PRODUCTS.length, lines, overdue: 2, undated: 3 };
 }
