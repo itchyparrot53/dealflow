@@ -19,6 +19,7 @@ import { useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { BOARD_QUERY_KEY } from "@/features/deals/useDealMove";
+import { setStageProbabilityAction } from "@/features/products/actions";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyStageOps } from "./applyStageOps";
 import { renamePipelineAction, reorderStagesAction } from "./pipelineEditActions";
@@ -40,6 +41,8 @@ interface InitialStage {
   rottingDays: number | null;
   dealCount: number;
   closedDealCount: number;
+  // Part 3: the stage's win probability, 100 when no row exists.
+  probability?: number;
 }
 
 interface EditPipelineClientProps {
@@ -62,6 +65,7 @@ export function EditPipelineClient({
     stages.map((s) => [s.id, { name: s.name, rottingDays: s.rottingDays }]),
   );
 
+  const [stageProbabilityError, setStageProbabilityError] = useState<string | null>(null);
   const [name, setName] = useState(pipelineName);
   const [rows, setRows] = useState<EditorRow[]>(
     stages.map((s) => ({
@@ -71,6 +75,7 @@ export function EditPipelineClient({
       rottingDays: s.rottingDays,
       dealCount: s.dealCount,
       closedDealCount: s.closedDealCount,
+      probability: s.probability ?? 100,
     })),
   );
   const [pendingReorder, setPendingReorder] = useState(false);
@@ -85,6 +90,25 @@ export function EditPipelineClient({
 
   function patchRow(idx: number, patch: Partial<StageRow>): void {
     setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
+  }
+
+  // Stage probability saves immediately rather than through the page's diff: it lives in
+  // its own table and has no ordering or deletion semantics to batch.
+  async function saveProbability(stageId: string | null, value: number): Promise<void> {
+    if (stageId === null) return;
+    setStageProbabilityError(null);
+    const result = await setStageProbabilityAction(
+      { stageId, probability: value },
+      readCsrfToken(),
+    );
+    if (!result.ok) {
+      setStageProbabilityError("Could not save the stage probability.");
+      return;
+    }
+    setRows((prev) =>
+      prev.map((row) => (row.id === stageId ? { ...row, probability: value } : row)),
+    );
+    router.refresh();
   }
 
   function addRow(): void {
@@ -185,7 +209,7 @@ export function EditPipelineClient({
         </div>
       </div>
 
-      {error !== null && (
+      {(error ?? stageProbabilityError) !== null && (
         <p
           role="alert"
           className="mb-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 text-pretty"
@@ -214,6 +238,8 @@ export function EditPipelineClient({
                 canDelete={rows.length > 1}
                 onChange={(patch) => patchRow(idx, patch)}
                 onDelete={() => deletion.remove(idx)}
+                probability={row.probability ?? 100}
+                onProbabilityChange={(value) => void saveProbability(row.id, value)}
               />
             ))}
           </SortableContext>

@@ -13,6 +13,8 @@ interface SortableStageCardProps {
   canDelete: boolean;
   onChange: (patch: Partial<StageRow>) => void;
   onDelete: () => void;
+  probability: number;
+  onProbabilityChange: (value: number) => void;
 }
 
 export function SortableStageCard({
@@ -22,6 +24,8 @@ export function SortableStageCard({
   canDelete,
   onChange,
   onDelete,
+  probability,
+  onProbabilityChange,
 }: SortableStageCardProps): React.ReactNode {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: sortId,
@@ -35,6 +39,8 @@ export function SortableStageCard({
         canDelete={canDelete}
         onChange={onChange}
         onDelete={onDelete}
+        probability={probability}
+        onProbabilityChange={onProbabilityChange}
         dragHandle={
           <button
             type="button"

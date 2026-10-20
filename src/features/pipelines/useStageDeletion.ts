@@ -13,7 +13,13 @@ import {
   savedStagesExcept,
 } from "./stageRemoval";
 
-export type EditorRow = StageRow & { key: string; dealCount: number; closedDealCount: number };
+export type EditorRow = StageRow & {
+  key: string;
+  dealCount: number;
+  closedDealCount: number;
+  // Part 3 stage probability; undefined until the server supplies it (or for a new row).
+  probability?: number;
+};
 
 interface RemovedRow {
   row: EditorRow;

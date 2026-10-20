@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-20 20:57
+Current: 2.5 · Last updated: 2026-10-20 20:58
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -21,7 +21,7 @@ Current: 2.4 · Last updated: 2026-10-20 20:57
 - [x] 2.1 Settings → Currencies
 - [x] 2.2 Settings → Products
 - [x] 2.3 Deal Products section and terms fields
-- [ ] 2.4 Stage probability in the stage editor
+- [x] 2.4 Stage probability in the stage editor
 - [ ] 2.5 Converted and weighted totals on the board and list
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Forecast service (test-first)
@@ -87,6 +87,9 @@ Current: 2.4 · Last updated: 2026-10-20 20:57
 - 2.3: the Summary value row shows "Calculated from products" while lines exist and an "≈ base" amount when the deal currency differs; the displayed value uses the deal currency.
 - 2.3: line cells commit on blur or Enter, restore the previous text when the server refuses the write, and every mutation invalidates the lines and terms reads plus refreshes the RSC tree so the header value follows.
 - 2.3: the terms currency select is disabled with a Tooltip while lines exist, the probability input uses the stage value as its placeholder, and both save through `setDealTermsAction`.
+
+- 2.4: a stage probability saves immediately through `setStageProbabilityAction` on blur instead of joining the page's stage diff, because it lives in its own table with no ordering or deletion semantics; the edit page preloads the rows and defaults a missing one to 100.
+- 2.4: a newly added, not-yet-saved stage has no id, so its probability input is disabled until the page Save creates the stage (the value is then 100 until edited).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

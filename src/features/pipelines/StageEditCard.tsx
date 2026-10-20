@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { DEFAULT_ROTTING_DAYS } from "@/constants/pipelineDefaults";
@@ -13,7 +13,54 @@ interface StageEditCardProps {
   canDelete: boolean;
   onChange: (patch: Partial<StageRow>) => void;
   onDelete: () => void;
+  probability: number;
+  onProbabilityChange: (value: number) => void;
   dragHandle?: React.ReactNode;
+}
+
+// Probability saves on its own (setStageProbability), unlike the name/rotting fields
+// which wait for the page's Save and its diff. A new stage has no id until that Save,
+// so its input stays disabled.
+function ProbabilityField({
+  index,
+  probability,
+  disabled,
+  onCommit,
+}: {
+  index: number;
+  probability: number;
+  disabled: boolean;
+  onCommit: (value: number) => void;
+}): React.ReactNode {
+  const [draft, setDraft] = useState(String(probability));
+  const label = `Stage ${index + 1} probability`;
+  return (
+    <div className="text-sm">
+      <label htmlFor={`stage-probability-${index}`} className="mb-1 block font-medium">
+        Probability %
+      </label>
+      <Input
+        id={`stage-probability-${index}`}
+        data-testid="stage-probability-input"
+        aria-label={label}
+        type="number"
+        min={0}
+        max={100}
+        step={1}
+        value={draft}
+        disabled={disabled}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => {
+          const next = Number.parseInt(draft, 10);
+          if (Number.isNaN(next) || next < 0 || next > 100) {
+            setDraft(String(probability));
+            return;
+          }
+          if (next !== probability) onCommit(next);
+        }}
+      />
+    </div>
+  );
 }
 
 // One stage column in the Edit Pipeline page (each stage is a card with a name and an optional
@@ -25,6 +72,8 @@ export function StageEditCard({
   canDelete,
   onChange,
   onDelete,
+  probability,
+  onProbabilityChange,
   dragHandle,
 }: StageEditCardProps): React.ReactNode {
   const rottingEnabled = row.rottingDays !== null;
@@ -61,6 +110,13 @@ export function StageEditCard({
           {dealCountLabel(row.dealCount, row.closedDealCount)}
         </p>
       </div>
+
+      <ProbabilityField
+        index={index}
+        probability={probability}
+        disabled={row.id === null}
+        onCommit={onProbabilityChange}
+      />
 
       <div className="text-sm">
         <div className="flex items-center gap-2">
