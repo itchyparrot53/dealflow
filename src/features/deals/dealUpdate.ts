@@ -2,8 +2,11 @@
 // Split from dealActions.ts to keep both files under 200 lines.
 import { and, eq, sql } from "drizzle-orm";
 import { BOARD_EVENT, dealChannel } from "@/constants/boardChannels";
+import { CHANGE_FIELD_VALUE } from "@/constants/changeLogFields";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { deals } from "@/db/schema/deals";
+import { dealProducts } from "@/db/schema/sales";
+import { recordChange } from "@/features/collaboration/changeLog";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
@@ -131,6 +134,25 @@ export async function updateDeal(
   if (editable.ok === false) return editable;
   const before = editable.value.deal;
 
+  // Part 3: product lines own the value. A manual value edit is refused while any
+  // line exists, so the header cannot disagree with the line totals (E_PRODUCT_004).
+  if (input.value !== undefined) {
+    const [line] = await db
+      .select({ id: dealProducts.id })
+      .from(dealProducts)
+      .where(eq(dealProducts.dealId, input.dealId))
+      .limit(1);
+    if (line !== undefined) {
+      return err(
+        new AppError(
+          ERROR_IDS.PRODUCT_VALUE_CALCULATED,
+          "Deal value is calculated from product lines",
+          { dealId: input.dealId },
+        ),
+      );
+    }
+  }
+
   const patch = buildPatch(input, new Date());
   // Partial custom-field edit: validate the supplied keys/values against the active deal defs
   // (the input schema is z.unknown(), so this is the only gate: reject unknown/archived keys and
@@ -202,4 +224,55 @@ export async function updateDeal(
 
     return ok(row);
   });
+}
+
+// Part 3: the deal line sync writes a computed decimal string through the same
+// change-log and board-event path as a manual value edit. It takes a string (never a
+// JS number) and runs on the caller's transaction, so the line write and the value
+// write commit together. It is a no-op when the value did not change.
+export async function recordDealValueChange(
+  tx: DbOrTx,
+  args: {
+    dealId: string;
+    actorId: string;
+    before: typeof deals.$inferSelect;
+    value: string | null;
+  },
+  signal: AbortSignal,
+): Promise<typeof deals.$inferSelect> {
+  if (args.before.value === args.value) return args.before;
+  const [row] = await tx
+    .update(deals)
+    .set({ value: args.value, updatedAt: new Date() })
+    .where(eq(deals.id, args.dealId))
+    .returning();
+  if (row === undefined) {
+    throw new AppError(
+      ERROR_IDS.DB_INVARIANT,
+      "recordDealValueChange: UPDATE RETURNING produced no row",
+    );
+  }
+  await recordChange(
+    tx,
+    {
+      entityType: "deal",
+      entityId: args.dealId,
+      field: CHANGE_FIELD_VALUE,
+      oldValue: args.before.value,
+      newValue: row.value,
+      actorId: args.actorId,
+    },
+    signal,
+  );
+  await publishBoardEvent(
+    tx,
+    {
+      channel: dealChannel(args.dealId),
+      type: BOARD_EVENT.dealUpdated,
+      actorId: args.actorId,
+      data: { dealId: args.dealId },
+    },
+    signal,
+  );
+  return row;
 }

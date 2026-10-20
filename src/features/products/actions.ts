@@ -8,6 +8,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { err, ok, type Result } from "@/types/result";
+import { addDealLine, type DealLine, removeDealLine, updateDealLine } from "./dealProducts";
 import {
   createProduct,
   deleteProduct,
@@ -61,4 +62,33 @@ export async function deleteProductAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await deleteProduct(db, g.value, { id }, SIG()));
+}
+
+// Deal line mutations return the new net value beside the line, so the client can
+// update the deal header without a second read.
+export async function addDealLineAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ line: DealLine; value: string | null }>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await addDealLine(db, g.value, input, SIG()));
+}
+
+export async function updateDealLineAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ line: DealLine; value: string | null }>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await updateDealLine(db, g.value, input, SIG()));
+}
+
+export async function removeDealLineAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ value: string | null }>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await removeDealLine(db, g.value, input, SIG()));
 }

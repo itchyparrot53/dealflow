@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-20 20:34
+Current: 1.4 · Last updated: 2026-10-20 20:35
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -14,7 +14,7 @@ Current: 1.3 · Last updated: 2026-10-20 20:34
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Rates, base currency and permissions
 - [x] 1.2 Product catalog service
-- [ ] 1.3 Deal lines and the value sync (test-first)
+- [x] 1.3 Deal lines and the value sync (test-first)
 - [ ] 1.4 Deal terms and stage probabilities
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Settings → Currencies
@@ -59,6 +59,13 @@ Current: 1.3 · Last updated: 2026-10-20 20:34
 - 1.2: product prices and tax stay decimal strings end to end (`moneyString`/`percentString` into numeric columns); no product code converts them to a JS number.
 - 1.2: the `ilike` search escapes `%`, `_` and `\` with a backslash so a search term cannot widen the pattern, and archived products sort after active ones.
 - 1.2: `deleteProduct` checks `deal_products` first and still maps a foreign-key violation to `E_PRODUCT_002`, because a line can be added between the check and the delete.
+
+- 1.3: reused `loadEditableDeal` for the deal-edit gate and added `recordDealValueChange` beside `updateDeal` in `dealUpdate.ts`, because the inline-edit input accepts a JS number while line totals are decimal strings; the new writer takes the string and writes the same `CHANGE_FIELD_VALUE` row and `dealUpdated` board event, so no money value becomes a float. `updateDeal` now refuses a manual value edit while lines exist with `E_PRODUCT_004`.
+- 1.3: every line mutation locks the deal row (`FOR UPDATE`) before reading the lines, so two concurrent line edits cannot compute totals from different snapshots.
+- 1.3: adding or editing a line recomputes net from all lines with per-line rounding; removing the last line skips the sync so the value keeps its last total, exactly as 6.7 specifies.
+- 1.3: a product priced in another currency converts with `convertBetween` at add time using `loadRateMap`; if either side has no rate the add fails with `E_CURRENCY_001` before any insert.
+- 1.3: archived products cannot be added (the lookup filters `active`), and the line read gates the parent deal with `canSee` plus the shared `toVisibleDeal`, not a new visibility predicate.
+- 1.3: the test reads change-log rows through `listChangeLog` rather than a raw jsonb select, because raw selects double-decode a stored string like "2160.00" into the number 2160.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
