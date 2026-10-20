@@ -15,7 +15,7 @@ export interface AttemptRow {
 }
 
 export type SendOutcome = {
-  status: "sent" | "failed" | "needs_review";
+  status: "sent" | "failed" | "needs_review" | "deferred";
   providerMessageId?: string;
   // Present on a direct send; absent on a replay or reconcile hit, where the caller can ask the
   // provider to describe the message by id.

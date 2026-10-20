@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { RECONCILE_WINDOW_MS } from "@/constants/email";
-import { AppError } from "@/constants/errorIds";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import type { MailProvider } from "@/features/mail/provider/types";
@@ -9,6 +9,7 @@ import { buildMime, deriveMessageId, type MimeAttachment } from "./mime";
 import { claim, loadAttempt, loadSendInputs, type SendPayload, stamp } from "./outboxClaim";
 import { markSent, reconcile, type SendOutcome } from "./outboxReconcile";
 import type { ReplyThreadHeaders } from "./replyHeaders";
+import { enqueueScheduledSendJob } from "./sendScheduling";
 
 // Resolve the RFC 5322 threading headers for a reply. The parent's Message-ID lives only in
 // Gmail (we never stored the header), so it costs one metadata read per reply. A failed read
@@ -189,7 +190,18 @@ export async function processSendAttempt(
   });
   args.signal.throwIfAborted();
 
-  if (!sent.ok) return recordSendFailure(db, existing.id, sent.error, args.signal);
+  if (!sent.ok) {
+    return recordSendFailure(
+      db,
+      {
+        attemptId: existing.id,
+        accountId: args.accountId,
+        idempotencyKey: args.idempotencyKey,
+      },
+      sent.error,
+      args.signal,
+    );
+  }
 
   await markSent(db, existing.id, sent.value.providerMessageId, args.signal);
   return ok({
@@ -218,12 +230,36 @@ async function fetchAttachmentBytes(
 // `sent` means the wire copy went out but the provider could not describe it: mark it sent and
 // let the CRM copy step fail instead. A definite rejection is retryable; anything else may have
 // been accepted, so its send_started_at stays and the next attempt reconciles by Message-ID.
+interface FailureRef {
+  attemptId: string;
+  accountId: string;
+  idempotencyKey: string;
+}
+
 async function recordSendFailure(
   db: Db,
-  attemptId: string,
+  ref: FailureRef,
   error: AppError,
   signal: AbortSignal,
 ): Promise<Result<SendOutcome, AppError>> {
+  const attemptId = ref.attemptId;
+  // Over the daily recipient budget: release the claim, reschedule the attempt for when the
+  // oldest counted send leaves the window, and report deferred (never failed, never dropped).
+  if (error.id === ERROR_IDS.MAIL_SEND_DEFERRED) {
+    const retryAt =
+      typeof error.context?.retryAt === "string"
+        ? new Date(error.context.retryAt)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await db.execute(sql`
+      UPDATE email_send_attempts
+      SET status='pending', scheduled_at=${retryAt}, error_id=${error.id},
+        claim_token=NULL, claimed_at=NULL, send_started_at=NULL
+      WHERE id=${attemptId}
+    `);
+    await enqueueScheduledSendJob(ref.accountId, ref.idempotencyKey, retryAt);
+    return ok({ status: "deferred" });
+  }
+
   const delivered = error.context?.sent === true ? error.context.providerMessageId : undefined;
   if (typeof delivered === "string" && delivered !== "") {
     await markSent(db, attemptId, delivered, signal);

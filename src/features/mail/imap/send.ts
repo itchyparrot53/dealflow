@@ -11,6 +11,7 @@ import { stripBccHeader } from "../parse/stripBcc";
 import type { SentMessage } from "../provider/types";
 import type { ImapSession, MailTransportFactory } from "../transport/types";
 import { appendToSent, recordAppendAttempt } from "./appendSent";
+import { checkDailyQuota } from "./throttle";
 
 // The folder the mailbox uses for sent mail. Servers normally flag it, but a fallback by name
 // covers the ones that do not.
@@ -64,6 +65,7 @@ export interface SendImapArgs {
   reply: { inReplyTo?: string; references?: string };
   attemptId: string;
   signal: AbortSignal;
+  limits?: { dailyRecipients?: number; maxRecipients?: number };
 }
 
 // SMTP send, then the Sent copy. Bcc never reaches the wire copy; the APPEND carries the full
@@ -77,6 +79,15 @@ export async function sendImapMessage(args: SendImapArgs): Promise<Result<SentMe
       }),
     );
   }
+
+  const quota = await checkDailyQuota(
+    args.db,
+    args.accountId,
+    args.envelope.to.length,
+    new Date(),
+    args.limits?.dailyRecipients,
+  );
+  if (!quota.ok) return quota;
 
   const wire = Buffer.from(stripBccHeader(args.raw));
   const delivered = await args.transports

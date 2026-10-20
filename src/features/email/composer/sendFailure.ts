@@ -16,6 +16,9 @@ const MESSAGES: Record<string, string> = {
   [ERROR_IDS.GMAIL_SEND_INPUT_INVALID]:
     "Something in this message was rejected before sending. Check the recipients and subject.",
   [ERROR_IDS.GMAIL_API_EXHAUSTED]: STRINGS.inbox.errorSend,
+  // The number is server-configurable, so the copy stays client-safe and does not quote it.
+  [ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS]:
+    "This email has too many recipients. Split it into smaller sends.",
 };
 
 export function sendFailureMessage(errorId: string): string {

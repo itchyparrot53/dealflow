@@ -85,6 +85,7 @@ export function createImapProvider(
         reply,
         attemptId: args.attemptId,
         signal: args.signal,
+        ...(options.limits !== undefined ? { limits: options.limits } : {}),
       });
     },
 

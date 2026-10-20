@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { env } from "@/config/env";
 import { EMAIL_VISIBILITY } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { MAIL_SEND_TIMEOUT_MS } from "@/constants/mail";
@@ -78,10 +79,21 @@ export interface SendEmailArgs {
 // INTERACTIVE, user-facing send: ownership check, durable outbox/idempotency, tracking
 // tokens, and the stored CRM copy. (The lower-level system-send primitive is a separate
 // export added in Task 15.) the provider is injected so tests can supply the fake.
+// Reject an oversized recipient list before any attempt row exists, so the composer shows the
+// limit error instead of queueing a message that the provider would refuse.
+function recipientCapError(input: SendEmailInput): AppError | null {
+  const count = input.to.length + (input.cc?.length ?? 0) + (input.bcc?.length ?? 0);
+  return count > env.MAIL_SEND_MAX_RECIPIENTS
+    ? new AppError(ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS, "too many recipients", { count })
+    : null;
+}
+
 export async function sendEmail(
   db: Db,
   args: SendEmailArgs,
 ): Promise<Result<{ status: string; messageId?: string }, AppError>> {
+  const cap = recipientCapError(args.input);
+  if (cap !== null) return err(cap);
   // An IMAP send is SMTP plus an APPEND, so it gets the 30 s budget; Gmail keeps its 8 s.
   const signal =
     args.signal ?? AbortSignal.timeout(args.provider.kind === "imap" ? MAIL_SEND_TIMEOUT_MS : 8000);
