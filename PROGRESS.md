@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-10-20 08:35
+Current: 2.6 · Last updated: 2026-10-20 08:50
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -26,7 +26,7 @@ Current: 2.5 · Last updated: 2026-10-20 08:35
 - [x] 2.2 Transport interfaces and real transports
 - [x] 2.3 Filesystem fake transport
 - [x] 2.4 Credentials and the connect service
-- [ ] 2.5 Email sync settings: connect form and Gmail option
+- [x] 2.5 Email sync settings: connect form and Gmail option
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Folders, cursors and locations
 - [ ] 3.2 Inbound apply and threading
@@ -58,6 +58,9 @@ Current: 2.5 · Last updated: 2026-10-20 08:35
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 2.5: `ActorMailboxStatus` carries `provider` ("imap" when a credentials row exists) and `imapHost` from a LEFT JOIN; the settings page passes `googleEnabled = authMethods().google` and the provider, and the client shows the connect form for a missing, disconnected or failing mailbox plus "Update password" for a connected IMAP one.
+- 2.5: the form pre-selects "Other IMAP/SMTP server" when the stored host is not the Purelymail preset, prefills the address and host for an update, and maps `E_MAIL_003/004/005/006` to the copy in 6.11; the Gmail alternative lives inside the form so it only appears when Google is configured.
+- 2.5: the old tests targeted `data-status` on the status dot; the hook now lives on `mailbox-status` as 6.13 requires, so the dot assertion targets `data-health` and keeps its colour intent.
 - 2.4: the Purelymail preset stays defined in `src/constants/mail.ts` (as Task 1.2 placed it) and `connect/presets.ts` is the typed lookup, so the UI and the service cannot drift.
 - 2.4: `connectImapMailbox` tests IMAP and SMTP before any write, resets cursors/locations inside the transaction, and enqueues the first sync after commit; an enqueue failure is logged rather than undoing a stored connection, because the worker boot pass picks the mailbox up anyway.
 - 2.4: a unique violation on `email_address` maps to `E_MAIL_006` (another user owns that address); `exchangeAndBind` and `softDisconnectMailbox` now delete the credentials row, which is what switches an account back to the Gmail provider.

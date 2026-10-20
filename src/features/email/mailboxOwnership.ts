@@ -31,6 +31,10 @@ export interface ActorMailboxStatus {
   status: MailboxStatus;
   lastSyncAt: Date | null;
   lastErrorId: string | null;
+  // "imap" when a credentials row exists, otherwise the Gmail adapter. The settings page shows
+  // the server for IMAP and the Gmail label for the OAuth connection.
+  provider: "imap" | "gmail";
+  imapHost: string | null;
 }
 
 // Read the actor's single mailbox (email_accounts.user_id is UNIQUE) with exactly the
@@ -45,8 +49,11 @@ export async function getActorMailboxStatus(
   signal.throwIfAborted();
   const row = (
     await db.execute(sql`
-      SELECT id, email_address, status, last_sync_at, last_error_id
-      FROM email_accounts WHERE user_id=${actorId}
+      SELECT a.id, a.email_address, a.status, a.last_sync_at, a.last_error_id,
+        c.account_id AS credential_account_id, c.imap_host
+      FROM email_accounts a
+      LEFT JOIN mail_account_credentials c ON c.account_id = a.id
+      WHERE a.user_id=${actorId}
     `)
   ).rows[0] as
     | {
@@ -55,6 +62,8 @@ export async function getActorMailboxStatus(
         status: MailboxStatus;
         last_sync_at: string | Date | null;
         last_error_id: string | null;
+        credential_account_id: string | null;
+        imap_host: string | null;
       }
     | undefined;
   if (row === undefined) return null;
@@ -67,6 +76,8 @@ export async function getActorMailboxStatus(
     status: row.status,
     lastSyncAt,
     lastErrorId: row.last_error_id,
+    provider: row.credential_account_id === null ? "gmail" : "imap",
+    imapHost: row.imap_host,
   };
 }
 

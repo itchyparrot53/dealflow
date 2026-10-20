@@ -2,7 +2,7 @@
 // so that shared file stays within its size budget; this page is the only consumer.
 export const EMAIL_SYNC_STRINGS = {
   title: "Email sync",
-  intro: "Connect your Google Workspace mailbox to sync email into Dealflow.",
+  intro: "Connect your mailbox so email syncs into Dealflow and replies arrive in the same thread.",
   statusConnected: "Connected",
   statusDisconnected: "Disconnected",
   statusError: "Needs attention",
@@ -10,6 +10,8 @@ export const EMAIL_SYNC_STRINGS = {
   stalledHint:
     "New mail has not arrived for a while. Reconnect the mailbox if this does not clear on its own.",
   connectedAs: (email: string) => `Connected as ${email}`,
+  providerGmail: "Gmail",
+  providerImap: (host: string) => `IMAP/SMTP (${host})`,
   notConnected: "No mailbox is connected yet.",
   lastSynced: (when: string) => `Last synced ${when}`,
   neverSynced: "Not synced yet",
@@ -21,4 +23,30 @@ export const EMAIL_SYNC_STRINGS = {
   disconnecting: "Disconnecting...",
   actionError: "Could not complete that action. Please try again.",
   requiresAuth: "Please sign in to view this page.",
+  // Connect form (IMAP/SMTP).
+  connectTitle: "Connect your mailbox",
+  emailLabel: "Email address",
+  passwordLabel: "App password",
+  passwordHelp: "Use an app password from your mail provider, not your login password.",
+  providerLabel: "Provider",
+  providerPurelymail: "Purelymail",
+  providerCustom: "Other IMAP/SMTP server",
+  imapHostLabel: "IMAP server",
+  imapPortLabel: "IMAP port",
+  smtpHostLabel: "SMTP server",
+  smtpPortLabel: "SMTP port",
+  imapTlsLabel: "Use TLS for IMAP",
+  smtpTlsLabel: "Use TLS for SMTP",
+  usernameLabel: "Username (if different)",
+  testAndConnect: "Test and connect",
+  testingConnection: "Testing connection...",
+  connectGmailInstead: "Connect Gmail instead",
+  updatePassword: "Update password",
+  missingFields: "Enter an email address and an app password.",
+  connectErrors: {
+    E_MAIL_003: "Could not reach the mail server. Check the server names and ports.",
+    E_MAIL_004: "The mail server rejected the email or app password.",
+    E_MAIL_005: "Connected, but the mailbox has no INBOX.",
+    E_MAIL_006: "That address is already connected by another user.",
+  } as Record<string, string>,
 } as const;
