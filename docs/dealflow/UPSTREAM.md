@@ -82,3 +82,27 @@ the email layer need reading before a cherry-pick: Phase 1 replaces `GmailClient
 provider-neutral `MailProvider` in `src/features/mail/provider/`, and Task 1.1 renames the Gmail
 columns to `provider_*` / `sync_cursor`. The Gmail adapter keeps the upstream sync engine
 (`syncMailbox`) unchanged inside `src/features/mail/provider/gmailAdapter.ts`.
+
+### Part 1 Phase 2 to 5 additions and edits
+
+The audit found these absent from the list above; all were Part 1 work, so a future cherry-pick
+that touches them needs a manual read first.
+
+- `src/features/auth/*` (new): `authMethods`, `authTokens`, `bootstrapLocal`, `credentials`,
+  `invites`, `magicLink`, `originCheck`, `password`, `passwordActions`, `passwordLogin`,
+  `sessionCookies`, `sessionsAdmin`; `bootstrap.ts`, `devLogin.ts` and `loginReturn.ts` (changed).
+- `src/app/auth/*` (changed routes): `password`, `magic-link`, `magic/verify`, `invite/accept`,
+  `start`, `dev-login`.
+- `src/app/(auth)/login/*` (changed): `page.tsx`, `LoginPanel.tsx`, `magic/page.tsx`,
+  `invite/page.tsx`.
+- `src/app/(app)/settings/*` (changed): `SettingsNav.tsx`, `profile/page.tsx`,
+  `profile/PasswordCard.tsx`, `users/InviteUserForm.tsx`, `email-sync/strings.ts`.
+- `src/features/mailer/*` (new): the system mailer and its templates.
+- `src/features/mcp/tools/types.ts`, `src/server/trpc/root.ts`, `src/db/schema/index.ts`,
+  `src/constants/errorIds.ts`, `src/constants/authStrings.ts` (changed): Part 1 registry and
+  catalogue additions.
+- `src/features/deal-workspace/DealSidebar.tsx`,
+  `src/features/deal-workspace/history/NoteCard.tsx`,
+  `src/features/deal-workspace/composer/VideoCallField.tsx`,
+  `src/features/deals/CreateFilterModal.tsx`, `src/features/email/composer/Composer.tsx`,
+  `src/features/identity/actions/invite.ts` (changed): AI entry points and Dealflow copy.

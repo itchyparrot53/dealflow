@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 0.5 · Last updated: 2026-10-20 02:46
+Current: 0.6 · Last updated: 2026-10-20 02:50
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -11,7 +11,7 @@ Current: 0.5 · Last updated: 2026-10-20 02:46
 - [x] 0.2 Independent audit of Part 1
 - [x] 0.3 Assistant confirm race and AI timeouts
 - [x] 0.4 Password reset after email-link sign-in and atomic lockout
-- [ ] 0.5 Scripts, release tests and audit leftovers
+- [x] 0.5 Scripts, release tests and audit leftovers
 - [ ] 0.6 Phase 0 QA gate
 - [ ] 1.1 Rename the Gmail columns
 - [ ] 1.2 Mail tables
@@ -54,6 +54,10 @@ Current: 0.5 · Last updated: 2026-10-20 02:46
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- CONTRACT CHANGE: 0.5 keeps Part 1's AMENDMENT A1 on `docker-compose.yml` (no `name: dealflow`): adding it now would rename the compose project and orphan the owner's running `warpdrive-main` volumes, so the dev stack keeps the folder-derived project name while the smoke test keeps its dedicated `dealflow-smoke` project. Audit finding A1.
+- 0.5: scripts follow 6.2 (`test:unit` and `test:integration` bake the UTC/en-US environment, `build` sets `ALLOW_FIRST_LOGIN_ADMIN=false`, `mail:live-check` is added now and its script file arrives in Task 5.2).
+- 0.5: R4 updated `release/router.test.ts` to the new default (`disabled: true`) and moved the cached-release assertions onto `computeStatus(..., false)` so the enabled path is still covered with every original assertion.
+- 0.5: A2 extended `docs/dealflow/UPSTREAM.md`; A3 (226-line AssistantSheet) and A4 (paid-check process note) are ACCEPTED with reasons; R6 stays DEFERRED to Task 1.6; AUDIT-P1.md has no finding left without a status.
 - 0.4: extracted the password change into `src/features/auth/passwordChange.ts`, not `passwordActions.ts`, because a `"use server"` module may export only server actions and the integration test must call the logic directly; the action keeps CSRF, the session and the Zod parse.
 - 0.4: `PasswordCard` takes both `hasPassword` and `requiresCurrent` instead of the single `requiresCurrent` the plan names, so the "you signed in with an email link" note cannot appear for an account that has no password yet; the field is hidden whenever `requiresCurrent` is false, as specified.
 - 0.4: the 15-minute link window is a SQL `now() - interval '15 minutes'` comparison on `session_auth_events.authenticated_at`; migration `0077_dealflow_session_auth` creates the table (next free number after 0076) and is applied to the dev database.
