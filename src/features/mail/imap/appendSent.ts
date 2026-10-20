@@ -30,7 +30,7 @@ export async function recordAppendAttempt(
 
 // Count one failed APPEND attempt, including the ones that never reached the server (no Sent
 // folder, no session, bad credentials), so a row always reaches got_up instead of retrying forever.
-async function bumpTriesById(db: Db, attemptId: string, errorId: string): Promise<void> {
+export async function bumpAppendTries(db: Db, attemptId: string, errorId: string): Promise<void> {
   await db
     .update(mailSentAppends)
     .set({
@@ -67,7 +67,7 @@ export interface AppendArgs {
 export async function appendToSent(args: AppendArgs): Promise<boolean> {
   const folder = await sentFolderPath(args.session, args.signal);
   if (folder === null) {
-    await bumpTriesById(args.db, args.attemptId, ERROR_IDS.MAIL_APPEND_FAILED);
+    await bumpAppendTries(args.db, args.attemptId, ERROR_IDS.MAIL_APPEND_FAILED);
     return false;
   }
   const appended = await args.session.append(
@@ -77,7 +77,7 @@ export async function appendToSent(args: AppendArgs): Promise<boolean> {
     args.signal,
   );
   if (!appended.ok) {
-    await bumpTriesById(args.db, args.attemptId, appended.error.id);
+    await bumpAppendTries(args.db, args.attemptId, appended.error.id);
     return false;
   }
   await setAppendState(args.db, args.attemptId, { status: "done", lastErrorId: null });

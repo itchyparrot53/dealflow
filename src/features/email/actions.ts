@@ -98,7 +98,8 @@ export async function sendEmail(
         provider: provider.value,
         storage: makeStorageClient(),
         input,
-        signal,
+        // No caller signal: sendEmail picks MAIL_SEND_TIMEOUT_MS for IMAP and 8 s for Gmail, so an
+        // SMTP send plus its APPEND is not cut short by this action's short budget.
       }),
     );
   } finally {

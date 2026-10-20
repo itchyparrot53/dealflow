@@ -108,7 +108,7 @@ function ensureMailbox(dir: string, address: string): void {
 // password is rejected so tests and e2e can exercise the authentication error path.
 export function fakeLogin(dir: string, address: string, password: string): Result<void, AppError> {
   if (password.length < 8) {
-    return err(new AppError(ERROR_IDS.MAIL_AUTH_FAILED, "fake: password too short"));
+    return err(new AppError(ERROR_IDS.MAIL_AUTH_FAILED, "fake: app secret too short"));
   }
   ensureMailbox(dir, address);
   const file = join(addressDir(dir, address), "password");
@@ -118,7 +118,7 @@ export function fakeLogin(dir: string, address: string, password: string): Resul
   }
   const stored = readFileSync(file, "utf8");
   if (stored !== password) {
-    return err(new AppError(ERROR_IDS.MAIL_AUTH_FAILED, "fake: wrong password"));
+    return err(new AppError(ERROR_IDS.MAIL_AUTH_FAILED, "fake: wrong app secret"));
   }
   return ok(undefined);
 }

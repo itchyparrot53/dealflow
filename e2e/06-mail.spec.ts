@@ -84,9 +84,14 @@ test.describe("IMAP mailbox", () => {
     await body.click();
     await page.keyboard.type("Thanks, sending details shortly.");
     await page.getByRole("button", { name: "Send", exact: true }).click();
-    const sentReply = page.getByText("Thanks, sending details shortly.").first();
-    await expect(sentReply).toBeVisible({ timeout: 30_000 });
-    await sentReply.scrollIntoViewIfNeeded();
+    // Wait for the reader to hold both messages (the reply is stored and rendered), then make
+    // sure the composer is closed so the shot shows the conversation, not an empty editor. The
+    // body itself renders in an iframe, so the assertion counts cards rather than text.
+    await expect(page.getByTestId("reader-message-card")).toHaveCount(2, { timeout: 30_000 });
+    const closeComposer = page.getByRole("button", { name: "Close", exact: true });
+    if (await closeComposer.isVisible().catch(() => false)) await closeComposer.click();
+    await expect(page.getByRole("button", { name: "Send", exact: true })).toHaveCount(0);
+    await page.getByTestId("reader-message-card").first().scrollIntoViewIfNeeded();
     await shot(page, "p2-thread-reply");
 
     // The reply reached the contact's mailbox with an In-Reply-To header, and our Sent copy holds

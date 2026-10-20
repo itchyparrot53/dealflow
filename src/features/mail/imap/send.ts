@@ -1,16 +1,15 @@
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { MAIL_APPEND_TIMEOUT_MS } from "@/constants/mail";
 import type { Db } from "@/db/client";
-import { mailSentAppends } from "@/db/schema";
 import { err, ok, type Result } from "@/types/result";
 import type { MailCredentials } from "../connect/credentials";
 import { normalizeMessageId } from "../parse/messageId";
 import { stripBccHeader } from "../parse/stripBcc";
 import type { SentMessage } from "../provider/types";
 import type { ImapSession, MailTransportFactory } from "../transport/types";
-import { appendToSent, recordAppendAttempt } from "./appendSent";
+import { appendToSent, bumpAppendTries, recordAppendAttempt } from "./appendSent";
 import { checkDailyQuota } from "./throttle";
 
 // The folder the mailbox uses for sent mail. Servers normally flag it, but a fallback by name
@@ -122,10 +121,8 @@ async function appendSentWithOwnBudget(
   const budget = AbortSignal.timeout(MAIL_APPEND_TIMEOUT_MS);
   const opened = await args.transports.openImap(args.credentials.imap, budget);
   if (!opened.ok) {
-    await args.db
-      .update(mailSentAppends)
-      .set({ lastErrorId: opened.error.id, updatedAt: new Date() })
-      .where(eq(mailSentAppends.attemptId, args.attemptId));
+    // No session means no APPEND happened; count it so the row still reaches gave_up.
+    await bumpAppendTries(args.db, args.attemptId, opened.error.id);
     return;
   }
   try {

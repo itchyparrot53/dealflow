@@ -47,8 +47,8 @@ export async function enqueueSend(
     scheduledAt?: Date | null;
   },
 ): Promise<Result<{ attemptId: string; replay: boolean }, AppError>> {
-  // The Message-ID must carry the sending mailbox's own domain: when Google SSO is off,
-  // GOOGLE_WORKSPACE_DOMAIN is empty and the id would be malformed (`<a.b@>`). R6.
+  // The Message-ID must carry the sending mailbox's own domain: when Google SSO is off, the
+  // workspace-domain setting is empty and the id would be malformed (`<a.b@>`). R6.
   const account = (
     await db.execute(sql`SELECT email_address FROM email_accounts WHERE id=${args.accountId}`)
   ).rows[0] as { email_address: string } | undefined;
@@ -188,7 +188,8 @@ export async function processSendAttempt(
     attemptId: existing.id,
     signal: args.signal,
   });
-  args.signal.throwIfAborted();
+  // No abort check here: once the provider says the message went out, a late abort must not turn
+  // an accepted send into a failure. The APPEND runs under its own budget.
 
   if (!sent.ok) {
     return recordSendFailure(

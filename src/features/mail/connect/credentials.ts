@@ -30,9 +30,13 @@ export async function loadImapCredentials(
   const password = decryptToken(Buffer.from(row.passwordEnc));
   if (!password.ok) {
     return err(
-      new AppError(ERROR_IDS.MAIL_CREDENTIALS_UNREADABLE, "mail password could not be decrypted", {
-        accountId,
-      }),
+      new AppError(
+        ERROR_IDS.MAIL_CREDENTIALS_UNREADABLE,
+        "stored mail credential could not be decrypted",
+        {
+          accountId,
+        },
+      ),
     );
   }
   return ok({
