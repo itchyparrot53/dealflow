@@ -1,10 +1,11 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 0.6 · Last updated: 2026-10-20 02:50
+Current: 1.1 · Last updated: 2026-10-20 02:58
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
+- Phase 1: 508cafc269715bd4cf1e68f676499bd0b01aed5b
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
@@ -12,7 +13,7 @@ Current: 0.6 · Last updated: 2026-10-20 02:50
 - [x] 0.3 Assistant confirm race and AI timeouts
 - [x] 0.4 Password reset after email-link sign-in and atomic lockout
 - [x] 0.5 Scripts, release tests and audit leftovers
-- [ ] 0.6 Phase 0 QA gate
+- [x] 0.6 Phase 0 QA gate
 - [ ] 1.1 Rename the Gmail columns
 - [ ] 1.2 Mail tables
 - [ ] 1.3 MailProvider interface and Gmail adapter
@@ -47,6 +48,7 @@ Current: 0.6 · Last updated: 2026-10-20 02:50
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · ai/auth/release integration 83/83
 - Audit P1: subagent (fresh context) · QA RESULT PASS · 0/0/0
 - Baseline: typecheck ok · lint ok · build ok (a first attempt hit an `ENOTEMPTY` race on `.next`; the retry after the tree settled passed) · unit 4945/4945 · integration 1788/1790 (the 2 `src/features/release/router.test.ts` failures are R4, fixed in Task 0.5)
 
@@ -54,6 +56,7 @@ Current: 0.6 · Last updated: 2026-10-20 02:50
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 0.6: gate fix round 1 fixed a typecheck error introduced in 0.5 (`readPackageVersion()` may be undefined; the enabled-path test now uses `getCurrentVersion()` and dropped an unused seeded user) and formatted the two test files; the phase gate then passed with the same assertions.
 - CONTRACT CHANGE: 0.5 keeps Part 1's AMENDMENT A1 on `docker-compose.yml` (no `name: dealflow`): adding it now would rename the compose project and orphan the owner's running `warpdrive-main` volumes, so the dev stack keeps the folder-derived project name while the smoke test keeps its dedicated `dealflow-smoke` project. Audit finding A1.
 - 0.5: scripts follow 6.2 (`test:unit` and `test:integration` bake the UTC/en-US environment, `build` sets `ALLOW_FIRST_LOGIN_ADMIN=false`, `mail:live-check` is added now and its script file arrives in Task 5.2).
 - 0.5: R4 updated `release/router.test.ts` to the new default (`disabled: true`) and moved the cached-release assertions onto `computeStatus(..., false)` so the enabled path is still covered with every original assertion.
