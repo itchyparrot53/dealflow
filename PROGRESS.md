@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-20 20:51
+Current: 2.3 · Last updated: 2026-10-20 20:52
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -19,7 +19,7 @@ Current: 2.2 · Last updated: 2026-10-20 20:51
 - [x] 1.4 Deal terms and stage probabilities
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Settings → Currencies
-- [ ] 2.2 Settings → Products
+- [x] 2.2 Settings → Products
 - [ ] 2.3 Deal Products section and terms fields
 - [ ] 2.4 Stage probability in the stage editor
 - [ ] 2.5 Converted and weighted totals on the board and list
@@ -77,6 +77,10 @@ Current: 2.2 · Last updated: 2026-10-20 20:51
 - 2.1: the settings page reads `listRates` in the server component and calls `router.refresh()` after each action, matching every other settings page; the `currency.*` tRPC reads remain for the board, list and forecast.
 - 2.1: a base change goes through the shared `ConfirmDialog` (AlertDialog) with the exact warning copy, and the rates table uses the existing `SETTINGS_TABLE_*` tokens because the repo has no shadcn Table wrapper: settings tables are plain semantic tables with those tokens.
 - 2.1: currency labels come from `Intl.DisplayNames(["en"], { type: "currency" })` as "EUR, Euro", and the table trims the database's eight decimals for display only (`1.08000000` reads `1.08`).
+
+- 2.2: the page loads all products once (bounded at 200) and the client filters the search and the archived toggle locally, so toggling needs no round trip; every mutation refreshes the server component.
+- 2.2: `ProductDialog` is remounted on each open (a key from the parent) instead of resetting state in an effect, which the react-hooks lint rule forbids; the form therefore always starts from the selected row.
+- 2.2: users without `products.manage` get the same product table without the New button and the row menu, matching 6.10's read-only requirement.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -24,6 +24,7 @@ import {
   setBaseCurrencyAction,
 } from "@/features/currency/actions";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { currencyLabel, currencyOptions } from "./currencyOptions";
 
 interface RateRow {
   code: string;
@@ -38,11 +39,6 @@ interface Props {
 }
 
 const S = CURRENCY_STRINGS;
-const displayNames = new Intl.DisplayNames(["en"], { type: "currency" });
-
-function currencyLabel(code: string): string {
-  return S.currencyLabel(code, displayNames.of(code) ?? code);
-}
 
 // "1.08000000" -> "1.08", "1.00000000" -> "1". The database keeps eight
 // decimals; the settings table should read like the number the user typed.
@@ -75,7 +71,7 @@ export function CurrenciesSettings({ base, rates, codes }: Props): React.ReactNo
   const [newRate, setNewRate] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const codeOptions = codes.map((code) => ({ value: code, label: currencyLabel(code) }));
+  const codeOptions = currencyOptions(codes);
   const rateOptions = codeOptions.filter((option) => option.value !== base);
 
   function chooseBase(code: string): void {
