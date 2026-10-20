@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-20 08:02
+Current: 2.3 · Last updated: 2026-10-20 08:12
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -23,7 +23,7 @@ Current: 2.2 · Last updated: 2026-10-20 08:02
 - [x] 1.6 Message-ID domain and notification emails via the system mailer
 - [x] 1.7 Phase 1 QA gate
 - [x] 2.1 Parser, Message-IDs, subjects and Bcc stripping
-- [ ] 2.2 Transport interfaces and real transports
+- [x] 2.2 Transport interfaces and real transports
 - [ ] 2.3 Filesystem fake transport
 - [ ] 2.4 Credentials and the connect service
 - [ ] 2.5 Email sync settings: connect form and Gmail option
@@ -58,6 +58,8 @@ Current: 2.2 · Last updated: 2026-10-20 08:02
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 2.2: `fetchSources` fetches metadata first and then the source only for messages within `maxBytes`, one `fetchOne` at a time inside a 25-UID batch (the server rejects overlapping fetches on one selected mailbox); `idle` opens its own connection so the polling session stays usable, and `highestModseq` 0n is mapped to null as the contract requires.
+- 2.2: IMAP failures go through one mapper: `authenticationFailed` or an auth-looking message means `E_MAIL_004`, connection/TLS/timeout text means `E_MAIL_003`, everything else `E_MAIL_008` with the command name; contexts never carry the password. SMTP maps `EAUTH`/535 to `E_MAIL_004`, transport codes to `E_MAIL_003`, and other failures to `E_MAIL_001` (send) or `E_MAIL_003` (verify).
 - 2.1: `providerAttachmentId` indexes mailparser's `attachments` array, not the MIME tree (the first attachment is `idx:0`), which is exactly what the re-parse on download will index into; the test pins that.
 - 2.1: `parseRawMessage` falls back to stripping tags from the HTML part for the snippet when a message has no text part, and `maxBodyChars` caps both bodies; `parseTooLarge` reuses the same mapping from header bytes and replaces the body and attachments.
 - 1.6: `enqueueSend` reads the account's `email_address` and uses the part after `@` (lowercased) as the Message-ID domain, falling back to `dealflow.invalid` only when the address is empty; the environment import left the outbox. The R6 unit test asserts the `umev.co.uk` tail.
