@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { deals, documents, organizations, persons } from "@/db/schema";
+import { deals, documents, notifications, organizations, persons } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
@@ -122,6 +122,16 @@ describe("getPublicDocument", () => {
     const second = await getPublicDocument(h.db, quote.publicId, { ip: IP }, sig());
     expect(second.ok).toBe(true);
     expect((await readRow(quote.id))?.viewedAt?.toISOString()).toBe(viewedAt);
+
+    // Exactly one document_viewed notification, for the creator, on the first view only.
+    const dealId = (await readRow(quote.id))?.dealId ?? "";
+    const rows = await h.db
+      .select()
+      .from(notifications)
+      .where(and(eq(notifications.type, "document_viewed"), eq(notifications.entityId, dealId)));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.userId).toBe(admin.id);
+    expect((rows[0]?.payload as { documentId?: string }).documentId).toBe(quote.id);
   });
 
   it("records viewed_at on an invoice without changing its status", async () => {
@@ -213,6 +223,20 @@ describe("acceptQuote", () => {
     expect(row?.status).toBe("accepted");
     expect(row?.acceptedAt).not.toBeNull();
     expect(row?.acceptedIp).toBe("198.51.100.9");
+
+    // Exactly one document_accepted notification for the document's creator.
+    const rows = await h.db
+      .select()
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.type, "document_accepted"),
+          eq(notifications.entityId, row?.dealId ?? "MISSING"),
+        ),
+      );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.userId).toBe(admin.id);
+    expect((rows[0]?.payload as { documentId?: string }).documentId).toBe(quote.id);
   });
 
   it("refuses a second accept or a decline after accept with E_DOC_003", async () => {

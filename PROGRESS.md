@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-20 23:37
+Current: 2.3 · Last updated: 2026-10-20 23:41
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -20,7 +20,7 @@ Current: 2.2 · Last updated: 2026-10-20 23:37
 - [x] 1.5 Sending through the mailbox
 - [x] 1.6 Phase 1 QA gate
 - [x] 2.1 Public reads, accept and decline (test-first)
-- [ ] 2.2 Owner notifications
+- [x] 2.2 Owner notifications
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Settings → Documents
 - [ ] 3.2 Deal section, document page, view and public actions
@@ -89,6 +89,13 @@ Current: 2.2 · Last updated: 2026-10-20 23:37
 - 2.1: public visibility hides drafts, void documents and quotes of soft-deleted deals as `E_DOC_001`, while an issued invoice of a soft-deleted deal stays visible, exactly as 6.7 contrasts them.
 - 2.1: the public view exposes `publicId` only, never the internal id, `dealId`, `createdBy`, customer email or `accepted_ip`; the test asserts the serialized view has no customer email.
 - 2.1: the client IP is the first `x-forwarded-for` entry, then `x-real-ip`, then "unknown", because the Next runtime exposes no socket address; POST responses map 404/409/410/429, a failed origin check is 403 `E_AUTH_ORIGIN_REJECTED`, and an oversized (16 KB) or malformed body is 400 `E_DOC_INPUT_INVALID`.
+- 2.2: `notifications.type` is a Postgres enum, so the three kinds needed migration `0082_dealflow_document_notifications` (`ALTER TYPE ... ADD VALUE` three times); it applied to the dev database and the integration template picks it up.
+- 2.2: document notifications use `entityType: "deal"` because `createNotification`'s visibility gate only knows deal/person/organization/activity/email_message, and the deal is the correct visibility parent; the document id rides in the payload and new `payloadHref` in `entityHref.ts` resolves `/documents/{id}` for the feed item and the notification email.
+- 2.2: the recipient is `documents.created_by`, falling back to the deal owner; `actor_id` is null because a customer viewing or accepting has no session.
+- 2.2: notification delivery is best-effort: a failed Result or a thrown DB error is logged and never fails the public view/accept/decline (an AbortError still propagates as a cancellation).
+- 2.2: email defaults are off for `document_viewed` (per-event noise) and on for `document_accepted`/`document_declined` (outcomes), matching the default policy comment in `notificationDefaults.ts`.
+- 2.2: changed tests: `src/features/notifications/preferences.test.ts` gained the three expected defaults, and `src/features/notifications/schema.test.ts` now expects 13 enum values including the document kinds; no assertion was weakened.
+- 2.2: the notification email renderer gained a grouped document case backed by one `documentEmailCopy` helper, because adding three inline cases pushed the existing switch over the cognitive-complexity cap.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

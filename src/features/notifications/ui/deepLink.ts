@@ -1,5 +1,5 @@
 import type { NotificationType } from "@/constants/notificationTypes";
-import { entityHref } from "@/features/notifications/entityHref";
+import { entityHref, payloadHref } from "@/features/notifications/entityHref";
 import type { NotificationFeedItem } from "@/types/notification";
 
 // Deep-link resolution for the notifications feed. Every route here resolves through entityHref,
@@ -17,6 +17,9 @@ const FALLBACK: Record<NotificationType, string> = {
   comment_reply: "/",
   // Opens the deal, not the inbox thread: the point of this one is the deal's timeline.
   deal_email_received: "/",
+  document_viewed: "/documents",
+  document_accepted: "/documents",
+  document_declined: "/documents",
 };
 
 // Email notifications point at a thread, which the row carries in its payload rather than as an
@@ -30,5 +33,9 @@ export function notificationHref(item: NotificationFeedItem): string {
   if (item.type === "email_open" || item.type === "email_click") {
     return threadHref(item) ?? FALLBACK[item.type];
   }
-  return entityHref(item.entityType, item.entityId) ?? FALLBACK[item.type];
+  return (
+    payloadHref(item.type, item.payload) ??
+    entityHref(item.entityType, item.entityId) ??
+    FALLBACK[item.type]
+  );
 }

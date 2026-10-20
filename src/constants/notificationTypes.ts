@@ -11,6 +11,10 @@ export const NOTIFICATION_TYPES = [
   "deal_lost",
   "comment_reply",
   "deal_email_received",
+  // Part 4: documents. The recipient is the document creator (or the deal owner).
+  "document_viewed",
+  "document_accepted",
+  "document_declined",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

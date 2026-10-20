@@ -19,6 +19,9 @@ const EXPECTED_EMAIL_DEFAULT: Record<NotificationType, boolean> = {
   email_open: false,
   email_click: false,
   deal_email_received: false,
+  document_viewed: false,
+  document_accepted: true,
+  document_declined: true,
 };
 
 describe("notification preferences", () => {

@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { deals, documentPayments, documents, users } from "@/db/schema";
 import { formatCents, parseCents } from "@/features/currency/money";
+import { createNotification } from "@/features/notifications/produce";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { type DocumentLineView, readLines } from "./lines";
@@ -244,6 +245,41 @@ async function buildView(
   };
 }
 
+type DocumentNotification = "document_viewed" | "document_accepted" | "document_declined";
+
+// Notification delivery is best-effort: the public action already succeeded, so a
+// failed insert is reported and never turned into a user-facing error.
+async function notifyOwner(
+  db: Db,
+  row: DocumentRow,
+  deal: DealRow,
+  type: DocumentNotification,
+  payload: Record<string, unknown>,
+  signal: AbortSignal,
+): Promise<void> {
+  try {
+    const result = await createNotification(
+      db,
+      {
+        recipientId: row.createdBy ?? deal.ownerId,
+        type,
+        // The deal is the visibility parent (the shared deal predicate gates it);
+        // payloadHref opens the document itself.
+        entityType: "deal",
+        entityId: deal.id,
+        actorId: null,
+        payload: { documentId: row.id, title: row.title, ...payload },
+      },
+      signal,
+    );
+    if (!result.ok) console.error(`documents: ${type} notification failed: ${result.error.id}`);
+  } catch (error) {
+    // Abort stays a cancellation; anything else is a failed best-effort notification.
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    console.error(`documents: ${type} notification threw`, error);
+  }
+}
+
 async function loadVisible(
   db: Db,
   publicId: string,
@@ -269,6 +305,16 @@ export async function getPublicDocument(
   const visible = await loadVisible(db, publicId, signal);
   if (!visible.ok) return visible;
   const viewed = await recordView(db, visible.value.row, signal);
+  if (viewed.firstView) {
+    await notifyOwner(
+      db,
+      viewed.row,
+      visible.value.deal,
+      "document_viewed",
+      { customer: viewed.row.customerName ?? "Someone" },
+      signal,
+    );
+  }
   return ok(await buildView(db, viewed.row, signal));
 }
 
@@ -303,6 +349,16 @@ export async function acceptQuote(
     .returning();
   if (updated === undefined) return err(transitionNotAllowed(row.status));
   signal.throwIfAborted();
+  await notifyOwner(
+    db,
+    updated,
+    visible.value.deal,
+    "document_accepted",
+    {
+      name: parsed.data.name,
+    },
+    signal,
+  );
   return ok(await buildView(db, updated, signal));
 }
 
@@ -335,5 +391,6 @@ export async function declineQuote(
     .returning();
   if (updated === undefined) return err(transitionNotAllowed(row.status));
   signal.throwIfAborted();
+  await notifyOwner(db, updated, visible.value.deal, "document_declined", {}, signal);
   return ok(await buildView(db, updated, signal));
 }

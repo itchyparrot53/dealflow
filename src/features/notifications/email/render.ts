@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import { entityHref } from "@/features/notifications/entityHref";
+import { entityHref, payloadHref } from "@/features/notifications/entityHref";
 import type { NotificationRow } from "@/types/notification";
 
 function escapeHtml(s: string): string {
@@ -21,6 +21,38 @@ function wrap(line: string, link: string): { text: string; html: string } {
   return { text, html };
 }
 
+function payloadString(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+// The three document types share one copy builder so the main switch stays under
+// the cognitive-complexity cap.
+function documentEmailCopy(
+  row: NotificationRow,
+  recipientName: string,
+): { subject: string; line: string } {
+  const fallbackTitle = row.type === "document_viewed" ? "a document" : "a quote";
+  const title = payloadString(row.payload.title, fallbackTitle);
+  if (row.type === "document_viewed") {
+    const customer = payloadString(row.payload.customer, "Someone");
+    return {
+      subject: `Document viewed: ${title}`,
+      line: `${recipientName}, ${customer} viewed ${title}.`,
+    };
+  }
+  if (row.type === "document_accepted") {
+    const name = payloadString(row.payload.name, "the customer");
+    return {
+      subject: `Quote accepted: ${title}`,
+      line: `${recipientName}, ${name} accepted ${title}.`,
+    };
+  }
+  return {
+    subject: `Quote declined: ${title}`,
+    line: `${recipientName}, ${title} was declined.`,
+  };
+}
+
 // Per-type copy strings. No em dashes; no magic strings duplicated.
 export function renderNotificationEmail(
   row: NotificationRow,
@@ -29,7 +61,7 @@ export function renderNotificationEmail(
   const base = env.BASE_URL;
   // Never derive the path from the entity type: pluralizing it produced /activitys/<id>,
   // /persons/<id> and /organizations/<id>, none of which are routes in this app.
-  const path = entityHref(row.entityType, row.entityId);
+  const path = payloadHref(row.type, row.payload) ?? entityHref(row.entityType, row.entityId);
   const link = path !== null ? `${base}${path}` : base;
 
   let subject: string;
@@ -80,6 +112,14 @@ export function renderNotificationEmail(
       subject =
         emailSubject !== null ? `New email on a deal: ${emailSubject}` : "New email on a deal";
       line = `${recipientName}, a new email arrived on a deal you follow.`;
+      break;
+    }
+    case "document_viewed":
+    case "document_accepted":
+    case "document_declined": {
+      const copy = documentEmailCopy(row, recipientName);
+      subject = copy.subject;
+      line = copy.line;
       break;
     }
     default: {

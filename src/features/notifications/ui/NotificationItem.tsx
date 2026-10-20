@@ -27,6 +27,9 @@ const LABEL: Record<NotificationType, (p: Record<string, unknown>) => string> = 
   comment_reply: () => L.comment_reply,
   deal_email_received: (p) =>
     `${L.deal_email_received}: ${toStr(p.subject) || L.deal_email_received_fallback}`,
+  document_viewed: (p) => `${toStr(p.customer)} viewed ${toStr(p.title)}`,
+  document_accepted: (p) => `${toStr(p.name)} accepted ${toStr(p.title)}`,
+  document_declined: (p) => `${toStr(p.title)} was declined`,
 };
 
 export function NotificationItem({

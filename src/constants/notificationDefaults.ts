@@ -15,6 +15,10 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
   email_open: false,
   email_click: false,
   deal_email_received: false,
+  // A view is low-value noise; an accept or decline is an outcome worth interrupting for.
+  document_viewed: false,
+  document_accepted: true,
+  document_declined: true,
 };
 
 export const DEFAULT_IN_APP = true;
