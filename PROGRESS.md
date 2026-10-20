@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-21 00:37
+Current: 4.3 · Last updated: 2026-10-21 00:44
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -31,7 +31,7 @@ Current: 4.2 · Last updated: 2026-10-21 00:37
 - [x] 3.5 Demo seed and docs
 - [x] 3.6 Phase 3 QA gate
 - [x] 4.1 E2E documents spec and screenshots
-- [ ] 4.2 Integration suite and smoke
+- [x] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -132,6 +132,8 @@ Current: 4.2 · Last updated: 2026-10-21 00:37
 - 4.1: found and fixed a real gap while running the spec: `sendDocument` treated a disconnected mailbox as connected because `getActorMailbox` ignores the account status. It now uses `getActorMailboxStatus` and returns `E_DOC_006` for a disconnected account.
 - 4.1: restored the `public-status` test hook that the 3.2 public-page rewrite dropped (an sr-only element carrying the status), and trimmed the stored scale off quantity and percentage cells for display ("2.000" reads "2").
 - 4.1: `pnpm e2e` passed 18/18 across specs `00` to `08` (1.1 min); the seven `p4-*` screenshots exist and the Part 1 to 3 screenshots are present (23/8/6).
+- 4.2: the full integration suite passed 1902/1902 in 394 files (57.7 s) on the final tree; no failure surfaced, so there are no `PRE-EXISTING:` entries.
+- 4.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` compose project and its volumes; verified afterwards that no container and no volume with that name remain. No prune was run.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
