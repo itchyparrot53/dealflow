@@ -13,6 +13,11 @@ export const CHANGE_FIELD_TITLE = "title";
 export const CHANGE_FIELD_VALUE = "value";
 export const CHANGE_FIELD_EXPECTED_CLOSE = "expected_close_date";
 
+// Part 3: side-table deal terms. The timeline humanizes unknown fields, so these
+// need no extra label entry.
+export const CHANGE_FIELD_CURRENCY = "currency";
+export const CHANGE_FIELD_PROBABILITY = "probability";
+
 // Unit E (deal-history parity): mutations PD records that WD did not previously log.
 // The primary person/organization link on the deal, deal participants, and followers.
 export const CHANGE_FIELD_SOURCE_CHANNEL_ID = "source_channel_id";

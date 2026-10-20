@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-20 20:35
+Current: 1.5 · Last updated: 2026-10-20 20:36
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -15,7 +15,7 @@ Current: 1.4 · Last updated: 2026-10-20 20:35
 - [x] 1.1 Rates, base currency and permissions
 - [x] 1.2 Product catalog service
 - [x] 1.3 Deal lines and the value sync (test-first)
-- [ ] 1.4 Deal terms and stage probabilities
+- [x] 1.4 Deal terms and stage probabilities
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Settings → Currencies
 - [ ] 2.2 Settings → Products
@@ -66,6 +66,11 @@ Current: 1.4 · Last updated: 2026-10-20 20:35
 - 1.3: a product priced in another currency converts with `convertBetween` at add time using `loadRateMap`; if either side has no rate the add fails with `E_CURRENCY_001` before any insert.
 - 1.3: archived products cannot be added (the lookup filters `active`), and the line read gates the parent deal with `canSee` plus the shared `toVisibleDeal`, not a new visibility predicate.
 - 1.3: the test reads change-log rows through `listChangeLog` rather than a raw jsonb select, because raw selects double-decode a stored string like "2160.00" into the number 2160.
+
+- 1.4: effective probability is resolved in one place (`getDealTerms`): override, then the stage row, then 100; `setDealTerms` returns the same view after its write, so the two can never disagree.
+- 1.4: `setDealTerms` locks the deal row, refuses a currency change while lines exist (`E_CURRENCY_004`) before any write, logs currency/probability changes through `recordChange` with the new `CHANGE_FIELD_CURRENCY`/`CHANGE_FIELD_PROBABILITY` fields, and publishes `dealUpdated` because cards render the value in the deal currency.
+- 1.4: submitting the identical terms is a no-op: no upsert and no change-log row, so an untouched form does not create history.
+- 1.4: stage probabilities use `pipeline.manage` (the stage editor's permission), pre-check the stage so a stale id returns `E_STAGE_NOT_FOUND`, and write no change-log row (the stage editor has no deal history).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

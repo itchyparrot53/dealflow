@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { listDealLines } from "./dealProducts";
+import { getDealTerms } from "./dealTerms";
 import { getProduct, listProducts } from "./products";
 
 // Catalog reads. Any signed-in user may browse active products (the deal page's
@@ -24,6 +25,13 @@ export const productsRouter = router({
   get: protectedProcedure
     .input(getInput)
     .query(async ({ input }) => getProduct(db, input.id, SIG())),
+  dealTerms: protectedProcedure
+    .input(z.object({ dealId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const result = await getDealTerms(ctx.db, ctx.actor, input.dealId, SIG());
+      if (!result.ok) throw new TRPCError({ code: "NOT_FOUND", message: result.error.id });
+      return result.value;
+    }),
   dealLines: protectedProcedure
     .input(z.object({ dealId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {

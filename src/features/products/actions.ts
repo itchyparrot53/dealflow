@@ -9,6 +9,7 @@ import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { err, ok, type Result } from "@/types/result";
 import { addDealLine, type DealLine, removeDealLine, updateDealLine } from "./dealProducts";
+import { type DealTermsView, setDealTerms, setStageProbability } from "./dealTerms";
 import {
   createProduct,
   deleteProduct,
@@ -91,4 +92,22 @@ export async function removeDealLineAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await removeDealLine(db, g.value, input, SIG()));
+}
+
+export async function setDealTermsAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DealTermsView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await setDealTerms(db, g.value, input, SIG()));
+}
+
+export async function setStageProbabilityAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ stageId: string; probability: number }>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await setStageProbability(db, g.value, input, SIG()));
 }

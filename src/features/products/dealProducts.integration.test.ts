@@ -1,7 +1,14 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { changeLogs, dealProducts, deals, products } from "@/db/schema";
+import {
+  changeLogs,
+  dealProducts,
+  deals,
+  dealTerms,
+  products,
+  stageProbabilities,
+} from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { type ChangeLogEntry, listChangeLog } from "@/features/collaboration/changeLog";
 import { saveRate } from "@/features/currency/rates";
@@ -9,6 +16,7 @@ import { updateDeal } from "@/features/deals/dealActions";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { addDealLine, removeDealLine, updateDealLine } from "./dealProducts";
+import { getDealTerms, setDealTerms, setStageProbability } from "./dealTerms";
 import { createProduct, deleteProduct } from "./products";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
@@ -73,6 +81,8 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await h.db.delete(dealProducts);
+  await h.db.delete(dealTerms);
+  await h.db.delete(stageProbabilities);
   await h.db.delete(changeLogs);
   await h.db.delete(deals);
 });
@@ -309,5 +319,57 @@ describe("the value is owned by the lines", () => {
     const result = await deleteProduct(h.db, admin, { id: usdProductId }, sig());
     expect(result.ok).toBe(false);
     expect(result.ok === false && result.error.id).toBe(ERROR_IDS.PRODUCT_IN_USE);
+  });
+});
+
+describe("deal terms", () => {
+  it("refuses a currency change while the deal has lines", async () => {
+    const deal = await seedDeal();
+    await addDealLine(h.db, admin, { dealId: deal.id, productId: usdProductId }, sig());
+    const result = await setDealTerms(h.db, admin, { dealId: deal.id, currency: "EUR" }, sig());
+    expect(result.ok).toBe(false);
+    expect(result.ok === false && result.error.id).toBe(ERROR_IDS.CURRENCY_CHANGE_WITH_LINES);
+    const view = await getDealTerms(h.db, admin, deal.id, sig());
+    expect(view.ok ? view.value.currency : "").toBe("USD");
+  });
+
+  it("stores a currency change and logs it when there are no lines", async () => {
+    const deal = await seedDeal();
+    const result = await setDealTerms(h.db, admin, { dealId: deal.id, currency: "EUR" }, sig());
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.value.currency : "").toBe("EUR");
+    const entries = await listChangeLog(h.db, "deal", deal.id, sig());
+    const currency = entries.find((entry) => entry.field === "currency");
+    expect(currency?.oldValue).toBe("USD");
+    expect(currency?.newValue).toBe("EUR");
+  });
+
+  it("resolves effective probability from override, then stage, then 100", async () => {
+    const deal = await seedDeal();
+
+    const initial = await getDealTerms(h.db, admin, deal.id, sig());
+    expect(initial.ok ? initial.value.effectiveProbability : -1).toBe(100);
+    expect(initial.ok ? initial.value.stageProbability : -1).toBeNull();
+
+    const staged = await setStageProbability(h.db, admin, { stageId, probability: 25 }, sig());
+    expect(staged.ok).toBe(true);
+    const afterStage = await getDealTerms(h.db, admin, deal.id, sig());
+    expect(afterStage.ok ? afterStage.value.stageProbability : -1).toBe(25);
+    expect(afterStage.ok ? afterStage.value.effectiveProbability : -1).toBe(25);
+
+    await setDealTerms(h.db, admin, { dealId: deal.id, probability: 60 }, sig());
+    const afterOverride = await getDealTerms(h.db, admin, deal.id, sig());
+    expect(afterOverride.ok ? afterOverride.value.probability : -1).toBe(60);
+    expect(afterOverride.ok ? afterOverride.value.effectiveProbability : -1).toBe(60);
+
+    await setDealTerms(h.db, admin, { dealId: deal.id, probability: null }, sig());
+    const cleared = await getDealTerms(h.db, admin, deal.id, sig());
+    expect(cleared.ok ? cleared.value.effectiveProbability : -1).toBe(25);
+  });
+
+  it("refuses stage probability from a caller without pipeline.manage", async () => {
+    const result = await setStageProbability(h.db, regular, { stageId, probability: 50 }, sig());
+    expect(result.ok).toBe(false);
+    expect(result.ok === false && result.error.id).toBe(ERROR_IDS.PERM_DENIED);
   });
 });

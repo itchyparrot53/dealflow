@@ -225,7 +225,7 @@ export const ERROR_IDS = {
   PRODUCT_CODE_TAKEN: "E_PRODUCT_003", // product code already used by another product
   PRODUCT_VALUE_CALCULATED: "E_PRODUCT_004", // manual value edit on a deal with product lines
   PRODUCT_LINE_NOT_FOUND: "E_PRODUCT_005", // deal line not found
-  PRODUCT_INPUT_INVALID: "E_PRODUCT_006", // product or deal-line input failed Zod validation
+  PRODUCT_INPUT_INVALID: "E_PRODUCT_006", // product, deal-line or deal-terms input failed Zod validation
   // CURRENCY
   CURRENCY_RATE_MISSING: "E_CURRENCY_001", // no exchange rate for a needed currency
   CURRENCY_UNKNOWN: "E_CURRENCY_002", // unknown currency code
