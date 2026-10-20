@@ -3,6 +3,7 @@
 export const NAV_ITEMS = [
   { href: "/pipeline", key: "pipeline", section: "/pipeline" },
   { href: "/forecast", key: "forecast", section: "/forecast" },
+  { href: "/documents", key: "documents", section: "/documents" },
   { href: "/leads", key: "leads", section: "/leads" },
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
   { href: "/activities", key: "activities", section: "/activities" },

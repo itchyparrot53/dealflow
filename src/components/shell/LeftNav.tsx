@@ -16,6 +16,7 @@ import {
   ContactsIcon,
   DashboardIcon,
   DocsIcon,
+  DocumentsIcon,
   ForecastIcon,
   InboxIcon,
   LeadsIcon,
@@ -28,6 +29,7 @@ import {
 const ICONS: Record<NavKey, typeof PipelineIcon> = {
   pipeline: PipelineIcon,
   forecast: ForecastIcon,
+  documents: DocumentsIcon,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,

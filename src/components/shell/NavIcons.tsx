@@ -2,6 +2,7 @@ import {
   BookOpen,
   CalendarDays,
   ChartColumn,
+  FileText,
   Inbox,
   Kanban,
   List,
@@ -39,6 +40,10 @@ export function DealsIcon({ className }: IconProps): React.ReactNode {
 // identical glyphs in one viewport would read as the same thing.
 export function LeadsIcon({ className }: IconProps): React.ReactNode {
   return <Sprout aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
+}
+
+export function DocumentsIcon({ className }: IconProps): React.ReactNode {
+  return <FileText aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
 
 export function ContactsIcon({ className }: IconProps): React.ReactNode {

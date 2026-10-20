@@ -126,6 +126,21 @@ export const DOCUMENTS_STRINGS = {
   deletePaymentTitle: "Delete this payment?",
   deletePaymentDescription: "The invoice returns to sent or overdue if it was paid.",
   documentSection: "Documents",
+  tabQuotes: "Quotes",
+  tabInvoices: "Invoices",
+  allStatuses: "All statuses",
+  statusFilter: "Status",
+  noMatches: "No documents match this filter.",
+  excludedCurrencies: "Excluded (no rate)",
+  columnNumber: "Number",
+  columnTitle: "Title",
+  columnDeal: "Deal",
+  columnCustomer: "Customer",
+  columnTotal: "Total",
+  columnStatus: "Status",
+  columnIssued: "Issued",
+  columnDue: "Due",
+  columnValid: "Valid until",
 
   // The exact 6.2 user copy, keyed by cause.
   errors: {

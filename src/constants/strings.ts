@@ -10,6 +10,7 @@ export const STRINGS = {
   nav: {
     pipeline: "Pipeline",
     forecast: "Forecast",
+    documents: "Documents",
     leads: "Leads",
     deals: "Deals",
     contacts: "Contacts",

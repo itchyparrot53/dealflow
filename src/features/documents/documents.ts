@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -15,12 +15,15 @@ import {
   users,
 } from "@/db/schema";
 import { formatCents, formatMoney, parseCents } from "@/features/currency/money";
-import { readBaseCurrency } from "@/features/currency/rates";
+import { loadRateMap, readBaseCurrency } from "@/features/currency/rates";
+import { summarize } from "@/features/currency/totals";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { assertDealVisible } from "@/features/products/dealProducts";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import type { DealVisibilitySession } from "@/types/session";
 import {
   type DocumentLineView,
   type LineSnapshot,
@@ -41,6 +44,134 @@ const PUBLIC_ID_BYTES = 18;
 const MAX_TITLE = 150;
 const MAX_LIST = 200;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export interface DocumentListItem extends DocumentSummary {
+  dealTitle: string;
+  outstanding: string;
+}
+
+export interface DocumentsListResult {
+  rows: DocumentListItem[];
+  base: string;
+  // Cents, formatted; the caller renders it with formatMoney.
+  outstandingTotal: string;
+  excludedCurrencies: string[];
+}
+
+// The deals visibility clause fixes the table aliases to `d` (deals) and `p`
+// (pipelines), so the list read is raw SQL like the forecast's.
+function visibilitySession(actor: PermSetUser): DealVisibilitySession {
+  return {
+    userId: actor.id,
+    isAdmin: actor.type === "admin",
+    isActive: actor.isActive,
+    sessionLive: true,
+    visibilityGroupIds: Array.from(actor.groupIds),
+    managedUserIds: Array.from(actor.managedUserIds ?? []),
+  };
+}
+
+interface ListRow {
+  id: string;
+  kind: string;
+  number: string | null;
+  title: string;
+  status: string;
+  currency: string;
+  total: string;
+  issueDate: string | null;
+  validUntil: string | null;
+  dueDate: string | null;
+  customerName: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  dealId: string;
+  dealTitle: string;
+}
+
+// Every visible document with its outstanding amount, plus the invoices' total
+// outstanding in the base currency. Invoices in a currency without a rate are
+// listed as excluded, never added unconverted.
+export async function loadDocumentsList(
+  db: Db,
+  actor: PermSetUser,
+  signal: AbortSignal,
+): Promise<Result<DocumentsListResult, AppError>> {
+  signal.throwIfAborted();
+  const visClause = dealVisibilityClause(visibilitySession(actor));
+  const result = await db.execute(sql`
+    SELECT doc.id, doc.kind, doc.number, doc.title, doc.status, doc.currency, doc.total,
+      doc.issue_date AS "issueDate", doc.valid_until AS "validUntil", doc.due_date AS "dueDate",
+      doc.customer_name AS "customerName", doc.created_at AS "createdAt",
+      doc.updated_at AS "updatedAt", doc.deal_id AS "dealId", d.title AS "dealTitle"
+    FROM documents doc
+    JOIN deals d ON d.id = doc.deal_id
+    JOIN pipelines p ON p.id = d.pipeline_id
+    WHERE d.deleted_at IS NULL AND d.archived_at IS NULL AND ${visClause}
+    ORDER BY doc.created_at DESC
+    LIMIT ${MAX_LIST}
+  `);
+  const rawRows = result.rows as unknown as ListRow[];
+  const invoiceIds = rawRows.filter((row) => row.kind === "invoice").map((row) => row.id);
+  const paymentRows =
+    invoiceIds.length === 0
+      ? []
+      : await db
+          .select({ documentId: documentPayments.documentId, amount: documentPayments.amount })
+          .from(documentPayments)
+          .where(inArray(documentPayments.documentId, invoiceIds));
+  signal.throwIfAborted();
+
+  const paidByDocument = new Map<string, bigint>();
+  for (const payment of paymentRows) {
+    paidByDocument.set(
+      payment.documentId,
+      (paidByDocument.get(payment.documentId) ?? 0n) + parseCents(payment.amount),
+    );
+  }
+
+  const rows: DocumentListItem[] = rawRows.map((row) => {
+    const paid = row.kind === "invoice" ? (paidByDocument.get(row.id) ?? 0n) : 0n;
+    const outstanding = parseCents(row.total) - paid;
+    return {
+      id: row.id,
+      kind: row.kind as DocKind,
+      dealId: row.dealId,
+      number: row.number,
+      title: row.title,
+      status: row.status as DocStatus,
+      currency: row.currency,
+      total: row.total,
+      issueDate: row.issueDate,
+      validUntil: row.validUntil,
+      dueDate: row.dueDate,
+      customerName: row.customerName,
+      createdAt: new Date(row.createdAt).toISOString(),
+      updatedAt: new Date(row.updatedAt).toISOString(),
+      dealTitle: row.dealTitle,
+      outstanding: formatCents(outstanding < 0n ? 0n : outstanding),
+    };
+  });
+
+  const map = await loadRateMap(db, signal);
+  const summary = summarize(
+    rows
+      .filter((row) => row.kind === "invoice")
+      .map((row) => ({
+        id: row.id,
+        value: row.outstanding,
+        currency: row.currency,
+        probability: 100,
+      })),
+    map,
+  );
+  return ok({
+    rows,
+    base: map.base,
+    outstandingTotal: formatCents(summary.total),
+    excludedCurrencies: [...new Set(summary.excluded.map((entry) => entry.currency))].sort(),
+  });
+}
 
 // The deal page's Documents section is mounted only when the workspace carries this,
 // the same way Part 3 gated the Products section on productSummary.

@@ -39,6 +39,7 @@ import {
   duplicateDocument,
   getDocument,
   listDocumentsForDeal,
+  loadDocumentsList,
   refreshLines,
   updateDraft,
 } from "./documents";
@@ -905,5 +906,73 @@ describe("sending", () => {
     const read = await getDocument(h.db, regular, created.value.id, sig());
     expect(read.ok).toBe(true);
     if (read.ok) expect(read.value.status).toBe("draft");
+  });
+});
+
+describe("loadDocumentsList", () => {
+  it("lists only visible documents and totals outstanding in the base currency", async () => {
+    // The total is global, so this case starts from an empty documents table.
+    await h.db.delete(documents);
+    const visibleDeal = await seedDeal({ value: "1000.00" });
+    const invoice = await createDocument(
+      h.db,
+      admin,
+      { dealId: visibleDeal.id, kind: "invoice" },
+      sig(),
+    );
+    expect(invoice.ok).toBe(true);
+    if (!invoice.ok) return;
+    await issueDocument(h.db, admin, invoice.value.id, { via: "issue" }, sig());
+    await recordPayment(
+      h.db,
+      admin,
+      { documentId: invoice.value.id, amount: "400.00", paidOn: "2026-10-01", method: "card" },
+      sig(),
+    );
+
+    const hiddenDeal = await seedDeal({ value: "500.00", visibility: "owner", ownerId: admin.id });
+    const hidden = await createDocument(
+      h.db,
+      admin,
+      { dealId: hiddenDeal.id, kind: "invoice" },
+      sig(),
+    );
+    expect(hidden.ok).toBe(true);
+    if (!hidden.ok) return;
+    await issueDocument(h.db, admin, hidden.value.id, { via: "issue" }, sig());
+
+    const jpyDeal = await seedDeal({ value: "5000.00" });
+    await setDealTerms(h.db, admin, { dealId: jpyDeal.id, currency: "JPY" }, sig());
+    const jpy = await createDocument(h.db, admin, { dealId: jpyDeal.id, kind: "invoice" }, sig());
+    expect(jpy.ok).toBe(true);
+    if (!jpy.ok) return;
+    await issueDocument(h.db, admin, jpy.value.id, { via: "issue" }, sig());
+
+    // A quote never counts toward outstanding.
+    const quote = await createDocument(
+      h.db,
+      admin,
+      { dealId: visibleDeal.id, kind: "quote" },
+      sig(),
+    );
+    expect(quote.ok).toBe(true);
+
+    const adminList = await loadDocumentsList(h.db, admin, sig());
+    expect(adminList.ok).toBe(true);
+    if (!adminList.ok) return;
+    expect(adminList.value.base).toBe("USD");
+    expect(adminList.value.outstandingTotal).toBe("1100.00");
+    expect(adminList.value.excludedCurrencies).toEqual(["JPY"]);
+    expect(adminList.value.rows.map((row) => row.id)).toContain(hidden.value.id);
+
+    const regularList = await loadDocumentsList(h.db, regular, sig());
+    expect(regularList.ok).toBe(true);
+    if (!regularList.ok) return;
+    expect(regularList.value.outstandingTotal).toBe("600.00");
+    expect(regularList.value.excludedCurrencies).toEqual(["JPY"]);
+    const regularIds = regularList.value.rows.map((row) => row.id);
+    expect(regularIds).not.toContain(hidden.value.id);
+    expect(regularIds).toContain(invoice.value.id);
+    expect(regularIds).toContain(jpy.value.id);
   });
 });

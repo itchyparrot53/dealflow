@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-21 00:11
+Current: 3.4 · Last updated: 2026-10-21 00:14
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -25,7 +25,7 @@ Current: 3.3 · Last updated: 2026-10-21 00:11
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Settings → Documents
 - [x] 3.2 Deal section, document page, view and public actions
-- [ ] 3.3 Documents list and navigation
+- [x] 3.3 Documents list and navigation
 - [ ] 3.4 Print stylesheet and preview
 - [ ] 3.5 Demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
@@ -111,6 +111,11 @@ Current: 3.3 · Last updated: 2026-10-21 00:11
 - 3.2: `PublicActions` posts to the public API route handlers with a 15 second signal (the repo bans `fetch` without one) and refreshes the server component on success; `PrintButton` calls `window.print()` for the browser PDF path.
 - 3.2: the shared `Checkbox` gained a `testId` prop because Radix owns the root element and the public accept hook needs `public-accept-checkbox`; the rest of the test hooks are on the elements the plan names.
 - 3.2: the public page now renders the full `DocumentView` (company block, dates, customer, lines, totals, payment instructions, footer) instead of the minimal markup from Task 2.1.
+- 3.3: `loadDocumentsList` is raw SQL because `dealVisibilityClause` fixes the table aliases to `d`/`p`, the same reason the forecast is raw SQL; it filters soft-deleted and archived deals, caps at 200, batch-loads the invoices' payments and calls `summarize` over the outstanding amounts, listing currencies without a rate as excluded instead of adding them unconverted.
+- 3.3: the page loads the read on the server and `DocumentsList` only switches tabs and the status filter in component state, so changing either never reloads the RSC tree; the outstanding strip appears on the Invoices tab with `documents-outstanding-total`.
+- 3.3: the main navigation gained Documents after Forecast (FileText glyph), so the number-key shortcuts shift by one because they index the same list by design, exactly as Part 3 logged for Forecast; the shortcut tests index `NAV_ITEMS` dynamically and stay valid.
+- 3.3: the new integration case proves the visibility filter and the base-currency total (admin 1100.00, regular 600.00, JPY excluded, quotes never counted) and clears the documents table first because the total is global to the test database.
+- 3.3: `/documents` builds alongside `/documents/[id]`; a quote's date column shows valid-until and an invoice's shows due date.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
