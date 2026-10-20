@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { notifications } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { SystemMessage } from "@/features/email/sendSystem";
+import type { SystemMail } from "@/features/mailer/types";
 import { setPreference } from "@/features/notifications/preferences";
 import type { EmailAccountRow } from "@/types/email";
 import { ok } from "@/types/result";
@@ -67,11 +67,11 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
+      const calls: { to: string; msg: SystemMail }[] = [];
       // Fake: synchronous return wrapped in Promise.resolve; signal not needed.
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ providerMessageId: "x" }));
+      const fakeSend = (to: string, msg: SystemMail) => {
+        calls.push({ to, msg });
+        return Promise.resolve(ok({ messageId: "x" }));
       };
 
       const r = await runEmailNotificationJob(
@@ -89,11 +89,13 @@ describe("runEmailNotificationJob", () => {
     });
   }, 60_000);
 
-  it("suppresses (no send) when recipient has no connected mailbox", async () => {
+  it("sends even when the recipient has no connected mailbox (system mailer)", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      // Deal alice owns and can see, but she has no email_accounts row.
+      // No email_accounts row: notification mail must not depend on a connected mailbox.
       const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
+      const signal = new AbortController().signal;
+      await setPreference(db, alice.id, "deal_won", { inApp: true, email: true }, signal);
       const [n] = await db
         .insert(notifications)
         .values({
@@ -107,23 +109,19 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ providerMessageId: "x" }));
+      const calls: { to: string; msg: SystemMail }[] = [];
+      const fakeSend = (to: string, msg: SystemMail) => {
+        calls.push({ to, msg });
+        return Promise.resolve(ok({ messageId: "x" }));
       };
 
-      const r = await runEmailNotificationJob(
-        db,
-        { notificationId: n.id },
-        new AbortController().signal,
-        {
-          send: fakeSend,
-        },
-      );
+      const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
+        send: fakeSend,
+      });
       expect(r.ok).toBe(true);
-      if (r.ok === true) expect(r.value.sent).toBe(false);
-      expect(calls).toHaveLength(0);
+      if (r.ok === true) expect(r.value.sent).toBe(true);
+      expect(calls).toHaveLength(1);
+      expect(calls[0]?.to).toBe(alice.email);
     });
   }, 60_000);
 
@@ -151,10 +149,10 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ providerMessageId: "x" }));
+      const calls: { to: string; msg: SystemMail }[] = [];
+      const fakeSend = (to: string, msg: SystemMail) => {
+        calls.push({ to, msg });
+        return Promise.resolve(ok({ messageId: "x" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -166,10 +164,9 @@ describe("runEmailNotificationJob", () => {
     });
   }, 60_000);
 
-  it("sends when the recipient can see the entity and has a connected mailbox", async () => {
+  it("sends when the recipient can see the entity", async () => {
     await withTestDb(async (db) => {
       const alice = await seedUser(db);
-      const mailbox = await connectMailbox(db, alice.id);
       const dealId = await seedDeal(db, { ownerId: alice.id, visibilityLevel: "all" });
       const signal = new AbortController().signal;
       // Email delivery must be enabled at send time (default is off).
@@ -187,10 +184,10 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ providerMessageId: "g1" }));
+      const calls: { to: string; msg: SystemMail }[] = [];
+      const fakeSend = (to: string, msg: SystemMail) => {
+        calls.push({ to, msg });
+        return Promise.resolve(ok({ messageId: "g1" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -199,7 +196,7 @@ describe("runEmailNotificationJob", () => {
       expect(r.ok).toBe(true);
       if (r.ok === true) expect(r.value.sent).toBe(true);
       expect(calls).toHaveLength(1);
-      expect(calls[0]?.msg.to).toContain(mailbox.emailAddress);
+      expect(calls[0]?.to).toBe(alice.email);
       expect(calls[0]?.msg.subject.length).toBeGreaterThan(0);
     });
   }, 60_000);
@@ -229,10 +226,10 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-      const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-        calls.push({ acct, msg });
-        return Promise.resolve(ok({ providerMessageId: "dup" }));
+      const calls: { to: string; msg: SystemMail }[] = [];
+      const fakeSend = (to: string, msg: SystemMail) => {
+        calls.push({ to, msg });
+        return Promise.resolve(ok({ messageId: "dup" }));
       };
 
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
@@ -264,7 +261,7 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const fakeSend = () => Promise.resolve(ok({ providerMessageId: "g1" }));
+      const fakeSend = () => Promise.resolve(ok({ messageId: "g1" }));
       const r = await runEmailNotificationJob(db, { notificationId: n.id }, signal, {
         send: fakeSend,
       });

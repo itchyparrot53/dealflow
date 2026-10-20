@@ -11,6 +11,16 @@ describe("deriveMessageId", () => {
     expect(id).toBe("<acc-1.key-1@gunsnation.com>");
   });
 
+  it("uses the sending mailbox's domain, so the id is valid when Google is off (R6)", () => {
+    const id = deriveMessageId({
+      accountId: "acc-1",
+      idempotencyKey: "key-1",
+      domain: "umev.co.uk",
+    });
+    expect(id.endsWith("@umev.co.uk>")).toBe(true);
+    expect(id).not.toContain("@>");
+  });
+
   it("is stable for the same inputs and distinct for a different idempotencyKey", () => {
     const base = { accountId: "acc-1", domain: "gunsnation.com" };
     const a = deriveMessageId({ ...base, idempotencyKey: "key-1" });

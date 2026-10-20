@@ -3,22 +3,26 @@ import type { PgBoss } from "pg-boss";
 import { AppError } from "@/constants/errorIds";
 import { EMAIL_NOTIFICATION_QUEUE } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
-import { emailAccounts, notifications, users } from "@/db/schema";
-import type { SystemMessage } from "@/features/email/sendSystem";
-import { sendGmail } from "@/features/email/sendSystem";
+import { notifications, users } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
+import { getSystemMailer } from "@/features/mailer/systemMailer";
+import type { SystemMail } from "@/features/mailer/types";
 import { hydrateActor } from "@/server/hydrateActor";
-import type { EmailAccountRow } from "@/types/email";
 import type { NotificationRow } from "@/types/notification";
 import { ok, type Result } from "@/types/result";
 import { resolveDelivery } from "../preferences";
 import { renderNotificationEmail } from "./render";
 
+// Notification mail leaves through the system mailer (SMTP), never through a user's mailbox,
+// so a notification needs no connected account and keeps working for a user without Gmail.
 export type SendFn = (
-  account: EmailAccountRow,
-  message: SystemMessage,
+  to: string,
+  message: SystemMail,
   signal: AbortSignal,
-) => Promise<Result<{ providerMessageId: string }, AppError>>;
+) => Promise<Result<{ messageId: string }, AppError>>;
+
+const defaultSend: SendFn = (to, message, signal) =>
+  getSystemMailer().send({ ...message, to }, signal);
 
 export async function runEmailNotificationJob(
   db: Db,
@@ -82,68 +86,37 @@ export async function runEmailNotificationJob(
   signal.throwIfAborted();
   if (delivery.email !== true) return ok({ sent: false }); // DROP: opted out
 
-  // (d) Load the recipient's connected mailbox.
-  const [account] = await db
-    .select({
-      id: emailAccounts.id,
-      userId: emailAccounts.userId,
-      emailAddress: emailAccounts.emailAddress,
-    })
-    .from(emailAccounts)
-    .where(eq(emailAccounts.userId, notifRow.userId))
-    .limit(1);
-  signal.throwIfAborted();
-  if (account === undefined) return ok({ sent: false });
-
-  // Check status is 'connected' (queried separately to use the typed enum column).
-  const [statusRow] = await db
-    .select({ status: emailAccounts.status })
-    .from(emailAccounts)
-    .where(eq(emailAccounts.id, account.id))
-    .limit(1);
-  signal.throwIfAborted();
-  if (statusRow === undefined || statusRow.status !== "connected") return ok({ sent: false });
-
-  // (e) Load the recipient's display name.
+  // (e) The recipient's name and address. Notifications go to the person, not to a mailbox row.
   const [userRow] = await db
-    .select({ name: users.name })
+    .select({ name: users.name, email: users.email })
     .from(users)
     .where(eq(users.id, notifRow.userId))
     .limit(1);
   signal.throwIfAborted();
   const recipientName = userRow?.name ?? "there";
+  const recipientEmail = (userRow?.email ?? "").trim();
+  if (recipientEmail === "") return ok({ sent: false });
 
-  // (f) Render and build the SystemMessage.
+  // (f) Render and build the SystemMail.
   const rendered = renderNotificationEmail(notifRow, recipientName);
-  const message: SystemMessage = {
-    to: [account.emailAddress],
+  const message: SystemMail = {
+    to: recipientEmail,
     subject: rendered.subject,
-    bodyHtml: rendered.html,
-    bodyText: rendered.text,
-    // Stable key so a retry reuses the same RFC822 Message-ID (F36): a duplicate that slips
-    // through the marker race is at least dedupable by the recipient's mail client.
-    idempotencyKey: notifRow.id,
+    text: rendered.text,
+    html: rendered.html,
   };
 
-  // (g) Send via the injected send function (defaults to production sendGmail).
-  const sendFn = deps.send ?? sendGmail;
-  const mailboxRow: EmailAccountRow = {
-    id: account.id,
-    userId: account.userId,
-    emailAddress: account.emailAddress,
-  };
-  const sent = await sendFn(mailboxRow, message, signal);
+  // (g) Send through the system mailer (injectable for tests).
+  const sent = await (deps.send ?? defaultSend)(recipientEmail, message, signal);
   if (sent.ok !== true) return sent;
 
   // Persist the delivery marker so a later at-least-once retry short-circuits above (F36).
   //
-  // Accepted residual (F38): if the worker dies in the window between Gmail accepting the
+  // Accepted residual (F38): if the worker dies in the window between the mailer accepting the
   // message above and this marker committing, a retry re-sends. This is a deliberate
   // tradeoff, not a defect. Marking BEFORE send would instead DROP notifications on ordinary
-  // transient Gmail failures (far more common than a mid-window crash), and a full
-  // reconcile-by-Message-ID state machine is disproportionate for a notification email. The
-  // stable idempotencyKey above makes any such duplicate carry an identical RFC822
-  // Message-ID, so the recipient's mail client collapses it.
+  // transient SMTP failures (far more common than a mid-window crash), and a full
+  // reconcile-by-Message-ID state machine is disproportionate for a notification email.
   await db
     .update(notifications)
     .set({ emailSentAt: new Date() })

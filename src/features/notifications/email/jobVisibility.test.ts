@@ -3,9 +3,8 @@ import { expect, it } from "vitest";
 import { notifications, permissionSets, teamMembers, teams } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { SystemMessage } from "@/features/email/sendSystem";
+import type { SystemMail } from "@/features/mailer/types";
 import { setPreference } from "@/features/notifications/preferences";
-import type { EmailAccountRow } from "@/types/email";
 import { ok } from "@/types/result";
 import { runEmailNotificationJob } from "./job";
 
@@ -79,10 +78,10 @@ it("emails a team manager who sees the deal only through team.viewMembers", asyn
       .returning();
     if (n === undefined) throw new Error("notification insert failed");
 
-    const calls: { acct: EmailAccountRow; msg: SystemMessage }[] = [];
-    const fakeSend = (acct: EmailAccountRow, msg: SystemMessage) => {
-      calls.push({ acct, msg });
-      return Promise.resolve(ok({ providerMessageId: "x" }));
+    const calls: { to: string; msg: SystemMail }[] = [];
+    const fakeSend = (to: string, msg: SystemMail) => {
+      calls.push({ to, msg });
+      return Promise.resolve(ok({ messageId: "x" }));
     };
 
     const r = await runEmailNotificationJob(

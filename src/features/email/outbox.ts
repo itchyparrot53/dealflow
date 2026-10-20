@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { env } from "@/config/env";
 import { RECONCILE_WINDOW_MS } from "@/constants/email";
 import { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -47,10 +46,19 @@ export async function enqueueSend(
     scheduledAt?: Date | null;
   },
 ): Promise<Result<{ attemptId: string; replay: boolean }, AppError>> {
+  // The Message-ID must carry the sending mailbox's own domain: when Google SSO is off,
+  // GOOGLE_WORKSPACE_DOMAIN is empty and the id would be malformed (`<a.b@>`). R6.
+  const account = (
+    await db.execute(sql`SELECT email_address FROM email_accounts WHERE id=${args.accountId}`)
+  ).rows[0] as { email_address: string } | undefined;
+  const address = (account?.email_address ?? "").trim().toLowerCase();
+  const domain = address.includes("@")
+    ? address.slice(address.lastIndexOf("@") + 1)
+    : "dealflow.invalid";
   const header = deriveMessageId({
     accountId: args.accountId,
     idempotencyKey: args.idempotencyKey,
-    domain: env.GOOGLE_WORKSPACE_DOMAIN,
+    domain,
   });
   await db.execute(sql`
     INSERT INTO email_send_attempts (idempotency_key, message_id_header, account_id, thread_id, payload, status, scheduled_at)

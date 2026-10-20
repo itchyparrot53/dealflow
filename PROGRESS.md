@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.6 · Last updated: 2026-10-20 03:48
+Current: 1.7 · Last updated: 2026-10-20 04:00
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -19,7 +19,7 @@ Current: 1.6 · Last updated: 2026-10-20 03:48
 - [x] 1.3 MailProvider interface and Gmail adapter
 - [x] 1.4 Send path on MailProvider
 - [x] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
-- [ ] 1.6 Message-ID domain and notification emails via the system mailer
+- [x] 1.6 Message-ID domain and notification emails via the system mailer
 - [ ] 1.7 Phase 1 QA gate
 - [ ] 2.1 Parser, Message-IDs, subjects and Bcc stripping
 - [ ] 2.2 Transport interfaces and real transports
@@ -56,6 +56,8 @@ Current: 1.6 · Last updated: 2026-10-20 03:48
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 1.6: `enqueueSend` reads the account's `email_address` and uses the part after `@` (lowercased) as the Message-ID domain, falling back to `dealflow.invalid` only when the address is empty; the environment import left the outbox. The R6 unit test asserts the `umev.co.uk` tail.
+- 1.6: `SendFn` is now `(to, SystemMail, signal) => Result<{ messageId }>` and the default sends through `getSystemMailer()`; the job's `email_accounts` lookup and connected-status check are gone, so a notification reaches a user with no mailbox. The old "suppresses when the recipient has no connected mailbox" test became "sends even when the recipient has no connected mailbox" (assertions strengthened to a real send to the user's address), and the unused mailbox fixture was removed from the visibility test; this is the plan's contract change, not a weakened assertion.
 - 1.5: `storeInboundMessage` also returns `arrival` (deal id, thread, message, subject, sender) beside the contract's three fields, because the deal notification must run after the transaction commits while the decision (linked deal, not self-sent) belongs with the write; applyMessages only collects and sends it.
 - 1.5: the shared store writes `email_message_headers` for inbound messages with a Message-ID, so threading works for both providers; the Gmail parser now extracts Message-ID, In-Reply-To and References with its existing header helper.
 - 1.5: `resolveAttachmentDownload`, `trashThread` and the attachment route take a provider (and close it); `sweepAllMailboxes` skips accounts with a credentials row, so the Gmail-only spam sweep never runs against IMAP mailboxes.
