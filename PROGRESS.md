@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 6.3 · Last updated: 2026-10-20 06:40
+Current: 6.4 · Last updated: 2026-10-20 07:10
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -51,7 +51,7 @@ Current: 6.3 · Last updated: 2026-10-20 06:40
 - [x] 5.5 Phase 5 QA gate
 - [x] 6.1 E2E specs and screenshot gallery
 - [x] 6.2 Integration suite and container smoke
-- [ ] 6.3 Independent review and hardening
+- [x] 6.3 Independent review and hardening
 - [ ] 6.4 Final checklist
 - [ ] 6.5 Final report and completion
 
@@ -63,6 +63,25 @@ Current: 6.3 · Last updated: 2026-10-20 06:40
 - Phase 4 gate: commands green · typecheck ok · lint ok · build ok · unit 4938/4938 · dealInsights 4/4
 - Phase 5 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · usage 7/7 · assistant 9/9
 - Phase 0, no independent review by design (fast profile, section 0 rule 9.4).
+- Independent review: qa unavailable (qa.sh failed) - self-review
+  - Why: `qa.sh` is not in the repository and there is no `.dsh/` directory, so `.dsh/qa.md`,
+    `builder.patch.yml`, `qa.patch.yml` and `guard.bash` (Appendices A and C) never existed; a
+    separate `dsh` reviewer could not be started. Two attempts (direct run, then checking the
+    required inputs) both block on the missing harness. Per Task 6.3 the fallback is this evidenced
+    self-review.
+  - Commands: typecheck exit 0; lint exit 0 (14 warnings); unit 4945/4945; build exit 0; e2e 15/15
+    (00-05); integration 1788/1790 with the 2 PRE-EXISTING release tests; smoke SMOKE PASS.
+  - Deliverables: every file named by the Phase 0-6 tasks exists; `git diff --stat ec6a018..HEAD`
+    = 212 files, +29312/-470; screenshots 23/23 with the 6.12 names.
+  - Contracts: `E_AI_001..011` exist with the documented meanings; the AI limiter is 20/min; auth
+    tokens are sha256 base64url (43 chars) and consumed in one UPDATE; dev-login 404, cross-origin
+    POST 403, `/auth/start` 404; no token row with a plaintext-looking hash; the assistant exposes
+    exactly the 25 allow-listed tools and a pending action is confirmable only by its owner.
+  - Hygiene: no OpenRouter key or other secret in the tree; no `.only`/`.skip`; no `console.log`; no
+    `process.env` read outside `env.ts`/`clientEnv.ts`/`instrumentation.ts`; no em dashes in files
+    this part wrote; brand hits are comments and internal identifiers.
+  - Result: 0 blockers, 0 majors, 0 minors, no fixes needed. One formatting error in
+    `e2e/03-ai-deal.spec.ts` was fixed before this review line was written.
 
 ## Decisions
 - 0.1: chose tag v1.2.0 over upstream/main because the section 4 probe tied exactly (`upstream/main` points at the same commit as `v1.2.0`) and the tag matches `package.json` version 1.2.0.

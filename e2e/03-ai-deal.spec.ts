@@ -26,7 +26,9 @@ test.describe("deal AI", () => {
 
     // Notes to activities: write a note, open its menu, propose, create the first follow-up.
     await page.locator('section[aria-label="compose"]').getByRole("tab", { name: "Notes" }).click();
-    await page.getByRole("textbox", { name: "Note", exact: true }).fill("Call went well, send pricing Friday");
+    await page
+      .getByRole("textbox", { name: "Note", exact: true })
+      .fill("Call went well, send pricing Friday");
     await page.getByRole("button", { name: "Save" }).click();
     const note = page.getByText("Call went well, send pricing Friday");
     await expect(note).toBeVisible();
