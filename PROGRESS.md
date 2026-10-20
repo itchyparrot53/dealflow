@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-20 02:22
+Current: 0.3 · Last updated: 2026-10-20 02:34
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
-- [ ] 0.2 Independent audit of Part 1
+- [x] 0.2 Independent audit of Part 1
 - [ ] 0.3 Assistant confirm race and AI timeouts
 - [ ] 0.4 Password reset after email-link sign-in and atomic lockout
 - [ ] 0.5 Scripts, release tests and audit leftovers
@@ -47,12 +47,15 @@ Current: 0.2 · Last updated: 2026-10-20 02:22
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Audit P1: subagent (fresh context) · QA RESULT PASS · 0/0/0
 - Baseline: typecheck ok · lint ok · build ok (a first attempt hit an `ENOTEMPTY` race on `.next`; the retry after the tree settled passed) · unit 4945/4945 · integration 1788/1790 (the 2 `src/features/release/router.test.ts` failures are R4, fixed in Task 0.5)
 
 ## Decisions
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 0.2: the fresh-context audit passed with 0 blockers, 0 majors and 0 minors; its four non-blocking observations are A1 to A4 in AUDIT-P1.md. A1 (compose `name`) stays as Part 1's AMENDMENT A1 and becomes a `CONTRACT CHANGE:` decision in 0.5; A2 (UPSTREAM list) is fixed in 0.5; A3 (226-line sheet) is a style deviation, accepted unless 0.5 touches the file; A4 is a process note with no code change.
+- 0.2: R7 is the finding that Part 1's review fell back to a self-review; this audit satisfies it, and the row is closed in 0.5 with the other findings.
 - 0.1: added `mailparser@3.10.0` and `@types/mailparser@3.9.0` with pnpm 9.15.9 from `/tmp/dealflow-tools`; the peer-dependency warning about `eslint-plugin-import` needing eslint <= 9 predates this task and changes nothing.
 
 ## Owner actions
