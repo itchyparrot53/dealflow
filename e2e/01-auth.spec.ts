@@ -59,7 +59,13 @@ test.describe("local sign-in", () => {
     await expect(page.getByTestId("login-sent")).toBeVisible();
     expect(latestMail("unknown-e2e@example.com"), "no mail for an unknown address").toBeNull();
 
-    // Hand a valid demo1 session to the specs that run after this one.
+    // Hand a PASSWORD session to the specs that run after this one: a magic-link session may
+    // change the password without the current one (R3), and 02 proves the current-password rule.
+    await page.goto("/login");
+    await page.locator("#login-email").fill("demo1@example.com");
+    await page.locator("#login-password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/pipeline/);
     await page.context().storageState({ path: ".e2e/admin.json" });
   });
 });
