@@ -45,6 +45,7 @@ import {
 } from "./seed-demo-enrich";
 import { seedContactFollowers, seedInvitedUser, seedOrgRelations } from "./seed-demo-graph";
 import { insertDeals, insertLeads, insertOrgs, insertPeople, wipeDemo } from "./seed-demo-records";
+import { seedSales } from "./seed-demo-sales";
 import { type DemoUser, setupDemoUsers, softDeleteSamples } from "./seed-demo-users";
 import { DATABASE_URL } from "./seed-smoke-config";
 import {
@@ -116,6 +117,14 @@ async function main(): Promise<void> {
     personIds,
     westGroupId,
   );
+
+  // Part 3 sales data: products, rates, stage probabilities, lines and close-date spread.
+  const sales = await seedSales(db, {
+    pipelineId,
+    stageIds,
+    dealIds,
+    ownerId: at(userIds, 0),
+  });
 
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
@@ -218,6 +227,9 @@ async function main(): Promise<void> {
   console.warn(`demo_notes=${noteCount} demo_notifications=${notifCount} demo_files=${fileCount}`);
   console.warn(
     `demo_org_relations=${relationCount} demo_contact_followers=${followerCount} demo_invited=1`,
+  );
+  console.warn(
+    `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

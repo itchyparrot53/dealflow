@@ -144,6 +144,16 @@ folder. `pnpm mail:live-check` proves the real transports against the Purelymail
 Details, limits and the fake transport used by tests are in
 [`docs/dealflow/MAIL.md`](docs/dealflow/MAIL.md).
 
+## Products, currencies and forecast
+
+The product catalog and deal line items live under Settings > Products and the deal page's
+Products section. A deal has a currency and an optional probability override, stages carry their
+own probability, and rates are manual under Settings > Currencies. The board and deals list show
+totals converted to the base currency (deals without a rate are counted as excluded), the board
+also shows the weighted total, and `/forecast` groups open deals by expected close month (drag a
+card to re-date it). Money math uses integer minor units, never floats. See
+[docs/dealflow/SALES.md](docs/dealflow/SALES.md).
+
 ## Tests
 
 ```bash

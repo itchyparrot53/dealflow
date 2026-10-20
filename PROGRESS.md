@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-20 21:11
+Current: 3.4 · Last updated: 2026-10-20 21:13
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -27,7 +27,7 @@ Current: 3.3 · Last updated: 2026-10-20 21:11
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Forecast service (test-first)
 - [x] 3.2 Forecast page and navigation
-- [ ] 3.3 Demo seed and docs
+- [x] 3.3 Demo seed and docs
 - [ ] 3.4 Phase 3 QA gate
 - [ ] 4.1 E2E sales spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -108,6 +108,11 @@ Current: 3.3 · Last updated: 2026-10-20 21:11
 - 3.2: dragging uses dnd-kit with an optimistic `moves` overlay; the card leaves its old month immediately, a refused action removes the override (rollback) and shows copy, and the totals catch up when `forecast.get` invalidates.
 - 3.2: the Forecast item sits after Pipeline in `NAV_ITEMS` with a TrendingUp glyph; the number-key shortcuts shift by one because they index that same list by design.
 - 3.2: the no-date section shows the service's first 100 titles with the real count in its heading.
+
+- 3.3: demo sales data lives in `scripts/seed-demo-sales.ts` so `seed-demo.ts` stays within its size and the seed stays re-runnable: products upsert by code, lines are replaced per deal, and the EUR/GBP/JPY deals are matched by title instead of duplicating.
+- 3.3: the seed keeps the USD base that `seedSettings` creates; if an install already uses another base, the rate for that code is skipped (the API refuses a base rate) and the same numbers are used against the existing base.
+- 3.3: close dates are assigned by a title ranking: the first two open deals go 10 and 20 days into the past (overdue), the next three lose their date, and the rest are spread over the next six months.
+- 3.3: `docs/dealflow/SALES.md` documents the model, money rules, rates, probability, forecast rules, permissions and tests; `UPSTREAM.md` lists every upstream file this part edits, and the README gained a short Products/currencies/forecast section.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -118,3 +118,41 @@ From this commit on, an upstream fix that touches the email layer must be ported
 upstream column names no longer exist here. Read the upstream diff, map the old names onto the new
 ones, and prefer the `MailProvider` layer in `src/features/mail/` over adding new `GmailClient`
 call sites. The Gmail adapter keeps the upstream sync engine (`syncMailbox`) unchanged.
+
+## Part 3 (products, currencies, forecast) base
+
+Part 3 builds on the Part 2 result at commit `15ff072` (PROGRESS-P2.md). The new work lives in
+`src/features/currency/`, `src/features/products/` and `src/features/forecast/`, plus the new
+`src/db/schema/sales.ts` and migration `0080_dealflow_sales`. Upstream files edited for the part
+(port future upstream fixes here by hand):
+
+- `src/db/schema/deals.ts` (comment only): `deals.value` now documents "value in the deal's
+  currency".
+- `src/db/schema/index.ts`, `src/constants/errorIds.ts`, `src/constants/permissionFlags.ts`,
+  `src/constants/changeLogFields.ts`, `src/features/permissions/actions-meta.ts`,
+  `src/server/trpc/root.ts`: the sales schema export, the PRODUCT/CURRENCY IDs, the
+  `products.manage` capability, currency/probability change fields and the currency/products/
+  forecast routers.
+- `src/features/deals/dealUpdate.ts`: the manual-value guard (`E_PRODUCT_004`) and
+  `recordDealValueChange`, the line-sync writer that shares the manual edit's change log and
+  `dealUpdated` event.
+- `src/features/deals/dealRepo.ts`, `useBoardDerived.ts`, `Board.tsx`, `BoardStages.tsx`,
+  `BoardColumn.tsx`, `boardTypes.ts`: the board/list reads now select the deal currency and
+  effective probability, and the totals convert and weight through `summarize`.
+- `src/features/deals/DealList.tsx`, `DealListClient.tsx`, `fetchDealListRows.ts`,
+  `dealListPageData.ts`: the excluded-deals footer and the base-converted list totals.
+- `src/features/deal-workspace/summaryRepo.ts`, `DealSidebar.tsx`, `DealSummaryActionList.tsx`,
+  `src/constants/dealSidebarSections.ts`, `src/constants/dealSidebarStrings.ts`: the optional
+  `productSummary`, the Products sidebar section, "Calculated from products" and the "≈ base" value.
+- `src/features/pipelines/StageEditCard.tsx`, `SortableStageCard.tsx`, `EditPipelineClient.tsx`,
+  `useStageDeletion.ts`: the per-stage probability input and its immediate save.
+- `src/components/shell/LeftNav.tsx`, `NavIcons.tsx`, `src/constants/nav.ts`,
+  `src/constants/strings.ts`: the Forecast navigation item.
+- `src/app/(app)/pipeline/[id]/page.tsx`, `[id]/list/page.tsx`, `[id]/archived/page.tsx`,
+  `pipeline/[id]/edit/page.tsx`, `settings/SettingsNav.tsx`: rate-map and probability wiring, plus
+  the Currencies and Products settings links.
+- `scripts/seed-demo.ts` (and new `scripts/seed-demo-sales.ts`): demo products, rates, lines and
+  close-date spread.
+- `src/constants/errorIds.test.ts`, `src/features/deals/DealListClient.test.tsx`: the new domain
+  and footer field in existing assertions.
+- `README.md`: the "Products, currencies and forecast" section.
