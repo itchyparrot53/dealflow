@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-21 00:41
+Current: 4.5 · Last updated: 2026-10-21 00:47
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -33,7 +33,7 @@ Current: 4.4 · Last updated: 2026-10-21 00:41
 - [x] 4.1 E2E documents spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -137,6 +137,7 @@ Current: 4.4 · Last updated: 2026-10-21 00:41
 - 4.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` compose project and its volumes; verified afterwards that no container and no volume with that name remain. No prune was run.
 - 4.3: one independent review ran in a fresh-context subagent with the full `.dsh/qa.md` and "Final review of PLAN-PART4.md. Base commit e214c9a...". It returned `QA RESULT: PASS` with no blockers, majors or minors, after running typecheck, lint, unit, build and check:progress itself and checking the spec hooks, routes, schema, copy and screenshots; no fix round was needed, so the gate commands were not re-run for a fix and no second review was required.
 - 4.3: the reviewer separately confirmed the integration, e2e and smoke results from their artifacts (`.last-run.json`, `.smoke/smoke.env`, the screenshot files) rather than re-running those long checks.
+- 4.4: every item of the plan's final checklist was run in order and recorded under Final report -> Checklist. The long checks (integration, e2e, smoke) were cited from the Task 4.1 and 4.2 runs because no code changed since; typecheck, lint, unit, build, install, the greps and the migration table list were re-run on the final tree.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
@@ -157,4 +158,23 @@ Current: 4.4 · Last updated: 2026-10-21 00:41
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` printed nothing at the Task 4.4 boundary.
+2. PASS - `pnpm install --frozen-lockfile` exited 0 and `git diff e214c9a..HEAD -- package.json pnpm-lock.yaml` is empty: no dependency changed.
+3. PASS - `pnpm typecheck` exited 0.
+4. PASS - `pnpm lint` exited 0 (biome checked 2890 files; 14 warnings, 0 errors).
+5. PASS - `pnpm test:unit` passed 5063/5063 in 801 files (baseline 5004).
+6. PASS - `pnpm test:integration` passed 1902/1902 in 394 files (57.7 s; Task 4.2).
+7. PASS - `pnpm build` exited 0; `/documents`, `/documents/[id]`, `/documents/[id]/print`, `/d/[publicId]`, the two `/api/public/documents/...` routes and `/settings/documents` are in the route list.
+8. PASS - `pnpm e2e` passed 18/18 across specs `00` to `08` (1.1 min; Task 4.1), and `test-results/.last-run.json` records the passed status.
+9. PASS - 7 `e2e/screenshots/p4-*.png` exist, and the 23 `p1-*`, 8 `p2-*` and 6 `p3-*` screenshots are still present.
+10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS; no `dealflow-smoke` container or volume remains (Task 4.2).
+11. PASS - `drizzle/0081_dealflow_documents.sql` creates exactly document_settings, document_templates, document_counters, documents, document_lines and document_payments.
+12. PASS - `git grep -n "dangerouslySetInnerHTML" -- src/features/documents src/app/d` printed nothing.
+13. PASS - the float scan's only real `Number(...)` is `issue.ts:71`, which parses the issue year from an ISO date for numbering; the other hits are the `formatDocNumber` name and its tests. No money is parsed as a float; money stays bigint minor units in `money.ts`.
+14. PASS - `git grep -c "E_DOC_0" src/constants/errorIds.ts` is 12: the ten 6.2 IDs plus input-invalid and last-template.
+15. PASS - the em dash scan over every changed non-kit file (`git diff --name-only e214c9a..HEAD`, kit files excluded) printed nothing.
+16. PASS - `docs/dealflow/DOCUMENTS.md` exists and `UPSTREAM.md` has a Part 4 section listing every upstream file.
+17. PASS - `pnpm check:progress --final` passes (run in Task 4.5 once the report and the final ticks are in place).
