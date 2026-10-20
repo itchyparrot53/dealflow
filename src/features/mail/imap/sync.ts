@@ -8,6 +8,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import { ok, type Result } from "@/types/result";
 import type { ImapSession } from "../transport/types";
 import { applyFolderMessages } from "./applyInbound";
+import { enqueueBackfillJob } from "./backfill";
 import { deleteFolderState, type FolderCursor, getCursors, upsertCursor } from "./cursors";
 import { discoverFolders } from "./folders";
 import { deleteLocations, folderLocations } from "./locations";
@@ -29,10 +30,7 @@ export interface SyncResult {
 }
 
 function defaultEnqueueBackfill(accountId: string): Promise<void> {
-  // Task 3.4 wires the real pg-boss producer; until then the sync engine still runs, and tests
-  // pass their own dep, so a missing queue never blocks a folder pass.
-  void accountId;
-  return Promise.resolve();
+  return enqueueBackfillJob(accountId);
 }
 
 function shouldBackfill(): boolean {

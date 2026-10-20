@@ -5,6 +5,7 @@ import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
+import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { setBoss } from "@/jobs/boss";
@@ -15,6 +16,7 @@ import { setBoss } from "@/jobs/boss";
 // the file reaper (hourly cron schedule), then the activity reminder worker.
 export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerEmailJobs(boss);
+  await registerMailBackfillWorker(boss);
   await registerReaperJob(boss);
   await registerImportWorkers(boss);
   await registerEmailNotificationWorker(boss);

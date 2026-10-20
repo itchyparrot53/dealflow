@@ -27,10 +27,9 @@ export interface ApplyInboundArgs {
 export interface ApplyInboundResult {
   applied: number;
   touchedThreadIds: string[];
-}
-
-function unique<T>(values: T[]): T[] {
-  return [...new Set(values)];
+  // Earliest internal date among the sources processed in this call (null when every source
+  // lacked one). The backfill uses it to move its window ceiling down after a partial run.
+  oldestMessageDate: Date | null;
 }
 
 async function parseSource(
@@ -113,6 +112,36 @@ async function applyOne(
   return ok({ applied: stored.inserted, threadId: stored.threadId });
 }
 
+interface Collected {
+  applied: number;
+  touched: Set<string>;
+  dates: Date[];
+}
+
+async function applyBatch(
+  args: ApplyInboundArgs,
+  batch: number[],
+  collected: Collected,
+): Promise<Result<void, AppError>> {
+  const fetched = await args.session.fetchSources(
+    args.folder,
+    batch,
+    env.MAIL_MAX_MESSAGE_BYTES,
+    args.signal,
+  );
+  if (!fetched.ok) return fetched;
+
+  for (const source of fetched.value) {
+    args.signal.throwIfAborted();
+    const one = await applyOne(args, source);
+    if (!one.ok) return one;
+    if (one.value.applied) collected.applied += 1;
+    if (one.value.threadId !== undefined) collected.touched.add(one.value.threadId);
+    if (source.internalDate !== null) collected.dates.push(source.internalDate);
+  }
+  return ok(undefined);
+}
+
 // Store the given UIDs from one folder. A message already known for this account only gains a
 // location; a new one is parsed (headers plus a preview when it is too large), threaded and stored
 // with its location in one transaction, so a crash cannot leave half a message.
@@ -120,29 +149,23 @@ export async function applyFolderMessages(
   args: ApplyInboundArgs,
 ): Promise<Result<ApplyInboundResult, AppError>> {
   args.signal.throwIfAborted();
-  const touched: string[] = [];
-  let applied = 0;
+  const collected: Collected = { applied: 0, touched: new Set<string>(), dates: [] };
 
   for (let index = 0; index < args.uids.length; index += MAIL_BATCH_SIZE) {
     const batch = args.uids.slice(index, index + MAIL_BATCH_SIZE);
-    const fetched = await args.session.fetchSources(
-      args.folder,
-      batch,
-      env.MAIL_MAX_MESSAGE_BYTES,
-      args.signal,
-    );
-    if (!fetched.ok) return fetched;
-
-    for (const source of fetched.value) {
-      args.signal.throwIfAborted();
-      const one = await applyOne(args, source);
-      if (!one.ok) return one;
-      if (one.value.applied) applied += 1;
-      if (one.value.threadId !== undefined) touched.push(one.value.threadId);
-    }
+    const applied = await applyBatch(args, batch, collected);
+    if (!applied.ok) return applied;
   }
 
-  return ok({ applied, touchedThreadIds: unique(touched) });
+  const oldestMessageDate =
+    collected.dates.length === 0
+      ? null
+      : collected.dates.reduce((min, date) => (date < min ? date : min));
+  return ok({
+    applied: collected.applied,
+    touchedThreadIds: [...collected.touched],
+    oldestMessageDate,
+  });
 }
 
 // Look up which of these provider message ids already exist for the account. Kept for callers

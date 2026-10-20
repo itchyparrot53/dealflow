@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-20 09:30
+Current: 3.5 · Last updated: 2026-10-20 09:45
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -32,7 +32,7 @@ Current: 3.4 · Last updated: 2026-10-20 09:30
 - [x] 3.1 Folders, cursors and locations
 - [x] 3.2 Inbound apply and threading
 - [x] 3.3 Incremental sync and UIDVALIDITY reset
-- [ ] 3.4 Initial window and background backfill
+- [x] 3.4 Initial window and background backfill
 - [ ] 3.5 IDLE manager and sync cadence
 - [ ] 3.6 Sync integration tests
 - [ ] 3.7 Phase 3 QA gate
@@ -60,6 +60,8 @@ Current: 3.4 · Last updated: 2026-10-20 09:30
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 3.4: a window with more messages than MAIL_BACKFILL_MAX_PER_RUN applies the oldest 300 and moves the cursor ceiling to the earliest processed internal date (new `oldestMessageDate` on the apply result), so the next run continues below it; a complete window moves the ceiling to the window start, and the clamp sets `backfillDone` and clears `backfillBefore`.
+- 3.4: the backfill job is registered from `registerAllJobs` after the email jobs, times out at 120 s, and re-enqueues itself with `startAfter: 30` while any folder remains; the initial enqueue stays singleton per account.
 - 3.3: the initial pass sets `lastUid` to `max(uidNext - 1, newest applied uid)` and keeps `backfillBefore` for inbox/sent/archive only, so older mail is fetched by the backfill job instead of the incremental pass; junk and trash are listed whole and marked backfill-done.
 - 3.3: the unchanged shortcut needs both a non-null HIGHESTMODSEQ match and a listing within 15 minutes, so a server without CONDSTORE (the fake, and Purelymail for empty folders) still lists every tick; vanished locations are ignored when the listing is empty but the folder reports messages.
 - 3.3: the IMAP provider's `sync` hydrates the owner, opens a session, runs the engine and closes the session in `finally`; an auth failure marks the account `status = 'error'` with `last_error_id` so Settings offers Update password.
