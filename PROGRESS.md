@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 3.7 · Last updated: 2026-10-20 10:20
+Current: 4.1 · Last updated: 2026-10-20 10:30
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
 - Phase 1: 508cafc269715bd4cf1e68f676499bd0b01aed5b
 - Phase 2: 21e78ca3fdbf88845c08ff6014ff662b75435905
 - Phase 3: b016fdcb2b3b98e19c242553ebe00ecc7a8e6d5f
+- Phase 4: 09b1c6ddad022b60b851575d8505c96b18ab4c04
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
@@ -35,7 +36,7 @@ Current: 3.7 · Last updated: 2026-10-20 10:20
 - [x] 3.4 Initial window and background backfill
 - [x] 3.5 IDLE manager and sync cadence
 - [x] 3.6 Sync integration tests
-- [ ] 3.7 Phase 3 QA gate
+- [x] 3.7 Phase 3 QA gate
 - [ ] 4.1 SMTP send and the Sent APPEND
 - [ ] 4.2 Reply headers, thread ids and reconcile for IMAP
 - [ ] 4.3 Send throttle
@@ -50,6 +51,7 @@ Current: 3.7 · Last updated: 2026-10-20 10:20
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 3 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail/email integration 351/351
 - Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail integration 5/5
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4950/4950 · email/notifications/leads integration 480/480
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · ai/auth/release integration 83/83
