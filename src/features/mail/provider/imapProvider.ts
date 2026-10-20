@@ -3,10 +3,12 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailAccounts } from "@/db/schema";
 import { hydrateOwner } from "@/features/email/syncCursor";
-import { err, ok, type Result } from "@/types/result";
+import { err, ok } from "@/types/result";
 import type { MailCredentials } from "../connect/credentials";
+import { fetchImapAttachment } from "../imap/attachments";
 import { sendImapMessage, sentFolderPath } from "../imap/send";
 import { syncImapAccount } from "../imap/sync";
+import { trashImapThread } from "../imap/trash";
 import { normalizeMessageId } from "../parse/messageId";
 import type { MailTransportFactory } from "../transport/types";
 import type { MailProvider } from "./types";
@@ -16,9 +18,9 @@ export interface ImapProviderOptions {
   limits?: { dailyRecipients?: number; maxRecipients?: number };
 }
 
-// The IMAP implementation is built up over Tasks 3.3 to 4.4. Until then every method reports
-// E_MAIL_015 so resolveMailProvider can already return kind "imap" and the connect flow can be
-// proved end to end without pretending to sync.
+// The IMAP implementation: sync over the shared engine, send over SMTP plus the Sent APPEND,
+// replies and reconcile from the stored headers, attachments re-fetched on demand, and trash by
+// MOVE. Every method opens its own session and closes it before returning.
 // Reply headers for a reply into an existing thread: the stored headers of the parent give the
 // In-Reply-To and the References chain the SMTP message needs.
 async function imapReplyHeaders(
@@ -60,10 +62,6 @@ export function createImapProvider(
   transports: MailTransportFactory,
   options: ImapProviderOptions = {},
 ): MailProvider {
-  const unsupported = (): Promise<Result<never, AppError>> =>
-    Promise.resolve(
-      err(new AppError(ERROR_IDS.MAIL_UNSUPPORTED, "imap provider not wired yet", { accountId })),
-    );
   return {
     kind: "imap",
 
@@ -189,8 +187,38 @@ export function createImapProvider(
       }
     },
 
-    fetchAttachment: unsupported,
-    trashThread: unsupported,
+    async fetchAttachment(args) {
+      const opened = await transports.openImap(creds.imap, args.signal);
+      if (!opened.ok) return opened;
+      try {
+        return await fetchImapAttachment({
+          db,
+          accountId,
+          session: opened.value,
+          providerMessageId: args.providerMessageId,
+          providerAttachmentId: args.providerAttachmentId,
+          signal: args.signal,
+        });
+      } finally {
+        await opened.value.close();
+      }
+    },
+
+    async trashThread(args) {
+      const opened = await transports.openImap(creds.imap, args.signal);
+      if (!opened.ok) return opened;
+      try {
+        return await trashImapThread({
+          db,
+          accountId,
+          session: opened.value,
+          providerThreadId: args.providerThreadId,
+          signal: args.signal,
+        });
+      } finally {
+        await opened.value.close();
+      }
+    },
     close: () => Promise.resolve(),
   };
 }
