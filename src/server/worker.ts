@@ -6,6 +6,7 @@ import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
 import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleManager";
+import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
@@ -18,6 +19,7 @@ import { setBoss } from "@/jobs/boss";
 export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerEmailJobs(boss);
   await registerMailBackfillWorker(boss);
+  await registerMailAppendWorker(boss);
   await registerReaperJob(boss);
   await registerImportWorkers(boss);
   await registerEmailNotificationWorker(boss);

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-20 10:30
+Current: 4.2 · Last updated: 2026-10-20 10:45
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -37,7 +37,7 @@ Current: 4.1 · Last updated: 2026-10-20 10:30
 - [x] 3.5 IDLE manager and sync cadence
 - [x] 3.6 Sync integration tests
 - [x] 3.7 Phase 3 QA gate
-- [ ] 4.1 SMTP send and the Sent APPEND
+- [x] 4.1 SMTP send and the Sent APPEND
 - [ ] 4.2 Reply headers, thread ids and reconcile for IMAP
 - [ ] 4.3 Send throttle
 - [ ] 4.4 Attachments on demand and trash MOVE
@@ -62,6 +62,9 @@ Current: 4.1 · Last updated: 2026-10-20 10:30
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 4.1: the wire copy is `stripBccHeader(raw)` while the Sent APPEND carries the full message; the send returns as soon as SMTP accepts, and the APPEND runs in its own session with a 15 s budget so it can never abort an accepted send.
+- 4.1: `mail_sent_appends` is written before the APPEND; a failure increments `tries` and `last_error_id`, and the five-minute retry job rebuilds the MIME from the stored payload, the fixed Message-ID and the thread's newest other message for In-Reply-To/References, marking `gave_up` at 12 tries.
+- 4.1: the CRM copy's snippet comes from the attempt payload's text part (HTML stripped as a fallback), because the provider only receives the raw message; `sendEmail` picks a 30 s budget for IMAP and keeps 8 s for Gmail.
 - 3.6: a message that already exists and reappears in another folder now reports its thread id, so the whole-thread trash state is re-evaluated when a location is added; a folder whose listing is empty but which reports zero messages has all its locations treated as vanished, while the "empty listing on a non-empty folder" guard stays.
 - 3.6: the fake transport bumps the SOURCE folder's MODSEQ on `move`, mirroring a real server's expunge, so the sync notices vanished UIDs; without it the unchanged shortcut skipped the emptied folder.
 - 3.6: the nine required cases run against the fake transport and real Postgres, including initial window plus backfill enqueue, header threading with a child before its parent, subject fallback, cross-folder dedupe, trash state both ways, UIDVALIDITY reset, person/deal linking, the no-change skip and the backfill walk to the clamp.

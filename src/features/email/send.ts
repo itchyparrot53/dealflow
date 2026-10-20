@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { EMAIL_VISIBILITY } from "@/constants/email";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { MAIL_SEND_TIMEOUT_MS } from "@/constants/mail";
 import type { Db } from "@/db/client";
 import type { StorageClient } from "@/features/files/storage";
 import type { MailProvider } from "@/features/mail/provider/types";
@@ -81,7 +82,9 @@ export async function sendEmail(
   db: Db,
   args: SendEmailArgs,
 ): Promise<Result<{ status: string; messageId?: string }, AppError>> {
-  const signal = args.signal ?? AbortSignal.timeout(8000);
+  // An IMAP send is SMTP plus an APPEND, so it gets the 30 s budget; Gmail keeps its 8 s.
+  const signal =
+    args.signal ?? AbortSignal.timeout(args.provider.kind === "imap" ? MAIL_SEND_TIMEOUT_MS : 8000);
   // Localized boundary: the tracking-path DB calls (mint/persist/backfill/disable) and
   // the outbox throw on DB failure. Turn any unexpected throw into a Result so the
   // server action surface stays Result-clean (never an unhandled 500). An AbortError
