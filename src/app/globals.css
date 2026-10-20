@@ -330,3 +330,41 @@
 .rdp-root .rdp-chevron {
   fill: hsl(var(--foreground));
 }
+
+/* Printing a document (public page and /documents/[id]/print). A4 with the
+   browser's own PDF writer; the app chrome carries data-print-hide. */
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm;
+  }
+  [data-print-hide] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  /* Print only the document: drop the shell padding and the muted page wash. */
+  main {
+    max-width: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  article {
+    max-width: none !important;
+    color: #000 !important;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid hsl(var(--border)) !important;
+    border-collapse: collapse;
+  }
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

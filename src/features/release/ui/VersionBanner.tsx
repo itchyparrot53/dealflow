@@ -41,7 +41,7 @@ export function VersionBanner() {
   };
 
   return (
-    <div className="border-b bg-accent/60 px-4 py-2 text-sm text-accent-foreground">
+    <div data-print-hide className="border-b bg-accent/60 px-4 py-2 text-sm text-accent-foreground">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
         <span className="font-semibold">A new upstream release ({latest}) is available</span>
         <span className="text-muted-foreground">(current: {data.current})</span>

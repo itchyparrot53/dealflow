@@ -20,7 +20,7 @@ export function TopBar({
   appearance?: Appearance;
 }): React.ReactNode {
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
+    <header data-print-hide className="flex h-14 items-center gap-4 border-b bg-background px-4">
       <Link
         href="/pipeline"
         aria-label={`${STRINGS.app.name} home`}

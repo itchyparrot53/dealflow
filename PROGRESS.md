@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-21 00:14
+Current: 3.5 · Last updated: 2026-10-21 00:17
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -26,7 +26,7 @@ Current: 3.4 · Last updated: 2026-10-21 00:14
 - [x] 3.1 Settings → Documents
 - [x] 3.2 Deal section, document page, view and public actions
 - [x] 3.3 Documents list and navigation
-- [ ] 3.4 Print stylesheet and preview
+- [x] 3.4 Print stylesheet and preview
 - [ ] 3.5 Demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E documents spec and screenshots
@@ -116,6 +116,9 @@ Current: 3.4 · Last updated: 2026-10-21 00:14
 - 3.3: the main navigation gained Documents after Forecast (FileText glyph), so the number-key shortcuts shift by one because they index the same list by design, exactly as Part 3 logged for Forecast; the shortcut tests index `NAV_ITEMS` dynamically and stay valid.
 - 3.3: the new integration case proves the visibility filter and the base-currency total (admin 1100.00, regular 600.00, JPY excluded, quotes never counted) and clears the documents table first because the total is global to the test database.
 - 3.3: `/documents` builds alongside `/documents/[id]`; a quote's date column shows valid-until and an invoice's shows due date.
+- 3.4: the print rules live in `globals.css` under `@media print`: `@page { size: A4; margin: 18mm }`, `[data-print-hide]` hidden, black on white, table borders from the `--border` token, and `main`/`article` unclamped so a multi-page document is not clipped by the shell's scroll container.
+- 3.4: the app chrome is hidden by marking it, not by guessing selectors: `TopBar`, `LeftNav`, `ReconnectBanner` and `VersionBanner` carry `data-print-hide`. `DocumentView`'s own `<header>` is untouched, so a blanket `header` rule is avoided.
+- 3.4: `/documents/[id]/print` reuses `DocumentView` with `renderDocumentBody`, renders a print button that carries `data-print-hide`, and builds as a dynamic route alongside `/documents` and `/documents/[id]`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -10,6 +10,7 @@ export function ReconnectBanner({ visible = false }: { visible?: boolean }): Rea
   return (
     <div
       role="status"
+      data-print-hide
       aria-live="polite"
       className="bg-warning px-4 py-1 text-center text-xs text-warning-foreground"
     >
