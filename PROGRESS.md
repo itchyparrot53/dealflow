@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-20 23:41
+Current: 3.1 · Last updated: 2026-10-21 00:02
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
 - Phase 1: 9322d5e0677f1253b833249fff70ed9e3c9a6375
 - Phase 2: 3d59f4b61b69eb62b0afd0703d478ecf0c6ba586
+- Phase 3: 4770be57f7c881e33848e45727425d263da27266
 
 ## Tasks
 - [x] 0.1 Start Part 4: progress files, kit and baseline
@@ -21,7 +22,7 @@ Current: 2.3 · Last updated: 2026-10-20 23:41
 - [x] 1.6 Phase 1 QA gate
 - [x] 2.1 Public reads, accept and decline (test-first)
 - [x] 2.2 Owner notifications
-- [ ] 2.3 Phase 2 QA gate
+- [x] 2.3 Phase 2 QA gate
 - [ ] 3.1 Settings → Documents
 - [ ] 3.2 Deal section, document page, view and public actions
 - [ ] 3.3 Documents list and navigation
@@ -38,6 +39,7 @@ Current: 2.3 · Last updated: 2026-10-20 23:41
 - Baseline: typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5004/5004
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · no named integration files at this gate
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5063/5063 · documents/products/mail integration 68/68
+- Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · documents/notifications/auth integration 142/142
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS-P3.md (formerly PROGRESS.md) said `dealflow-wd-p3-v1` with `STATUS: COMPLETE`, and HEAD is `e214c9a8e17342315ee36e23e0f65588843c1e58`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
@@ -96,6 +98,8 @@ Current: 2.3 · Last updated: 2026-10-20 23:41
 - 2.2: email defaults are off for `document_viewed` (per-event noise) and on for `document_accepted`/`document_declined` (outcomes), matching the default policy comment in `notificationDefaults.ts`.
 - 2.2: changed tests: `src/features/notifications/preferences.test.ts` gained the three expected defaults, and `src/features/notifications/schema.test.ts` now expects 13 enum values including the document kinds; no assertion was weakened.
 - 2.2: the notification email renderer gained a grouped document case backed by one `documentEmailCopy` helper, because adding three inline cases pushed the existing switch over the cognitive-complexity cap.
+- 2.3: the first full unit run after 2.2 failed the two static policy tests (`paletteTokens`, `typeScale`): the minimal public page used raw `slate` utilities and a `text-2xl` h1. Fixed to semantic tokens (`bg-background`, `text-foreground`, `text-muted-foreground`) and `text-display` in `2.3: fixes round 1`; both tests then passed.
+- 2.3: the host was under extreme external load (load average 190), so the first unit run took 733s and surfaced spurious worker-start timeouts; the re-run with `--maxWorkers=4` passed 5063/5063 in 139s. No test was changed for that.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
