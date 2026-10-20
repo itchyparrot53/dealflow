@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-20 23:00
+STATUS: COMPLETE
+Current: COMPLETE · Last updated: 2026-10-20 23:05
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -34,7 +34,7 @@ Current: 4.5 · Last updated: 2026-10-20 23:00
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 0/5/7 · fixed 12
@@ -178,3 +178,48 @@ Current: 4.5 · Last updated: 2026-10-20 23:00
 14. PASS - no em dash in any file changed since `15ff072` (kit files excepted).
 15. PASS - `docs/dealflow/SALES.md` exists and `docs/dealflow/UPSTREAM.md` has a Part 3 section listing every upstream file changed.
 16. PASS - `pnpm check:progress --final` passes (run in Task 4.5 once the report and ticks are in place).
+
+### Definition of done
+
+1. PASS - migration `0080_dealflow_sales` adds exactly products, deal_products, deal_terms, stage_probabilities and currency_rates; existing deals read as base currency, with only the `deals.value` comment changed.
+2. PASS - `src/features/currency/money.ts` does all money math on bigint minor units with half-away-from-zero rounding; its 25 unit tests pass and no float touches a money value in the new features.
+3. PASS - Settings > Currencies sets the base and manual rates, refuses a base-code rate and clears every rate in one transaction when the base changes (with the AlertDialog warning).
+4. PASS - Settings > Products lists, creates, edits, archives and deletes products; a used product is refused with `E_PRODUCT_002` and duplicates with `E_PRODUCT_003`.
+5. PASS - the deal Products section adds, edits and removes lines, shows net/tax/gross, writes the value through the change log and realtime, and refuses a manual value edit while lines exist.
+6. PASS - deals carry a currency and optional probability override, stages carry a probability (default 100), a foreign-currency product converts at add time, and a missing rate refuses with no write.
+7. PASS - board column totals, the weighted total and the deals-list footer are converted to the base currency; deals without a rate are listed as excluded, never summed unconverted.
+8. PASS - `/forecast` buckets open deals by close month (overdue in the first month), won deals by won month, respects visibility and the pipeline filter, and dragging a card re-dates the deal.
+9. PASS - the demo seed has 6 products (2 EUR), stage probabilities 10/25/50/75/90, lines on 5 deals, an EUR and a GBP deal with lines, a JPY deal with no rate, 2 overdue and 3 undated deals.
+10. PASS - typecheck, lint, build, unit 5004/5004, integration 1857/1857, e2e 17/17, 6 `p3-*` screenshots, smoke PASS and one independent review (round 3 PASS) all hold.
+
+### Owner actions
+
+1. Rebuild the dev stack so the app serves the Part 3 build and the database's GBP base currency applies:
+   `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+2. Add the rates your deals need in Settings > Currencies. GBP is the base and needs no rate; the live database currently has no stored EUR or USD rate.
+3. Fix the partial Google configuration in `.env` (client id and secret set, workspace domain empty) or blank all three. Until then commands that load `.env` need the three `GOOGLE_*=` overrides.
+4. Re-run `pnpm mail:live-check` if the mail probe credentials or host change, and read `docs/dealflow/mail-live-check.json`.
+5. Optional: the demo seed (`pnpm db:seed:demo`) and the e2e fixture still assume a USD base; the live database is GBP by your request.
+
+### Decisions worth reviewing
+
+- No `CONTRACT CHANGE:` lines were needed in Part 3.
+- Changed tests: `src/constants/errorIds.test.ts` gained the PRODUCT/CURRENCY domains; `DealListClient.test.tsx` expectations gained the new `excluded: []` footer field; the e2e helper `waitForText` now reloads only while the text is absent and waits for `networkidle` (the old three-second reload loop starved the inbox fetch under load); the AI summary assertion got a 20 s budget and the mail spec a 300 s budget on the same full-suite load.
+- The base currency is GBP in the live database at your direct request; code defaults, seeds and e2e remain USD so the verified contracts and screenshots do not change.
+- A refused forecast drag is shown as an inline `role="alert"`, not a toast, because the repo has no toast helper; adding one would add UI infrastructure outside the plan's stack rule.
+
+### Open issues
+
+- No toast helper exists, so the refused forecast drag stays inline (accepted minor from the final review).
+- The `Number(...)` hits in `src/features/forecast` parse dates and the 3/6/12 month selector, never money.
+- The live workspace base is GBP while fresh installs and demo/e2e data seed USD; a code-level default change was left to the owner.
+- Docker's VM disk is tight; nothing was pruned.
+- The dev stack still runs the pre-Part-3 build until the owner action 1 rebuild.
+
+### Notes for Part 4
+
+- New routes: `/forecast`, `/settings/currencies`, `/settings/products`; the deal page gained a Products sidebar section and a stage probability input in the pipeline editor.
+- New screenshots: `p3-settings-currencies`, `p3-settings-products`, `p3-product-dialog`, `p3-deal-products`, `p3-board-totals`, `p3-forecast`.
+- Money helpers: `src/features/currency/money.ts` (parsing/rounding/conversion) and `totals.ts` (`summarize`); rates and base currency live in `rates.ts`.
+- Schema: `src/db/schema/sales.ts`, migration `0080_dealflow_sales`; the forecast service is `src/features/forecast/forecast.ts`.
+- Upstream files changed in this part are listed in `docs/dealflow/UPSTREAM.md` (Part 3 section).
