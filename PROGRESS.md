@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.7 · Last updated: 2026-10-20 04:00
+Current: 2.1 · Last updated: 2026-10-20 04:08
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
 - Phase 1: 508cafc269715bd4cf1e68f676499bd0b01aed5b
+- Phase 2: 21e78ca3fdbf88845c08ff6014ff662b75435905
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
@@ -20,7 +21,7 @@ Current: 1.7 · Last updated: 2026-10-20 04:00
 - [x] 1.4 Send path on MailProvider
 - [x] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
 - [x] 1.6 Message-ID domain and notification emails via the system mailer
-- [ ] 1.7 Phase 1 QA gate
+- [x] 1.7 Phase 1 QA gate
 - [ ] 2.1 Parser, Message-IDs, subjects and Bcc stripping
 - [ ] 2.2 Transport interfaces and real transports
 - [ ] 2.3 Filesystem fake transport
@@ -48,6 +49,7 @@ Current: 1.7 · Last updated: 2026-10-20 04:00
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4950/4950 · email/notifications/leads integration 480/480
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · ai/auth/release integration 83/83
 - Audit P1: subagent (fresh context) · QA RESULT PASS · 0/0/0
 - Baseline: typecheck ok · lint ok · build ok (a first attempt hit an `ENOTEMPTY` race on `.next`; the retry after the tree settled passed) · unit 4945/4945 · integration 1788/1790 (the 2 `src/features/release/router.test.ts` failures are R4, fixed in Task 0.5)
