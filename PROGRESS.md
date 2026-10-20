@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-20 22:50
+Current: 4.5 · Last updated: 2026-10-20 23:00
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -33,7 +33,7 @@ Current: 4.4 · Last updated: 2026-10-20 22:50
 - [x] 4.1 E2E sales spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -159,4 +159,22 @@ Current: 4.4 · Last updated: 2026-10-20 22:50
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` was empty at the Task 4.3 commit boundary.
+2. PASS - `pnpm install --frozen-lockfile` exited 0 (902 ms) and `git diff 15ff072..HEAD -- package.json pnpm-lock.yaml` is empty: no dependency was added.
+3. PASS - `pnpm typecheck` exited 0.
+4. PASS - `pnpm lint` exited 0 (biome plus type-aware ESLint, 14 warnings, 0 errors).
+5. PASS - `pnpm test:unit` passed 5004/5004 in 798 files.
+6. PASS - `pnpm test:integration` passed 1857/1857 in 392 files (64.6 s).
+7. PASS - `pnpm build` exited 0 with the `GOOGLE_*` overrides; `/forecast`, `/settings/currencies` and `/settings/products` are in the route list.
+8. PASS - `pnpm exec playwright test` passed 17/17 across specs `00` to `07` (1.2 min).
+9. PASS - 6 `e2e/screenshots/p3-*.png`, 8 `p2-*.png` and 23 `p1-*.png` are present.
+10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS; no `dealflow-smoke` container or volume remains.
+11. PASS - `drizzle/0080_dealflow_sales.sql` exists and creates exactly the five tables: products, deal_products, deal_terms, stage_probabilities, currency_rates.
+12. PASS - the float grep hits only date and month-count parsing, never money: `forecast.ts` lines 91-92, 326-330 (`Number(month.slice...)`, day of month) and `ForecastBoard.tsx` lines 52, 160 (`Date.UTC(...)`, the 3/6/12 select). Money in the new features is bigint minor units.
+13. PASS - `errorIds.ts` lists all nine IDs `E_PRODUCT_001..005` and `E_CURRENCY_001..004`.
+14. PASS - no em dash in any file changed since `15ff072` (kit files excepted).
+15. PASS - `docs/dealflow/SALES.md` exists and `docs/dealflow/UPSTREAM.md` has a Part 3 section listing every upstream file changed.
+16. PASS - `pnpm check:progress --final` passes (run in Task 4.5 once the report and ticks are in place).
