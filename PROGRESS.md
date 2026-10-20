@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-20 16:15
+Current: 4.6 · Last updated: 2026-10-20 16:35
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -41,7 +41,7 @@ Current: 4.5 · Last updated: 2026-10-20 16:15
 - [x] 4.2 Reply headers, thread ids and reconcile for IMAP
 - [x] 4.3 Send throttle
 - [x] 4.4 Attachments on demand and trash MOVE
-- [ ] 4.5 Send integration tests
+- [x] 4.5 Send integration tests
 - [ ] 4.6 Phase 4 QA gate
 - [ ] 5.1 E2E mail spec and screenshots
 - [ ] 5.2 Live Purelymail check
@@ -62,6 +62,8 @@ Current: 4.5 · Last updated: 2026-10-20 16:15
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 4.5: the nine required cases pass against the fake transport and real Postgres; the APPEND failure test builds a wrapper factory whose session fails only `append`, and the retry job takes an injectable `transports` so it can run on the working fake.
+- 4.5: the daily-limit case seeds two sent attempts with one recipient each and passes `limits: { dailyRecipients: 2 }` to the provider, so the third send defers with a `scheduled_at` more than 20 hours out and no SMTP delivery.
 - 4.4: `fetchAttachment` ranks the message's locations inbox, sent, archive, junk, trash, re-fetches that UID (null source means over the byte cap → `E_MAIL_011`), re-parses with `simpleParser` and returns the `idx:{n}` attachment; no location or no index gives `E_MAIL_013`.
 - 4.4: `trashThread` groups the thread's locations by folder, MOVEs each group to the special-use Trash folder, replaces the rows from the returned UID map (reading the Trash folder's UIDVALIDITY once) and deletes the old rows; with no map the rows are deleted and the next sync re-adds them. The local `trashed_at` stamp stays with the caller, as for Gmail.
 - 4.2: `replyHeaders` reads `email_message_headers` for the parent; `findSent` searches the Sent folder by Message-ID (SEARCH lag is irrelevant by the time reconcile runs); `describeSent` finds the attempt by its stored header, falls back to `imap:<header>` for the thread id and to the stored header for the RFC 822 values when no headers row exists yet.

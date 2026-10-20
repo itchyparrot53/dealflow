@@ -11,7 +11,7 @@ import { makeStorageClient } from "@/features/files/storage";
 import { ok, type Result } from "@/types/result";
 import { loadImapCredentials } from "../connect/credentials";
 import { getMailTransportFactory } from "../transport/factory";
-import type { ImapSession } from "../transport/types";
+import type { ImapSession, MailTransportFactory } from "../transport/types";
 import { upsertLocation } from "./locations";
 import { sentFolderPath } from "./send";
 
@@ -191,11 +191,12 @@ async function bumpTries(
 async function retryOne(
   db: Db,
   append: PendingAppend,
+  transports: MailTransportFactory,
   signal: AbortSignal,
 ): Promise<"done" | "gaveUp" | "skipped"> {
   const credentials = await loadImapCredentials(db, append.accountId, signal);
   if (!credentials.ok || credentials.value === null) return "skipped";
-  const opened = await getMailTransportFactory().openImap(credentials.value.imap, signal);
+  const opened = await transports.openImap(credentials.value.imap, signal);
   if (!opened.ok) return "skipped";
   try {
     const attachments = await attachmentBytes(append.payload, signal).catch(() => null);
@@ -244,13 +245,15 @@ async function retryOne(
 export async function runAppendRetryJob(
   db: Db,
   signal: AbortSignal,
+  deps: { transports?: MailTransportFactory } = {},
 ): Promise<Result<{ retried: number; done: number; gaveUp: number }, AppError>> {
   const pending = await pendingAppends(db);
+  const transports = deps.transports ?? getMailTransportFactory();
   let done = 0;
   let gaveUp = 0;
   for (const append of pending) {
     signal.throwIfAborted();
-    const outcome = await retryOne(db, append, signal);
+    const outcome = await retryOne(db, append, transports, signal);
     if (outcome === "done") done += 1;
     if (outcome === "gaveUp") gaveUp += 1;
   }
