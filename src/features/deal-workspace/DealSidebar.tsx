@@ -13,6 +13,7 @@ import { DealAiCard } from "@/features/ai/ui/DealAiCard";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { DealProductsSection } from "@/features/products/ui/DealProductsSection";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CollapsibleSection } from "./CollapsibleSection";
@@ -50,6 +51,7 @@ export function DealSidebar({
   onSidebarSectionsChange,
   hiddenOrgFields = NONE,
   hiddenPersonFields = NONE,
+  canEditDeal = true,
 }: {
   workspace: DealWorkspace;
   now: Date;
@@ -65,6 +67,7 @@ export function DealSidebar({
   // sidebar sections drop the same rows the standalone detail pages do.
   hiddenOrgFields?: ReadonlySet<string>;
   hiddenPersonFields?: ReadonlySet<string>;
+  canEditDeal?: boolean;
 }): React.ReactNode {
   const {
     deal,
@@ -84,6 +87,7 @@ export function DealSidebar({
   const exitBulk = (): void => setBulkSection(null);
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
   const overview = dealOverview(deal.createdAt, deal.lastActivityAt, now);
+  const productSummary = workspace.productSummary;
   const sectionPrefs = normalizeDealSidebarSections(sidebarSections);
   const sections = STRINGS.dealSidebar.sections;
   const menu = STRINGS.dealSidebar.menu;
@@ -177,9 +181,24 @@ export function DealSidebar({
           org={org !== null ? { id: org.id, name: org.name } : null}
           orgOptions={orgOptions}
           baseCurrency={baseCurrency}
+          currency={productSummary?.currency ?? baseCurrency}
+          hasLines={(productSummary?.lineCount ?? 0) > 0}
+          valueBase={productSummary?.valueBase ?? null}
         />
       </CollapsibleSection>
     ) : null,
+
+    // The server always sends productSummary; fixtures that predate Part 3 omit it,
+    // so the section stays out of their render instead of opening a query with no provider.
+    products:
+      productSummary === undefined ? null : (
+        <DealProductsSection
+          key="products"
+          dealId={deal.id}
+          canEdit={canEditDeal}
+          baseCurrency={baseCurrency}
+        />
+      ),
 
     source: (
       <CollapsibleSection

@@ -28,6 +28,8 @@ interface DealWorkspaceClientProps {
   canChangeOwner: boolean;
   // Whether the actor may delete this deal (deal.delete own/any), gated server-side too.
   canDelete: boolean;
+  // Whether the actor may edit this deal (deal.edit, own/any), gating the products section.
+  canEditDeal?: boolean;
   // Users offered in the owner-reassignment menu; empty until a non-privileged source exists.
   assignableUsers: { id: string; name: string }[];
   // Hidden deal-block ids seeded from the server pref (user_preferences.ui.dealHeaderBlocks).
@@ -55,6 +57,7 @@ export function DealWorkspaceClient({
   emailAddress,
   canChangeOwner,
   canDelete,
+  canEditDeal = true,
   assignableUsers,
   initialHiddenBlocks,
   baseCurrency,
@@ -134,6 +137,7 @@ export function DealWorkspaceClient({
             onSidebarSectionsChange={setSidebarSections}
             hiddenOrgFields={hiddenOrgFields}
             hiddenPersonFields={hiddenPersonFields}
+            canEditDeal={canEditDeal}
           />
 
           <div className="min-w-0">

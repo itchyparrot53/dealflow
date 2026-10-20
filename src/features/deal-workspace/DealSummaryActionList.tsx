@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
@@ -56,12 +57,18 @@ export function DealSummaryActionList({
   org,
   orgOptions = [],
   baseCurrency,
+  currency,
+  hasLines = false,
+  valueBase = null,
 }: {
   deal: SummaryDeal;
   person: { id: string; name: string } | null;
   org: { id: string; name: string } | null;
   orgOptions?: Array<{ id: string; name: string }>;
   baseCurrency: string;
+  currency?: string;
+  hasLines?: boolean;
+  valueBase?: string | null;
 }): React.ReactNode {
   const router = useRouter();
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
@@ -89,6 +96,8 @@ export function DealSummaryActionList({
   const parsedValue = trimmed === "" ? null : Number(trimmed);
   const valueValid = parsedValue === null || !Number.isNaN(parsedValue);
   const valueDirty = valueValid && parsedValue !== deal.value;
+  const approxBase =
+    currency !== undefined && currency !== baseCurrency && valueBase !== null ? valueBase : null;
 
   function commitValue(): void {
     if (!valueDirty) return;
@@ -99,36 +108,45 @@ export function DealSummaryActionList({
   return (
     <div className="text-sm">
       <ActionRow icon={<Wallet aria-hidden="true" className={ICON} />}>
-        <InlineFieldShell
-          label="Value"
-          editing={editingValue}
-          onStartEdit={() => {
-            setDraft(deal.value !== null ? String(deal.value) : "");
-            setEditingValue(true);
-          }}
-          value={formatCurrency(deal.value ?? 0, baseCurrency)}
-        >
-          <div>
-            <input
-              aria-label="Value"
-              // biome-ignore lint/a11y/noAutofocus: inline edit focuses immediately on activation
-              autoFocus
-              inputMode="decimal"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitValue();
-              }}
-              className="h-8 w-full rounded border border-field-border bg-card px-2 text-left text-sm"
-            />
-            <InlineEditFooter
-              onCancel={() => setEditingValue(false)}
-              onSave={commitValue}
-              saveDisabled={!valueDirty}
-            />
-          </div>
-        </InlineFieldShell>
-        {errorId !== null && (
+        {hasLines ? (
+          <span className="text-muted-foreground">{PRODUCTS_STRINGS.calculatedFromProducts}</span>
+        ) : (
+          <InlineFieldShell
+            label="Value"
+            editing={editingValue}
+            onStartEdit={() => {
+              setDraft(deal.value !== null ? String(deal.value) : "");
+              setEditingValue(true);
+            }}
+            value={formatCurrency(deal.value ?? 0, currency ?? baseCurrency)}
+          >
+            <div>
+              <input
+                aria-label="Value"
+                // biome-ignore lint/a11y/noAutofocus: inline edit focuses immediately on activation
+                autoFocus
+                inputMode="decimal"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitValue();
+                }}
+                className="h-8 w-full rounded border border-field-border bg-card px-2 text-left text-sm"
+              />
+              <InlineEditFooter
+                onCancel={() => setEditingValue(false)}
+                onSave={commitValue}
+                saveDisabled={!valueDirty}
+              />
+            </div>
+          </InlineFieldShell>
+        )}
+        {approxBase !== null && (
+          <span className="ml-2 text-xs text-muted-foreground">
+            {PRODUCTS_STRINGS.approxBase(formatCurrency(approxBase, baseCurrency))}
+          </span>
+        )}
+        {!hasLines && errorId !== null && (
           <span className="ml-2 text-xs text-destructive">{saveErrorMessage(errorId)}</span>
         )}
       </ActionRow>

@@ -23,6 +23,7 @@ import { listDefs } from "@/features/custom-fields/defsRepo";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
 import { canSee } from "@/features/permissions/canSee";
 import type { AuthUser } from "@/features/permissions/types";
+import { type DealProductSummary, loadDealProductSummary } from "@/features/products/dealSummary";
 import { isUuidParam } from "@/lib/isUuidParam";
 import type { CustomFieldDef } from "@/types/customFields";
 import { err, ok, type Result } from "@/types/result";
@@ -49,6 +50,9 @@ export type DealWorkspace = {
   customFieldDefs: CustomFieldDef[];
   personCustomFieldDefs: CustomFieldDef[];
   organizationCustomFieldDefs: CustomFieldDef[];
+  // Part 3: line count, deal currency and the base-converted value for the header.
+  // Optional so existing workspace fixtures and unit tests need no change.
+  productSummary?: DealProductSummary;
 };
 
 export async function getWorkspace(
@@ -109,6 +113,7 @@ export async function getWorkspace(
     customFieldDefs,
     personCustomFieldDefs,
     organizationCustomFieldDefs,
+    productSummary,
   ] = await Promise.all([
     db.select().from(stages).where(eq(stages.pipelineId, deal.pipelineId)),
 
@@ -154,6 +159,7 @@ export async function getWorkspace(
     listDefs(db, "deal", {}, signal),
     listDefs(db, "person", {}, signal),
     listDefs(db, "organization", {}, signal),
+    loadDealProductSummary(db, deal, signal),
   ]);
   const followerIds = followers.map((f) => f.id);
   const isFollowedBySelf = followers.some((f) => f.id === actor.id);
@@ -176,5 +182,6 @@ export async function getWorkspace(
     customFieldDefs,
     personCustomFieldDefs,
     organizationCustomFieldDefs,
+    productSummary,
   });
 }

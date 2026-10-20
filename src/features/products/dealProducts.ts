@@ -43,6 +43,7 @@ export const updateDealLineInput = lineFields.extend({ lineId: z.string().uuid()
 export const removeDealLineInput = z.object({ lineId: z.string().uuid() });
 
 export type DealLine = typeof dealProducts.$inferSelect;
+export type DealLineView = DealLine & { productName: string };
 type DealRow = typeof deals.$inferSelect;
 
 function invalidInput(): AppError {
@@ -115,16 +116,16 @@ export async function listDealLines(
   actor: PermSetUser,
   dealId: string,
   signal: AbortSignal,
-): Promise<Result<DealLine[], AppError>> {
+): Promise<Result<DealLineView[], AppError>> {
   const visible = await assertDealVisible(db, actor, dealId, signal);
   if (!visible.ok) return visible;
-  return ok(
-    await db
-      .select()
-      .from(dealProducts)
-      .where(eq(dealProducts.dealId, dealId))
-      .orderBy(dealProducts.position),
-  );
+  const rows = await db
+    .select({ line: dealProducts, productName: products.name })
+    .from(dealProducts)
+    .innerJoin(products, eq(products.id, dealProducts.productId))
+    .where(eq(dealProducts.dealId, dealId))
+    .orderBy(dealProducts.position);
+  return ok(rows.map((row) => ({ ...row.line, productName: row.productName })));
 }
 
 // A line read must not reveal lines of a deal the viewer cannot see. Reuses the

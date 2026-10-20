@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-20 20:52
+Current: 2.4 · Last updated: 2026-10-20 20:57
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -20,7 +20,7 @@ Current: 2.3 · Last updated: 2026-10-20 20:52
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Settings → Currencies
 - [x] 2.2 Settings → Products
-- [ ] 2.3 Deal Products section and terms fields
+- [x] 2.3 Deal Products section and terms fields
 - [ ] 2.4 Stage probability in the stage editor
 - [ ] 2.5 Converted and weighted totals on the board and list
 - [ ] 2.6 Phase 2 QA gate
@@ -81,6 +81,12 @@ Current: 2.3 · Last updated: 2026-10-20 20:52
 - 2.2: the page loads all products once (bounded at 200) and the client filters the search and the archived toggle locally, so toggling needs no round trip; every mutation refreshes the server component.
 - 2.2: `ProductDialog` is remounted on each open (a key from the parent) instead of resetting state in an effect, which the react-hooks lint rule forbids; the form therefore always starts from the selected row.
 - 2.2: users without `products.manage` get the same product table without the New button and the row menu, matching 6.10's read-only requirement.
+
+- 2.3: Products is a new sidebar section appended to the registry (rather than inserted after Summary), keeping the existing section-order preference test and stored preferences valid; it renders only when the server supplies `productSummary`, so pre-Part-3 fixtures still render without a tRPC provider.
+- 2.3: `getWorkspace` now returns an optional `productSummary` (line count, deal currency, stage and effective probability, base-converted value) from one server helper, so the Summary value row and the section do not each open their own read for the header.
+- 2.3: the Summary value row shows "Calculated from products" while lines exist and an "≈ base" amount when the deal currency differs; the displayed value uses the deal currency.
+- 2.3: line cells commit on blur or Enter, restore the previous text when the server refuses the write, and every mutation invalidates the lines and terms reads plus refreshes the RSC tree so the header value follows.
+- 2.3: the terms currency select is disabled with a Tooltip while lines exist, the probability input uses the stage value as its placeholder, and both save through `setDealTermsAction`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

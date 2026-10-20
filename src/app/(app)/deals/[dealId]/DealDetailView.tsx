@@ -110,6 +110,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
   // Delete is gated on deal.delete (own/any), independent of edit; hide the menu item when the
   // actor lacks it. deleteDeal re-checks server-side, so this is UX only, not the security boundary.
   const canDelete = can(loaded.actor, "deal.delete", visibleDeal);
+  const canEditDeal = can(loaded.actor, "deal.edit", visibleDeal);
 
   return (
     <CustomFieldRefLabelsProvider value={refLabels}>
@@ -120,6 +121,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
         emailAddress={mailbox?.emailAddress}
         canChangeOwner={canChangeOwner}
         canDelete={canDelete}
+        canEditDeal={canEditDeal}
         assignableUsers={assignableUsers}
         initialHiddenBlocks={prefs.ui.dealHeaderBlocks ?? []}
         initialSidebarSections={prefs.ui.dealSidebarSections}
