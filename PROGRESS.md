@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 2.6 · Last updated: 2026-10-20 08:50
+Current: 3.1 · Last updated: 2026-10-20 09:00
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
 - Phase 1: 508cafc269715bd4cf1e68f676499bd0b01aed5b
 - Phase 2: 21e78ca3fdbf88845c08ff6014ff662b75435905
+- Phase 3: b016fdcb2b3b98e19c242553ebe00ecc7a8e6d5f
 
 ## Tasks
 - [x] 0.1 Start Part 2: progress files, kit and baseline
@@ -27,7 +28,7 @@ Current: 2.6 · Last updated: 2026-10-20 08:50
 - [x] 2.3 Filesystem fake transport
 - [x] 2.4 Credentials and the connect service
 - [x] 2.5 Email sync settings: connect form and Gmail option
-- [ ] 2.6 Phase 2 QA gate
+- [x] 2.6 Phase 2 QA gate
 - [ ] 3.1 Folders, cursors and locations
 - [ ] 3.2 Inbound apply and threading
 - [ ] 3.3 Incremental sync and UIDVALIDITY reset
@@ -49,6 +50,7 @@ Current: 2.6 · Last updated: 2026-10-20 08:50
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 2 gate: commands green · typecheck ok · lint ok · build ok · unit 4975/4975 · mail integration 5/5
 - Phase 1 gate: commands green · typecheck ok · lint ok · build ok · unit 4950/4950 · email/notifications/leads integration 480/480
 - Phase 0 gate: commands green · typecheck ok · lint ok · build ok · unit 4945/4945 · ai/auth/release integration 83/83
 - Audit P1: subagent (fresh context) · QA RESULT PASS · 0/0/0
