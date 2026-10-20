@@ -561,6 +561,13 @@
       "when": 1792460761690,
       "tag": "0079_dealflow_mail_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1792523902496,
+      "tag": "0080_dealflow_sales",
+      "breakpoints": true
     }
   ]
 }

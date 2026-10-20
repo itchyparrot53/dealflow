@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-20 20:14
+Current: 0.3 · Last updated: 2026-10-20 20:14
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
 
 ## Tasks
 - [x] 0.1 Start Part 3: progress files, kit and baseline
-- [ ] 0.2 Sales schema and migration
+- [x] 0.2 Sales schema and migration
 - [ ] 0.3 Money and totals (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Rates, base currency and permissions

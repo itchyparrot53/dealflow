@@ -34,7 +34,7 @@ export const deals = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     title: text("title").notNull(),
     status: dealStatus("status").notNull().default("open"),
-    // numeric(14,2): money in base currency; null = no value set (data-model §5).
+    // numeric(14,2): value in the deal's currency (base currency when the deal has no deal_terms row); null = no value set (data-model §5).
     value: numeric("value", { precision: 14, scale: 2 }),
     expectedCloseDate: date("expected_close_date"),
     // Label keys (Pipedrive multi Hot/Warm/Cold etc.); resolved to name+color in the UI.
