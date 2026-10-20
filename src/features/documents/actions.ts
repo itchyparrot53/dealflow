@@ -18,6 +18,7 @@ import {
   refreshLines,
   updateDraft,
 } from "./documents";
+import { issueDocument, voidInvoice } from "./issue";
 import { type DocumentSettingsView, updateDocumentSettings } from "./settings";
 import {
   createTemplate,
@@ -136,4 +137,23 @@ export async function listDealDocumentsAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await listDocumentsForDeal(db, g.value, dealId, SIG()));
+}
+
+export async function issueDocumentAction(
+  id: string,
+  via: "issue" | "markSent",
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await issueDocument(db, g.value, id, { via }, SIG()));
+}
+
+export async function voidInvoiceAction(
+  id: string,
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await voidInvoice(db, g.value, id, SIG()));
 }

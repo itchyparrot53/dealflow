@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-20 23:24
+Current: 1.4 · Last updated: 2026-10-20 23:26
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -14,7 +14,7 @@ Current: 1.3 · Last updated: 2026-10-20 23:24
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Settings, templates and the capability
 - [x] 1.2 Create, edit, refresh, duplicate, delete (test-first)
-- [ ] 1.3 Issue, numbering and void
+- [x] 1.3 Issue, numbering and void
 - [ ] 1.4 Payments and the overdue job
 - [ ] 1.5 Sending through the mailbox
 - [ ] 1.6 Phase 1 QA gate
@@ -65,6 +65,11 @@ Current: 1.3 · Last updated: 2026-10-20 23:24
 - 1.2: internal document reads keep deal visibility (`assertDealVisible`), so the deal section and the future `/documents` list only show documents of visible deals; the public exception for an issued invoice of a soft-deleted deal belongs to `publicDocuments.ts` (Task 2.1).
 - 1.2: duplicate keeps the body, customer fields, currency and totals, gives a new `public_id`, clears the number and every status date, and recomputes a quote's `valid_until` from the current settings so a copy is a fresh draft.
 - 1.2: added `listDocumentsForActor` and a `documents.list` read ahead of Task 3.3 because the list page and the deal section both need one bounded read; the visibility check runs per row against the shared deal predicate.
+- 1.3: the issue cases were added first and run red (missing `./issue`), then all five passed; the concurrency case warms the pool and proves ten simultaneous issues produce the ten consecutive numbers `Q-YYYY-0001` to `0010`.
+- 1.3: issuing locks the document row `FOR UPDATE` and takes the number with one `INSERT ... ON CONFLICT DO UPDATE ... RETURNING`, so the counter row is the single serialization point and no draft consumes a number.
+- 1.3: `markSent` follows the same path as `issue` (draft to sent, number assigned if missing), and both refuse a document that is already issued with `E_DOC_003`.
+- 1.3: an invoice's `due_date` is recomputed at issue from the current `invoice_due_days`, so a draft created before a settings change gets the window in force when it is issued.
+- 1.3: `voidInvoice` refuses quotes and drafts with `E_DOC_003` and keeps the number on the row; `deleteDraft` refuses an issued invoice with `E_DOC_008` and an issued quote with `E_DOC_003`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

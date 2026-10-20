@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   dealProducts,
   deals,
+  documentCounters,
   documentSettings,
   documents,
   documentTemplates,
@@ -33,6 +34,8 @@ import {
   refreshLines,
   updateDraft,
 } from "./documents";
+import { issueDocument, voidInvoice } from "./issue";
+import { formatDocNumber } from "./numbering";
 import { getDocumentSettings, updateDocumentSettings } from "./settings";
 import { createTemplate, deleteTemplate, listTemplates, setDefaultTemplate } from "./templates";
 
@@ -459,5 +462,148 @@ describe("deleteDraft", () => {
     expect(removed.ok).toBe(true);
     const [row] = await h.db.select().from(documents).where(eq(documents.id, created.value.id));
     expect(row).toBeUndefined();
+  });
+});
+
+describe("issue and void", () => {
+  it("gives ten concurrent issues ten distinct consecutive numbers", async () => {
+    // Warm the pool first so the ten calls reach Postgres together instead of
+    // queueing behind ten cold connection handshakes.
+    await Promise.all([1, 2, 3, 4].map(() => h.pool.query("select 1")));
+
+    const ids: string[] = [];
+    for (let i = 0; i < 10; i += 1) {
+      const deal = await seedDeal({ value: `${i + 1}.00` });
+      const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "quote" }, sig());
+      expect(created.ok).toBe(true);
+      if (created.ok) ids.push(created.value.id);
+    }
+    expect(ids).toHaveLength(10);
+
+    const results = await Promise.all(
+      ids.map((id) => issueDocument(h.db, admin, id, { via: "issue" }, sig())),
+    );
+    for (const result of results) {
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value.number).not.toBeNull();
+    }
+    const numbers = results.map((result) => (result.ok ? (result.value.number ?? "") : "")).sort();
+    const year = new Date().getUTCFullYear();
+    expect(numbers).toEqual(
+      Array.from({ length: 10 }, (_, i) => formatDocNumber("Q", year, i + 1)),
+    );
+    expect(new Set(numbers).size).toBe(10);
+  });
+
+  it("sets an invoice due date to issue plus fourteen days and keeps the number", async () => {
+    const deal = await seedDeal({ value: "250.00" });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const issued = await issueDocument(h.db, admin, created.value.id, { via: "issue" }, sig());
+    expect(issued.ok).toBe(true);
+    if (!issued.ok) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const due = new Date(`${today}T00:00:00Z`);
+    due.setUTCDate(due.getUTCDate() + 14);
+    expect(issued.value.issueDate).toBe(today);
+    expect(issued.value.dueDate).toBe(due.toISOString().slice(0, 10));
+    expect(issued.value.status).toBe("sent");
+    expect(issued.value.sentAt).not.toBeNull();
+    expect(issued.value.number).toMatch(new RegExp(`^INV-${today.slice(0, 4)}-\\d{4,}$`));
+
+    const voided = await voidInvoice(h.db, admin, created.value.id, sig());
+    expect(voided.ok).toBe(true);
+    if (!voided.ok) return;
+    expect(voided.value.status).toBe("void");
+    expect(voided.value.voidedAt).not.toBeNull();
+    expect(voided.value.number).toBe(issued.value.number);
+  });
+
+  it("does not consume a number when a draft is deleted", async () => {
+    const [before] = await h.db
+      .select({ lastNumber: documentCounters.lastNumber })
+      .from(documentCounters)
+      .where(
+        and(
+          eq(documentCounters.kind, "quote"),
+          eq(documentCounters.year, new Date().getUTCFullYear()),
+        ),
+      );
+    const startingFrom = before?.lastNumber ?? 0;
+
+    const dealA = await seedDeal({ value: "1.00" });
+    const draft = await createDocument(h.db, admin, { dealId: dealA.id, kind: "quote" }, sig());
+    expect(draft.ok).toBe(true);
+    if (!draft.ok) return;
+    const removed = await deleteDraft(h.db, admin, draft.value.id, sig());
+    expect(removed.ok).toBe(true);
+
+    const dealB = await seedDeal({ value: "2.00" });
+    const next = await createDocument(h.db, admin, { dealId: dealB.id, kind: "quote" }, sig());
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const issued = await issueDocument(h.db, admin, next.value.id, { via: "issue" }, sig());
+    expect(issued.ok).toBe(true);
+    if (!issued.ok) return;
+    expect(issued.value.number).toBe(
+      formatDocNumber("Q", new Date().getUTCFullYear(), startingFrom + 1),
+    );
+  });
+
+  it("refuses to delete an issued invoice with E_DOC_008 and an issued quote with E_DOC_003", async () => {
+    const invoiceDeal = await seedDeal({ value: "5.00" });
+    const invoice = await createDocument(
+      h.db,
+      admin,
+      { dealId: invoiceDeal.id, kind: "invoice" },
+      sig(),
+    );
+    expect(invoice.ok).toBe(true);
+    if (!invoice.ok) return;
+    const issuedInvoice = await issueDocument(
+      h.db,
+      admin,
+      invoice.value.id,
+      { via: "markSent" },
+      sig(),
+    );
+    expect(issuedInvoice.ok).toBe(true);
+    const invoiceDelete = await deleteDraft(h.db, admin, invoice.value.id, sig());
+    expect(invoiceDelete.ok).toBe(false);
+    if (invoiceDelete.ok) return;
+    expect(invoiceDelete.error.id).toBe(ERROR_IDS.DOC_INVOICE_DELETE);
+
+    const quoteDeal = await seedDeal({ value: "6.00" });
+    const quote = await createDocument(h.db, admin, { dealId: quoteDeal.id, kind: "quote" }, sig());
+    expect(quote.ok).toBe(true);
+    if (!quote.ok) return;
+    const issuedQuote = await issueDocument(h.db, admin, quote.value.id, { via: "issue" }, sig());
+    expect(issuedQuote.ok).toBe(true);
+    const quoteDelete = await deleteDraft(h.db, admin, quote.value.id, sig());
+    expect(quoteDelete.ok).toBe(false);
+    if (quoteDelete.ok) return;
+    expect(quoteDelete.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
+  });
+
+  it("refuses to void a draft invoice or void a quote", async () => {
+    const deal = await seedDeal({ value: "7.00" });
+    const draft = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(draft.ok).toBe(true);
+    if (!draft.ok) return;
+    const draftVoid = await voidInvoice(h.db, admin, draft.value.id, sig());
+    expect(draftVoid.ok).toBe(false);
+    if (draftVoid.ok) return;
+    expect(draftVoid.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
+
+    const quoteDeal = await seedDeal({ value: "8.00" });
+    const quote = await createDocument(h.db, admin, { dealId: quoteDeal.id, kind: "quote" }, sig());
+    expect(quote.ok).toBe(true);
+    if (!quote.ok) return;
+    const quoteVoid = await voidInvoice(h.db, admin, quote.value.id, sig());
+    expect(quoteVoid.ok).toBe(false);
+    if (quoteVoid.ok) return;
+    expect(quoteVoid.error.id).toBe(ERROR_IDS.DOC_TRANSITION);
   });
 });

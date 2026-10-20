@@ -132,18 +132,18 @@ function transitionNotAllowed(status: string): AppError {
 
 // Document operations surface a missing or invisible deal as a missing document,
 // so a public or shared caller cannot probe deal ids through this feature.
-function mapDealError(error: AppError): AppError {
+export function toDocumentError(error: AppError): AppError {
   if (error.id === ERROR_IDS.DEAL_NOT_FOUND) {
     return new AppError(ERROR_IDS.DOC_NOT_FOUND, "Deal not found", error.context);
   }
   return error;
 }
 
-function todayUtc(): string {
+export function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function addDays(date: string, days: number): string {
+export function addDaysToDate(date: string, days: number): string {
   const next = new Date(`${date}T00:00:00Z`);
   next.setUTCDate(next.getUTCDate() + days);
   return next.toISOString().slice(0, 10);
@@ -324,7 +324,7 @@ export async function createDocument(
 
   return db.transaction(async (tx) => {
     const editable = await loadEditableDeal(tx, actor, input.dealId, signal);
-    if (!editable.ok) return err(mapDealError(editable.error));
+    if (!editable.ok) return err(toDocumentError(editable.error));
     const deal = editable.value.deal;
 
     const [termsRow] = await tx
@@ -391,7 +391,8 @@ export async function createDocument(
         customerName: customer.customerName,
         customerEmail: customer.customerEmail,
         customerAddress: customer.customerAddress,
-        validUntil: input.kind === "quote" ? addDays(todayUtc(), settings.quoteValidDays) : null,
+        validUntil:
+          input.kind === "quote" ? addDaysToDate(todayUtc(), settings.quoteValidDays) : null,
         createdBy: actor.id,
       })
       .returning();
@@ -418,7 +419,7 @@ export async function updateDraft(
     const row = await loadDocumentRow(tx, input.id);
     if (row === undefined) return err(notFound(input.id));
     const editable = await loadEditableDeal(tx, actor, row.dealId, signal);
-    if (!editable.ok) return err(mapDealError(editable.error));
+    if (!editable.ok) return err(toDocumentError(editable.error));
     if (row.status !== "draft") {
       return err(
         new AppError(ERROR_IDS.DOC_IMMUTABLE, "Issued documents cannot be edited", {
@@ -456,7 +457,7 @@ export async function refreshLines(
     const row = await loadDocumentRow(tx, id);
     if (row === undefined) return err(notFound(id));
     const editable = await loadEditableDeal(tx, actor, row.dealId, signal);
-    if (!editable.ok) return err(mapDealError(editable.error));
+    if (!editable.ok) return err(toDocumentError(editable.error));
     if (row.status !== "draft") {
       return err(
         new AppError(ERROR_IDS.DOC_IMMUTABLE, "Issued documents cannot be edited", {
@@ -514,7 +515,7 @@ export async function duplicateDocument(
     const row = await loadDocumentRow(tx, id);
     if (row === undefined) return err(notFound(id));
     const editable = await loadEditableDeal(tx, actor, row.dealId, signal);
-    if (!editable.ok) return err(mapDealError(editable.error));
+    if (!editable.ok) return err(toDocumentError(editable.error));
 
     const snapshot = await snapshotFromDocument(tx, row.id, signal);
     const settings = await getDocumentSettings(tx, signal);
@@ -536,7 +537,8 @@ export async function duplicateDocument(
         customerName: row.customerName,
         customerEmail: row.customerEmail,
         customerAddress: row.customerAddress,
-        validUntil: row.kind === "quote" ? addDays(todayUtc(), settings.quoteValidDays) : null,
+        validUntil:
+          row.kind === "quote" ? addDaysToDate(todayUtc(), settings.quoteValidDays) : null,
         createdBy: actor.id,
       })
       .returning();
@@ -559,7 +561,7 @@ export async function deleteDraft(
     const row = await loadDocumentRow(tx, id);
     if (row === undefined) return err(notFound(id));
     const editable = await loadEditableDeal(tx, actor, row.dealId, signal);
-    if (!editable.ok) return err(mapDealError(editable.error));
+    if (!editable.ok) return err(toDocumentError(editable.error));
     if (row.status !== "draft") {
       if (row.kind === "invoice") {
         return err(
@@ -576,7 +578,7 @@ export async function deleteDraft(
 }
 
 export async function getDocument(
-  db: Db,
+  db: DbOrTx,
   actor: PermSetUser,
   id: string,
   signal: AbortSignal,
@@ -584,7 +586,7 @@ export async function getDocument(
   const row = await loadDocumentRow(db, id);
   if (row === undefined) return err(notFound(id));
   const visible = await assertDealVisible(db, actor, row.dealId, signal);
-  if (!visible.ok) return err(mapDealError(visible.error));
+  if (!visible.ok) return err(toDocumentError(visible.error));
 
   const [dealTitle, lines, payments] = await Promise.all([
     loadDealTitle(db, row.dealId),
@@ -602,7 +604,7 @@ export async function listDocumentsForDeal(
   signal: AbortSignal,
 ): Promise<Result<DocumentSummary[], AppError>> {
   const visible = await assertDealVisible(db, actor, dealId, signal);
-  if (!visible.ok) return err(mapDealError(visible.error));
+  if (!visible.ok) return err(toDocumentError(visible.error));
   const rows = await db
     .select()
     .from(documents)
