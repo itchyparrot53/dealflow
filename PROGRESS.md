@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p1-v1
 
 STATUS: IN PROGRESS
-Current: 6.4 · Last updated: 2026-10-20 07:10
+Current: 6.5 · Last updated: 2026-10-20 07:25
 
 ## Phase base commits
 - Phase 0: ec6a018085d1f6048e4f7113e40332ca30bc7ff5
@@ -52,7 +52,7 @@ Current: 6.4 · Last updated: 2026-10-20 07:10
 - [x] 6.1 E2E specs and screenshot gallery
 - [x] 6.2 Integration suite and container smoke
 - [x] 6.3 Independent review and hardening
-- [ ] 6.4 Final checklist
+- [x] 6.4 Final checklist
 - [ ] 6.5 Final report and completion
 
 ## QA log
@@ -370,4 +370,27 @@ The 13 locale/UTC-sensitive unit tests still need `TZ=UTC LANG=en_US.UTF-8 LC_AL
 container smoke (Task 6.2, A2) and the subagent review (Task 6.3, A3) carry their amendments.
 
 ## Final report
-(written in Task 6.5)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` is empty after the `6.4` commit; only ignored generated folders exist.
+2. PASS - `pnpm install --frozen-lockfile` exits 0 ("Done in 1s", pnpm 9.15.9).
+3. PASS - `pnpm typecheck` exits 0.
+4. PASS - `pnpm lint` exits 0 (14 warnings, no errors).
+5. PASS - `pnpm test:unit` green: 4945/4945 under `TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`; the locale-sensitive tests in the `PRE-EXISTING:` note pass with that environment.
+6. PASS - `pnpm test:integration`: 1788/1790, 385 files; the 2 failures are the untouched `release/router.test.ts` pair caused by `.env`'s `DISABLE_UPDATE_CHECK=true` and pass 2/2 with the flag off (recorded as PRE-EXISTING/environmental).
+7. PASS - `pnpm build` exits 0 (with `GOOGLE_*=`, `ALLOW_FIRST_LOGIN_ADMIN=false` overrides because `.env` is half-configured for Google).
+8. PASS - `pnpm e2e` passes 15 tests across specs `00` to `05`.
+9. PASS - 23 screenshots in `e2e/screenshots/`, every name from 6.12 present.
+10. PASS - `pnpm smoke` printed `SMOKE PASS`; `docker ps -a --filter name=dealflow-smoke -q | wc -l` = 0 and the volume filter = 0.
+11. PASS - the `warpdrive` grep lists comments/internal identifiers only (`DealAiCard`, `NotesToActivitiesDialog`, `StageColumnMenu`, `StageSelector`, `ThreadListToolbar`); `brand.test.ts` passes in the unit suite.
+12. PASS - `docker compose config --services` = app, createbuckets, migrate, minio, postgres, worker, ws (no caddy); `docs/reverse-proxy.md` and `docs/reverse-proxy/Caddyfile.example` exist.
+13. PASS - `grep -E "^(DISABLE_TELEMETRY|DISABLE_UPDATE_CHECK)=true$" .env.example | wc -l` = 2.
+14. PASS - Task 6.2 added no env keys; every key the smoke uses exists in `.env.example` (OPENROUTER_API_KEY/BASE_URL/MODEL and AI_FAKE included).
+15. PASS - against the e2e server: dev-login 404, cross-origin `POST /auth/password` 403, `/auth/start` 404 (server stopped afterwards; port 3210 closed).
+16. PASS - `select count(*) from auth_tokens where token_hash like 'ey%' or length(token_hash) <> 43` = 0.
+17. PASS - the only `process.env` match outside `env.ts`, `clientEnv.ts`, `instrumentation.ts` and tests is the comment in `release/currentVersion.ts` ("not process.env"); no reads.
+18. PASS - python scan of every file changed since `ec6a018` for U+2014: none.
+20. PASS - `docs/dealflow/HEALTH-CHECK.md`, `docs/dealflow/UPSTREAM.md` and `docs/dealflow/mail-probe-result.json` exist and are committed.
+
+Item 19 (`pnpm check:progress --final`) is run at completion in Task 6.5 and its line is appended there.
