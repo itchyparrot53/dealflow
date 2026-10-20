@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-20 23:17
+Current: 1.2 · Last updated: 2026-10-20 23:30
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -12,7 +12,7 @@ Current: 1.1 · Last updated: 2026-10-20 23:17
 - [x] 0.2 Documents schema and migration
 - [x] 0.3 Markdown-lite, variables, transitions, numbering (test-first)
 - [x] 0.4 Phase 0 QA gate
-- [ ] 1.1 Settings, templates and the capability
+- [x] 1.1 Settings, templates and the capability
 - [ ] 1.2 Create, edit, refresh, duplicate, delete (test-first)
 - [ ] 1.3 Issue, numbering and void
 - [ ] 1.4 Payments and the overdue job
@@ -53,6 +53,11 @@ Current: 1.1 · Last updated: 2026-10-20 23:17
 - 0.3: `inlineSegments` slices the bold text from the source between the markers instead of reading the `match[1]` capture group, because `noUncheckedIndexedAccess` types that group as `string | undefined` while the type-aware ESLint rule treats an `??` guard for it as unnecessary; slicing satisfies both checks without an assertion.
 - 0.3: `renderVariables` identifies the products marker by trimmed key, so `{{ products }}` also survives the creation pass, not just the exact `{{products}}` spelling. Kept markers keep their original spacing so a display-time pass can fill them later.
 - 0.3: a markdown-lite line is trimmed before classification, so template authors can indent a marker without breaking it; `###` stays a paragraph because the h2 prefix requires a space after two hashes.
+- 1.1: added `E_DOC_011` (input failed Zod) and `E_DOC_012` (delete refused on a kind's last template) beside the ten IDs of 6.2, following the `_INPUT_INVALID` convention every other feature uses and because 6.7 requires refusing the last template of a kind while 6.2 names no ID for that cause; the ten named IDs are added unchanged.
+- 1.1: `documents.manage` is a new global flag, also listed in `HIGH_RISK_FLAGS` and the `GlobalAction` union, granted to admins by default; it needed no migration because the registry is code-defined, exactly like `products.manage` in Part 3.
+- 1.1: settings and template reads stay open to any signed-in user (document creation and the public page need the company block and the template list), while every mutation checks `documents.manage` inside the service so an integration test can prove refusal.
+- 1.1: `getDocumentSettings` inserts the column-default row on first read, and `listTemplates` inserts the shipped default template for a kind on first list (`onConflictDoNothing` guards two concurrent first callers); the partial unique index keeps one default per kind.
+- 1.1: changed test: `src/constants/errorIds.test.ts` gained `DOC` in its domain allow-list because the registry now carries that domain; the per-ID format and uniqueness assertions are unchanged.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

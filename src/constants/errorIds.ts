@@ -234,6 +234,20 @@ export const ERROR_IDS = {
   CURRENCY_PARSE_FAILED: "E_CURRENCY_005", // a pre-validated money string failed the pure parser (programmer error)
   CURRENCY_INPUT_INVALID: "E_CURRENCY_006", // currency settings input failed Zod validation
 
+  // DOCUMENT (quotes and invoices)
+  DOC_NOT_FOUND: "E_DOC_001", // document not found or not visible
+  DOC_IMMUTABLE: "E_DOC_002", // edit of an issued document
+  DOC_TRANSITION: "E_DOC_003", // transition not allowed from the current status
+  DOC_EXPIRED: "E_DOC_004", // accept or decline after valid_until
+  DOC_NO_CUSTOMER_EMAIL: "E_DOC_005", // send with no customer email
+  DOC_NO_MAILBOX: "E_DOC_006", // send without a connected mailbox
+  DOC_OVERPAYMENT: "E_DOC_007", // payment above the outstanding amount
+  DOC_INVOICE_DELETE: "E_DOC_008", // delete of an issued invoice
+  DOC_TEMPLATE_NOT_FOUND: "E_DOC_009", // template not found
+  DOC_RATE_LIMITED: "E_DOC_010", // public request rate-limited
+  DOC_INPUT_INVALID: "E_DOC_011", // document, template or settings input failed Zod validation
+  DOC_LAST_TEMPLATE: "E_DOC_012", // delete refused: a kind must keep one template
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy

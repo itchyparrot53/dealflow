@@ -30,6 +30,7 @@ type GlobalAction =
   | "metadata.manage"
   | "goals.manage"
   | "products.manage"
+  | "documents.manage"
   | "permissions.manage";
 
 export type OwnershipAction = (typeof OWNERSHIP_ACTIONS)[number];
