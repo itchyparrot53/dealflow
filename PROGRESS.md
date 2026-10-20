@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.6 · Last updated: 2026-10-21 00:26
+Current: 4.1 · Last updated: 2026-10-21 00:22
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
 - Phase 1: 9322d5e0677f1253b833249fff70ed9e3c9a6375
 - Phase 2: 3d59f4b61b69eb62b0afd0703d478ecf0c6ba586
 - Phase 3: 4770be57f7c881e33848e45727425d263da27266
+- Phase 4: de9400d96a9e8d9df6f26068755af2566283d0e5
 
 ## Tasks
 - [x] 0.1 Start Part 4: progress files, kit and baseline
@@ -28,7 +29,7 @@ Current: 3.6 · Last updated: 2026-10-21 00:26
 - [x] 3.3 Documents list and navigation
 - [x] 3.4 Print stylesheet and preview
 - [x] 3.5 Demo seed and docs
-- [ ] 3.6 Phase 3 QA gate
+- [x] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E documents spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
@@ -40,6 +41,7 @@ Current: 3.6 · Last updated: 2026-10-21 00:26
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · no named integration files at this gate
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5063/5063 · documents/products/mail integration 68/68
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · documents/notifications/auth integration 142/142
+- Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5063/5063 · documents integration 45/45
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS-P3.md (formerly PROGRESS.md) said `dealflow-wd-p3-v1` with `STATUS: COMPLETE`, and HEAD is `e214c9a8e17342315ee36e23e0f65588843c1e58`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
