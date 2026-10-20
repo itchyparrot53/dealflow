@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 5.3 · Last updated: 2026-10-20 17:25
+Current: 5.4 · Last updated: 2026-10-20 17:45
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -46,7 +46,7 @@ Current: 5.3 · Last updated: 2026-10-20 17:25
 - [x] 4.6 Phase 4 QA gate
 - [x] 5.1 E2E mail spec and screenshots
 - [x] 5.2 Live Purelymail check
-- [ ] 5.3 Integration suite, smoke and docs
+- [x] 5.3 Integration suite, smoke and docs
 - [ ] 5.4 Independent review and hardening
 - [ ] 5.5 Final checklist
 - [ ] 5.6 Final report and completion
@@ -64,6 +64,8 @@ Current: 5.3 · Last updated: 2026-10-20 17:25
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 5.3: the full integration suite passed 1819/1819 in 389 files (161.7 s), so the two release failures are gone; `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS and left no container or volume; `pnpm db:seed:demo` ran on a throwaway `dealflow_seed_p2` database (7 users, 54 deals, 125 messages) which was dropped afterwards.
+- 5.3: `docs/dealflow/MAIL.md` documents the provider layer, connecting Purelymail, the limits and env vars, the Purelymail facts (no Sent auto-save, SEARCH lag, IDLE latency, HIGHMODSEQ 0, no SPECIAL-USE), the fake transport and the live check; the README has a short Email section; HEALTH-CHECK.md gained a Part 2 end table.
 - 5.2: `pnpm mail:live-check` returned `status: ok` (send, APPEND uid 10, inbound in 5.8 s, Bcc stripped, reply references the first id, Sent search found it, Trash move done, 26.7 s total), written to `docs/dealflow/mail-live-check.json` and summarised in HEALTH-CHECK.md.
 - 5.2: the check exposed two real issues and both are fixed: the waiter snapshotted INBOX after the send (so a fast arrival looked "known") and parsed Message-IDs are lowercased while the derived id kept the ISO string's case, so the comparison never matched; the script now normalises both sides.
 - 5.2: Purelymail reports `specialUse: null` for every folder, which the live check recorded. `discoverFolders` now falls back to the folder name (including the last path segment), otherwise only INBOX would sync on this host.

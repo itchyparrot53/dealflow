@@ -161,3 +161,27 @@ Purelymail facts the check confirmed or added:
 - SMTP-sent mail is still not saved by the server; the APPEND is required.
 - A new message is in INBOX about 6 s after the SMTP send, which matches the earlier 8 to 11 s
   IDLE observation closely enough for the poll cadence.
+
+## Part 2 end (2026-10-20)
+
+| Check | Result |
+|---|---|
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0 (14 warnings, 0 errors) |
+| `pnpm build` | exit 0 |
+| `pnpm test:unit` | 4963/4963 (final count after the last test additions) |
+| `pnpm test:integration` | 1819/1819 in 389 files, 161.7 s |
+| `pnpm e2e` | 16/16 across specs 00 to 06; 8 `p2-*` screenshots, 23 Part 1 screenshots intact |
+| `DOCKER_BUILDKIT=0 pnpm smoke` | SMOKE PASS; no `dealflow-smoke` container or volume left |
+| `pnpm mail:live-check` | status ok (see the live check section above) |
+| `pnpm db:seed:demo` | succeeded on a throwaway `dealflow_seed_p2` database (7 users, 54 deals, 125 messages), dropped afterwards |
+
+Operational notes:
+- Container builds in this sandbox need `DOCKER_BUILDKIT=0`; buildx refs under `~/.docker/buildx` are blocked.
+- `next build` can fail with `ENOTEMPTY` on `.next` if a build starts while the directory is being
+  touched; remove `.next` and retry.
+- Purelymail reports no SPECIAL-USE flags, so folder discovery falls back to folder names (fixed in
+  Task 5.2 after the live check exposed it).
+- The e2e demo data seeds Gmail rows without refresh tokens, so the worker logs expected
+  `[email.sync] failed ... no usable refresh token` noise during e2e; spec 06 disconnects demo1's
+  mailbox before connecting IMAP.
