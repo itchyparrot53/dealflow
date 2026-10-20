@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-20 20:39
+Current: 2.2 · Last updated: 2026-10-20 20:51
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -18,7 +18,7 @@ Current: 2.1 · Last updated: 2026-10-20 20:39
 - [x] 1.3 Deal lines and the value sync (test-first)
 - [x] 1.4 Deal terms and stage probabilities
 - [x] 1.5 Phase 1 QA gate
-- [ ] 2.1 Settings → Currencies
+- [x] 2.1 Settings → Currencies
 - [ ] 2.2 Settings → Products
 - [ ] 2.3 Deal Products section and terms fields
 - [ ] 2.4 Stage probability in the stage editor
@@ -73,6 +73,10 @@ Current: 2.1 · Last updated: 2026-10-20 20:39
 - 1.4: `setDealTerms` locks the deal row, refuses a currency change while lines exist (`E_CURRENCY_004`) before any write, logs currency/probability changes through `recordChange` with the new `CHANGE_FIELD_CURRENCY`/`CHANGE_FIELD_PROBABILITY` fields, and publishes `dealUpdated` because cards render the value in the deal currency.
 - 1.4: submitting the identical terms is a no-op: no upsert and no change-log row, so an untouched form does not create history.
 - 1.4: stage probabilities use `pipeline.manage` (the stage editor's permission), pre-check the stage so a stale id returns `E_STAGE_NOT_FOUND`, and write no change-log row (the stage editor has no deal history).
+
+- 2.1: the settings page reads `listRates` in the server component and calls `router.refresh()` after each action, matching every other settings page; the `currency.*` tRPC reads remain for the board, list and forecast.
+- 2.1: a base change goes through the shared `ConfirmDialog` (AlertDialog) with the exact warning copy, and the rates table uses the existing `SETTINGS_TABLE_*` tokens because the repo has no shadcn Table wrapper: settings tables are plain semantic tables with those tokens.
+- 2.1: currency labels come from `Intl.DisplayNames(["en"], { type: "currency" })` as "EUR, Euro", and the table trims the database's eight decimals for display only (`1.08000000` reads `1.08`).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
