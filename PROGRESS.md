@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-20 20:14
+Current: 0.4 · Last updated: 2026-10-20 20:14
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-20 20:14
 ## Tasks
 - [x] 0.1 Start Part 3: progress files, kit and baseline
 - [x] 0.2 Sales schema and migration
-- [ ] 0.3 Money and totals (test-first)
+- [x] 0.3 Money and totals (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Rates, base currency and permissions
 - [ ] 1.2 Product catalog service
@@ -42,6 +42,9 @@ Current: 0.3 · Last updated: 2026-10-20 20:14
 - 0.1: `src/db/schema/stages.ts` has no probability column, so `stage_probabilities` is used as section 6.4 specifies.
 - 0.1: the won timestamp is `deals.wonTime` (`won_time` timestamptz), so forecast won months use it.
 - 0.1: pnpm 9.15.9 from `/tmp/dealflow-tools`, Node 24.16.0 and Docker 24.0.5 are available; `.env` still has a partial Google configuration (client id and secret set, workspace domain empty), so commands that load `.env` keep the three overrides.
+- 0.3: added `E_CURRENCY_005` beside the nine IDs of 6.2, because 6.5 requires the pure parsers and `roundDiv` to throw `AppError` on a malformed pre-validated input or non-positive divisor and the contract names no ID for that cause; the nine named IDs are added unchanged in this commit so later tasks only use them.
+- 0.3: `parseMilli` accepts a negative decimal (only `quantityString` enforces greater than zero), because the parser is also used by line math where a correction can be negative while user input stays positive.
+- 0.3: `formatMoney` assembles the locale layout from `Intl.NumberFormat.formatToParts` around the exact integer digits, so a displayed money value is never converted to a JS float.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

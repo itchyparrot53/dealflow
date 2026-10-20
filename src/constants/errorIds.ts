@@ -219,6 +219,19 @@ export const ERROR_IDS = {
   MAIL_INPUT_INVALID: "E_MAIL_014", // connect form or mail action input failed Zod validation
   MAIL_UNSUPPORTED: "E_MAIL_015", // operation not supported by this provider
 
+  // PRODUCT
+  PRODUCT_NOT_FOUND: "E_PRODUCT_001", // product not found or not visible
+  PRODUCT_IN_USE: "E_PRODUCT_002", // delete refused: product used on a deal (archive instead)
+  PRODUCT_CODE_TAKEN: "E_PRODUCT_003", // product code already used by another product
+  PRODUCT_VALUE_CALCULATED: "E_PRODUCT_004", // manual value edit on a deal with product lines
+  PRODUCT_LINE_NOT_FOUND: "E_PRODUCT_005", // deal line not found
+  // CURRENCY
+  CURRENCY_RATE_MISSING: "E_CURRENCY_001", // no exchange rate for a needed currency
+  CURRENCY_UNKNOWN: "E_CURRENCY_002", // unknown currency code
+  CURRENCY_BASE_RATE: "E_CURRENCY_003", // a rate was submitted for the base currency
+  CURRENCY_CHANGE_WITH_LINES: "E_CURRENCY_004", // currency change on a deal with product lines
+  CURRENCY_PARSE_FAILED: "E_CURRENCY_005", // a pre-validated money string failed the pure parser (programmer error)
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
