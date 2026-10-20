@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-21 00:06
+Current: 3.3 · Last updated: 2026-10-21 00:11
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -24,7 +24,7 @@ Current: 3.2 · Last updated: 2026-10-21 00:06
 - [x] 2.2 Owner notifications
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Settings → Documents
-- [ ] 3.2 Deal section, document page, view and public actions
+- [x] 3.2 Deal section, document page, view and public actions
 - [ ] 3.3 Documents list and navigation
 - [ ] 3.4 Print stylesheet and preview
 - [ ] 3.5 Demo seed and docs
@@ -105,6 +105,12 @@ Current: 3.2 · Last updated: 2026-10-21 00:06
 - 3.1: the template dialog previews with sample values for both creation-time variables and `document.*`, so an author sees a document instead of braces; `MarkdownLite` renders React elements only and draws the lines table when lines are supplied, never HTML.
 - 3.1: the settings navigation gained a Documents item (FileText) after Products; the route builds as `/settings/documents` and the 370 unit tests touching settings, documents and the palette/type-scale policies pass.
 - 3.1: the first MarkdownLite draft used array indexes as React keys, which `noArrayIndexKey` rejects; the keys now come from small helpers over the statically rebuilt block list.
+- 3.2: the deal workspace gained `documentSummary` (a count) and the sidebar registry gained a `documents` section appended last; the section mounts only when the workspace carries the summary, exactly like Part 3's `productSummary`, so older fixtures render without a tRPC provider and stored section preferences stay valid.
+- 3.2: one `DocumentView` renders the internal page and the public page (and will render the print page), with `document.*` resolved by `renderDocumentBody` before it reaches the component, so both surfaces always agree.
+- 3.2: the editor shows an action only when `nextStatus` allows it (issue, mark sent, void, pay), so a button can never offer a move the state machine refuses; the draft editor, payments table and dialogs sit behind the same service actions as the API.
+- 3.2: `PublicActions` posts to the public API route handlers with a 15 second signal (the repo bans `fetch` without one) and refreshes the server component on success; `PrintButton` calls `window.print()` for the browser PDF path.
+- 3.2: the shared `Checkbox` gained a `testId` prop because Radix owns the root element and the public accept hook needs `public-accept-checkbox`; the rest of the test hooks are on the elements the plan names.
+- 3.2: the public page now renders the full `DocumentView` (company block, dates, customer, lines, totals, payment instructions, footer) instead of the minimal markup from Task 2.1.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

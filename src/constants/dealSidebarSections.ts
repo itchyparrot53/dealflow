@@ -8,6 +8,7 @@ export const DEAL_SIDEBAR_SECTION_IDS = [
   "organization",
   "overview",
   "products",
+  "documents",
 ] as const;
 
 export type DealSidebarSectionId = (typeof DEAL_SIDEBAR_SECTION_IDS)[number];
@@ -20,6 +21,7 @@ export const DEAL_SIDEBAR_SECTIONS = [
   { id: "organization", name: DEAL_SIDEBAR_STRINGS.sections.organization },
   { id: "overview", name: DEAL_SIDEBAR_STRINGS.sections.overview },
   { id: "products", name: DEAL_SIDEBAR_STRINGS.sections.products },
+  { id: "documents", name: DEAL_SIDEBAR_STRINGS.sections.documents },
 ] as const;
 
 export interface DealSidebarSectionPreference {

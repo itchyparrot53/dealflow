@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -41,6 +41,25 @@ const PUBLIC_ID_BYTES = 18;
 const MAX_TITLE = 150;
 const MAX_LIST = 200;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+// The deal page's Documents section is mounted only when the workspace carries this,
+// the same way Part 3 gated the Products section on productSummary.
+export interface DealDocumentSummary {
+  count: number;
+}
+
+export async function loadDealDocumentSummary(
+  db: DbOrTx,
+  dealId: string,
+  signal: AbortSignal,
+): Promise<DealDocumentSummary> {
+  signal.throwIfAborted();
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(documents)
+    .where(eq(documents.dealId, dealId));
+  return { count: row?.count ?? 0 };
+}
 
 export interface DocumentSummary {
   id: string;

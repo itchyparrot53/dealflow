@@ -11,6 +11,9 @@ interface CheckboxProps {
   // passes `id` too and renders its own <label htmlFor>.
   label: string;
   id?: string;
+  // Test hook for the e2e specs; Radix owns the root element, so callers cannot
+  // pass data attributes through the component's own props.
+  testId?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -25,12 +28,14 @@ export function Checkbox({
   onCheckedChange,
   label,
   id,
+  testId,
   disabled,
   className,
 }: CheckboxProps): React.ReactNode {
   return (
     <CheckboxPrimitive.Root
       id={id}
+      data-testid={testId}
       checked={checked}
       onCheckedChange={(v) => onCheckedChange(v === true)}
       disabled={disabled}

@@ -13,6 +13,7 @@ import { DealAiCard } from "@/features/ai/ui/DealAiCard";
 import type { PersonMatchCandidate } from "@/features/contacts/personOptionsRepo";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { updateDealAction } from "@/features/deals/updateAction";
+import { DealDocumentsSection } from "@/features/documents/ui/DealDocumentsSection";
 import { DealProductsSection } from "@/features/products/ui/DealProductsSection";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -88,6 +89,7 @@ export function DealSidebar({
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
   const overview = dealOverview(deal.createdAt, deal.lastActivityAt, now);
   const productSummary = workspace.productSummary;
+  const documentSummary = workspace.documentSummary;
   const sectionPrefs = normalizeDealSidebarSections(sidebarSections);
   const sections = STRINGS.dealSidebar.sections;
   const menu = STRINGS.dealSidebar.menu;
@@ -199,6 +201,13 @@ export function DealSidebar({
           canEdit={canEditDeal}
           baseCurrency={baseCurrency}
         />
+      ),
+
+    // Same gate as products: fixtures that predate Part 4 omit documentSummary, so
+    // the section stays out of their render instead of opening a query with no provider.
+    documents:
+      documentSummary === undefined ? null : (
+        <DealDocumentsSection key="documents" dealId={deal.id} canEdit={canEditDeal} />
       ),
 
     source: (

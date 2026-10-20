@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { clientIp, getPublicDocument } from "@/features/documents/publicDocuments";
+import { DocumentView } from "@/features/documents/ui/DocumentView";
+import { PrintButton, PublicActions } from "@/features/documents/ui/PublicActions";
 
 // Public document page: no session, addressed by publicId only. It lives outside
-// the `(app)` route group on purpose, the same way /t/click is public. Task 3.2
-// replaces this minimal markup with the shared DocumentView.
+// the `(app)` route group on purpose, the same way /t/click is public.
 
 export const metadata: Metadata = { title: "Document" };
 
@@ -29,7 +31,7 @@ export default async function PublicDocumentPage({
     if (result.error.id === ERROR_IDS.DOC_RATE_LIMITED) {
       return (
         <main className="mx-auto max-w-[860px] p-8">
-          <p role="alert">Too many requests. Try again in a minute.</p>
+          <p role="alert">{DOCUMENTS_STRINGS.errors.rateLimited}</p>
         </main>
       );
     }
@@ -38,67 +40,48 @@ export default async function PublicDocumentPage({
 
   const doc = result.value;
   return (
-    <main className="mx-auto max-w-[860px] bg-background p-8 text-foreground">
-      <header className="border-b pb-4">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-          {doc.kind === "quote" ? "Quote" : "Invoice"}
-        </p>
-        <h1 className="text-display font-[450] leading-tight tracking-tight" data-testid="public-document">
-          {doc.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">{doc.number ?? "Draft"}</p>
-        <p className="text-sm" data-testid="public-status">
-          {doc.status}
-        </p>
-      </header>
-      <section className="mt-6 whitespace-pre-wrap text-sm">{doc.body}</section>
-      <section className="mt-6">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left">
-              <th className="py-2">Item</th>
-              <th className="py-2">Qty</th>
-              <th className="py-2 text-right">Price</th>
-              <th className="py-2 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {doc.lines.map((line) => (
-              <tr key={line.id} className="border-b">
-                <td className="py-2">{line.name}</td>
-                <td className="py-2">{line.quantity}</td>
-                <td className="py-2 text-right">{line.itemPrice}</td>
-                <td className="py-2 text-right">{line.gross}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <dl className="mt-4 ml-auto max-w-xs text-sm">
-          <div className="flex justify-between">
-            <dt>Subtotal</dt>
-            <dd>
-              {doc.subtotal} {doc.currency}
-            </dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>Tax</dt>
-            <dd>
-              {doc.tax} {doc.currency}
-            </dd>
-          </div>
-          <div className="flex justify-between font-semibold">
-            <dt>Total</dt>
-            <dd>
-              {doc.total} {doc.currency}
-            </dd>
-          </div>
-        </dl>
-      </section>
-      {doc.company.name !== null && <p className="mt-8 text-sm">{doc.company.name}</p>}
-      {doc.paymentInstructions !== null && (
-        <p className="mt-4 whitespace-pre-wrap text-sm">{doc.paymentInstructions}</p>
+    <main className="mx-auto max-w-[860px] p-8" data-testid="public-document">
+      <DocumentView
+        document={{
+          kind: doc.kind,
+          number: doc.number,
+          title: doc.title,
+          body: doc.body,
+          currency: doc.currency,
+          subtotal: doc.subtotal,
+          tax: doc.tax,
+          total: doc.total,
+          status: doc.status,
+          customerName: doc.customerName,
+          customerAddress: doc.customerAddress,
+          issueDate: doc.issueDate,
+          validUntil: doc.validUntil,
+          dueDate: doc.dueDate,
+          paidAt: doc.paidAt,
+          outstanding: doc.outstanding,
+          lines: doc.lines,
+          company: doc.company,
+          paymentInstructions: doc.paymentInstructions,
+          footer: doc.footer,
+        }}
+      />
+      {doc.kind === "quote" && (
+        <div className="mt-6">
+          <PublicActions
+            publicId={doc.publicId}
+            status={doc.status}
+            expired={doc.expired}
+            ownerName={doc.ownerName}
+            acceptedName={doc.acceptedName}
+            acceptedAt={doc.acceptedAt}
+            declinedAt={doc.declinedAt}
+            declineReason={doc.declineReason}
+          />
+        </div>
       )}
-      {doc.footer !== null && <p className="mt-4 text-xs text-muted-foreground">{doc.footer}</p>}
+      <div className="mt-6">
+        <PrintButton label={DOCUMENTS_STRINGS.downloadPdf} />
+      </div>
     </main>
   );
 }
