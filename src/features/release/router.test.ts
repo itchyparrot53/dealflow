@@ -4,7 +4,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { makeCaller } from "@/server/testCaller";
 import { makeTestDb } from "@/test/db";
 import { computeStatus } from "./computeStatus";
-import { readPackageVersion } from "./currentVersion";
+import { getCurrentVersion, readPackageVersion } from "./currentVersion";
 import { readReleaseStatus, upsertReleaseStatus } from "./releaseStatus";
 
 let ctx: Awaited<ReturnType<typeof makeTestDb>>;
@@ -38,14 +38,13 @@ it("returns the current version with no update when nothing is cached", async ()
 });
 
 it("reports an update available when a newer release is cached", async () => {
-  const user = await seedUser(ctx.db);
   await upsertReleaseStatus(ctx.db, {
     latestTag: "v999.0.0",
     releaseUrl: "https://github.com/sneg55/warpdrive/releases/tag/v999.0.0",
     releaseNotes: "big news",
   });
   const row = await readReleaseStatus(ctx.db);
-  const s = computeStatus(readPackageVersion(), row, false);
+  const s = computeStatus(getCurrentVersion(), row, false);
   expect(s.latest).toBe("v999.0.0");
   expect(s.releaseNotes).toBe("big news");
   expect(s.updateAvailable).toBe(true);

@@ -4,13 +4,13 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import { aiActions, aiConversations, deals, notes } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { HydratedActor } from "@/server/hydrateActor";
-import { makeTestDb, type TestDb } from "@/test/db";
 import { getCredentials, setPassword } from "@/features/auth/credentials";
-import { passwordLogin } from "@/features/auth/passwordLogin";
 import { changePasswordForSession } from "@/features/auth/passwordChange";
+import { passwordLogin } from "@/features/auth/passwordLogin";
 import { createSession } from "@/features/auth/session";
 import { recordSessionAuth } from "@/features/auth/sessionAuth";
+import type { HydratedActor } from "@/server/hydrateActor";
+import { makeTestDb, type TestDb } from "@/test/db";
 import { confirmAiAction } from "./assistant/assistant";
 import { createConversation } from "./assistant/conversations";
 
@@ -142,7 +142,11 @@ describe("R3: a recent email-link sign-in may set a password without the current
     expect(changed.ok).toBe(true);
     const credentials = await getCredentials(h.db, user.id, SIG());
     expect(credentials?.passwordHash).not.toBeNull();
-    const signedIn = await passwordLogin(h.db, { email: user.email, password: NEW_PASSWORD }, SIG());
+    const signedIn = await passwordLogin(
+      h.db,
+      { email: user.email, password: NEW_PASSWORD },
+      SIG(),
+    );
     expect(signedIn.ok).toBe(true);
   });
 
