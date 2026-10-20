@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-21 00:17
+Current: 3.6 · Last updated: 2026-10-21 00:26
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -27,7 +27,7 @@ Current: 3.5 · Last updated: 2026-10-21 00:17
 - [x] 3.2 Deal section, document page, view and public actions
 - [x] 3.3 Documents list and navigation
 - [x] 3.4 Print stylesheet and preview
-- [ ] 3.5 Demo seed and docs
+- [x] 3.5 Demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E documents spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -119,6 +119,11 @@ Current: 3.5 · Last updated: 2026-10-21 00:17
 - 3.4: the print rules live in `globals.css` under `@media print`: `@page { size: A4; margin: 18mm }`, `[data-print-hide]` hidden, black on white, table borders from the `--border` token, and `main`/`article` unclamped so a multi-page document is not clipped by the shell's scroll container.
 - 3.4: the app chrome is hidden by marking it, not by guessing selectors: `TopBar`, `LeftNav`, `ReconnectBanner` and `VersionBanner` carry `data-print-hide`. `DocumentView`'s own `<header>` is untouched, so a blanket `header` rule is avoided.
 - 3.4: `/documents/[id]/print` reuses `DocumentView` with `renderDocumentBody`, renders a print button that carries `data-print-hide`, and builds as a dynamic route alongside `/documents` and `/documents/[id]`.
+- 3.5: the documents seed lives in `scripts/seed-demo-documents.ts` and is re-runnable by replacing only documents whose title starts with "Demo: ", so a user's real documents are untouched; settings are upserted to Northwind Advisory with the example payment instructions, and each template is inserted only when its kind has none.
+- 3.5: the seed computes line snapshots and totals with the app's own `lineNet`/`lineTax`/`dealTotals`, and takes numbers through the same counter upsert plus `formatDocNumber`, so the demo counters and the printed numbers agree.
+- 3.5: the seed creates seven documents on deals with lines (draft quote, sent quote, accepted quote, invoice from the accepted quote, sent invoice due soon, overdue invoice, paid invoice with two payments), and running it on the dev database produced exactly those seven with linked source quote and two payments summing to the total.
+- 3.5: the demo seed's re-run was blocked by a pre-existing bug: activities owned by non-demo users referenced demo deals, persons and organizations, so `wipeDemo` failed on their foreign keys. It now unlinks those references (`deal_id`, `person_id`, `org_id`) instead of deleting another user's activity; this was required to run the seed at all and is logged as a pre-existing fix in the upstream seed file.
+- 3.5: `docs/dealflow/DOCUMENTS.md` covers the model, numbering, transitions, templates and variables, permissions, public page and rate limit, payments, the overdue job, sending and printing; `UPSTREAM.md` has a Part 4 section listing every upstream file, and the README gained a "Quotes and invoices" section.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -164,3 +164,40 @@ Part 3 builds on the Part 2 result at commit `15ff072` (PROGRESS-P2.md). The new
   and footer field in existing assertions.
 - `e2e/helpers.ts`, `scripts/e2e/seed-session.ts`: the sales fixture ids the new spec reads.
 - `README.md`: the "Products, currencies and forecast" section.
+
+## Part 4 (quotes and invoices) base
+
+Part 4 builds on the Part 3 result at commit `e214c9a` (PROGRESS-P3.md). The new work lives in
+`src/features/documents/` (services, public surface and UI), `src/db/schema/documents.ts`,
+migrations `0081_dealflow_documents` and `0082_dealflow_document_notifications`, the public routes
+`src/app/d/` and `src/app/api/public/`, and the internal routes `src/app/(app)/documents/` and
+`src/app/(app)/settings/documents/`. Upstream files edited for the part (port future upstream fixes
+here by hand):
+
+- `src/db/schema/index.ts`: exports the documents schema.
+- `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the twelve DOC IDs and the
+  `DOC` domain.
+- `src/constants/permissionFlags.ts`, `src/features/permissions/actions-meta.ts`: the
+  `documents.manage` capability (global, high risk).
+- `src/server/trpc/root.ts`: the `documents` router.
+- `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,
+  `src/features/notifications/entityHref.ts`, `ui/NotificationItem.tsx`, `ui/deepLink.ts`,
+  `email/render.ts`: the three document kinds, their labels, payload links and email copy.
+- `src/features/notifications/preferences.test.ts`, `schema.test.ts`: the new email defaults and
+  the 13-value enum.
+- `src/server/worker.ts`, `src/constants/jobNames.ts`: the `documents.overdue` cron job.
+- `src/features/deal-workspace/summaryRepo.ts`, `DealSidebar.tsx`,
+  `src/constants/dealSidebarSections.ts`, `src/constants/dealSidebarStrings.ts`: the optional
+  `documentSummary` and the Documents sidebar section.
+- `src/components/shell/LeftNav.tsx`, `NavIcons.tsx`, `TopBar.tsx`, `ReconnectBanner.tsx`,
+  `src/constants/nav.ts`, `src/constants/strings.ts`: the Documents navigation item and the
+  `data-print-hide` marking on the app chrome.
+- `src/features/release/ui/VersionBanner.tsx`: the `data-print-hide` marking.
+- `src/components/ui/Checkbox.tsx`: the optional `testId` prop (Radix owns the root element, so the
+  public accept checkbox needs one to be addressable).
+- `src/app/(app)/settings/SettingsNav.tsx`: the Documents settings link.
+- `src/app/globals.css`: the A4 print rules.
+- `scripts/seed-demo.ts`: calls the new documents seed and reports its counts. `scripts/seed-demo-records.ts`
+  unlinks activities owned by non-demo users from demo deals, people and organizations before deleting
+  them, so a re-seed is not blocked by foreign keys. New `scripts/seed-demo-documents.ts`.
+- `README.md`: the "Quotes and invoices" section.

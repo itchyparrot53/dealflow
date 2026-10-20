@@ -35,6 +35,7 @@ import {
   seedSavedFilters,
 } from "./seed-demo-collab";
 import { at, buildDeals, buildLeads, buildOrgs, buildPeople, makeRng } from "./seed-demo-data";
+import { seedDocuments } from "./seed-demo-documents";
 import { seedUserEmails } from "./seed-demo-email";
 import { seedAccountStates, seedEmailTracking } from "./seed-demo-email-extra";
 import {
@@ -125,6 +126,10 @@ async function main(): Promise<void> {
     dealIds,
     ownerId: at(userIds, 0),
   });
+
+  // Part 4 documents: settings, the default templates and a spread of quotes and
+  // invoices on the deals that now have lines.
+  const documents = await seedDocuments(db, { pipelineId, ownerId: at(userIds, 0) });
 
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
@@ -229,7 +234,7 @@ async function main(): Promise<void> {
     `demo_org_relations=${relationCount} demo_contact_followers=${followerCount} demo_invited=1`,
   );
   console.warn(
-    `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated}`,
+    `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated} demo_documents=${documents.documents} demo_templates=${documents.templates}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

@@ -63,8 +63,23 @@ export async function wipeDemo(db: Db, ownerIds: string[]): Promise<void> {
   await db.q(`DELETE FROM deal_participants WHERE deal_id IN ${demoDeals}`, u);
   await db.q(`UPDATE leads SET converted_deal_id = NULL WHERE owner_id = ANY($1::uuid[])`, u);
   await db.q(`DELETE FROM leads WHERE owner_id = ANY($1::uuid[])`, u);
+  // An activity owned by a NON-demo user can still reference a demo deal (someone logged
+  // an activity on it). Unlink it rather than delete another user's record, so the demo
+  // deal delete is not blocked by activities_deal_id_deals_id_fk on a re-seed.
+  await db.q(`UPDATE activities SET deal_id = NULL WHERE deal_id IN ${demoDeals}`, u);
   await db.q(`DELETE FROM deals WHERE owner_id = ANY($1::uuid[])`, u);
+  // Same reason: an activity from a non-demo user may reference a demo person.
+  await db.q(
+    `UPDATE activities SET person_id = NULL WHERE person_id IN
+       (SELECT id FROM persons WHERE owner_id = ANY($1::uuid[]))`,
+    u,
+  );
   await db.q(`DELETE FROM persons WHERE owner_id = ANY($1::uuid[])`, u);
+  await db.q(
+    `UPDATE activities SET org_id = NULL WHERE org_id IN
+       (SELECT id FROM organizations WHERE owner_id = ANY($1::uuid[]))`,
+    u,
+  );
   await db.q(
     `DELETE FROM organization_relations
        WHERE source_org_id IN ${demoOrgs} OR target_org_id IN ${demoOrgs}`,

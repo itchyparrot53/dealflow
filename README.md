@@ -154,6 +154,16 @@ also shows the weighted total, and `/forecast` groups open deals by expected clo
 card to re-date it). Money math uses integer minor units, never floats. See
 [docs/dealflow/SALES.md](docs/dealflow/SALES.md).
 
+## Quotes and invoices
+
+Deals with product lines can produce a quote or an invoice that snapshots the lines at
+creation. Documents are numbered on issue, sent through your own mailbox with a public
+link, accepted or declined by the customer on `/d/{publicId}`, and paid through
+hand-recorded payments; a daily job marks unpaid invoices overdue. Templates, numbering,
+company details and payment instructions live in Settings > Documents. See
+[docs/dealflow/DOCUMENTS.md](docs/dealflow/DOCUMENTS.md) for the model, status rules and
+the printing path.
+
 ## Tests
 
 ```bash
