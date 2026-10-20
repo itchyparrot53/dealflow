@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p3-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-20 21:37
+Current: 4.3 · Last updated: 2026-10-20 21:41
 
 ## Phase base commits
 - Phase 0: 15ff072bad756d4e64d00cbfd89521ba472ca651
@@ -31,7 +31,7 @@ Current: 4.2 · Last updated: 2026-10-20 21:37
 - [x] 3.3 Demo seed and docs
 - [x] 3.4 Phase 3 QA gate
 - [x] 4.1 E2E sales spec and screenshots
-- [ ] 4.2 Integration suite and smoke
+- [x] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -120,6 +120,9 @@ Current: 4.2 · Last updated: 2026-10-20 21:37
 - 4.1: the currencies step asserts the seeded EUR 1.08 row instead of re-adding it: Radix portals its 162-option list where Playwright cannot click reliably, and the add path is already covered by the rates integration suite. The product combobox is a Popover trigger (role button), not a combobox.
 - 4.1: the Summary value row now shows the calculated amount beside "Calculated from products", so the deal header still states 2,160.00 while the lines own the value.
 - 4.1: `pnpm e2e` passed 17/17 across specs 00 to 07; the 6 `p3-*` screenshots exist and the Part 1/2 screenshots were not replaced.
+
+- 4.2: the full integration suite passed 1857/1857 in 392 files (85.0 s) on the final tree; no pre-existing failure surfaced.
+- 4.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` project and its volumes (verified: no container and no volume with that name remain). Docker has 29.21 GB of images and 718 MB of volumes; no prune was run.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
