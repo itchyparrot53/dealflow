@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 00:44
+Current: 4.4 · Last updated: 2026-10-21 00:41
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -32,7 +32,7 @@ Current: 4.3 · Last updated: 2026-10-21 00:44
 - [x] 3.6 Phase 3 QA gate
 - [x] 4.1 E2E documents spec and screenshots
 - [x] 4.2 Integration suite and smoke
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
@@ -42,6 +42,7 @@ Current: 4.3 · Last updated: 2026-10-21 00:44
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5063/5063 · documents/products/mail integration 68/68
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` on `.next`; cleared and retried) · unit 5063/5063 · documents/notifications/auth integration 142/142
 - Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5063/5063 · documents integration 45/45
+- Independent review: subagent (fresh context) round 1: QA RESULT PASS · 0 blockers/0 majors/0 minors · fixed 0
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS-P3.md (formerly PROGRESS.md) said `dealflow-wd-p3-v1` with `STATUS: COMPLETE`, and HEAD is `e214c9a8e17342315ee36e23e0f65588843c1e58`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
@@ -134,6 +135,8 @@ Current: 4.3 · Last updated: 2026-10-21 00:44
 - 4.1: `pnpm e2e` passed 18/18 across specs `00` to `08` (1.1 min); the seven `p4-*` screenshots exist and the Part 1 to 3 screenshots are present (23/8/6).
 - 4.2: the full integration suite passed 1902/1902 in 394 files (57.7 s) on the final tree; no failure surfaced, so there are no `PRE-EXISTING:` entries.
 - 4.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` compose project and its volumes; verified afterwards that no container and no volume with that name remain. No prune was run.
+- 4.3: one independent review ran in a fresh-context subagent with the full `.dsh/qa.md` and "Final review of PLAN-PART4.md. Base commit e214c9a...". It returned `QA RESULT: PASS` with no blockers, majors or minors, after running typecheck, lint, unit, build and check:progress itself and checking the spec hooks, routes, schema, copy and screenshots; no fix round was needed, so the gate commands were not re-run for a fix and no second review was required.
+- 4.3: the reviewer separately confirmed the integration, e2e and smoke results from their artifacts (`.last-run.json`, `.smoke/smoke.env`, the screenshot files) rather than re-running those long checks.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
