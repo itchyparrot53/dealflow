@@ -149,15 +149,19 @@ Harness notes for later parts:
 ## Part 2 live check (2026-10-20)
 
 `pnpm mail:live-check` against the owner's Purelymail mailbox returned `status: ok`:
-SMTP send, Sent APPEND (uid 10), inbound arrival in 5.8 s, no `Bcc` on the received copy, the
+SMTP send, Sent APPEND, inbound arrival in 5.7 s, no `Bcc` on the received copy, the
 reply parsed with `In-Reply-To`/`References` pointing at the first message, Message-ID search in
-Sent found the copy, and both inbound copies moved to Trash. Total 26.7 s.
+Sent found the copy, and both inbound copies moved to Trash. Total 30.2 s. The re-run after the
+SPECIAL-USE fix reported `inbox`, `sent`, `drafts`, `archive`, `junk` and `trash` for the six
+folders.
 Result: `docs/dealflow/mail-live-check.json`.
 
 Purelymail facts the check confirmed or added:
-- **No SPECIAL-USE flags.** Every folder lists with `specialUse: null` (INBOX, Sent, Drafts,
-  Archive, Junk, Trash); folder discovery therefore falls back to the folder name. This was a real
-  gap: before the fallback only INBOX would have synced on this host.
+- **SPECIAL-USE flags are sent with a leading backslash.** The first live check read them through a
+  mapper that compared the raw value (`\Sent`) with `sent`, so every folder looked unflagged. The
+  mapper now strips the backslash (unit-tested for `\Inbox`, `\Sent`, `\Junk`, `\Trash`,
+  `\Archive` and an unknown `\All`); folder discovery still falls back to the folder name for
+  servers that send no flags at all.
 - SMTP-sent mail is still not saved by the server; the APPEND is required.
 - A new message is in INBOX about 6 s after the SMTP send, which matches the earlier 8 to 11 s
   IDLE observation closely enough for the poll cadence.
@@ -169,7 +173,7 @@ Purelymail facts the check confirmed or added:
 | `pnpm typecheck` | exit 0 |
 | `pnpm lint` | exit 0 (14 warnings, 0 errors) |
 | `pnpm build` | exit 0 |
-| `pnpm test:unit` | 4975/4975 in 795 files |
+| `pnpm test:unit` | 4979/4979 in 795 files |
 | `pnpm test:integration` | 1819/1819 in 389 files, 161.7 s |
 | `pnpm e2e` | 16/16 across specs 00 to 06; 8 `p2-*` screenshots, 23 Part 1 screenshots intact |
 | `DOCKER_BUILDKIT=0 pnpm smoke` | SMOKE PASS; no `dealflow-smoke` container or volume left |

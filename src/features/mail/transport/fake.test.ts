@@ -85,6 +85,21 @@ describe("fake transport", () => {
     if (status.ok) expect(status.value.uidNext).toBe(2);
   });
 
+  it("models CONDSTORE with a positive modseq that grows on append", async () => {
+    const { session } = await open();
+    const before = await session.status("INBOX", SIG());
+    await session.append("INBOX", raw(), [], SIG());
+    const after = await session.status("INBOX", SIG());
+    expect(before.ok).toBe(true);
+    expect(after.ok).toBe(true);
+    if (!before.ok || !after.ok) return;
+    expect(before.value.highestModseq).not.toBeNull();
+    expect(after.value.highestModseq).not.toBeNull();
+    if (before.value.highestModseq !== null && after.value.highestModseq !== null) {
+      expect(after.value.highestModseq > before.value.highestModseq).toBe(true);
+    }
+  });
+
   it("move returns a uid map and the file changes folder", async () => {
     const { session } = await open();
     await session.append("INBOX", raw(undefined, "one"), [], SIG());

@@ -24,7 +24,9 @@ Custom servers are allowed for any IMAP/SMTP host.
 
 ## What sync does
 
-- Mirrors INBOX, Sent, Archive, Junk and Trash; Drafts are ignored.
+- Mirrors INBOX, Sent, Archive, Junk and Trash; Drafts are ignored. Folders are found by their
+  SPECIAL-USE flag (the leading backslash is stripped: `\Sent`), falling back to the folder name
+  when a server sends no flags.
 - Per-folder cursors store `UIDVALIDITY`, the last seen UID, `UIDNEXT` and `HIGHESTMODSEQ` (null when
   the server reports 0, which Purelymail does for an empty folder). A UIDVALIDITY change deletes that
   folder's cursor and locations and runs the initial pass again.

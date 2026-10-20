@@ -1,44 +1,44 @@
 {
   "status": "ok",
-  "checkedAt": "2026-10-20T15:58:05.629Z",
+  "checkedAt": "2026-10-20T16:57:51.114Z",
   "account": "de******@umev.co.uk",
   "folders": [
     {
       "path": "INBOX",
-      "specialUse": null
+      "specialUse": "inbox"
     },
     {
       "path": "Sent",
-      "specialUse": null
+      "specialUse": "sent"
     },
     {
       "path": "Drafts",
-      "specialUse": null
+      "specialUse": "drafts"
     },
     {
       "path": "Archive",
-      "specialUse": null
+      "specialUse": "archive"
     },
     {
       "path": "Junk",
-      "specialUse": null
+      "specialUse": "junk"
     },
     {
       "path": "Trash",
-      "specialUse": null
+      "specialUse": "trash"
     }
   ],
   "sendOk": true,
-  "appendUid": 10,
+  "appendUid": 12,
   "inboundFound": true,
   "bccStripped": true,
   "replyThreadsToA": true,
   "sentSearchFound": true,
   "movedToTrash": true,
   "timingsMs": {
-    "inboundMs": 5800,
-    "replyMs": 6064,
-    "totalMs": 26654
+    "inboundMs": 5668,
+    "replyMs": 6025,
+    "totalMs": 30159
   },
   "errors": []
 }

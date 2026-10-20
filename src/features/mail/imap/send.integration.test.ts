@@ -22,6 +22,7 @@ import { createFakeTransportFactory } from "../transport/fake";
 import { fakeAppend, fakeDeliver, fakeList, fakeRead } from "../transport/fakeStore";
 import type { MailTransportFactory } from "../transport/types";
 import { runAppendRetryJob } from "./appendSent";
+import { sendImapMessage } from "./send";
 
 const SIG = (): AbortSignal => AbortSignal.timeout(15_000);
 const ADDRESS = "owner@umev.co.uk";
@@ -179,6 +180,29 @@ describe("IMAP send", () => {
     ).rows as { status: string }[];
     expect(appends[0]?.status).toBe("done");
     expect(header.endsWith(`@${ADDRESS.split("@")[1]}>`)).toBe(true);
+  });
+
+  test("the provider maxRecipients option is enforced", async () => {
+    const credentials = await loadImapCredentials(h.db, accountId, SIG());
+    if (!credentials.ok || credentials.value === null)
+      throw new Error("credentials fixture failed");
+    const rejected = await sendImapMessage({
+      db: h.db,
+      accountId,
+      credentials: credentials.value,
+      transports: factory(),
+      raw: "From: owner@umev.co.uk\r\nTo: a@x.test, b@x.test, c@x.test\r\n\r\nBody",
+      messageIdHeader: "<cap@umev.co.uk>",
+      envelope: { from: ADDRESS, to: ["a@x.test", "b@x.test", "c@x.test"] },
+      providerThreadId: null,
+      parentProviderMessageId: null,
+      reply: {},
+      attemptId: randomUUID(),
+      signal: SIG(),
+      limits: { maxRecipients: 2 },
+    });
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.error.id).toBe(ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS);
   });
 
   test("the Message-ID header uses the sending mailbox's domain", async () => {

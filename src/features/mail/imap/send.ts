@@ -71,7 +71,8 @@ export interface SendImapArgs {
 // message because that copy is ours. A failed APPEND never fails the send: the row waits for the
 // retry job instead.
 export async function sendImapMessage(args: SendImapArgs): Promise<Result<SentMessage, AppError>> {
-  if (args.envelope.to.length > env.MAIL_SEND_MAX_RECIPIENTS) {
+  const maxRecipients = args.limits?.maxRecipients ?? env.MAIL_SEND_MAX_RECIPIENTS;
+  if (args.envelope.to.length > maxRecipients) {
     return err(
       new AppError(ERROR_IDS.MAIL_TOO_MANY_RECIPIENTS, "too many recipients", {
         count: args.envelope.to.length,

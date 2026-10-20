@@ -1,9 +1,9 @@
 import { ImapFlow } from "imapflow";
 import nodemailer, { type Transporter } from "nodemailer";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import type { SpecialUse } from "@/constants/mail";
 import { MAIL_BATCH_SIZE } from "@/constants/mail";
 import { err, ok } from "@/types/result";
+import { specialUseOf } from "./specialUse";
 import type {
   FetchedSource,
   FolderInfo,
@@ -14,15 +14,8 @@ import type {
   SmtpSender,
 } from "./types";
 
-const SPECIAL_USES: readonly SpecialUse[] = ["inbox", "sent", "archive", "junk", "trash", "drafts"];
 // How long a single IMAP command may take before we treat it as a connection problem.
 const IMAP_SOCKET_TIMEOUT_MS = 60_000;
-
-function specialUseOf(value: string | undefined): SpecialUse | null {
-  if (value === undefined) return null;
-  const lower = value.toLowerCase();
-  return SPECIAL_USES.find((use) => use === lower) ?? null;
-}
 
 // One place for every IMAP failure. The password never enters an error context, and the
 // distinction matters to the UI: bad credentials mean "update password", an unreachable server
