@@ -184,6 +184,7 @@ export function DealSidebar({
           currency={productSummary?.currency ?? baseCurrency}
           hasLines={(productSummary?.lineCount ?? 0) > 0}
           valueBase={productSummary?.valueBase ?? null}
+          calculatedValue={deal.value}
         />
       </CollapsibleSection>
     ) : null,

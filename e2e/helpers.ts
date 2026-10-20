@@ -17,6 +17,9 @@ export interface Fixtures {
   // The deal the person is on, when the seeded data links one; otherwise null.
   personDealId: string | null;
   personId: string | null;
+  // The USD deal the sales spec adds its first line to; null if the seed did not create it.
+  salesDealId: string | null;
+  salesDealTitle: string | null;
 }
 
 export interface CapturedMail {

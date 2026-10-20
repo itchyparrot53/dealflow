@@ -192,6 +192,9 @@ async function seedDemoLines(
   }
   const jpyDeal = await ensureCurrencyDeal(db, args, "Demo JPY renewal", "JPY", "500000.00");
   await db.q(`DELETE FROM deal_products WHERE deal_id = $1`, [jpyDeal]);
+  // A USD deal kept free of lines so the e2e spec can add the first line deterministically.
+  const playground = await ensureCurrencyDeal(db, args, "Demo sales playground", "USD", null);
+  await db.q(`DELETE FROM deal_products WHERE deal_id = $1`, [playground]);
   return lineCount;
 }
 
@@ -230,5 +233,11 @@ export async function seedSales(
   await seedStageProbabilities(db, args.stageIds);
   const lines = await seedDemoLines(db, args, productIds);
   await spreadCloseDates(db, args.pipelineId);
+  // The e2e playground must stay in a forecast month, so pin it after the ranking.
+  await db.q(
+    `UPDATE deals SET expected_close_date = (current_date + interval '1 month')::date
+     WHERE pipeline_id = $1 AND title = 'Demo sales playground'`,
+    [args.pipelineId],
+  );
   return { products: PRODUCTS.length, lines, overdue: 2, undated: 3 };
 }

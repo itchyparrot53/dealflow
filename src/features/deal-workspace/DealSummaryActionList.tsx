@@ -6,6 +6,7 @@ import type React from "react";
 import { useState } from "react";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
+import { formatMoney, parseCents } from "@/features/currency/money";
 import { updateDealAction } from "@/features/deals/updateAction";
 import { InlineEditFooter } from "@/features/inline-edit/InlineEditFooter";
 import { InlineFieldShell } from "@/features/inline-edit/InlineFieldShell";
@@ -60,6 +61,7 @@ export function DealSummaryActionList({
   currency,
   hasLines = false,
   valueBase = null,
+  calculatedValue = null,
 }: {
   deal: SummaryDeal;
   person: { id: string; name: string } | null;
@@ -69,6 +71,7 @@ export function DealSummaryActionList({
   currency?: string;
   hasLines?: boolean;
   valueBase?: string | null;
+  calculatedValue?: string | null;
 }): React.ReactNode {
   const router = useRouter();
   const expectedUpdatedAt = new Date(deal.updatedAt).toISOString();
@@ -109,7 +112,14 @@ export function DealSummaryActionList({
     <div className="text-sm">
       <ActionRow icon={<Wallet aria-hidden="true" className={ICON} />}>
         {hasLines ? (
-          <span className="text-muted-foreground">{PRODUCTS_STRINGS.calculatedFromProducts}</span>
+          <span className="flex items-baseline gap-2">
+            <span className="text-muted-foreground">{PRODUCTS_STRINGS.calculatedFromProducts}</span>
+            {calculatedValue !== null && (
+              <span className="font-medium tabular-nums">
+                {formatMoney(parseCents(calculatedValue), currency ?? baseCurrency)}
+              </span>
+            )}
+          </span>
         ) : (
           <InlineFieldShell
             label="Value"

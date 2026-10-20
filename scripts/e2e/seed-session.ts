@@ -114,6 +114,11 @@ async function main(): Promise<void> {
       personId = deal.personId;
     }
   }
+  const [salesDeal] = await db
+    .select({ id: deals.id, title: deals.title })
+    .from(deals)
+    .where(and(eq(deals.title, "Demo sales playground"), isNull(deals.deletedAt)))
+    .limit(1);
   writeFileSync(
     ".e2e/fixtures.json",
     JSON.stringify({
@@ -125,6 +130,8 @@ async function main(): Promise<void> {
       personEmail,
       personDealId,
       personId,
+      salesDealId: salesDeal?.id ?? null,
+      salesDealTitle: salesDeal?.title ?? null,
     }),
   );
   await pool.end();
