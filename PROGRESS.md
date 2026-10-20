@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-20 23:33
+Current: 2.2 · Last updated: 2026-10-20 23:37
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -19,7 +19,7 @@ Current: 2.1 · Last updated: 2026-10-20 23:33
 - [x] 1.4 Payments and the overdue job
 - [x] 1.5 Sending through the mailbox
 - [x] 1.6 Phase 1 QA gate
-- [ ] 2.1 Public reads, accept and decline (test-first)
+- [x] 2.1 Public reads, accept and decline (test-first)
 - [ ] 2.2 Owner notifications
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Settings → Documents
@@ -82,6 +82,13 @@ Current: 2.1 · Last updated: 2026-10-20 23:33
 - 1.5: the send implementation was drafted before its cases were run, so this task is not claimed as test-first; the first run still caught the base64 body detail, which the assertion now handles.
 - 1.5: recipient and connected-mailbox checks run before the draft is issued, so `E_DOC_005`/`E_DOC_006` leave the document as a draft; the issue is committed before the mail call, so a send failure after issuing returns the mail error and leaves the document issued.
 - 1.5: the action's short signal is deliberately not forwarded to `sendEmail`, matching the composer, so an SMTP send plus its Sent append gets `MAIL_SEND_TIMEOUT_MS` instead of the action budget.
+- 2.1: `public.integration.test.ts` was written first and run red (missing modules); after the services it passed 16/16, with one assertion corrected: `{{products}}` is a block marker and is deliberately left in the rendered body, so the test now forbids only `{{document.` and asserts the products marker survives.
+- 2.1: the public page and both route handlers live outside the `(app)` group (`src/app/d/[publicId]` and `src/app/api/public/...`), so they are public by construction; the build lists all three routes, and no allowlist file exists to edit (as logged in 0.1).
+- 2.1: `publicRateLimit.ts` reuses the existing `createRateLimiter` fixed-window primitive with 30 requests a minute per IP and per publicId; `getPublicDocument` enforces it for the page (with the request IP) and each POST handler checks it before parsing.
+- 2.1: the first view is recorded once: a sent quote moves to `viewed` with `viewed_at`, an invoice only gains `viewed_at`, and `recordView` already returns `firstView` so Task 2.2 can notify on exactly that event.
+- 2.1: public visibility hides drafts, void documents and quotes of soft-deleted deals as `E_DOC_001`, while an issued invoice of a soft-deleted deal stays visible, exactly as 6.7 contrasts them.
+- 2.1: the public view exposes `publicId` only, never the internal id, `dealId`, `createdBy`, customer email or `accepted_ip`; the test asserts the serialized view has no customer email.
+- 2.1: the client IP is the first `x-forwarded-for` entry, then `x-real-ip`, then "unknown", because the Next runtime exposes no socket address; POST responses map 404/409/410/429, a failed origin check is 403 `E_AUTH_ORIGIN_REJECTED`, and an oversized (16 KB) or malformed body is 400 `E_DOC_INPUT_INVALID`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
