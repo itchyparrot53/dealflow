@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p2-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-20 03:07
+Current: 1.4 · Last updated: 2026-10-20 03:14
 
 ## Phase base commits
 - Phase 0: 64363ce446a92308919921e7bcaa77ddf6ba2844
@@ -16,7 +16,7 @@ Current: 1.3 · Last updated: 2026-10-20 03:07
 - [x] 0.6 Phase 0 QA gate
 - [x] 1.1 Rename the Gmail columns
 - [x] 1.2 Mail tables
-- [ ] 1.3 MailProvider interface and Gmail adapter
+- [x] 1.3 MailProvider interface and Gmail adapter
 - [ ] 1.4 Send path on MailProvider
 - [ ] 1.5 Sync, attachments and trash on MailProvider; neutral inbound store
 - [ ] 1.6 Message-ID domain and notification emails via the system mailer
@@ -56,6 +56,10 @@ Current: 1.3 · Last updated: 2026-10-20 03:07
 - 0.1: moved the kit from the root folder to `PLAN AND EXECUTE/dealflow-wd-part2-kit` and committed it there, matching Part 1's layout, because section 4 allows a subfolder and the root already carries the Part 1 symlink; added the root `PLAN-PART2.md` symlink and copied the kit's `scripts/check-progress.mjs` (byte-identical) over the Part 1 copy at the path contract 6.2 names.
 - 0.1: added the arriving `dealflow-wd-part2-kit.zip` to `.git/info/exclude` (local only) instead of committing or deleting it, because it is the transport container, not source.
 - 0.1: ran the unit and integration baselines WITHOUT the `GOOGLE_*=` overrides, because `vitest.setup.ts` supplies its own Google test values and shell overrides shadow them (4 tests failed that way); only commands that load `.env` itself (`pnpm build`, `db:migrate:dev`) take the overrides.
+- 1.3: `ResolveDeps` only carries `gmailClient` for now; the contract's optional `transports` field needs `MailTransportFactory`, which Task 2.2 creates, so it is added in Task 2.4 together with `createImapProvider`; the IMAP branch returns `E_MAIL_015` as the plan specifies.
+- 1.3: the Gmail adapter's `send` does the second metadata read (thread id and snippet) and returns its error if that read fails, matching today's `storeOutboundCopy`, which also treats a failed fetch as a failed store; the caller reconciles by Message-ID.
+- 1.3: `SentMessage.headers` for a reply come from the parent's `Reply-Thread` headers (inReplyTo plus the references chain), while `describeSent` reads the message's own Message-ID/In-Reply-To/References, because replay repair has no parent argument.
+- 1.3: the rename shortened some lines enough that biome now formats `db/schema/mail.ts`, `email/outboxReconcile.ts` and `email/spamSweep.test.ts` differently; formatted only, no behaviour change.
 - 1.2: `drizzle-kit generate --custom` kept the previous snapshot (the five renamed columns still read `gmail_*` in `drizzle/meta/0078_snapshot.json`), so I renamed those keys in the snapshot by hand before generating 0079; that keeps 0079 a pure add and every later diff clean.
 - 1.2: this drizzle-orm version has no `bytea` in `pg-core`, so `mail.ts` defines the same `customType` the email schema uses for encrypted tokens; the encrypted password column is `bytea`.
 - 1.2: env:sync appended the eight `MAIL_*` keys to `.env` (values are the defaults); `.env.example` documents them in a new `# Mail (IMAP/SMTP)` section.

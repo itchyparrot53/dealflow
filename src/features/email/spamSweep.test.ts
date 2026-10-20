@@ -35,7 +35,11 @@ async function seedThread(db: TestDb, acctId: string, providerThreadId: string):
   `);
 }
 
-async function hiddenAt(db: TestDb, acctId: string, providerThreadId: string): Promise<string | null> {
+async function hiddenAt(
+  db: TestDb,
+  acctId: string,
+  providerThreadId: string,
+): Promise<string | null> {
   const r = (
     await db.execute(
       sql`SELECT trashed_at FROM email_threads

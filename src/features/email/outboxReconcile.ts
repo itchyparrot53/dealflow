@@ -14,7 +14,10 @@ export interface AttemptRow {
   provider_message_id: string | null;
 }
 
-export type SendOutcome = { status: "sent" | "failed" | "needs_review"; providerMessageId?: string };
+export type SendOutcome = {
+  status: "sent" | "failed" | "needs_review";
+  providerMessageId?: string;
+};
 
 // Flip the row to sent and record the gmail message id. Idempotent and overwrite-safe:
 // the WHERE clause adopts an id only when none is set yet, OR when it equals the id

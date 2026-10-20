@@ -96,10 +96,7 @@ export const emailMessageHeaders = pgTable(
     accountId: uuid("account_id").notNull(),
     rfc822MessageId: text("rfc822_message_id").notNull(),
     inReplyTo: text("in_reply_to"),
-    references: text("references")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
+    references: text("references").array().notNull().default(sql`'{}'`),
   },
   (t) => [index("emh_account_rfc_idx").on(t.accountId, t.rfc822MessageId)],
 );
