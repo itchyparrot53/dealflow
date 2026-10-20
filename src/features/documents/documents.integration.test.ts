@@ -1,4 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
@@ -20,10 +23,15 @@ import {
   parseMilli,
 } from "@/features/currency/money";
 import { saveRate } from "@/features/currency/rates";
+import { FakeStorageClient } from "@/features/files/storageFake";
+import { connectImapMailbox } from "@/features/mail/connect/connect";
+import { createFakeTransportFactory } from "@/features/mail/transport/fake";
+import { fakeRead } from "@/features/mail/transport/fakeStore";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { addDealLine } from "@/features/products/dealProducts";
 import { setDealTerms } from "@/features/products/dealTerms";
 import { createProduct } from "@/features/products/products";
+import { hydrateActor } from "@/server/hydrateActor";
 import { makeTestDb } from "@/test/db";
 import {
   createDocument,
@@ -38,6 +46,7 @@ import { issueDocument, voidInvoice } from "./issue";
 import { formatDocNumber } from "./numbering";
 import { runOverdueInvoices } from "./overdueJob";
 import { deletePayment, recordPayment } from "./payments";
+import { sendDocument } from "./send";
 import { getDocumentSettings, updateDocumentSettings } from "./settings";
 import { createTemplate, deleteTemplate, listTemplates, setDefaultTemplate } from "./templates";
 
@@ -63,7 +72,8 @@ beforeAll(async () => {
     type: "regular",
     isActive: true,
     groupIds: new Set(),
-    flags: new Set(),
+    // Its own deals only: the visibility case below still fails on canSee first.
+    flags: new Set(["deal.edit_own"]),
   };
   const seeded = await seedPipelineWithStages(h.db, ["Lead", "Won"]);
   pipelineId = seeded.pipeline.id;
@@ -792,5 +802,108 @@ describe("the overdue job", () => {
     expect(await read(paidId)).toBe("paid");
     expect(await read(futureId)).toBe("sent");
     expect(await read(quote.value.id)).toBe("sent");
+  });
+});
+
+describe("sending", () => {
+  const MAIL_ADDRESS = "docs-owner@example.com";
+  let mailDir = "";
+  let mailboxId = "";
+
+  beforeAll(async () => {
+    mailDir = mkdtempSync(join(tmpdir(), "dfdocs-"));
+    const owner = await hydrateActor(h.db, admin.id, sig());
+    if (owner === null) throw new Error("admin actor fixture failed");
+    const connected = await connectImapMailbox(
+      h.db,
+      owner,
+      { emailAddress: MAIL_ADDRESS, password: "fake-app-password-1", preset: "purelymail" },
+      { transports: createFakeTransportFactory(mailDir), enqueueSync: () => Promise.resolve() },
+      sig(),
+    );
+    if (!connected.ok) throw new Error(`mailbox fixture failed: ${connected.error.id}`);
+    mailboxId = connected.value.accountId;
+  }, 60_000);
+
+  afterAll(() => {
+    if (mailDir !== "") rmSync(mailDir, { recursive: true, force: true });
+  });
+
+  function deps() {
+    return {
+      resolveDeps: { transports: createFakeTransportFactory(mailDir) },
+      storage: new FakeStorageClient(),
+    };
+  }
+
+  it("issues a draft, delivers one message with the public link and links it to the deal", async () => {
+    const deal = await seedDeal({ value: "100.00" });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "quote" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    expect(created.value.customerEmail).toBe("ada@example.com");
+
+    const sent = await sendDocument(h.db, admin, { id: created.value.id }, sig(), deps());
+    expect(sent.ok).toBe(true);
+    if (!sent.ok) return;
+    expect(sent.value.status).toBe("sent");
+    expect(sent.value.number).not.toBeNull();
+    expect(sent.value.sentAt).not.toBeNull();
+
+    const wire = fakeRead(mailDir, MAIL_ADDRESS, "Sent", 1).toString("utf8");
+    expect(wire).toContain(`Subject: Quote ${sent.value.number ?? "MISSING"} from`);
+    // The HTML part is base64 on the wire; decode it to read the link.
+    const splitAt = wire.indexOf("\r\n\r\n");
+    const decoded = Buffer.from(wire.slice(splitAt + 4).trim(), "base64").toString("utf8");
+    expect(decoded).toContain(sent.value.publicUrl);
+    expect(decoded).toContain("Hi Ada");
+
+    const messages = await h.db.execute(
+      sql`SELECT count(*)::int AS count FROM email_messages WHERE account_id=${mailboxId}`,
+    );
+    expect(messages.rows[0]).toEqual({ count: 1 });
+    const threads = await h.db.execute(
+      sql`SELECT deal_id FROM email_threads WHERE account_id=${mailboxId}`,
+    );
+    expect(threads.rows[0]).toEqual({ deal_id: deal.id });
+
+    // Send again: no transition, the same number, a second message.
+    const again = await sendDocument(h.db, admin, { id: created.value.id }, sig(), deps());
+    expect(again.ok).toBe(true);
+    if (!again.ok) return;
+    expect(again.value.number).toBe(sent.value.number);
+    expect(again.value.status).toBe("sent");
+    const second = await h.db.execute(
+      sql`SELECT count(*)::int AS count FROM email_messages WHERE account_id=${mailboxId}`,
+    );
+    expect(second.rows[0]).toEqual({ count: 2 });
+  });
+
+  it("refuses a document with no customer email with E_DOC_005 and leaves it draft", async () => {
+    const deal = await seedDeal({ value: "10.00", withContact: false });
+    const created = await createDocument(h.db, admin, { dealId: deal.id, kind: "invoice" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const result = await sendDocument(h.db, admin, { id: created.value.id }, sig(), deps());
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.id).toBe(ERROR_IDS.DOC_NO_CUSTOMER_EMAIL);
+    const read = await getDocument(h.db, admin, created.value.id, sig());
+    expect(read.ok).toBe(true);
+    if (read.ok) expect(read.value.status).toBe("draft");
+  });
+
+  it("refuses a sender with no connected mailbox with E_DOC_006 and leaves it draft", async () => {
+    const deal = await seedDeal({ value: "20.00", ownerId: regular.id });
+    const created = await createDocument(h.db, regular, { dealId: deal.id, kind: "quote" }, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const result = await sendDocument(h.db, regular, { id: created.value.id }, sig(), deps());
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.id).toBe(ERROR_IDS.DOC_NO_MAILBOX);
+    const read = await getDocument(h.db, regular, created.value.id, sig());
+    expect(read.ok).toBe(true);
+    if (read.ok) expect(read.value.status).toBe("draft");
   });
 });

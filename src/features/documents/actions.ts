@@ -20,6 +20,7 @@ import {
 } from "./documents";
 import { issueDocument, voidInvoice } from "./issue";
 import { deletePayment, recordPayment } from "./payments";
+import { sendDocument } from "./send";
 import { type DocumentSettingsView, updateDocumentSettings } from "./settings";
 import {
   createTemplate,
@@ -175,4 +176,14 @@ export async function deletePaymentAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await deletePayment(db, g.value, id, SIG()));
+}
+
+export async function sendDocumentAction(
+  id: string,
+  input: { to?: string; subject?: string; message?: string },
+  csrfToken: string | null = null,
+): Promise<ActionResult<DocumentView>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  return toClientResult(await sendDocument(db, g.value, { id, ...input }, SIG()));
 }

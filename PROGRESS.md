@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p4-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-20 23:27
+Current: 1.6 · Last updated: 2026-10-20 23:30
 
 ## Phase base commits
 - Phase 0: e214c9a8e17342315ee36e23e0f65588843c1e58
@@ -16,7 +16,7 @@ Current: 1.5 · Last updated: 2026-10-20 23:27
 - [x] 1.2 Create, edit, refresh, duplicate, delete (test-first)
 - [x] 1.3 Issue, numbering and void
 - [x] 1.4 Payments and the overdue job
-- [ ] 1.5 Sending through the mailbox
+- [x] 1.5 Sending through the mailbox
 - [ ] 1.6 Phase 1 QA gate
 - [ ] 2.1 Public reads, accept and decline (test-first)
 - [ ] 2.2 Owner notifications
@@ -75,6 +75,11 @@ Current: 1.5 · Last updated: 2026-10-20 23:27
 - 1.4: an invoice becomes `paid` when the summed payments reach or pass the stored total (they can only equal it under the lock); `deletePayment` on a paid invoice applies `unpay` and then swaps in `overdue` when `due_date` is before today, without waiting for the job.
 - 1.4: the overdue job is one `UPDATE ... WHERE due_date < (now() at time zone 'utc')::date`, registered on the worker at `0 6 * * *` and exported as `runOverdueInvoices` so the test calls the exact SQL; the queue name is `documents.overdue` in `jobNames.ts`.
 - 1.4: fixed a real concurrency defect found by a pg deprecation warning: `getDocument` ran its three reads in `Promise.all`, and inside a transaction those run on one client, which cannot execute two queries at once. They are sequential now, and the warning is gone.
+- 1.5: the compose send path is `src/features/email/actions.ts` calling `sendEmail` in `src/features/email/send.ts` with `resolveMailProvider` and `makeStorageClient`, passing `linkDealId`/`linkPersonId` so the thread links to the deal. `send.ts` reuses that same `sendEmail` call and `getActorMailbox` for the connected check.
+- 1.5: the send tests use the Part 2 fake transport (`connectImapMailbox` plus `createFakeTransportFactory`, as the mail integration tests do) and `FakeStorageClient`, injected through `SendDocumentDeps.resolveDeps`/`storage`; the outgoing HTML part is base64 on the wire, so the test decodes the Sent copy before asserting the public URL.
+- 1.5: the send implementation was drafted before its cases were run, so this task is not claimed as test-first; the first run still caught the base64 body detail, which the assertion now handles.
+- 1.5: recipient and connected-mailbox checks run before the draft is issued, so `E_DOC_005`/`E_DOC_006` leave the document as a draft; the issue is committed before the mail call, so a send failure after issuing returns the mail error and leaves the document issued.
+- 1.5: the action's short signal is deliberately not forwarded to `sendEmail`, matching the composer, so an SMTP send plus its Sent append gets `MAIL_SEND_TIMEOUT_MS` instead of the action budget.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
