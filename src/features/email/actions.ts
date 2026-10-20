@@ -15,14 +15,11 @@ import { createContext } from "@/server/trpc/context";
 import { type ActionResult, clientErr, toClientResult } from "@/types/actionResult";
 import { ok } from "@/types/result";
 import { softDisconnectMailbox } from "./disconnect";
-import { createGmailClient } from "./gmailClient";
-import { makeRefresh } from "./gmailRefresh";
 import { assertMailboxOwner } from "./mailboxOwnership";
 import { buildAuthUrl, GMAIL_OAUTH_STATE_COOKIE } from "./oauth";
 import { sendEmail as orchestrateSend, type SendEmailInput, sendEmailInput } from "./send";
 import { isFutureScheduledSend } from "./sendScheduling";
 import { trashThread } from "./threadTrash";
-import { ensureAccessToken } from "./tokens";
 
 // Stub provider for the future-scheduled path: runSend enqueues + prepares the body then
 // returns before any mail I/O, so this is never invoked. Any call is a programmer error (the
@@ -143,16 +140,20 @@ export async function trashThreadAction(
   if (acct === undefined)
     return clientErr(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found", {}));
 
-  const token = await ensureAccessToken(db, {
-    accountId: acct.id,
-    deps: { refresh: makeRefresh(signal) },
-  });
-  if (!token.ok) return clientErr(token.error);
+  const provider = await resolveMailProvider(db, acct.id, signal);
+  if (!provider.ok) return clientErr(provider.error);
 
-  const gmail = createGmailClient(token.value.token);
-  return toClientResult(
-    await trashThread(db, { actor: ctx.actor, threadId: parsed.data.threadId, gmail }, signal),
-  );
+  try {
+    return toClientResult(
+      await trashThread(
+        db,
+        { actor: ctx.actor, threadId: parsed.data.threadId, provider: provider.value },
+        signal,
+      ),
+    );
+  } finally {
+    await provider.value.close();
+  }
 }
 
 // Start the Gmail connect flow: mints a single-use OAuth state, stores it in an

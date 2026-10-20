@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
+import type { MailProvider } from "@/features/mail/provider/types";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
-import type { GmailClient } from "./gmailClient";
 
 // Reader Delete -> Gmail Trash (P4). Resolves the thread owner-scoped (missing OR not-owned both
 // return 404, matching archive/getThread), then moves the REAL Gmail conversation by its gmail
@@ -13,7 +13,7 @@ import type { GmailClient } from "./gmailClient";
 // idempotent. The gmail client is injected so the domain is testable against the Fake.
 export async function trashThread(
   db: Db,
-  args: { actor: AuthUser; threadId: string; gmail: GmailClient },
+  args: { actor: AuthUser; threadId: string; provider: MailProvider },
   signal: AbortSignal,
 ): Promise<Result<{ threadId: string }, AppError>> {
   signal.throwIfAborted();
@@ -27,7 +27,10 @@ export async function trashThread(
   if (row === undefined)
     return err(new AppError(ERROR_IDS.GMAIL_THREAD_NOT_FOUND, "thread not found", {}));
 
-  const trashed = await args.gmail.trashThread({ threadId: row.provider_thread_id, signal });
+  const trashed = await args.provider.trashThread({
+    providerThreadId: row.provider_thread_id,
+    signal,
+  });
   if (!trashed.ok) return trashed;
 
   await db.execute(sql`UPDATE email_threads SET trashed_at = now() WHERE id = ${row.id}`);

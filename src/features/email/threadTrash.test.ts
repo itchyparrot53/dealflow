@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { AppError } from "@/constants/errorIds";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import type { AuthUser } from "@/features/permissions/types";
 import { err } from "@/types/result";
 import { FakeGmailClient } from "./gmailFake";
@@ -54,7 +55,15 @@ describe("trashThread", () => {
       const threadId = await seedThread(db, owner.id, "gmail-abc");
       const gmail = new FakeGmailClient();
 
-      const res = await trashThread(db, { actor: actorOf(owner.id), threadId, gmail }, SIG());
+      const res = await trashThread(
+        db,
+        {
+          actor: actorOf(owner.id),
+          threadId,
+          provider: gmailProviderForTest(db, "test-mailbox", gmail),
+        },
+        SIG(),
+      );
       expect(res.ok).toBe(true);
       // The GMAIL thread id (not our internal uuid) is what Gmail trashes.
       expect(gmail.calls).toContainEqual({
@@ -72,7 +81,15 @@ describe("trashThread", () => {
       const gmail = new FakeGmailClient();
       gmail.trashImpl = () => err(new AppError("E_GMAIL_001", "gmail down", {}));
 
-      const res = await trashThread(db, { actor: actorOf(owner.id), threadId, gmail }, SIG());
+      const res = await trashThread(
+        db,
+        {
+          actor: actorOf(owner.id),
+          threadId,
+          provider: gmailProviderForTest(db, "test-mailbox", gmail),
+        },
+        SIG(),
+      );
       expect(res.ok).toBe(false);
       expect(await trashedAt(db, threadId)).toBeNull();
     });
@@ -85,7 +102,15 @@ describe("trashThread", () => {
       const threadId = await seedThread(db, owner.id);
       const gmail = new FakeGmailClient();
 
-      const res = await trashThread(db, { actor: actorOf(other.id), threadId, gmail }, SIG());
+      const res = await trashThread(
+        db,
+        {
+          actor: actorOf(other.id),
+          threadId,
+          provider: gmailProviderForTest(db, "test-mailbox", gmail),
+        },
+        SIG(),
+      );
       expect(res.ok).toBe(false);
       expect(gmail.calls).toHaveLength(0);
       expect(await trashedAt(db, threadId)).toBeNull();

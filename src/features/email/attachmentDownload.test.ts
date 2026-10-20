@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import type { AuthUser } from "@/features/permissions/types";
 import { ok } from "@/types/result";
 import { resolveAttachmentDownload } from "./attachmentDownload";
@@ -68,7 +69,10 @@ describe("resolveAttachmentDownload", () => {
 
       const r = await resolveAttachmentDownload(
         db,
-        { resolveClient: () => Promise.resolve(ok(fake)) },
+        {
+          resolveProvider: () =>
+            Promise.resolve(ok(gmailProviderForTest(db, "test-mailbox", fake))),
+        },
         { actor: actorOf(owner.id), attachmentId },
         SIG(),
       );
@@ -96,7 +100,10 @@ describe("resolveAttachmentDownload", () => {
 
       const r = await resolveAttachmentDownload(
         db,
-        { resolveClient: () => Promise.resolve(ok(fake)) },
+        {
+          resolveProvider: () =>
+            Promise.resolve(ok(gmailProviderForTest(db, "test-mailbox", fake))),
+        },
         { actor: actorOf(stranger.id), attachmentId },
         SIG(),
       );
@@ -114,7 +121,10 @@ describe("resolveAttachmentDownload", () => {
 
       const r = await resolveAttachmentDownload(
         db,
-        { resolveClient: () => Promise.resolve(ok(fake)) },
+        {
+          resolveProvider: () =>
+            Promise.resolve(ok(gmailProviderForTest(db, "test-mailbox", fake))),
+        },
         { actor: actorOf(owner.id), attachmentId: "00000000-0000-0000-0000-000000000000" },
         SIG(),
       );
@@ -131,7 +141,10 @@ describe("resolveAttachmentDownload", () => {
 
       const r = await resolveAttachmentDownload(
         db,
-        { resolveClient: () => Promise.resolve(ok(fake)) },
+        {
+          resolveProvider: () =>
+            Promise.resolve(ok(gmailProviderForTest(db, "test-mailbox", fake))),
+        },
         { actor: actorOf(owner.id), attachmentId: "not-a-uuid" },
         SIG(),
       );

@@ -28,8 +28,10 @@ export async function sweepAllMailboxes(
   signal.throwIfAborted();
   const accounts = (
     await db.execute(
-      sql`SELECT id, email_address FROM email_accounts
-          WHERE status <> 'disconnected' ORDER BY email_address`,
+      sql`SELECT a.id, a.email_address FROM email_accounts a
+          WHERE a.status <> 'disconnected'
+            AND NOT EXISTS (SELECT 1 FROM mail_account_credentials c WHERE c.account_id = a.id)
+          ORDER BY a.email_address`,
     )
   ).rows as { id: string; email_address: string }[];
   signal.throwIfAborted();

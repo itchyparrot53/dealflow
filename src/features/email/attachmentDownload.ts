@@ -3,13 +3,16 @@ import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailMessageAttachments, emailMessages, emailThreads } from "@/db/schema";
+import type { MailProvider } from "@/features/mail/provider/types";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { canSeeEmail } from "./emailVisibility";
-import type { GmailClient } from "./gmailClient";
 
 export interface AttachmentDownloadDeps {
-  resolveClient: (accountId: string, signal: AbortSignal) => Promise<Result<GmailClient, AppError>>;
+  resolveProvider: (
+    accountId: string,
+    signal: AbortSignal,
+  ) => Promise<Result<MailProvider, AppError>>;
 }
 
 export interface AttachmentDownload {
@@ -78,19 +81,19 @@ export async function resolveAttachmentDownload(
   );
   if (!visible) return err(denied());
 
-  const client = await deps.resolveClient(row.accountId, signal);
-  if (!client.ok) return client;
+  const provider = await deps.resolveProvider(row.accountId, signal);
+  if (!provider.ok) return provider;
 
-  const data = await client.value.getAttachment({
-    messageId: row.providerMessageId,
-    attachmentId: row.providerAttachmentId,
-    signal,
-  });
-  if (!data.ok) return data;
+  try {
+    const data = await provider.value.fetchAttachment({
+      providerMessageId: row.providerMessageId,
+      providerAttachmentId: row.providerAttachmentId,
+      signal,
+    });
+    if (!data.ok) return data;
 
-  return ok({
-    filename: row.filename,
-    mimeType: row.mimeType,
-    bytes: Buffer.from(data.value.dataBase64, "base64url"),
-  });
+    return ok({ filename: row.filename, mimeType: row.mimeType, bytes: data.value.bytes });
+  } finally {
+    await provider.value.close();
+  }
 }

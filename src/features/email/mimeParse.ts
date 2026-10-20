@@ -3,6 +3,10 @@ import type { GmailMessage } from "./gmailSchemas";
 
 export interface ParsedGmailMessage {
   providerMessageId: string;
+  // RFC 822 threading headers. Empty/null when Gmail omits them; the caller stores them as-is.
+  rfc822MessageId: string;
+  inReplyTo: string | null;
+  references: string[];
   threadId: string;
   fromEmail: string;
   // Display name from the From header ("Scrape.do Team" in `"Scrape.do Team" <support@scrape.do>`),
@@ -142,6 +146,9 @@ export function parseGmailMessage(msg: GmailMessage): ParsedGmailMessage {
 
   return {
     providerMessageId: msg.id,
+    rfc822MessageId: header(headers, "Message-ID")?.trim() ?? "",
+    inReplyTo: header(headers, "In-Reply-To")?.trim() ?? null,
+    references: (header(headers, "References") ?? "").split(/\s+/).filter((part) => part !== ""),
     threadId: msg.threadId,
     fromEmail,
     fromName,
