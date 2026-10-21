@@ -145,6 +145,23 @@ async function parseRequest(
   if (method !== "POST" && method !== "PATCH") {
     return { ok: true, query: query.query, body: undefined };
   }
+  const contentType = (req.headers.get("content-type") ?? "").toLowerCase();
+  if (!contentType.startsWith("application/json")) {
+    return {
+      ok: false,
+      response: json(
+        errorBody(ERROR_IDS.API_BODY_INVALID, "content type must be application/json"),
+        422,
+      ),
+    };
+  }
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > API_BODY_MAX_BYTES) {
+    return {
+      ok: false,
+      response: json(errorBody(ERROR_IDS.API_BODY_INVALID, "request body too large"), 422),
+    };
+  }
   const parsed = readBody(await req.text(), route);
   if (!parsed.ok) return { ok: false, response: parsed.response };
   return { ok: true, query: query.query, body: parsed.body };

@@ -124,13 +124,36 @@ async function stillDeleted(
   }
 }
 
-// An activity whose primary parent is still deleted cannot be restored yet (E_RECYCLE_002).
-async function blockedParent(
+// A record whose parent is still deleted cannot be restored yet (E_RECYCLE_002).
+async function blockedProject(
   db: Db,
-  entity: RecycleEntity,
   id: string,
 ): Promise<{ parent: string; parentId: string } | null> {
-  if (entity !== "activity") return null;
+  const [row] = await db
+    .select({ dealId: projects.dealId })
+    .from(projects)
+    .where(eq(projects.id, id));
+  if (row?.dealId != null && (await stillDeleted(db, "deal", row.dealId))) {
+    return { parent: "deal", parentId: row.dealId };
+  }
+  return null;
+}
+
+async function blockedPerson(
+  db: Db,
+  id: string,
+): Promise<{ parent: string; parentId: string } | null> {
+  const [row] = await db.select({ orgId: persons.orgId }).from(persons).where(eq(persons.id, id));
+  if (row?.orgId != null && (await stillDeleted(db, "organization", row.orgId))) {
+    return { parent: "organization", parentId: row.orgId };
+  }
+  return null;
+}
+
+async function blockedActivity(
+  db: Db,
+  id: string,
+): Promise<{ parent: string; parentId: string } | null> {
   const [row] = await db
     .select({
       dealId: activities.dealId,
@@ -150,6 +173,25 @@ async function blockedParent(
     return { parent: "organization", parentId: row.orgId };
   }
   return null;
+}
+
+async function blockedParent(
+  db: Db,
+  entity: RecycleEntity,
+  id: string,
+): Promise<{ parent: string; parentId: string } | null> {
+  switch (entity) {
+    case "project":
+      return blockedProject(db, id);
+    case "person":
+      return blockedPerson(db, id);
+    case "activity":
+      return blockedActivity(db, id);
+    case "deal":
+    case "organization":
+    case "lead":
+      return null;
+  }
 }
 
 const TABLE_NAME: Record<RecycleEntity, string> = {

@@ -56,11 +56,7 @@ export function BackupsSettings({
       setErrorId(response.error.id);
       return;
     }
-    setNotice(
-      response.value.running
-        ? "A backup is already running."
-        : `Backup finished: ${response.value.fileName ?? ""}`,
-    );
+    setNotice(S.queued);
     router.refresh();
   }
 

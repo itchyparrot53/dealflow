@@ -12,6 +12,7 @@ import { dealVisibilityClause } from "@/features/deals/visibility";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { listProducts } from "@/features/products/products";
+import { type FilterDefinition, filterDefinition } from "@/features/saved-filters/schemas";
 import { err, ok, type Result } from "@/types/result";
 import type { CsvCell } from "./csv";
 
@@ -212,6 +213,16 @@ function contactSession(actor: PermSetUser): ContactActor {
   return { ...actor, primaryVisibilityGroupId: null };
 }
 
+function parsedFilter(raw: string | undefined): FilterDefinition | undefined {
+  if (raw === undefined || raw === "") return undefined;
+  try {
+    const parsed = filterDefinition.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function dealRows(
   db: Db,
   actor: PermSetUser,
@@ -233,6 +244,7 @@ async function dealRows(
       offset: 0,
       limit: cap + 1,
       ...(params.pipelineId === undefined ? {} : { pipelineId: params.pipelineId }),
+      ...(parsedFilter(params.filter) === undefined ? {} : { filter: parsedFilter(params.filter) }),
     },
     signal,
   );
@@ -366,6 +378,7 @@ export async function exportTable(
         : await apiRows(db, actor, entity, params, cap, signal);
     const columns = selectedColumns(entity, params.columns);
     const filtered = filterRows(entity, rows, params);
+    if (filtered.length > cap) throw tooLarge();
     return ok({
       header: columns.map((column) => column.header),
       rows: filtered.map((row) => columns.map((column) => column.value(row))),

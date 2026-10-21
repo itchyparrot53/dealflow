@@ -207,6 +207,7 @@ export const PROJECTS_API_STRINGS = {
     nextRun: "Next run",
     empty: "No backups yet.",
     pending: "Starting...",
+    queued: "Backup queued. It will appear in the table when the worker finishes it.",
     columns: {
       time: "Time",
       trigger: "Trigger",

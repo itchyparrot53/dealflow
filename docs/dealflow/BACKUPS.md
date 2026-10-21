@@ -31,7 +31,7 @@ Copy the archive somewhere the worker can read, then on the server:
 docker compose stop app worker ws
 docker compose run --rm -v ./backups:/restore worker \
   node dist/backup-restore.mjs /restore/dealflow-backup-2026-10-21T020000Z.tar.gz \
-  --database-url "$DATABASE_URL" --files --yes
+  --files --yes
 docker compose start app worker ws
 ```
 

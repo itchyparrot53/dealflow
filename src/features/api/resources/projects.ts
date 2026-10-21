@@ -108,14 +108,15 @@ export const projectsRoutes: ApiRoute[] = [
       let start = 0;
       if (q.cursor !== undefined) {
         const cursor = decodeCursor(q.cursor);
-        if (cursor.ok) {
-          start = sorted.findIndex(
-            (row) =>
-              row.updatedAt > cursor.value.updatedAt ||
-              (row.updatedAt === cursor.value.updatedAt && row.id > cursor.value.id),
-          );
-          if (start < 0) start = sorted.length;
+        if (!cursor.ok) {
+          return { ok: false, error: new AppError(ERROR_IDS.API_BODY_INVALID, "invalid cursor") };
         }
+        start = sorted.findIndex(
+          (row) =>
+            row.updatedAt > cursor.value.updatedAt ||
+            (row.updatedAt === cursor.value.updatedAt && row.id > cursor.value.id),
+        );
+        if (start < 0) start = sorted.length;
       }
       const page = sorted.slice(start, start + limit);
       const last = page[page.length - 1];

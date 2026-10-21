@@ -1,3 +1,4 @@
+import { env } from "@/config/env";
 import { restoreBackup } from "./restore";
 
 // Shared by `pnpm backup:restore` (tsx) and the bundled image script (`node dist/backup-restore.mjs`).
@@ -9,10 +10,18 @@ function arg(name: string): string | undefined {
 
 export async function main(): Promise<void> {
   const file = process.argv[2];
-  const databaseUrl = arg("--database-url");
-  if (file === undefined || databaseUrl === undefined) {
-    process.stderr.write("usage: backup:restore {file} --database-url {url} [--files] [--yes]\n");
+  if (file === undefined) {
+    process.stderr.write("usage: backup:restore {file} [--database {name}] [--files] [--yes]\n");
     process.exit(2);
+  }
+  // Default target is the configured database. `--database` picks another database on the same
+  // server without putting a credential-bearing URL in argv.
+  const databaseName = arg("--database");
+  let databaseUrl = arg("--database-url") ?? env.DATABASE_URL;
+  if (databaseName !== undefined) {
+    const url = new URL(env.DATABASE_URL);
+    url.pathname = `/${databaseName}`;
+    databaseUrl = url.toString();
   }
   const result = await restoreBackup(
     {

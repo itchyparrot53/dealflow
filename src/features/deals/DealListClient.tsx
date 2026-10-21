@@ -40,6 +40,19 @@ import { useBoardView } from "./useBoardView";
 import { useDealListActions } from "./useDealListActions";
 import { useDealListRefLabels } from "./useDealListRefLabels";
 
+// The list's filter state is not in the URL, so the export link carries it explicitly.
+function exportParams(
+  pipelineId: string,
+  ownerId: string | null,
+  definition: FilterDefinition | null,
+): Record<string, string> {
+  return {
+    pipelineId,
+    ...(ownerId === null ? {} : { ownerId }),
+    ...(definition === null ? {} : { filter: JSON.stringify(definition) }),
+  };
+}
+
 // Stable empty array: a new [] each render would churn the useMemo dependencies below.
 const EMPTY_ROWS: never[] = [];
 
@@ -250,7 +263,7 @@ export function DealListClient({
             <ExportButton
               entity="deals"
               columns={columns.visibleColumns.map((column) => column.key)}
-              params={{ pipelineId }}
+              params={exportParams(pipelineId, selectedOwnerId, inlineDefinition)}
             />
           ) : undefined
         }

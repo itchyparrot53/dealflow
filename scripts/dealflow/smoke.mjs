@@ -211,7 +211,7 @@ tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q db.dump
 tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q manifest.json
 psql "$BASE/postgres" -c "DROP DATABASE IF EXISTS dealflow_restore_check"
 psql "$BASE/postgres" -c "CREATE DATABASE dealflow_restore_check"
-node dist/backup-restore.mjs /tmp/dealflow-backup-check.tar.gz --database-url "$TARGET" --yes
+node dist/backup-restore.mjs /tmp/dealflow-backup-check.tar.gz --database dealflow_restore_check --yes
 SRC_COUNT=$(psql "$SRC" -Atc 'select count(*) from deals')
 DST_COUNT=$(psql "$TARGET" -Atc 'select count(*) from deals')
 [ "$SRC_COUNT" = "$DST_COUNT" ] || { echo "deal count mismatch: $SRC_COUNT vs $DST_COUNT"; exit 1; }

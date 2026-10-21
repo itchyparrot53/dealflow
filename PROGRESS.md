@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 16:40
+Current: 4.4 · Last updated: 2026-10-21 17:00
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -32,7 +32,7 @@ Current: 4.3 · Last updated: 2026-10-21 16:40
 - [x] 3.6 Backups page, demo seed and docs
 - [x] 4.1 E2E projects and data spec and screenshots
 - [x] 4.2 Integration suite and smoke with the backup round trip
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
@@ -162,6 +162,9 @@ Current: 4.3 · Last updated: 2026-10-21 16:40
 
 - 4.3 round 1 (QA RESULT FAIL, 2 blockers / 8 majors / 7 minors) fixed: the pg_dump runner now passes only PGHOST/PGPORT/PGUSER/PGDATABASE/PGPASSWORD through the child env (no URL in argv); the restore CLI is bundled as `dist/backup-restore.mjs` and the UI/docs/smoke use it; `createProjectFromDealAction` strips the automation-only `allowAnyStatus` (unit-tested); exports carry the pipeline and apply the documented filters; `GET /notes/:id` exists; list visibility now scans keyset batches until the page is full (so hidden rows can never truncate a page); a PATCH with stage and owner refreshes updated_at between the two CAS operations; person/org create honor ownerId, products honor active, activities accept reparenting; the lint failures in the e2e spec and smoke script are fixed. Minors fixed: project/person restore parent checks, next-run line, BACKUP_DIR write probe, manifest preview before --yes, JSON content-type/body cap checks, and ERROR_IDS in route responses.
 - 4.3 round 1 leftover: the Docker VM ran out of disk while re-running the integration lane after these fixes (Testcontainers Postgres health check fails with the same `No space left on device`); pruning is forbidden, so the final-tree integration re-run is blocked and logged as an owner action. Targeted unit tests for the changed modules pass.
+
+- 4.3 round 2 (QA RESULT FAIL, 1 blocker / 3 majors / 4 minors): fixed the blocker ("Back up now" now enqueues `backups.run` with `{trigger:"manual",startedBy}` and the worker reads that payload; the app's read-only volume is never written), the restore password leak (the CLI prints only `user@host/database` and passes PGHOST/PGPORT/PGUSER/PGDATABASE/PGPASSWORD to pg_restore; `--database {name}` avoids a credential URL in argv, and the docs/smoke use it, `/bin/zsh`), the remaining export carry-through (the deals link serializes the active owner and filter definition and listDeals receives it; the cap now checks the filtered rows), and the minors (Content-Type/Content-Length checked before buffering, purge skips logged and returned, invalid project cursors are E_API_006, project/person restore parent checks). Round 3 was not run: the only remaining round-2 major is the final-tree integration/e2e/smoke evidence, which needs Docker and cannot run while the Docker VM is out of disk; that is an environment condition, not a code fix.
+- 4.3: after the round-2 fixes, typecheck, lint (15 warnings), build and unit (821 files, 5269 tests) are green on the final tree. Integration and e2e were last green at 405 files/2046 tests and 22/22 on the tree before these fixes; they cannot be re-run until the Docker VM has disk. The plan's `COMPLETE WITH OPEN ISSUES` state is therefore the honest terminal state.
 
 ## Owner actions
 - TODO(owner): the Docker VM has no free disk space, so the smoke stack cannot initialise Postgres. Give Docker Desktop more disk (Settings > Resources), then run `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke`. Never prune the shared images; the smoke project itself was removed.

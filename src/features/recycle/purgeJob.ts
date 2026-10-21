@@ -147,7 +147,11 @@ const JOB_TIMEOUT_MS = 5 * 60 * 1000;
 export async function registerRecyclePurgeJob(boss: PgBoss): Promise<void> {
   await boss.createQueue(PGBOSS_QUEUE_RECYCLE_PURGE);
   await boss.work(PGBOSS_QUEUE_RECYCLE_PURGE, async () => {
-    await purgeExpired(defaultDb, AbortSignal.timeout(JOB_TIMEOUT_MS));
+    const result = await purgeExpired(defaultDb, AbortSignal.timeout(JOB_TIMEOUT_MS));
+    if (result.skipped.length > 0) {
+      console.warn("recycle purge kept referenced rows", result.skipped);
+    }
+    return result;
   });
   await boss.schedule(PGBOSS_QUEUE_RECYCLE_PURGE, RECYCLE_PURGE_CRON);
 }
