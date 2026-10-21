@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-21 15:14
+Current: 3.1 · Last updated: 2026-10-21 15:20
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
 - Phase 1: 51fad6304187d6be0b3acdb00376b735c4bb020b
 - Phase 2: 06cbab182446003d05378bdb00ced999e9d06bb8
+- Phase 3: 2fc2637a17976dad3989aadb3dcb7b8ed617fad1
 
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
@@ -21,7 +22,7 @@ Current: 2.4 · Last updated: 2026-10-21 15:14
 - [x] 2.1 Tokens service and settings tab
 - [x] 2.2 Registry, handler and resources (test-first)
 - [x] 2.3 API docs
-- [ ] 2.4 Phase 2 QA gate
+- [x] 2.4 Phase 2 QA gate
 - [ ] 3.1 Recycle bin service and purge (test-first)
 - [ ] 3.2 Recycle bin page
 - [ ] 3.3 CSV export everywhere (test-first)
@@ -38,6 +39,7 @@ Current: 2.4 · Last updated: 2026-10-21 15:14
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 in 813 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5261/5261 in 818 files · no named integration files in this gate · image client check: pg_dump 16.15 installs on node:22-alpine
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5265/5265 in 819 files · projects/automations/events/notifications integration 94/94 (14 files)
+- Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5267/5267 in 820 files · api/projects/events integration 37/37 (3 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p7-v1` with `STATUS: COMPLETE`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -114,6 +116,9 @@ Current: 2.4 · Last updated: 2026-10-21 15:14
 - 2.3: one registry feeds both surfaces: `buildApiDocSections(API_ROUTES)` turns each entry into serializable data (method, path, scope, summary, query/body field names, example, curl), `renderApiDocsMarkdown` writes docs/API.md, and `ApiDocs` renders the same sections in the Documentation tab. `pnpm api:docs` regenerates the file; `docs.test.ts` fails when it is stale and also checks every registered route appears once. Regenerating immediately after the test proves the file is current (`git diff --exit-code` clean).
 - 2.3: the docs script imports the registry (so the docs describe the real routes), which transitively imports services that validate env at import time. It fills obviously fake placeholders only for keys the process has not set, and never reads `.env`, so `pnpm api:docs` works on a bare shell.
 - 2.3: the plan asked to repoint "the upstream docs link in the app" at `/settings/api?tab=docs`. The only such link is the main navigation's Docs item, which points at the whole documentation site (`DOCS_SITE_URL`), not API docs; repointing it would remove every other doc topic from the app. Instead the API page carries the Documentation tab and the settings nav links to it, and the global Docs link is unchanged; logging the deviation here.
+
+- 2.4: the gate's build caught a real client/server boundary bug: `ApiDocs` imported the prose and types from `docs.ts`, whose registry import pulled `pg` into the client bundle (Turbopack: cannot resolve dns/fs). The serializable shapes and prose moved to `docSections.ts`, which the client tab imports; `docs.ts` still builds the markdown and re-exports the types. Committed as `2.4: fixes round 1`, then all gate commands were re-run on that tree.
+- 2.4: Phase 3's base is `2fc2637` (the last task commit before the gate's fix round).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
