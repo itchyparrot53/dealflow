@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-21 13:29
+Current: 3.2 · Last updated: 2026-10-21 14:02
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -22,7 +22,7 @@ Current: 3.1 · Last updated: 2026-10-21 13:29
 - [x] 2.1 Reports, dashboards, default dashboard, CSV export
 - [x] 2.2 Explain, score data and bulk scoring
 - [x] 2.3 Phase 2 QA gate
-- [ ] 3.1 Insights home and report builder
+- [x] 3.1 Insights home and report builder
 - [ ] 3.2 Dashboards
 - [ ] 3.3 Score badge and bulk scoring UI
 - [ ] 3.4 Demo seed and docs
@@ -93,6 +93,12 @@ Current: 3.1 · Last updated: 2026-10-21 13:29
 - 2.2: the job hydrates the requester, scores one deal at a time, and stops at the first cap, disabled-AI or rate-limit refusal; any other per-deal failure is skipped so the batch continues. It always creates one `ai_bulk_score` notification: "Scored {n} of {m} deals" plus " (AI limit reached)" when it stopped early.
 - 2.2: the board and deals-list reads LEFT JOIN `deal_ai_insights` and return `score`, so the card badge (Task 3.3) reads it from the same rows; the aggregate money query stays lean and does not select it.
 - 2.2: `AI_FEATURES` gained `insight_explain` so usage rows record the feature; the fake provider needs no new branch because the fake path is resolved in `explain.ts`.
+
+- 3.1: the chart-type picker is a fieldset of icon `Button`s with `aria-pressed`, because no Radix ToggleGroup is installed and section 3 forbids a new dependency; a disabled option is wrapped in a Tip carrying the exact 6.5 rule, and the fieldset keeps the group semantics without a hand-rolled control.
+- 3.1: the builder holds the unsaved definition in local state and previews it after a 400 ms debounce through `insights.run({ definition })`; Save writes name, definition and the shared flag in one action. The description is recomputed client-side (with the pipeline name lookup) and feeds the chart's aria-label.
+- 3.1: the deal filter reuses `ConditionRowsBuilder` with `dealFilterFields`/`OP_LABELS`, so the report filter offers exactly the deals-list field and operator allow-list; activity filters are the three allowed Selects (owner, type, done).
+- 3.1: chart series colours come from the token palette (`hsl(var(--primary))`, ring, muted-foreground, destructive, accent-foreground), never hex. Every chart carries an aria-label and a view-as-table toggle; a table chart drops the image role so the table stays in the accessibility tree.
+- 3.1: main navigation gained "Insights" after Documents. `InsightsHome` lists dashboards first (default first) and reports with their `describeDefinition` line; "New" creates through the server action and opens the new row.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -5,6 +5,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { getDashboard, listDashboards } from "./dashboards";
 import { type ReportDefinition, reportDefinitionSchema } from "./definition";
+import { explainReport } from "./explain";
 import { getReport, listReports } from "./reports";
 import { runReport } from "./run";
 
@@ -61,6 +62,17 @@ export const insightsRouter = router({
           ? await savedDefinition(ctx.db, ctx.actor, input.reportId, signal)
           : input.definition;
       const result = await runReport(ctx.db, ctx.actor, definition, signal);
+      if (!result.ok) throw toTrpc(result.error.id);
+      return result.value;
+    }),
+
+  explain: protectedProcedure
+    .input(
+      z.union([z.object({ reportId: z.uuid() }), z.object({ definition: reportDefinitionSchema })]),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // AI calls take longer than a report query; the AI layer has its own cap/timeout errors.
+      const result = await explainReport(ctx.db, ctx.actor, input, AbortSignal.timeout(60_000));
       if (!result.ok) throw toTrpc(result.error.id);
       return result.value;
     }),
