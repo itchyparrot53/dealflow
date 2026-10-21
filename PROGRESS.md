@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-21 02:16
+Current: 4.3 · Last updated: 2026-10-21 02:18
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -28,7 +28,7 @@ Current: 4.2 · Last updated: 2026-10-21 02:16
 - [x] 3.2 Subscriptions service, test send and redeliver
 - [x] 3.3 Phase 3 QA gate
 - [x] 4.1 Automations list and editor
-- [ ] 4.2 Run log
+- [x] 4.2 Run log
 - [ ] 4.3 Describe it and the template gallery
 - [ ] 4.4 Webhooks settings and delivery log
 - [ ] 4.5 Demo seed and docs
@@ -131,6 +131,8 @@ Current: 4.2 · Last updated: 2026-10-21 02:16
 - 4.1: `ConditionEditor` is the section 10 fallback, a small field/operator/value builder over the deal fields `filterToSql` supports, rather than an embedded saved-filter builder; it reuses `FILTER_FIELDS`/`OPS_BY_FIELD` so every offered pairing compiles.
 - 4.1: the template gallery and "Describe it" buttons are deferred to Task 4.3 with the dialogs they open, so this task ships the list and the editor only; both dialogs and their two list buttons land in 4.3.
 - 4.1: `Select` and `Switch` gained an optional `testId` (the Part 4 `Checkbox` precedent) because Radix owns their root nodes; the settings nav gained the Automations item, shown to admins only, and the `automations` tRPC router joined the app router.
+
+- 4.2: `RunLog` reads the router's last-100 runs and renders time, record link, status badge and skip reason, with collapsible per-action steps; the editor gained Definition and Run log tabs, and the run table carries `automation-run-row` with `data-status` for the e2e poll.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
