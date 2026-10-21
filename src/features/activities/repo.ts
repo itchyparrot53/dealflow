@@ -4,6 +4,7 @@ import type { Db } from "@/db/client";
 import {
   type Activity,
   activities,
+  activityCalls,
   activityGuests,
   activityParticipants,
   deals,
@@ -18,6 +19,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
+import type { CallMeta } from "./calls/calls";
 import { recomputeDealActivityDates } from "./nextActivity";
 import { createNextOccurrence } from "./recurrence/series";
 import { scheduleReminder } from "./reminders";
@@ -125,6 +127,7 @@ export async function createActivity(
   actor: PermSetUser,
   raw: ActivityCreateInput,
   signal: AbortSignal,
+  call?: CallMeta,
 ): Promise<Result<Activity, AppError>> {
   // Parse at the boundary so defaulted fields (priority, dueAt, arrays) are always present.
   const input = activityCreateInput.parse(raw);
@@ -184,6 +187,16 @@ export async function createActivity(
 
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity insert returned no rows", {}));
+    }
+    // A logged call stores its outcome in the same transaction as the activity, so a call row can
+    // never point at a rolled-back activity (or an activity exist without its call metadata).
+    if (call !== undefined) {
+      await tx.insert(activityCalls).values({
+        activityId: row.id,
+        outcome: call.outcome,
+        direction: call.direction,
+        durationSeconds: call.durationSeconds,
+      });
     }
     await emitDomainEvent(
       tx,

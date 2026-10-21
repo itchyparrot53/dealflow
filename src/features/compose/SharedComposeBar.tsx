@@ -1,8 +1,11 @@
 "use client";
+import { Phone } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogCallForm, type LogCallTarget } from "@/features/activities/calls/ui/LogCallForm";
 import type { EditableActivity } from "@/features/activities/getForEdit";
 import { ActivityComposerInline } from "@/features/deal-workspace/composer/ActivityComposerInline";
 import {
@@ -31,6 +34,28 @@ import {
 } from "./composeScope";
 
 type ComposeTab = "activity" | "notes" | "email" | "files";
+
+// "Log call" is offered where a call can be attached to a real record: deal, person and org.
+// A lead has no call link in activity_calls (6.6), so no trigger is shown there.
+function callTargetOf(scope: ComposeScope): LogCallTarget | null {
+  if (scope.entityType === "deal") {
+    return {
+      dealId: scope.entityId,
+      personId: scope.personId,
+      organizationId: scope.orgId,
+      label: scope.dealTitle,
+    };
+  }
+  if (scope.entityType === "person") {
+    return {
+      personId: scope.entityId,
+      organizationId: scope.orgId,
+      label: scope.personName,
+    };
+  }
+  if (scope.entityType === "org") return { organizationId: scope.entityId };
+  return null;
+}
 
 interface TabDef {
   id: ComposeTab;
@@ -123,6 +148,8 @@ export function SharedComposeBar({
   const composeRef = useRef<HTMLElement>(null);
   const utils = trpc.useUtils();
   const [expanded, setExpanded] = useState(false);
+  const [logCallOpen, setLogCallOpen] = useState(false);
+  const logCall = callTargetOf(scope);
   const tabs = tabsForScope(scope);
   // Default to the first enabled tab for this scope (Activity for deal/person/org, Notes for leads).
   // Activity is enabled for every scope, so tabs is never empty; the ?? keeps the type checker happy.
@@ -169,24 +196,48 @@ export function SharedComposeBar({
         {/* The strip's divider is an inset shadow, not a border: a border sits below the content
             box, so the active tab's underline needed a -mb-px to cover it and that 1px of vertical
             overflow made the horizontal-scroll container render a stray vertical scrollbar. */}
-        <TabsList className="overflow-x-auto shadow-[inset_0_-1px_0_0_var(--color-border)]">
-          {tabs.map(({ id, label, Icon }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              // Unlike a plain tab strip, clicking a compose tab also EXPANDS its editor from the
-              // collapsed prompt, including the already-active tab (leads default to Notes collapsed).
-              // Radix onValueChange does not fire on a same-value click, so drive openTab from onClick;
-              // onValueChange still handles keyboard arrow switching.
-              onClick={() => openTab(id)}
-              className="flex h-10 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 text-start font-[450] text-muted-foreground hover:text-foreground data-[state=active]:border-[#2b74da] data-[state=active]:text-link"
+        <div className="flex items-center justify-between gap-2">
+          <TabsList className="overflow-x-auto shadow-[inset_0_-1px_0_0_var(--color-border)]">
+            {tabs.map(({ id, label, Icon }) => (
+              <TabsTrigger
+                key={id}
+                value={id}
+                // Unlike a plain tab strip, clicking a compose tab also EXPANDS its editor from the
+                // collapsed prompt, including the already-active tab (leads default to Notes collapsed).
+                // Radix onValueChange does not fire on a same-value click, so drive openTab from onClick;
+                // onValueChange still handles keyboard arrow switching.
+                onClick={() => openTab(id)}
+                className="flex h-10 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 text-start font-[450] text-muted-foreground hover:text-foreground data-[state=active]:border-[#2b74da] data-[state=active]:text-link"
+              >
+                <Icon />
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {logCall !== null && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="log-call"
+              className="mr-2 shrink-0"
+              onClick={() => setLogCallOpen(true)}
             >
-              <Icon />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+              <Phone className="h-3.5 w-3.5" aria-hidden="true" />
+              Log call
+            </Button>
+          )}
+        </div>
       </Tabs>
+
+      {logCall !== null && (
+        <LogCallForm
+          target={logCall}
+          open={logCallOpen}
+          onClose={() => setLogCallOpen(false)}
+          onSaved={() => onActivityCreated()}
+        />
+      )}
 
       {editing != null ? (
         // Edit mode overrides the tab content: the Activity composer opens expanded, prefilled from

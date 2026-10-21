@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { completeActivityAction, deleteActivityAction } from "@/features/activities/actions";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { CallOutcomeChip } from "@/features/activities/calls/ui/CallOutcomeChip";
 import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/followUpAfterDone";
 import { ActivityTypeIcon } from "@/features/activities/typeIcons";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
@@ -154,6 +155,15 @@ export function ActivityCard({
             <ActivityTypeIcon typeKey={activity.typeKey} />
             <span className="min-w-0 truncate">{activity.subject}</span>
           </button>
+          {activity.call !== undefined && (
+            <div className="mt-1">
+              <CallOutcomeChip
+                outcome={activity.call.outcome}
+                direction={activity.call.direction}
+                durationSeconds={activity.call.durationSeconds}
+              />
+            </div>
+          )}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
             {activity.overdue ? (
               <span className="font-semibold uppercase text-destructive">Overdue</span>

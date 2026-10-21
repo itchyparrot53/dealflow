@@ -2,11 +2,13 @@
 // future person/org detail pages). Reuses resolveActivityVisibility + canSee from
 // calendarRange so visibility is consistent and the audited gate cannot diverge.
 import { and, eq, isNull } from "drizzle-orm";
+import type { CallDirection, CallOutcome } from "@/constants/productivity";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
 import {
   type Activity,
   activities,
+  activityCalls,
   activityTypes,
   deals,
   organizations,
@@ -68,6 +70,9 @@ interface ActivityRow {
   note: string | null;
   location: string | null;
   videoCallUrl: string | null;
+  callOutcome: string | null;
+  callDirection: string | null;
+  callDurationSeconds: number | null;
 }
 
 function toActivity(row: ActivityRow): Activity {
@@ -152,6 +157,14 @@ function toCalendarActivity(
     videoCallUrl: row.videoCallUrl,
     personName: personOk ? row.personName : null,
     orgName: orgOk ? row.orgName : null,
+    call:
+      row.callOutcome === null || row.callDirection === null
+        ? undefined
+        : {
+            outcome: row.callOutcome as CallOutcome,
+            direction: row.callDirection as CallDirection,
+            durationSeconds: row.callDurationSeconds,
+          },
   };
 }
 
@@ -214,9 +227,13 @@ export async function listActivitiesForEntity(
       note: activities.note,
       location: activities.location,
       videoCallUrl: activities.videoCallUrl,
+      callOutcome: activityCalls.outcome,
+      callDirection: activityCalls.direction,
+      callDurationSeconds: activityCalls.durationSeconds,
     })
     .from(activities)
     .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
+    .leftJoin(activityCalls, eq(activityCalls.activityId, activities.id))
     .leftJoin(users, eq(users.id, activities.assigneeId))
     .leftJoin(deals, and(eq(deals.id, activities.dealId), isNull(deals.deletedAt)))
     .leftJoin(leads, and(eq(leads.id, activities.leadId), isNull(leads.deletedAt)))

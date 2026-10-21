@@ -1,7 +1,8 @@
 import { and, eq, isNull, lte, sql } from "drizzle-orm";
+import type { CallDirection, CallOutcome } from "@/constants/productivity";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
-import { activities, activityTypes, users } from "@/db/schema";
+import { activities, activityCalls, activityTypes, users } from "@/db/schema";
 import { deals } from "@/db/schema/deals";
 import { leads } from "@/db/schema/leads";
 import { organizations } from "@/db/schema/organizations";
@@ -62,6 +63,8 @@ export interface CalendarActivity {
   // selects them); null when there is no link or the linked record is soft-deleted.
   personName?: string | null;
   orgName?: string | null;
+  // Call metadata (outcome, direction, duration) from activity_calls; absent for non-calls.
+  call?: { outcome: CallOutcome; direction: CallDirection; durationSeconds: number | null };
 }
 
 interface CalendarRow {
@@ -99,6 +102,9 @@ interface CalendarRow {
   orgVisibleTo: string[] | null;
   ownerName: string | null;
   assigneeId: string | null;
+  callOutcome: string | null;
+  callDirection: string | null;
+  callDurationSeconds: number | null;
 }
 
 // Which linked parents the actor may be told about. Seeing the activity comes from its dominant
@@ -159,6 +165,15 @@ function toCalendarActivity(
     overdue: isActivityOverdue(dueAt, row.allDay, row.done, now),
     ownerName: row.ownerName,
     assigneeId: row.assigneeId,
+    // activity_calls has CHECK constraints on both values, so the cast is safe.
+    call:
+      row.callOutcome === null || row.callDirection === null
+        ? undefined
+        : {
+            outcome: row.callOutcome as CallOutcome,
+            direction: row.callDirection as CallDirection,
+            durationSeconds: row.callDurationSeconds,
+          },
   };
 }
 
@@ -216,9 +231,13 @@ export async function calendarRange(
       orgLevel: organizations.visibilityLevel,
       orgGroupId: organizations.visibilityGroupId,
       orgVisibleTo: organizations.visibleToUserIds,
+      callOutcome: activityCalls.outcome,
+      callDirection: activityCalls.direction,
+      callDurationSeconds: activityCalls.durationSeconds,
     })
     .from(activities)
     .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
+    .leftJoin(activityCalls, eq(activityCalls.activityId, activities.id))
     .leftJoin(users, eq(users.id, activities.assigneeId))
     .leftJoin(deals, and(eq(deals.id, activities.dealId), isNull(deals.deletedAt)))
     .leftJoin(pipelines, eq(pipelines.id, deals.pipelineId))
