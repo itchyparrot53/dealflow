@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-21 02:23
+Current: 4.5 · Last updated: 2026-10-21 02:27
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -30,7 +30,7 @@ Current: 4.4 · Last updated: 2026-10-21 02:23
 - [x] 4.1 Automations list and editor
 - [x] 4.2 Run log
 - [x] 4.3 Describe it and the template gallery
-- [ ] 4.4 Webhooks settings and delivery log
+- [x] 4.4 Webhooks settings and delivery log
 - [ ] 4.5 Demo seed and docs
 - [ ] 4.6 Phase 4 QA gate
 - [ ] 5.1 E2E automations spec and screenshots
@@ -138,6 +138,10 @@ Current: 4.4 · Last updated: 2026-10-21 02:23
 - 4.3: 6.7's `notify_user.to` lists only `deal_owner`, but 6.9's template 6 notifies the automation owner; the union gained `automation_owner`, the handler resolves it to the creator, and a notification on a record without a deal now uses that record (organization or person) as the visibility parent instead of refusing.
 - 4.3: `describe.ts` sends the install's real ids and relies on `chatJson`'s built-in one repair round (which sends the validation issues back); a second parse failure becomes `E_AUTOMATION_004`. The deterministic fake reads the first activity type from the prompt and returns "deal won, follow-up call in 1 day".
 - 4.3: "Draft it" creates the drafted automation disabled and opens the editor with `?drafted=1` and the "Review before saving" note, so an AI draft can never run before an admin saves it; template cards create the template as a disabled automation in the editor.
+
+- 4.4: `/settings/webhooks` renders the subscription table with status (enabled, or disabled with its reason), the row menu (edit, send test, rotate, delivery log, enable/disable, delete), the grouped event checkboxes and the one-time secret panel with the exact "Copy this secret now. You won't see it again." copy.
+- 4.4: the delivery log is a dialog that queries the last 100 deliveries when opened, shows status/attempts/code/duration, expands the payload and can redeliver (then invalidates the query); the settings nav gained the Webhooks item for admins after Automations.
+- 4.4: the webhook dialog is remounted with a key per open target instead of resetting its form from an effect (the React lint rule forbids synchronous setState in an effect), and `pnpm build` lists `/settings/automations`, `/settings/automations/[id]` and `/settings/webhooks`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

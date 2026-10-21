@@ -19,12 +19,13 @@ import {
   User,
   Users,
   UsersRound,
+  Webhook,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
 import { AI_STRINGS } from "@/constants/aiStrings";
-import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { AUTOMATIONS_STRINGS, WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { CURRENCY_STRINGS, PRODUCTS_STRINGS } from "@/constants/salesStrings";
@@ -89,6 +90,11 @@ const AUTOMATIONS_ITEM: NavItem = {
   label: AUTOMATIONS_STRINGS.title,
   icon: Bot,
 };
+const WEBHOOKS_ITEM: NavItem = {
+  href: "/settings/webhooks",
+  label: WEBHOOKS_STRINGS.title,
+  icon: Webhook,
+};
 
 // Same rule for the AI page: provider, usage and caps are admin-only reads and writes.
 const AI_ITEM: NavItem = {
@@ -116,7 +122,7 @@ export function SettingsNav({
   };
   const companyItems = [
     ...COMPANY.items,
-    ...(isAdmin ? [AUTOMATIONS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
+    ...(isAdmin ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
     ...(canImport ? [importItem] : []),
   ];
   const sections = canManageCompany
