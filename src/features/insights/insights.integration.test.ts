@@ -1,11 +1,24 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { deals, dealTerms, stageProbabilities, userPreferences } from "@/db/schema";
+import {
+  activities,
+  activityTypes,
+  deals,
+  dealTerms,
+  stageProbabilities,
+  userPreferences,
+} from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { saveRate } from "@/features/currency/rates";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { EVERYONE } from "@/features/stats/ownerIds";
+import { stageConversion } from "@/features/stats/stageConversion";
 import { makeTestDb, type TestDb } from "@/test/db";
-import type { DealReportDefinition, ReportDefinition } from "./definition";
+import type {
+  ActivityReportDefinition,
+  DealReportDefinition,
+  ReportDefinition,
+} from "./definition";
 import { runReport } from "./run";
 
 let h: TestDb;
@@ -14,6 +27,8 @@ let viewer: PermSetUser;
 let otherOwnerId: string;
 let viewerId: string;
 let pipelineId: string;
+let callTypeId: string;
+let meetingTypeId: string;
 let leadStageId: string;
 let proposeStageId: string;
 
@@ -40,6 +55,19 @@ beforeAll(async () => {
   proposeStageId = seeded.stages[1]?.id ?? "";
   await saveRate(h.db, admin, { code: "EUR", rate: "1.08" }, sig());
   await h.db.insert(stageProbabilities).values({ stageId: leadStageId, probability: 50 });
+  const [callType] = await h.db
+    .insert(activityTypes)
+    .values({ key: `call-${Date.now()}`, name: "Call", order: 10 })
+    .returning();
+  const [meetingType] = await h.db
+    .insert(activityTypes)
+    .values({ key: `meeting-${Date.now()}`, name: "Meeting", order: 11 })
+    .returning();
+  if (callType === undefined || meetingType === undefined) {
+    throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity type seed failed");
+  }
+  callTypeId = callType.id;
+  meetingTypeId = meetingType.id;
 }, 60_000);
 
 afterAll(async () => {
@@ -47,6 +75,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  await h.db.delete(activities);
   await h.db.delete(dealTerms);
   await h.db.delete(deals);
 });
@@ -65,6 +94,34 @@ async function addDeal(over: Partial<typeof deals.$inferInsert> = {}): Promise<s
     .returning();
   if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "deal seed failed");
   return row.id;
+}
+
+async function addActivity(over: Partial<typeof activities.$inferInsert> = {}): Promise<string> {
+  const [row] = await h.db
+    .insert(activities)
+    .values({
+      typeId: callTypeId,
+      subject: "Activity",
+      ownerId: admin.id,
+      assigneeId: admin.id,
+      ...over,
+    })
+    .returning();
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity seed failed");
+  return row.id;
+}
+
+function activityDef(over: Partial<ActivityReportDefinition> = {}): ActivityReportDefinition {
+  return {
+    entity: "activity",
+    measure: { kind: "count" },
+    groupBy: null,
+    segmentBy: null,
+    dateRange: { field: "due_at", preset: "all_time" },
+    filter: null,
+    chart: "table",
+    ...over,
+  };
 }
 
 function def(over: Partial<DealReportDefinition> = {}): DealReportDefinition {
@@ -325,5 +382,124 @@ describe("deal reports", () => {
     await addDeal({ title: "No source", sourceChannel: null });
     const out = await run(admin, def({ groupBy: { field: "source_channel" } }));
     expect(out.rows[0]?.gLabel).toBe("None");
+  });
+
+  it("counts activities by type and buckets them by ISO week", async () => {
+    await addActivity({ typeId: callTypeId, dueAt: new Date("2026-10-21T10:00:00Z") });
+    await addActivity({ typeId: callTypeId, dueAt: new Date("2026-10-22T10:00:00Z") });
+    await addActivity({ typeId: meetingTypeId, dueAt: new Date("2026-10-28T10:00:00Z") });
+
+    const byType = await run(admin, activityDef({ groupBy: { field: "activity_type" } }));
+    expect(byType.rows.map((row) => [row.gLabel, row.count])).toEqual([
+      ["Call", 2],
+      ["Meeting", 1],
+    ]);
+    expect(byType.total.count).toBe(3);
+
+    const byWeek = await run(
+      admin,
+      activityDef({
+        groupBy: { field: "due_at", interval: "week" },
+        dateRange: { field: "due_at", preset: "custom", from: "2026-10-19", to: "2026-10-30" },
+        chart: "line",
+      }),
+    );
+    expect(byWeek.rows.map((row) => [row.g, row.gLabel, row.count])).toEqual([
+      ["2026-W43", "Week 43, 2026", 2],
+      ["2026-W44", "Week 44, 2026", 1],
+    ]);
+  });
+
+  it("sums activity duration in minutes", async () => {
+    await addActivity({ durationMinutes: 30, dueAt: new Date("2026-10-21T09:00:00Z") });
+    await addActivity({ durationMinutes: 45, dueAt: new Date("2026-10-21T10:00:00Z") });
+    await addActivity({ durationMinutes: null, dueAt: new Date("2026-10-21T11:00:00Z") });
+
+    const out = await run(admin, activityDef({ measure: { kind: "sum_duration" } }));
+    expect(out.total).toEqual({ value: "75", count: 3 });
+    expect(out.rows[0]?.value).toBe("75");
+  });
+
+  it("applies the activity done filter", async () => {
+    await addActivity({ done: true, dueAt: new Date("2026-10-21T09:00:00Z") });
+    await addActivity({ done: true, dueAt: new Date("2026-10-21T10:00:00Z") });
+    await addActivity({ done: false, dueAt: new Date("2026-10-21T11:00:00Z") });
+
+    const out = await run(admin, activityDef({ filter: { done: true } }));
+    expect(out.total.count).toBe(2);
+  });
+
+  it("hides a parentless activity assigned to someone else", async () => {
+    const other = await seedUser(h.db, { name: "Otto Other" });
+    await addActivity({ assigneeId: viewerId, dueAt: new Date("2026-10-21T09:00:00Z") });
+    await addActivity({
+      assigneeId: other.id,
+      ownerId: other.id,
+      dueAt: new Date("2026-10-21T10:00:00Z"),
+    });
+
+    const mine = await run(viewer, activityDef());
+    expect(mine.total.count).toBe(1);
+
+    const everything = await run(admin, activityDef());
+    expect(everything.total.count).toBe(2);
+  });
+
+  it("matches the stats stage conversion for the same pipeline and range", async () => {
+    const funnelPipeline = await seedPipelineWithStages(h.db, ["First", "Second", "Third"]);
+    const first = funnelPipeline.stages[0]?.id ?? "";
+    const second = funnelPipeline.stages[1]?.id ?? "";
+    await addDeal({
+      title: "First",
+      pipelineId: funnelPipeline.pipeline.id,
+      stageId: first,
+      createdAt: new Date("2026-03-01T10:00:00Z"),
+    });
+    await addDeal({
+      title: "Second A",
+      pipelineId: funnelPipeline.pipeline.id,
+      stageId: second,
+      createdAt: new Date("2026-04-01T10:00:00Z"),
+    });
+    await addDeal({
+      title: "Second B",
+      pipelineId: funnelPipeline.pipeline.id,
+      stageId: second,
+      createdAt: new Date("2026-05-01T10:00:00Z"),
+    });
+
+    const result = await run(
+      admin,
+      def({
+        chart: "funnel",
+        funnelPipelineId: funnelPipeline.pipeline.id,
+        dateRange: { field: "created_at", preset: "custom", from: "2026-01-01", to: "2026-06-30" },
+      }),
+    );
+    expect(result.funnel?.map((stage) => [stage.name, stage.reached])).toEqual([
+      ["First", 3],
+      ["Second", 2],
+      ["Third", 0],
+    ]);
+    expect(result.rows.map((row) => [row.gLabel, row.count])).toEqual([
+      ["First", 3],
+      ["Second", 2],
+      ["Third", 0],
+    ]);
+
+    const direct = await stageConversion(
+      h.db,
+      admin,
+      {
+        pipelineId: funnelPipeline.pipeline.id,
+        owners: EVERYONE,
+        from: "2026-01-01",
+        to: "2026-06-30",
+      },
+      sig(),
+    );
+    expect(result.funnel?.map((stage) => [stage.stageId, stage.reached, stage.conversion])).toEqual(
+      direct.map((stage) => [stage.stageId, stage.reached, stage.conversion]),
+    );
   });
 });

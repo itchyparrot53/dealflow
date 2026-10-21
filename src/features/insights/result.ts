@@ -18,6 +18,15 @@ export interface ReportExcludedCurrency {
   count: number;
 }
 
+export interface FunnelStage {
+  stageId: string;
+  name: string;
+  order: number;
+  reached: number;
+  conversion: number;
+  medianDaysInStage: number | null;
+}
+
 export interface ReportResult {
   baseCurrency: string;
   measure: string;
@@ -28,4 +37,6 @@ export interface ReportResult {
   /** True when the result was capped (groups, segments or table rows). */
   truncated: boolean;
   generatedAt: string;
+  /** Present only for a funnel report; rows mirror these stages. */
+  funnel?: FunnelStage[];
 }

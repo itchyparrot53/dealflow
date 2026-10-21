@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-21 12:28
+Current: 1.3 · Last updated: 2026-10-21 12:34
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -14,7 +14,7 @@ Current: 1.2 · Last updated: 2026-10-21 12:28
 - [x] 0.4 Definition, date ranges, buckets, CSV (test-first)
 - [x] 0.5 Phase 0 QA gate
 - [x] 1.1 Deal reports (test-first)
-- [ ] 1.2 Activity reports and the funnel
+- [x] 1.2 Activity reports and the funnel
 - [ ] 1.3 Currency-correct stats and goals
 - [ ] 1.4 Phase 1 QA gate
 - [ ] 2.1 Reports, dashboards, default dashboard, CSV export
@@ -64,6 +64,11 @@ Current: 1.2 · Last updated: 2026-10-21 12:28
 - 1.1: a report follows the stats and forecast conventions, so deleted and archived deals and archived pipelines are out, and the query joins `stages` and `organizations` as the deals list does, which lets the whole saved-filter AST (rotting, orgName, stage) compile unchanged.
 - 1.1: `runReport` accepts an optional `{ timeoutMs, now }` used by tests only; production uses `REPORT_QUERY_TIMEOUT_MS` and the request time. The timeout is set with `set_config('statement_timeout', $1, true)` (SET cannot bind a value) inside the query's transaction, and Postgres 57014 maps to `E_INSIGHT_003`.
 - 1.1: caps run after conversion: groups are ordered by value descending (bucket key ascending for a date group), segments by value descending, the rolled remainder becomes "Other" and sorts last, and the table caps at 500 rows with `truncated` set. Averages divide the converted sum by the counted included deals, so an excluded currency never enters the denominator.
+
+- 1.2: the funnel reuses `stageConversion` rather than `funnel`, because it is the only stats funnel that takes a date range: it windows a cohort on deals created in the range and reuses the deals visibility predicate inside its query. A funnel report therefore ignores its own date field, group, segment and saved filter (the stats funnel has no filter input), and an all-time funnel widens the cohort from 1970-01-01 to today's local date.
+- 1.2: `ReportResult` gained an additive `funnel` field (stage id, name, order, reached, conversion, median days) because 6.6's rows have no conversion column; the rows mirror the stages so tables and CSV still work.
+- 1.2: activity queries select a constant empty currency and never load rates, since counts and minutes have no currency; durations are `sum(coalesce(duration_minutes, 0))` in minutes.
+- 1.2: the three activity filter inputs (owner ids, type ids, done) are ANDed into the one query with the range and the activity visibility SQL from Part 5.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
