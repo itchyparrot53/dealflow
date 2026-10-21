@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-21 05:12
+Current: 3.4 · Last updated: 2026-10-21 05:18
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -22,7 +22,7 @@ Current: 3.3 · Last updated: 2026-10-21 05:12
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Forms admin screens
 - [x] 3.2 Public form page
-- [ ] 3.3 Booking admin screens
+- [x] 3.3 Booking admin screens
 - [ ] 3.4 Public booking and cancel pages
 - [ ] 3.5 Triggers in the editors, demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
@@ -103,6 +103,11 @@ Current: 3.3 · Last updated: 2026-10-21 05:12
 - 3.2: `PublicForm` is a client component rendered inside a real HTML form that posts to the public route, so JavaScript is an enhancement: with JS it fetches and marks individual fields, without it the browser posts natively and the route answers 303 back to `?done=1` where the page renders the success state.
 - 3.2: a `redirectUrl` in the success response wins over the inline success state, so a form can send the visitor onward without JavaScript depending on it.
 - 3.2: the page carries the hidden `website` honeypot (`tabIndex=-1`, `autoComplete=off`), the signed token, inline field errors and the `PoweredBy` footer, all on semantic colour tokens with a `text-display` title.
+
+- 3.3: `/settings/booking` shows the signed-in user's own pages and, for an admin, every page with the host column; both list reads now return a joined host name so the table never guesses one.
+- 3.3: the editor writes through `updateBookingPageAction` in one save, and only an admin's payload carries `hostId`; duration, buffer, notice and days-ahead are `Select`s, the zone is a searchable `Combobox` over `Intl.supportedValuesOf("timeZone")`, and activity types come from the active catalog.
+- 3.3: `AvailabilityEditor` is seven rows with a `Switch` and up to three 15-minute step from/to `Select` pairs; a closed day has no ranges, which is exactly what the slot engine reads.
+- 3.3: every client action passes `readCsrfToken()`, and all controls are shadcn wrappers (no native select/checkbox).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

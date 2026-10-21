@@ -66,13 +66,16 @@ export async function listMyPages(
   db: DbOrTx,
   actor: PermSetUser,
   signal: AbortSignal,
-): Promise<BookingPage[]> {
+): Promise<(BookingPage & { hostName: string | null })[]> {
   signal.throwIfAborted();
-  return db
-    .select()
+  const rows = await db
+    .select({ page: bookingPages, hostName: users.name })
     .from(bookingPages)
+    .leftJoin(users, eq(users.id, bookingPages.hostId))
     .where(eq(bookingPages.hostId, actor.id))
     .orderBy(asc(bookingPages.title));
+  signal.throwIfAborted();
+  return rows.map((row) => ({ ...row.page, hostName: row.hostName }));
 }
 
 export async function listAllPages(
