@@ -8,6 +8,7 @@ test.setTimeout(300_000);
 async function choose(page: Page, testId: string, option: string): Promise<void> {
   await page.getByTestId(testId).click();
   await page.getByRole("option", { name: option, exact: true }).click();
+  await expect(page.getByRole("listbox")).toBeHidden({ timeout: 5000 });
 }
 
 test("insights: dashboards, report builder, explain, CSV and bulk AI scoring", async ({ page }) => {
@@ -35,7 +36,10 @@ test("insights: dashboards, report builder, explain, CSV and bulk AI scoring", a
   await choose(page, "report-group-by", "won");
   await page.getByLabel("Date field").click();
   await page.getByRole("option", { name: "won", exact: true }).click();
+  await expect(page.getByRole("listbox")).toBeHidden({ timeout: 5000 });
   await choose(page, "report-date-preset", "last 12 months");
+  // The preview is debounced, so let the new definition's run land before the screenshot.
+  await page.waitForTimeout(1200);
 
   const chart = page.getByTestId("report-chart");
   await expect(chart).toHaveAttribute("data-chart", "bar", { timeout: 30_000 });

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-21 15:15
+Current: 4.3 · Last updated: 2026-10-21 15:31
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -29,7 +29,7 @@ Current: 4.2 · Last updated: 2026-10-21 15:15
 - [x] 3.4 Demo seed and docs
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 E2E insights spec and screenshots
-- [ ] 4.2 Integration suite and smoke
+- [x] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -117,6 +117,10 @@ Current: 4.2 · Last updated: 2026-10-21 15:15
 - 4.1: `e2e/11-insights.spec.ts` drives the real screens: it lists "Sales overview" on `/insights`, opens it and sees six widgets, builds a won-value-by-month report through the Select wrappers, switches the segment and chart, saves, reads three explain items with `AI_FAKE`, checks the CSV download header and bulk-scores two deals before reading the completion notification and the board badge.
 - 4.1: the first run failed because `getByRole("checkbox", { name: /^Select / })` also matches "Select all deals", so the bulk action scored 34 deals and the job correctly stopped at the per-minute AI rate limit ("Scored 20 of 34 deals (AI limit reached)"). The spec now skips the header checkbox and scores exactly two, after which the job reports "Scored 2 of 2 deals"; this also confirmed the rate-limit stop works in the real stack.
 - 4.1: the full `pnpm e2e` run is green, 21 tests including spec 11, and the 6 `p7-*` screenshots exist.
+
+- 4.2: the full `pnpm test:integration` run is green on the final tree: 400 files, 2004 tests. `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS with `COMPOSE_PARALLEL_LIMIT=1` (four concurrent image builds exceed the Docker VM, as in Task 0.2) and left no `dealflow-smoke` container or volume.
+- 4.2: reviewing the `p7-report-builder` screenshot exposed a real bug: a date group over an all-time range had no date filter, so rows with a NULL date (an unwon deal in a "won by month" report) produced a NULL group key that the cap rolled into "Other". Both compilers now add `AND <date column> IS NOT NULL` when the group field is a date, and two integration cases pin it (deals and activities). The full integration suite was re-run after the fix (2004/2004) and `pnpm e2e` was re-run too (21/21), so both runs describe the final tree.
+- 4.2: `e2e/11-insights.spec.ts` now closes the select popover and waits out the 400 ms preview debounce before its builder screenshot, so the refreshed `p7-report-builder` shows the wired chart instead of a stale preview and an open dropdown.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

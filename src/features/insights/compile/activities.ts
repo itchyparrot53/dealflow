@@ -2,7 +2,11 @@ import { sql } from "drizzle-orm";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { buildUuidArray } from "@/features/permissions/sql";
 import { activityVisibilityPredicate } from "@/features/stats/activityVisibilitySql";
-import type { ActivityReportDefinition, Interval } from "../definition";
+import {
+  type ActivityReportDefinition,
+  type Interval,
+  isActivityDateField,
+} from "../definition";
 import { type CompileOptions, dateRangeClause, timestampGroupExpr } from "./shared";
 
 // One grouped query per activity report. Activities carry no money, so the currency column is a
@@ -48,6 +52,12 @@ function activitySegmentExpr(field: string): ReturnType<typeof sql> {
   }
 }
 
+function activityDateColumn(field: string): ReturnType<typeof sql> {
+  if (field === "due_at") return sql`a.due_at`;
+  if (field === "done_at") return sql`a.done_at`;
+  return sql`a.created_at`;
+}
+
 function activityFilterClause(filter: ActivityReportDefinition["filter"]): ReturnType<typeof sql> {
   if (filter === null) return sql``;
   const parts: ReturnType<typeof sql>[] = [];
@@ -80,6 +90,10 @@ export function compileActivityReport(
       : def.dateRange.field === "done_at"
         ? sql`a.done_at`
         : sql`a.created_at`;
+  const dateGroupColumn =
+    def.groupBy !== null && isActivityDateField(def.groupBy.field)
+      ? activityDateColumn(def.groupBy.field)
+      : null;
   const visibility = activityVisibilityPredicate(actor, "a");
 
   return sql`
@@ -93,6 +107,7 @@ export function compileActivityReport(
     FROM activities a
     WHERE a.deleted_at IS NULL
       ${dateRangeClause(dateColumn, false, opts.from, opts.to, opts.tz)}
+      ${dateGroupColumn === null ? sql`` : sql`AND ${dateGroupColumn} IS NOT NULL`}
       ${activityFilterClause(def.filter)}
       AND ${visibility}
     GROUP BY 1, 2, 3

@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { dealVisibilityClause } from "@/features/deals/visibility";
 import type { PermSetUser } from "@/features/permissions/effective";
-import type { DealReportDefinition } from "../definition";
+import { type DealReportDefinition, isDealDateField } from "../definition";
 import {
   type CompileOptions,
   dateRangeClause,
@@ -40,6 +40,13 @@ export function compileDealReport(
   const segmentExpr =
     def.segmentBy === null ? sql`NULL::text` : dealSegmentExpr(def.segmentBy.field);
   const isDateColumn = def.dateRange.field === "expected_close_date";
+  // A date grouping over an unbounded range would otherwise produce a NULL key for rows that have
+  // no such date (an unwon deal in a "won by month" report). Those rows are not a group: leave
+  // them out instead of letting the cap roll them into "Other".
+  const dateGroupColumn =
+    def.groupBy !== null && isDealDateField(def.groupBy.field)
+      ? dateColumn(def.groupBy.field)
+      : null;
   const visibility = dealVisibilityClause(visibilitySession(actor));
 
   // `stages` and `organizations` are joined for the saved-filter AST (rotting reads s.rotting_days,
@@ -62,6 +69,7 @@ export function compileDealReport(
       AND d.archived_at IS NULL
       AND p.is_archived = false
       ${dateRangeClause(dateColumn(def.dateRange.field), isDateColumn, opts.from, opts.to, opts.tz)}
+      ${dateGroupColumn === null ? sql`` : sql`AND ${dateGroupColumn} IS NOT NULL`}
       ${filterClause(def.filter, opts.tz)}
       AND ${visibility}
     GROUP BY 1, 2, 3

@@ -422,6 +422,24 @@ describe("deal reports", () => {
     if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.INSIGHT_QUERY_TIMEOUT);
   });
 
+
+  it("leaves deals without the grouped date out instead of rolling them into Other", async () => {
+    await addDeal({ title: "Still open" });
+    await addDeal({
+      title: "Won",
+      status: "won",
+      value: "10.00",
+      wonTime: new Date("2026-02-10T10:00:00Z"),
+    });
+
+    const out = await run(
+      admin,
+      def({ measure: { kind: "sum_value" }, groupBy: { field: "won_at", interval: "month" } }),
+    );
+    expect(out.rows.map((row) => row.g)).toEqual(["2026-02"]);
+    expect(out.total.count).toBe(1);
+  });
+
   it("labels a missing group value as None", async () => {
     await addDeal({ title: "No source", sourceChannel: null });
     const out = await run(admin, def({ groupBy: { field: "source_channel" } }));
@@ -487,6 +505,16 @@ describe("deal reports", () => {
 
     const everything = await run(admin, activityDef());
     expect(everything.total.count).toBe(2);
+  });
+
+
+  it("leaves activities without the grouped date out", async () => {
+    await addActivity({ done: true, doneAt: new Date("2026-02-10T10:00:00Z") });
+    await addActivity({ done: false, doneAt: null });
+
+    const out = await run(admin, activityDef({ groupBy: { field: "done_at", interval: "month" } }));
+    expect(out.rows.map((row) => row.g)).toEqual(["2026-02"]);
+    expect(out.rows.some((row) => row.g === "__other")).toBe(false);
   });
 
   it("matches the stats stage conversion for the same pipeline and range", async () => {
