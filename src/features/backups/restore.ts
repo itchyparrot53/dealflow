@@ -117,11 +117,30 @@ export async function restoreBackup(
       );
     }
     const dump = join(workDir, "db.dump");
+    const target = connectionEnv(options.databaseUrl);
+    if (target.PGDATABASE === undefined || target.PGDATABASE === "") {
+      return err(
+        new AppError(ERROR_IDS.BACKUP_FAILED, "could not parse the target database URL", {
+          step: "pg_restore",
+        }),
+      );
+    }
+    // pg_restore writes SQL to stdout unless --dbname is given; PGDATABASE alone supplies
+    // connection defaults but does not switch it into the direct-connect mode. Pass the name
+    // (never the URL) so no password reaches argv.
     const restored = await runStep(
       env.PG_RESTORE_PATH,
-      ["--clean", "--if-exists", "--no-owner", "--no-privileges", dump],
+      [
+        "--clean",
+        "--if-exists",
+        "--no-owner",
+        "--no-privileges",
+        "--dbname",
+        target.PGDATABASE,
+        dump,
+      ],
       signal,
-      connectionEnv(options.databaseUrl),
+      target,
     );
     if (restored !== 0) {
       return err(

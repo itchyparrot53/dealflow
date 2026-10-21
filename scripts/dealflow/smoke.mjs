@@ -23,7 +23,13 @@ function run(args, { capture = false } = {}) {
     stdio: capture ? "pipe" : "inherit",
   });
   if (result.status !== 0) {
-    throw new Error(`docker ${args.slice(0, 3).join(" ")} failed (${String(result.status)})`);
+    const detail = capture
+      ? `${(result.stdout ?? "").trim()}\n${(result.stderr ?? "").trim()}`.trim()
+      : "";
+    throw new Error(
+      `docker ${args.slice(0, 3).join(" ")} failed (${String(result.status)})` +
+        (detail === "" ? "" : `\n${detail}`),
+    );
   }
   return result.stdout ?? "";
 }
