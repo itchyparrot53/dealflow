@@ -72,13 +72,13 @@ export async function POST(
 
   const ip = clientIp(req.headers);
   const now = Date.now();
-  const byIp = limiter.check(`ip:${ip}`, now);
-  if (!byIp.allowed) {
+  const limited = limiter.check(`ip:${ip}:${publicId}`, now);
+  if (!limited.allowed) {
     const response = NextResponse.json(
       { error: ERROR_IDS.BOOKING_RATE_LIMITED, message: BOOKING_COPY.rateLimited },
       { status: 429 },
     );
-    response.headers.set("Retry-After", String(byIp.retryAfterSeconds));
+    response.headers.set("Retry-After", String(limited.retryAfterSeconds));
     return response;
   }
 

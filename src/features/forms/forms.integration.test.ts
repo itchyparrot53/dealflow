@@ -21,6 +21,7 @@ import { dispatchEvents } from "@/features/events/dispatcher";
 import { issueFormToken } from "@/features/forms/spamToken";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
+import { publicJsonHeaders } from "@/test/publicRequest";
 import { createForm, setFormActive, type WebForm } from "./forms";
 
 let h: TestDb;
@@ -98,7 +99,7 @@ interface SubmitBody {
 async function post(publicId: string, body: SubmitBody, ip = "203.0.113.7"): Promise<Response> {
   const request = new NextRequest(`http://localhost/api/public/forms/${publicId}/submit`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": ip },
+    headers: publicJsonHeaders(ip),
     body: JSON.stringify(body),
   });
   return POST(request, { params: Promise.resolve({ publicId }) });

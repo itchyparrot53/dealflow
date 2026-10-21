@@ -74,8 +74,10 @@ export function buildIcs(input: IcsInput): string {
   ];
   if (input.description.trim() !== "") lines.push(`DESCRIPTION:${escapeText(input.description)}`);
   if (input.location.trim() !== "") lines.push(`LOCATION:${escapeText(input.location)}`);
+  // A header value cannot carry a line break; strip any before it reaches mailto:.
+  const organizerEmail = input.organizerEmail.replace(/[\r\n]/g, "");
   lines.push(
-    `ORGANIZER;CN=${escapeText(input.organizerName)}:mailto:${input.organizerEmail}`,
+    `ORGANIZER;CN=${escapeText(input.organizerName)}:mailto:${organizerEmail}`,
     "END:VEVENT",
     "END:VCALENDAR",
   );

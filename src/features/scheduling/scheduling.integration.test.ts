@@ -19,6 +19,7 @@ import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
 import type { SystemMail } from "@/features/mailer/types";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
+import { publicJsonHeaders } from "@/test/publicRequest";
 import { ok } from "@/types/result";
 import { bookSlot, getSlots } from "./booking";
 import { type BookingPage, createPage, setPageActive } from "./bookingPages";
@@ -292,7 +293,7 @@ describe("booking", () => {
     for (let i = 0; i < 11; i += 1) {
       const request = new NextRequest(`http://localhost/api/public/booking/${page.publicId}/book`, {
         method: "POST",
-        headers: { "content-type": "application/json", "x-forwarded-for": "198.51.100.9" },
+        headers: publicJsonHeaders("198.51.100.9"),
         body: JSON.stringify({ start, name: `Visitor ${i}`, email: `v${i}@example.com` }),
       });
       last = await bookRoute(request, { params: Promise.resolve({ publicId: page.publicId }) });

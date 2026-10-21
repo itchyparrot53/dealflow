@@ -117,7 +117,9 @@ async function defaultTimezone(
 ): Promise<string> {
   if (requested !== undefined) return requested;
   const prefs = await getUserPreferences(db, hostId, signal);
-  return prefs.timezone ?? "UTC";
+  const preferred = prefs.timezone;
+  // A stored preference is a non-empty string, not necessarily a zone this runtime knows.
+  return preferred !== null && isValidTimeZone(preferred) ? preferred : "UTC";
 }
 
 async function defaultActivityTypeId(db: Db, signal: AbortSignal): Promise<string | null> {

@@ -96,7 +96,9 @@ export async function cancelBooking(
         .innerJoin(bookingPages, eq(bookingPages.id, bookings.pageId))
         .leftJoin(users, eq(users.id, bookingPages.hostId))
         .where(eq(bookings.cancelTokenHash, hashCancelToken(token)))
-        .for("update");
+        // The host name comes through a LEFT JOIN, and Postgres refuses FOR UPDATE on the
+        // nullable side of an outer join, so lock only the booking row.
+        .for("update", { of: bookings });
       if (row === undefined || row.booking.status !== "booked") throw invalidLink();
 
       await tx

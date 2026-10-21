@@ -250,6 +250,9 @@ export function PublicBooking({
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState<BookResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  // Which 14-day window the strip shows, and the sticky "that time went" message.
+  const [windowStart, setWindowStart] = useState(0);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // The visitor's own zone drives the labels; until the browser reports it, the page zone is used.
   useEffect(() => {
@@ -264,11 +267,11 @@ export function PublicBooking({
 
   const days = useMemo(() => {
     if (today === null) return [];
-    const base = new Date(`${today}T12:00:00.000Z`).getTime();
+    const base = new Date(`${today}T12:00:00.000Z`).getTime() + windowStart * 14 * 86_400_000;
     return Array.from({ length: 14 }, (_, index) =>
       dateInZone(new Date(base + index * 86_400_000), displayTimezone),
     );
-  }, [today, displayTimezone]);
+  }, [today, displayTimezone, windowStart]);
 
   const activeDay =
     selectedDay !== null && days.includes(selectedDay) ? selectedDay : (days[0] ?? null);
@@ -316,7 +319,9 @@ export function PublicBooking({
     setSubmitting(false);
     const body = (await response.json().catch(() => ({}))) as BookResponse;
     if (response.status === 409) {
-      setSubmitError(BOOKING_COPY.slotTaken);
+      // The form unmounts with the selection, so the copy lives in the slot view and survives the
+      // refetch.
+      setNotice(BOOKING_COPY.slotTaken);
       setChosenStart(null);
       setRefreshKey((key) => key + 1);
       return;
@@ -370,24 +375,66 @@ export function PublicBooking({
 
       {chosenStart === null ? (
         <>
-          <nav className="mt-6 flex flex-wrap gap-2" aria-label="Pick a day">
-            {dayOptions.map(({ day, label }) => (
-              <button
-                key={day}
-                type="button"
-                data-testid="booking-day"
-                data-date={day}
-                onClick={() => setSelectedDay(day)}
-                className={
-                  day === activeDay
-                    ? "rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground"
-                    : "rounded-md border border-border px-3 py-1 text-sm"
-                }
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
+          <div className="mt-6 flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="booking-days-prev"
+              disabled={windowStart === 0}
+              onClick={() => {
+                setWindowStart((current) => Math.max(0, current - 1));
+                setSelectedDay(null);
+                setNotice(null);
+              }}
+            >
+              Previous
+            </Button>
+            <nav className="flex flex-1 flex-wrap gap-2" aria-label="Pick a day">
+              {dayOptions.map(({ day, label }) => (
+                <button
+                  key={day}
+                  type="button"
+                  data-testid="booking-day"
+                  data-date={day}
+                  onClick={() => {
+                    setSelectedDay(day);
+                    setNotice(null);
+                  }}
+                  className={
+                    day === activeDay
+                      ? "rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground"
+                      : "rounded-md border border-border px-3 py-1 text-sm"
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </nav>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="booking-days-next"
+              onClick={() => {
+                setWindowStart((current) => current + 1);
+                setSelectedDay(null);
+                setNotice(null);
+              }}
+            >
+              Next
+            </Button>
+          </div>
+
+          {notice === null ? null : (
+            <p
+              className="mt-4 rounded-md bg-muted px-3 py-2 text-sm text-destructive"
+              data-testid="booking-slot-taken"
+              role="alert"
+            >
+              {notice}
+            </p>
+          )}
 
           <section className="mt-6 grid grid-cols-3 gap-2" aria-label="Pick a time">
             <SlotGrid

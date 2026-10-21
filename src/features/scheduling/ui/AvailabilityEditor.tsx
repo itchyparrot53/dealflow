@@ -65,6 +65,7 @@ export function AvailabilityEditor({
               checked={open}
               onCheckedChange={(next) => toggle(day, next)}
               label={S.editor.enabled}
+              testId={`availability-toggle-${day}`}
             />
             {ranges.map((range, index) => (
               <span key={`${day}-${range.from}-${range.to}`} className="flex items-center gap-1">

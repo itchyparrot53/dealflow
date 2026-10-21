@@ -90,7 +90,7 @@ export function TriggerPicker({
               onChange={(next) =>
                 onChange({ type: "form.submitted", formId: next === "" ? undefined : next })
               }
-              options={[{ value: "", label: S.fields.anyPipeline }, ...optionList(lookups.forms)]}
+              options={[{ value: "", label: S.fields.anyForm }, ...optionList(lookups.forms)]}
               ariaLabel="Form"
             />
           </div>

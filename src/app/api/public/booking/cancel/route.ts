@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { BOOKING_BOOK_PER_MINUTE } from "@/constants/formsBooking";
 import { BOOKING_COPY } from "@/constants/formsBookingStrings";
 import { db } from "@/db/client";
 import { clientIp } from "@/features/net/clientIp";
@@ -13,7 +14,7 @@ import { createRateLimiter, type RateLimiter } from "@/server/rateLimit";
 const RATE_WINDOW_MS = 60_000;
 
 function newLimiter(): RateLimiter {
-  return createRateLimiter({ limit: 20, windowMs: RATE_WINDOW_MS });
+  return createRateLimiter({ limit: BOOKING_BOOK_PER_MINUTE, windowMs: RATE_WINDOW_MS });
 }
 
 let limiter = newLimiter();

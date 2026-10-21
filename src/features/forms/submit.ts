@@ -6,7 +6,7 @@ import { createNote } from "@/features/collaboration/notesRepo";
 import { loadContactActor } from "@/features/contacts/actorAdapters";
 import { createOrg } from "@/features/contacts/orgsRepo";
 import type { ContactActor } from "@/features/contacts/personsRepo";
-import { createPerson } from "@/features/contacts/personsRepo";
+import { createPerson, updatePerson } from "@/features/contacts/personsRepo";
 import { createDeal } from "@/features/deals/dealActions";
 import { loadEntityCreateSession } from "@/features/entity-create/session";
 import { emitDomainEvent } from "@/features/events/emit";
@@ -92,6 +92,10 @@ function noteBody(values: Record<string, string>): string {
   return parts.join("\n\n");
 }
 
+function customRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+}
+
 function contactPoints(value: string | undefined, label: "work" | "mobile") {
   return value === undefined ? [] : [{ label, value, primary: true }];
 }
@@ -129,7 +133,26 @@ async function findOrCreatePerson(
     .from(persons)
     .where(and(eq(persons.primaryEmail, ctx.email), isNull(persons.deletedAt)))
     .limit(1);
-  if (existing !== undefined) return existing;
+  const personCustom = customFieldValues(ctx.defs, ctx.fields, ctx.values, "person");
+  if (existing !== undefined) {
+    // The person already exists: merge any person-targeted custom values instead of dropping
+    // them. A refused edit (the form owner does not own this contact) keeps the submission and
+    // leaves the record untouched rather than failing the visitor.
+    if (Object.keys(personCustom).length > 0) {
+      const updated = await updatePerson(
+        asDb(tx),
+        ctx.contactActor,
+        {
+          id: existing.id,
+          customFields: { ...customRecord(existing.customFields), ...personCustom },
+        },
+        signal,
+      );
+      if (updated.ok) return updated.value;
+      console.warn(`form submission person update refused: ${updated.error.id}`);
+    }
+    return existing;
+  }
 
   const result = await createPerson(
     asDb(tx),
@@ -139,7 +162,7 @@ async function findOrCreatePerson(
       emails: [{ label: "work", value: ctx.email, primary: true }],
       phones: contactPoints(ctx.values.phone, "mobile"),
       orgId: null,
-      customFields: customFieldValues(ctx.defs, ctx.fields, ctx.values, "person"),
+      customFields: personCustom,
     },
     signal,
   );
@@ -196,8 +219,9 @@ async function createRecord(
   orgId: string | null,
   signal: AbortSignal,
 ): Promise<CreatedRecord> {
-  const title = `${ctx.titleName} via ${ctx.form.name}`;
+  // 6.8: a lead is "{name} via {form name}"; only a deal is named after the organization.
   if (ctx.form.creates === "lead") {
+    const title = `${ctx.values.name ?? ctx.email} via ${ctx.form.name}`;
     const result = await createLead(
       asDb(tx),
       ctx.session,
@@ -222,7 +246,7 @@ async function createRecord(
     asDb(tx),
     ctx.session,
     {
-      title,
+      title: `${ctx.titleName} via ${ctx.form.name}`,
       pipelineId: ctx.form.pipelineId,
       stageId: ctx.form.stageId,
       personId: person.id,

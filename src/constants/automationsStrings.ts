@@ -87,6 +87,7 @@ export const AUTOMATIONS_STRINGS = {
   },
   fields: {
     anyPipeline: "Any pipeline",
+    anyForm: "Any form",
     anyStage: "Any stage",
     anyKind: "Any document",
     quote: "Quote",

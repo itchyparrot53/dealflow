@@ -102,6 +102,7 @@ export function BookingPagesList({
             <th className="py-2 font-medium">{S.table.title}</th>
             {showHost ? <th className="py-2 font-medium">{S.table.host}</th> : null}
             <th className="py-2 font-medium">{S.table.duration}</th>
+            <th className="py-2 font-medium">{S.table.link}</th>
             <th className="py-2 font-medium">{S.table.active}</th>
             <th className="py-2" />
           </tr>
@@ -122,6 +123,16 @@ export function BookingPagesList({
               {showHost ? <td className="py-2">{row.hostName}</td> : null}
               <td className="py-2">
                 {row.durationMinutes} {S.editor.minutes}
+              </td>
+              <td className="py-2">
+                <a
+                  className="text-link hover:underline"
+                  href={`${baseUrl}/book/${row.publicId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {S.table.link}
+                </a>
               </td>
               <td className="py-2">
                 <Switch

@@ -35,15 +35,18 @@ export interface BookingPageEditorView {
 
 function timezoneOptions(): { value: string; label: string }[] {
   const supported: string[] = [];
+  // Intl.supportedValuesOf omits "UTC" even though it is the default the server writes, so the
+  // canonical alias is added first and the list de-duplicated.
+  supported.push("UTC");
   try {
     // Intl.supportedValuesOf is available in every browser this app supports; the fallback keeps
     // the picker usable if an older engine lacks it.
     const zones: string[] = Intl.supportedValuesOf("timeZone");
     supported.push(...zones);
   } catch {
-    supported.push("UTC", "Europe/London", "Europe/Berlin", "America/New_York", "Asia/Kolkata");
+    supported.push("Europe/London", "Europe/Berlin", "America/New_York", "Asia/Kolkata");
   }
-  return supported.map((zone) => ({ value: zone, label: zone }));
+  return [...new Set(supported)].map((zone) => ({ value: zone, label: zone }));
 }
 
 const TIMEZONES = timezoneOptions();

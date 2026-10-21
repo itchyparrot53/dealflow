@@ -88,17 +88,21 @@ export async function POST(
 
   const ip = clientIp(req.headers);
   const now = Date.now();
-  const byIp = limiter.check(`ip:${ip}`, now);
-  const byForm = limiter.check(`form:${publicId}`, now);
-  if (!byIp.allowed || !byForm.allowed) {
+  // One bucket per client and form, as section 3 specifies; a per-form global bucket would let
+  // one visitor lock out everybody else.
+  const limited = limiter.check(`ip:${ip}:${publicId}`, now);
+  if (!limited.allowed) {
     const response = fail(ERROR_IDS.FORM_RATE_LIMITED);
-    response.headers.set(
-      "Retry-After",
-      String(Math.max(byIp.retryAfterSeconds, byForm.retryAfterSeconds)),
-    );
+    response.headers.set("Retry-After", String(limited.retryAfterSeconds));
     return response;
   }
 
+  // Reject a declared oversize body before reading it; the byte check below still covers a
+  // chunked request that declares nothing.
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > FORM_BODY_MAX_BYTES) {
+    return fail(ERROR_IDS.FORM_INPUT_INVALID, 413);
+  }
   const raw = await req.text();
   if (Buffer.byteLength(raw, "utf8") > FORM_BODY_MAX_BYTES) {
     return fail(ERROR_IDS.FORM_INPUT_INVALID, 413);
