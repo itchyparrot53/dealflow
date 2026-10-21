@@ -54,24 +54,22 @@ const durationDef = {
 } as ReportDefinition;
 
 describe("toCsv", () => {
-  it("writes a quoted header and CRLF lines for a count report", () => {
-    expect(toCsv(result(), countDef)).toBe(
-      '"Group","Segment","Count","Value"\r\n"Lead","","3","3"\r\n',
-    );
+  it("writes the header and CRLF lines for a count report", () => {
+    expect(toCsv(result(), countDef)).toBe("Group,Segment,Count,Value\r\nLead,,3,3\r\n");
   });
 
   it("labels the value column with the base currency or the duration unit", () => {
     const money = result({ measure: "sum_value", rows: [row({ value: "1500.00", count: 2 })] });
-    expect(toCsv(money, valueDef).split("\r\n")[0]).toBe('"Group","Segment","Count","Value (USD)"');
+    expect(toCsv(money, valueDef).split("\r\n")[0]).toBe("Group,Segment,Count,Value (USD)");
     const duration = result({ measure: "sum_duration", rows: [row({ value: "90", count: 2 })] });
     expect(toCsv(duration, durationDef).split("\r\n")[0]).toBe(
-      '"Group","Segment","Count","Value (minutes)"',
+      "Group,Segment,Count,Value (minutes)",
     );
   });
 
   it("writes the segment label when there is one", () => {
     const csv = toCsv(result({ rows: [row({ s: "open", sLabel: "Open" })] }), countDef);
-    expect(csv).toContain('"Lead","Open","3","3"');
+    expect(csv).toContain("Lead,Open,3,3");
   });
 
   it("escapes commas, quotes and newlines", () => {
@@ -86,18 +84,26 @@ describe("toCsv", () => {
   });
 
   it("prefixes a formula-injection guard on every dangerous first character", () => {
-    const dangerous = ["=SUM(A1)", "+1", "-1", "@x", "\tcell", "\rcell"];
-    const csv = toCsv(result({ rows: dangerous.map((gLabel) => row({ gLabel })) }), countDef);
-    for (const cell of dangerous) {
-      expect(csv).toContain(`"'${cell.replace(/"/g, '""')}"`);
+    const cases: [string, string][] = [
+      ["=SUM(A1)", "'=SUM(A1)"],
+      ["+1", "'+1"],
+      ["-1", "'-1"],
+      ["@x", "'@x"],
+      ["\tcell", "'\tcell"],
+      // A carriage return also forces RFC 4180 quoting, so the guard sits inside the quotes.
+      ["\rcell", '"\'\rcell"'],
+    ];
+    const csv = toCsv(result({ rows: cases.map(([gLabel]) => row({ gLabel })) }), countDef);
+    for (const [, expected] of cases) {
+      expect(csv).toContain(expected);
     }
   });
 
   it("writes only the header for an empty report", () => {
-    expect(toCsv(result({ rows: [] }), countDef)).toBe('"Group","Segment","Count","Value"\r\n');
+    expect(toCsv(result({ rows: [] }), countDef)).toBe("Group,Segment,Count,Value\r\n");
   });
 
   it("quotes a null segment as an empty cell", () => {
-    expect(toCsv(result(), countDef)).toContain('"Lead","","3","3"');
+    expect(toCsv(result(), countDef)).toContain("Lead,,3,3");
   });
 });

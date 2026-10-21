@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-21 14:32
+Current: 0.4 · Last updated: 2026-10-21 14:34
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-21 14:32
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
 - [x] 0.2 Schema, migrations, env and image
-- [ ] 0.3 Pure core (test-first)
+- [x] 0.3 Pure core (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Projects services, events and notifications (test-first)
 - [ ] 1.2 From a won deal and the automation action
@@ -54,6 +54,14 @@ Current: 0.3 · Last updated: 2026-10-21 14:32
 - 0.2: the new `backups` volume is mounted read-write on `worker` and read-only on `app`; `docker compose config --quiet` passes for the base file and the local override.
 - 0.2: `scripts/dealflow/smoke.mjs` now also removes `${PROJECT}_backups` in its cleanup, so the smoke project leaves no volume behind; the backup round trip itself lands in Task 4.2.
 - 0.2: adding the enum value made two exhaustive `Record<NotificationType, ...>` maps fail typecheck, so `deepLink.ts` (fallback `/projects`) and `NotificationItem.tsx` (label from `taskTitle` or `projectName`) gained the type, with the feed and preference strings.
+
+- 0.3: all five test files were written and run before their modules: they failed at import (5 files, no tests), then passed 36/36 after implementation. Cases cover token length, prefix and hash stability, bearer parsing, cursor round trip and junk, CSV quoting/CRLF/BOM/formula guard/null cells, retention pruning and manifest shape.
+- 0.3: `csvLine` quotes only when RFC 4180 needs it (comma, quote, CR or LF), which changes Part 7's `toCsv` output from always-quoted to minimal quoting. The formula guard is unchanged and still runs before the quoting decision. Per rule 10 this shared-CSV change is deliberate, so `insights/csv.test.ts` was updated to the new contract (same cases and same coverage, no assertion dropped).
+- 0.3: the streamed CSV starts with a UTF-8 BOM; the stream test decodes with `ignoreBOM: true` so it asserts the BOM instead of letting `TextDecoder` strip it.
+- 0.3: a cursor is base64url JSON `{updatedAt,id}`; `decodeCursor` returns a `Result` and rejects non-JSON, non-objects, missing or non-string fields and an unparsable timestamp. The list query will compare `(updated_at, id) > (cursor)`.
+- 0.3: `filesToPrune` sorts by the parsed UTC timestamp (not by input order) and ignores both foreign names and a matching name whose timestamp is impossible, so a prune can never delete a file this job did not write.
+- 0.3: the manifest is `version: 1` with files sorted by key and a `fileCount`, so two runs over the same bucket produce identical bytes.
+- 0.3: 16 error IDs (PROJECT, API, RECYCLE, EXPORT, BACKUP) are appended to the registry and the test allow-list; user copy lives in `src/constants/projectsApiStrings.ts`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

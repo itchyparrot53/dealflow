@@ -286,6 +286,33 @@ export const ERROR_IDS = {
   INSIGHT_FORBIDDEN: "E_INSIGHT_005", // edit or delete by someone other than the owner or an admin
   INSIGHT_INPUT_INVALID: "E_INSIGHT_006", // action input failed Zod
 
+  // PROJECT (projects, phases and tasks)
+  PROJECT_NOT_FOUND: "E_PROJECT_001", // project missing, soft-deleted, or not visible
+  PROJECT_TASK_NOT_FOUND: "E_PROJECT_002", // task or phase missing, or belongs to another project
+  PROJECT_FORBIDDEN: "E_PROJECT_003", // edit by someone who is not owner, assignee or admin
+  PROJECT_INPUT_INVALID: "E_PROJECT_004", // action input failed Zod (or the deal is not won)
+
+  // API (token-authenticated REST API)
+  API_TOKEN_MISSING: "E_API_001", // missing or malformed bearer token (401)
+  API_TOKEN_INVALID: "E_API_002", // token unknown, revoked, expired, or its user is inactive (401)
+  API_SCOPE_DENIED: "E_API_003", // the token scope does not allow this method (403)
+  API_RATE_LIMITED: "E_API_004", // per-token rate limit hit (429 with Retry-After)
+  API_ROUTE_NOT_FOUND: "E_API_005", // unknown route or unsupported method (404/405)
+  API_BODY_INVALID: "E_API_006", // query or body failed Zod, or the body is too large (422)
+
+  // RECYCLE (recycle bin)
+  RECYCLE_NOT_FOUND: "E_RECYCLE_001", // item missing, outside the window, or not restorable by this user
+  RECYCLE_PARENT_DELETED: "E_RECYCLE_002", // restore blocked because its parent is still deleted
+
+  // EXPORT (CSV export of the main lists)
+  EXPORT_FORBIDDEN: "E_EXPORT_001", // no data.export permission
+  EXPORT_TOO_LARGE: "E_EXPORT_002", // more rows than EXPORT_MAX_ROWS; narrow the filter
+
+  // BACKUP (database dump plus file mirror)
+  BACKUP_FAILED: "E_BACKUP_001", // a backup step failed (context: step and exit code)
+  BACKUP_NOT_FOUND: "E_BACKUP_002", // the named archive is not in BACKUP_DIR
+  BACKUP_UNAVAILABLE: "E_BACKUP_003", // backups disabled, or BACKUP_DIR not writable
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
