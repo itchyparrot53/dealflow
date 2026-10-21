@@ -1,0 +1,178 @@
+"use client";
+
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import { createTokenAction } from "../actions";
+
+const S = PROJECTS_API_STRINGS.api;
+
+const EXPIRY_OPTIONS = [
+  { value: "never", label: S.expiresNever },
+  { value: "7", label: S.expires7 },
+  { value: "30", label: S.expires30 },
+  { value: "90", label: S.expires90 },
+  { value: "365", label: S.expires365 },
+];
+
+export function NewTokenDialog({
+  open,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
+}): React.ReactNode {
+  const [name, setName] = useState("");
+  const [scope, setScope] = useState("read");
+  const [expiry, setExpiry] = useState("never");
+  const [token, setToken] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function close(next: boolean): void {
+    if (!next) {
+      setName("");
+      setScope("read");
+      setExpiry("never");
+      setToken(null);
+      setErrorId(null);
+      setCopied(false);
+    }
+    onOpenChange(next);
+  }
+
+  async function create(): Promise<void> {
+    if (name.trim() === "") return;
+    setPending(true);
+    setErrorId(null);
+    const response = await createTokenAction(
+      {
+        name: name.trim(),
+        scope,
+        expiresInDays: expiry === "never" ? null : Number(expiry),
+      },
+      readCsrfToken(),
+    );
+    setPending(false);
+    if (!response.ok) {
+      setErrorId(response.error.id);
+      return;
+    }
+    setToken(response.value.token);
+    onCreated();
+  }
+
+  async function copy(): Promise<void> {
+    if (token === null) return;
+    try {
+      await navigator.clipboard.writeText(token);
+      setCopied(true);
+    } catch {
+      // The token stays visible so it can be copied by hand.
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={close}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{S.newToken}</DialogTitle>
+          <DialogDescription>{S.newTokenDescription}</DialogDescription>
+        </DialogHeader>
+        {token === null ? (
+          <div className="space-y-3">
+            {errorId !== null && (
+              <p role="alert" className="text-sm text-destructive">
+                {projectsErrorMessage(errorId)}
+              </p>
+            )}
+            <label className="block text-sm font-medium" htmlFor="token-name">
+              {S.tokenName}
+              <Input
+                id="token-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder={S.tokenNamePlaceholder}
+                aria-label={S.tokenName}
+              />
+            </label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.scope}</span>
+                <Select
+                  value={scope}
+                  onChange={setScope}
+                  options={[
+                    { value: "read", label: S.scopeRead },
+                    { value: "write", label: S.scopeWrite },
+                  ]}
+                  ariaLabel={S.scope}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.expires}</span>
+                <Select
+                  value={expiry}
+                  onChange={setExpiry}
+                  options={EXPIRY_OPTIONS}
+                  ariaLabel={S.expires}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{S.tokenOnce}</p>
+            <div className="flex items-center gap-2">
+              <code
+                data-testid="api-token-secret"
+                className="min-w-0 flex-1 break-all rounded-md border bg-muted px-2 py-1 text-xs"
+              >
+                {token}
+              </code>
+              <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
+                {copied ? S.copied : S.copy}
+              </Button>
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          {token === null ? (
+            <>
+              <Button type="button" variant="outline" size="sm" onClick={() => close(false)}>
+                {S.close}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={pending || name.trim() === ""}
+                onClick={() => void create()}
+              >
+                {pending ? S.creating : S.create}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" size="sm" onClick={() => close(false)}>
+              {S.close}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

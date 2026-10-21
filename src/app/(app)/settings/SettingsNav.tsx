@@ -8,6 +8,7 @@ import {
   Coins,
   Eye,
   FileText,
+  KeyRound,
   type LucideIcon,
   Mail,
   MailCheck,
@@ -31,6 +32,7 @@ import { AUTOMATIONS_STRINGS, WEBHOOKS_STRINGS } from "@/constants/automationsSt
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { BOOKING_STRINGS, FORMS_STRINGS } from "@/constants/formsBookingStrings";
+import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { CURRENCY_STRINGS, PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { STRINGS } from "@/constants/strings";
@@ -54,6 +56,8 @@ const MY_ACCOUNT: NavSection = {
     { href: "/settings/email-sync", label: STRINGS.settings.emailSync, icon: MailCheck },
     { href: "/settings/email", label: STRINGS.settings.emailTemplates, icon: Mail },
     { href: "/settings/connections", label: STRINGS.settings.connectedApps, icon: Plug },
+    // Every user creates and revokes their own API tokens.
+    { href: "/settings/api", label: PROJECTS_API_STRINGS.api.nav, icon: KeyRound },
     // Every user manages their own booking pages, so this one is not admin-only.
     { href: "/settings/booking", label: BOOKING_STRINGS.nav, icon: CalendarClock },
   ],

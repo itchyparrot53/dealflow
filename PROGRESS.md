@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-21 15:00
+Current: 2.2 · Last updated: 2026-10-21 15:06
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -18,7 +18,7 @@ Current: 2.1 · Last updated: 2026-10-21 15:00
 - [x] 1.3 Projects list and board
 - [x] 1.4 Deal projects section
 - [x] 1.5 Phase 1 QA gate
-- [ ] 2.1 Tokens service and settings tab
+- [x] 2.1 Tokens service and settings tab
 - [ ] 2.2 Registry, handler and resources (test-first)
 - [ ] 2.3 API docs
 - [ ] 2.4 Phase 2 QA gate
@@ -98,6 +98,11 @@ Current: 2.1 · Last updated: 2026-10-21 15:00
 - 1.5: the gate's first lint run found two React hook errors introduced by this part: `ProjectBoard` and `TaskDialog` synced props into state with `useEffect`. Both effects were removed: the board keeps local state seeded once (every server change is already applied locally by the action result), and the task dialog is mounted per task with a `key`, so its fields initialize from props without a cascading render.
 - 1.5: the same run found one `no-unnecessary-condition` error in `projectsErrorMessage` (a typed index made `??` look impossible); the lookup is now typed `string | undefined`, so the fallback is honest.
 - 1.5: Phase 2's base is `06cbab1` (the last task commit before this gate commit).
+
+- 2.1: a token read never selects `token_hash`; `TokenView` carries only the 8-character display prefix, scope, dates and owner. The plain token exists only in the return value of `createToken`, shown once in the dialog.
+- 2.1: revoking a token that is missing or belongs to someone else returns `E_API_002` (unknown), not a permission error, so a non-admin cannot probe other users' token ids. Admins may list and revoke any token, matching 6.7.
+- 2.1: the expiry choices are the fixed 7/30/90/365 days or never, as the contract lists; the service converts the choice to an absolute `expires_at` at creation.
+- 2.1: API lives in the settings nav's "My account" group because every signed-in user manages personal tokens; the page itself re-reads the session through `createContext` like the other settings pages.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
