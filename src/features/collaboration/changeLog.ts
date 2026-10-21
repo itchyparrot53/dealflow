@@ -1,6 +1,7 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { changeLogs, users } from "@/db/schema";
+import { emitDomainEvent, eventTypesForChange } from "@/features/events/emit";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { EntityType } from "@/types/entityRef";
 
@@ -47,6 +48,28 @@ export async function recordChange(
       ${oldJson}::jsonb, ${newJson}::jsonb, ${args.actorId}
     )
   `);
+  signal.throwIfAborted();
+
+  // One domain event per meaning of the change, written in the same transaction. The dispatcher
+  // coalesces several changes from one transaction into one event, so one row per type is fine.
+  for (const type of eventTypesForChange(
+    args.entityType,
+    args.field,
+    args.oldValue,
+    args.newValue,
+  )) {
+    await emitDomainEvent(
+      db,
+      {
+        type,
+        entityType: args.entityType,
+        entityId: args.entityId,
+        actorId: args.actorId,
+        changes: [{ field: args.field, old: args.oldValue, new: args.newValue }],
+      },
+      signal,
+    );
+  }
 }
 
 // Parse a jsonb column read as ::text back into its JS value exactly once.

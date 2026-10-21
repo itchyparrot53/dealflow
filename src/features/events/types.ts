@@ -48,7 +48,9 @@ export interface EventChange {
 
 export interface DomainEventDraft {
   type: DomainEventType;
-  entityType: DomainEntityType;
+  // Text on purpose: audited paths carry the wider EntityType union, and only the types with
+  // event rules in eventTypesForChange ever reach the emitter.
+  entityType: string;
   entityId: string;
   actorId: string | null;
   changes?: EventChange[];

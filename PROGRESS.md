@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-21 01:28
+Current: 1.2 · Last updated: 2026-10-21 01:34
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -13,7 +13,7 @@ Current: 1.1 · Last updated: 2026-10-21 01:28
 - [x] 0.3 Automations schema and migration
 - [x] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
 - [x] 0.5 Phase 0 QA gate
-- [ ] 1.1 Emit from recordChange (test-first)
+- [x] 1.1 Emit from recordChange (test-first)
 - [ ] 1.2 Create and document events
 - [ ] 1.3 Dispatcher, snapshot and retention (test-first)
 - [ ] 1.4 Phase 1 QA gate
@@ -71,6 +71,10 @@ Current: 1.1 · Last updated: 2026-10-21 01:28
 
 - 0.5: the first gate `pnpm lint` run failed on formatter output and two type-aware rules (`no-unnecessary-condition` on an `Object.values` check, `switch-exhaustiveness-check` on `conditionTarget`); fixed in `0.5: fixes round 1` by running the repository formatter over the new files, checking each `update_deal` field explicitly, and listing every event type in the switch, then the gate passed with the baseline's 14 warnings.
 - 0.5: no `qa` review at this gate (fast profile, rule 9.4). Phase 1 base is the commit before the gate, matching Part 4's recorded base.
+
+- 1.1: the four integration cases were written first and run red (the stage case needed the CAS `expectedUpdatedAt` the existing input schema requires), then all four passed; the deal field names `recordChange` receives are `stageId`, `status`, `deleted`/`deletedAt` and the activity completion field is emitted by the activity service in Task 1.2.
+- 1.1: `emitDomainEvent` inserts in the caller's `DbOrTx` and then `NOTIFY dealflow_domain_events`, which Postgres delivers on commit; a failed NOTIFY only logs, because the dispatcher also polls, and a rolled-back transaction leaves no event and no notification.
+- 1.1: the chain travels in an `AsyncLocalStorage` context (`chainContext.ts`) so the runner can open a chain without changing any service signature; `eventTypesForChange` treats `deletedAt` like `deleted` because the deal workspace path uses the former and the deals path the latter.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
