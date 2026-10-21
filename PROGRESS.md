@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-21 15:38
+Current: 3.5 · Last updated: 2026-10-21 15:42
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -26,7 +26,7 @@ Current: 3.4 · Last updated: 2026-10-21 15:38
 - [x] 3.1 Recycle bin service and purge (test-first)
 - [x] 3.2 Recycle bin page
 - [x] 3.3 CSV export everywhere (test-first)
-- [ ] 3.4 Audit log page
+- [x] 3.4 Audit log page
 - [ ] 3.5 Backups (test-first)
 - [ ] 3.6 Backups page, demo seed and docs
 - [ ] 4.1 E2E projects and data spec and screenshots
@@ -132,6 +132,9 @@ Current: 3.4 · Last updated: 2026-10-21 15:38
 - 3.3: `exportTable` gates on `can(actor, "data.export")` (E_EXPORT_001), checks the count before loading (E_EXPORT_002 with an injectable cap for the test), selects the requested columns (unknown keys fall back to all) and returns header/rows/filename; the route streams them through `csvStream`, so the BOM, CRLF, quoting and formula guard are the shared writer's.
 - 3.3: the seven cases pass: the gate, visibility (a regular exporter does not see another user's private deal while an admin does), the chosen column header, the cap, the formula-leading title, the route's attachment name and headers, and the 401 without a session.
 - 3.3: deals reuse `listDeals` (so the pipeline filter and its visibility clause apply), people/organizations reuse `listPeople`/`listOrgs`, activities `listActivityRows`, products `listProducts`, and invoices a documents query joined to deals with the deal visibility clause. The export button is hidden server-side without the flag on all six lists; the deals one rides in the list toolbar via a new `exportSlot`, and the activities one sits above the client table (its filters live in client state, not the URL, so they are not carried; logged as a limitation).
+
+- 3.4: the audit page is admin-only because the service refuses everyone else with E_PERM_DENIED (403), and the nav item only renders for admins. Filters are actor, action (the distinct actions from the table) and a date range; pagination is a keyset cursor on `(created_at, id)` descending, 50 per page.
+- 3.4: the plan says the audit writer already redacts secrets. It does not: `recordAudit` stores the caller's before/after verbatim. The reader therefore redacts any key matching password/secret/token/hash/credential/api key (recursively, replacing with "[redacted]") before the page sees it, and the page states that secrets are redacted. Logged as the required check plus the defensive fix rather than trusting a writer that has no redaction.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
