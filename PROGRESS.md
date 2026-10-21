@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-21 01:37
+Current: 1.4 · Last updated: 2026-10-21 01:39
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -15,7 +15,7 @@ Current: 1.3 · Last updated: 2026-10-21 01:37
 - [x] 0.5 Phase 0 QA gate
 - [x] 1.1 Emit from recordChange (test-first)
 - [x] 1.2 Create and document events
-- [ ] 1.3 Dispatcher, snapshot and retention (test-first)
+- [x] 1.3 Dispatcher, snapshot and retention (test-first)
 - [ ] 1.4 Phase 1 QA gate
 - [ ] 2.1 Runner, conditions and the capability (test-first)
 - [ ] 2.2 Core actions
@@ -80,6 +80,12 @@ Current: 1.3 · Last updated: 2026-10-21 01:37
 - 1.2: document events are `document.sent` (both issue and markSent path through `issueDocument`), `document.viewed` (first view only, quote and invoice), `document.accepted`/`declined`, `invoice.overdue` (one per `RETURNING id` row), `invoice.paid` (when the summed payments reach the total) and `invoice.voided`; the public view/accept/decline writes were moved into transactions so update and event commit together.
 - 1.2: the one audited path that bypassed `recordChange` is `enrichment/prospectApplyItem.ts`'s `writeChangeLogs`; it now emits `person.updated` per field in the caller's transaction and takes the caller's `AbortSignal`, and `UPSTREAM.md` gained a Part 5 section.
 - 1.2: the three new cases pass (7/7 in the events file) and the documents plus activities integration files still pass (151/151).
+
+- 1.3: the seven new cases were written first and run red (missing dispatcher, rotting and retention modules); after implementation the file passes 14/14.
+- 1.3: the dispatcher claims its batch with `FOR UPDATE SKIP LOCKED`, groups `.updated` rows by `txid`/entity/type (changes concatenated, lowest id kept), writes run rows with `ON CONFLICT DO NOTHING` as the loop guard, marks the claimed rows processed and enqueues `automations.run` and `webhooks.deliver` only after the commit.
+- 1.3: the worker runs the dispatcher on a `DISPATCH_POLL_SECONDS` interval plus a `LISTEN dealflow_domain_events` client borrowed from the shared pool, with one in-flight pass; the interval is unref'd so it never holds the process open, and dispatcher failures are logged, never thrown at the worker.
+- 1.3: snapshots are built at dispatch time; a deal's currency comes from `deal_terms` or `env.BASE_CURRENCY`, a soft-deleted record yields `{ id }`, and documents expose `publicUrl` built from `BASE_URL` plus the public id.
+- 1.3: the rotting rule is `filterAst`'s exact condition (`status = 'open'` and `stage_entered_at <= now() - (rotting_days + 1) days`) with a `NOT EXISTS` guard for any `deal.rotting` event created since the stage was entered; retention deletes only processed events older than 30 days and finished runs and deliveries older than 90 days.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

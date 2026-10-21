@@ -41,3 +41,14 @@ export const PGBOSS_QUEUE_IMPORT_VALIDATE = "import.validate";
 export const PGBOSS_QUEUE_IMPORT_COMMIT = "import.commit";
 export const PGBOSS_QUEUE_IMPORT_UNDO = "import.undo";
 export const IMPORT_JOB_TIMEOUT_MS = 5 * 60 * 1000;
+
+// Part 5 event backbone. The dispatcher polls every DISPATCH_POLL_SECONDS and also wakes on the
+// LISTEN channel, so it has no queue of its own; these are the queues it fills.
+export const PGBOSS_QUEUE_AUTOMATION_RUN = "automations.run";
+export const PGBOSS_QUEUE_WEBHOOK_DELIVER = "webhooks.deliver";
+export const PGBOSS_QUEUE_DEAL_ROTTING = "deals.rotting";
+export const PGBOSS_QUEUE_EVENT_RETENTION = "events.retention";
+
+// Daily schedules, UTC: rotting after the overnight sync work, retention after that.
+export const DEAL_ROTTING_CRON = "0 5 * * *";
+export const EVENT_RETENTION_CRON = "30 4 * * *";

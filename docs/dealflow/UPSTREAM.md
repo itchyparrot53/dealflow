@@ -222,5 +222,7 @@ the settings routes. Upstream files edited for the part (port future upstream fi
   `overdueJob.ts`.
 - `src/features/enrichment/prospectApplyItem.ts`, `prospectApply.ts`: the enrichment path writes
   its change log directly, so it emits and now takes an `AbortSignal`.
+- `src/server/worker.ts`, `src/constants/jobNames.ts`: the rotting and retention crons, the
+  dispatcher poll and the automations and webhooks queues.
 - `src/app/d/[publicId]/page.tsx`, `src/app/api/public/documents/[publicId]/{accept,decline}/route.ts`:
   use the shared `clientIp`.

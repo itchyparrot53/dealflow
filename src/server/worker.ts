@@ -3,6 +3,7 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/config/env";
 import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
+import { registerEventJobs } from "@/features/events/dispatcherJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
@@ -30,6 +31,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerOverdueDocumentsJob(boss);
   // Update-check cron (OSS self-hosters). No-op when DISABLE_UPDATE_CHECK is set.
   await registerReleaseCheckJob(boss);
+  // Event backbone: rotting and retention crons, the dispatcher poll, and the LISTEN wake-up.
+  await registerEventJobs(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers
