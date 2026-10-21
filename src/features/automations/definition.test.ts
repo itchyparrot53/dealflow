@@ -221,14 +221,20 @@ describe("matchesTrigger", () => {
       true,
     );
     expect(
-      matchesTrigger({ type: "invoice.overdue", kind: "invoice" }, {
-        ...base,
-        type: "invoice.overdue",
-        documentKind: "invoice",
-      }),
+      matchesTrigger(
+        { type: "invoice.overdue", kind: "invoice" },
+        {
+          ...base,
+          type: "invoice.overdue",
+          documentKind: "invoice",
+        },
+      ),
     ).toBe(true);
     expect(
-      matchesTrigger({ type: "invoice.paid" }, { ...base, type: "invoice.paid", documentKind: null }),
+      matchesTrigger(
+        { type: "invoice.paid" },
+        { ...base, type: "invoice.paid", documentKind: null },
+      ),
     ).toBe(true);
   });
 });

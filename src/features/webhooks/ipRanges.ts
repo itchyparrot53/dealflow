@@ -50,7 +50,7 @@ function parseIpv4(ip: string): number | null {
 function isBlockedV4(value: number): boolean {
   return BLOCKED_V4.some((range) => {
     const mask = range.bits === 0 ? 0 : (0xffffffff << (32 - range.bits)) >>> 0;
-    return ((value & mask) >>> 0) === ((range.base & mask) >>> 0);
+    return (value & mask) >>> 0 === (range.base & mask) >>> 0;
   });
 }
 

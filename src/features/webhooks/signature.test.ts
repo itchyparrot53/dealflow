@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  newWebhookSecret,
-  signPayload,
-  signatureHeader,
-  verifySignature,
-} from "./signature";
+import { newWebhookSecret, signatureHeader, signPayload, verifySignature } from "./signature";
 
 // Secret, timestamp and body from 6.6. The expected hex is computed once with node:crypto and
 // pinned here, so a change to the signing input (for example dropping the timestamp from the

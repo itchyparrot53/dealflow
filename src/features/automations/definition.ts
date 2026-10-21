@@ -106,14 +106,17 @@ const updateDealSet = z
     lostReasonId: uuid.optional(),
     expectedCloseInDays: z.number().int().min(0).max(3650).optional(),
   })
-  .refine((set) => Object.values(set).some((value) => value !== undefined), {
-    message: "update_deal needs at least one field to set",
-  });
+  .refine(
+    (set) =>
+      set.stageId !== undefined ||
+      set.ownerId !== undefined ||
+      set.status !== undefined ||
+      set.lostReasonId !== undefined ||
+      set.expectedCloseInDays !== undefined,
+    { message: "update_deal needs at least one field to set" },
+  );
 
-const assignee = z.union([
-  z.enum(["deal_owner", "automation_owner"]),
-  z.object({ userId: uuid }),
-]);
+const assignee = z.union([z.enum(["deal_owner", "automation_owner"]), z.object({ userId: uuid })]);
 
 export const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("update_deal"), set: updateDealSet }),
@@ -209,9 +212,9 @@ export function matchesTrigger(trigger: Trigger, event: TriggerEvent): boolean {
 
 // Conditions run against the record the event is about. Document and invoice events take their
 // condition on the related deal, so a deal that is gone skips the run as condition_false.
-export function conditionTarget(
-  event: { type: DomainEventType },
-): "deal" | "person" | "organization" {
+export function conditionTarget(event: {
+  type: DomainEventType;
+}): "deal" | "person" | "organization" {
   switch (event.type) {
     case "person.created":
     case "person.updated":
@@ -219,7 +222,22 @@ export function conditionTarget(
     case "organization.created":
     case "organization.updated":
       return "organization";
-    default:
+    case "deal.created":
+    case "deal.updated":
+    case "deal.stage_changed":
+    case "deal.won":
+    case "deal.lost":
+    case "deal.deleted":
+    case "deal.rotting":
+    case "activity.created":
+    case "activity.completed":
+    case "document.sent":
+    case "document.viewed":
+    case "document.accepted":
+    case "document.declined":
+    case "invoice.overdue":
+    case "invoice.paid":
+    case "invoice.voided":
       return "deal";
   }
 }

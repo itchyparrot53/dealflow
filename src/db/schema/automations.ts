@@ -38,9 +38,7 @@ export const domainEvents = pgTable(
     entityId: uuid("entity_id").notNull(),
     actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
     changes: jsonb("changes"),
-    txid: bigint("txid", { mode: "number" })
-      .notNull()
-      .default(sql`txid_current()`),
+    txid: bigint("txid", { mode: "number" }).notNull().default(sql`txid_current()`),
     chainId: uuid("chain_id").notNull(),
     depth: integer("depth").notNull().default(0),
     // No FK: an automation may be deleted while its events are still queued.
@@ -50,9 +48,7 @@ export const domainEvents = pgTable(
   },
   (t) => [
     // The dispatcher's only scan: the oldest unprocessed rows.
-    index("domain_events_pending_idx")
-      .on(t.id)
-      .where(sql`${t.processedAt} is null`),
+    index("domain_events_pending_idx").on(t.id).where(sql`${t.processedAt} is null`),
     index("domain_events_created_at_idx").on(t.createdAt),
   ],
 );
