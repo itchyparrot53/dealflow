@@ -12,6 +12,8 @@ interface SwitchProps {
   id?: string;
   disabled?: boolean;
   className?: string;
+  // Test hook on the Radix root (the Part 4 Checkbox precedent).
+  testId?: string;
 }
 
 // Shadcn-style Radix switch. Radix owns keyboard handling, form behavior, and disabled semantics;
@@ -23,6 +25,7 @@ export function Switch({
   id,
   disabled,
   className,
+  testId,
 }: SwitchProps): React.ReactNode {
   return (
     <SwitchPrimitive.Root
@@ -31,6 +34,7 @@ export function Switch({
       onCheckedChange={onCheckedChange}
       aria-label={label}
       disabled={disabled}
+      data-testid={testId}
       className={cn(
         "peer relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-muted-foreground/30 outline-none transition-[background-color,box-shadow,scale] duration-150 ease-out",
         "after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",

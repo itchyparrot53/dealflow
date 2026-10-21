@@ -34,6 +34,8 @@ interface SelectProps {
   // ariaLabel (mirrors the title on other icon-only controls). Omitted by default.
   triggerTitle?: string;
   disabled?: boolean;
+  // Test hook on the trigger element (the Part 4 Checkbox precedent); Radix owns the node.
+  testId?: string;
 }
 
 // Radix reserves value="" on RadixSelect.Item/Root to mean "nothing selected, show the
@@ -149,6 +151,7 @@ export function Select({
   triggerContent,
   triggerTitle,
   disabled,
+  testId,
 }: SelectProps): React.ReactNode {
   return (
     <RadixSelect.Root
@@ -159,6 +162,7 @@ export function Select({
       <RadixSelect.Trigger
         aria-label={ariaLabel}
         title={triggerTitle}
+        data-testid={testId}
         className={cn(
           "group flex w-full items-center justify-between rounded-md border bg-card px-2.5 py-1.5 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-150 ease-out focus:border-ring focus:ring-2 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none",
           triggerClassName,

@@ -24,6 +24,7 @@ import { usePathname } from "next/navigation";
 import type React from "react";
 import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
 import { AI_STRINGS } from "@/constants/aiStrings";
+import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { CURRENCY_STRINGS, PRODUCTS_STRINGS } from "@/constants/salesStrings";
@@ -81,6 +82,14 @@ const ENRICHMENT_ITEM: NavItem = {
   icon: Sparkles,
 };
 
+// Automations and webhooks are admin-only; the pages gate on the capability, and the nav hides
+// the links for everyone else.
+const AUTOMATIONS_ITEM: NavItem = {
+  href: "/settings/automations",
+  label: AUTOMATIONS_STRINGS.title,
+  icon: Bot,
+};
+
 // Same rule for the AI page: provider, usage and caps are admin-only reads and writes.
 const AI_ITEM: NavItem = {
   href: "/settings/ai",
@@ -107,7 +116,7 @@ export function SettingsNav({
   };
   const companyItems = [
     ...COMPANY.items,
-    ...(isAdmin ? [ENRICHMENT_ITEM, AI_ITEM] : []),
+    ...(isAdmin ? [AUTOMATIONS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
     ...(canImport ? [importItem] : []),
   ];
   const sections = canManageCompany

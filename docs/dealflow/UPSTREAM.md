@@ -219,6 +219,9 @@ the settings routes. Upstream files edited for the part (port future upstream fi
   `src/features/notifications/ui/deepLink.ts`, `ui/NotificationItem.tsx`: the `automation` kind.
 - `src/features/notifications/preferences.test.ts`, `schema.test.ts`: the new default and the
   14-value enum.
+- `src/components/ui/Select.tsx`, `Switch.tsx`: optional `testId` hooks (Radix owns the nodes).
+- `src/app/(app)/settings/SettingsNav.tsx`, `src/server/trpc/root.ts`: the Automations settings
+  link and the automations, webhooks routers.
 - `src/features/collaboration/changeLog.ts`: `recordChange` writes domain events in the same
   transaction.
 - Creates that emit their own event: `src/features/deals/dealActions.ts`,

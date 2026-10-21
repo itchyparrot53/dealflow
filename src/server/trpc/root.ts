@@ -1,5 +1,6 @@
 import { activitiesRouter } from "@/features/activities/router";
 import { aiRouter } from "@/features/ai/router";
+import { automationsRouter } from "@/features/automations/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
 import { currencyRouter } from "@/features/currency/router";
@@ -38,6 +39,7 @@ export const appRouter = router({
   contacts: contactsRouter,
   currency: currencyRouter,
   documents: documentsRouter,
+  automations: automationsRouter,
   webhooks: webhooksRouter,
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,

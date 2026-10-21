@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-21 02:07
+Current: 4.2 · Last updated: 2026-10-21 02:16
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -27,7 +27,7 @@ Current: 4.1 · Last updated: 2026-10-21 02:07
 - [x] 3.1 Safe delivery (test-first)
 - [x] 3.2 Subscriptions service, test send and redeliver
 - [x] 3.3 Phase 3 QA gate
-- [ ] 4.1 Automations list and editor
+- [x] 4.1 Automations list and editor
 - [ ] 4.2 Run log
 - [ ] 4.3 Describe it and the template gallery
 - [ ] 4.4 Webhooks settings and delivery log
@@ -126,6 +126,11 @@ Current: 4.1 · Last updated: 2026-10-21 02:07
 
 - 3.3: the gate fixes were the formatter, one unnecessary type assertion in the DNS error path, and a complexity split of `deliverWebhook` into attempt, success, 410, and retryable-failure recorders; after `3.3: fixes round 1` the gate passed with the baseline's 14 warnings.
 - 3.3: no `qa` review at this gate (fast profile, rule 9.4). Phase 4 base is the commit before the gate.
+
+- 4.1: the list is a server page (admin-gated by `automations.manage`) feeding a client table with the enable switch, row menu and delete dialog, and "New automation" creates a draft then opens the editor; the editor holds the definition in local state and saves once through `updateAutomationAction`, with an inline error on `E_AUTOMATION_INPUT_INVALID`.
+- 4.1: `ConditionEditor` is the section 10 fallback, a small field/operator/value builder over the deal fields `filterToSql` supports, rather than an embedded saved-filter builder; it reuses `FILTER_FIELDS`/`OPS_BY_FIELD` so every offered pairing compiles.
+- 4.1: the template gallery and "Describe it" buttons are deferred to Task 4.3 with the dialogs they open, so this task ships the list and the editor only; both dialogs and their two list buttons land in 4.3.
+- 4.1: `Select` and `Switch` gained an optional `testId` (the Part 4 `Checkbox` precedent) because Radix owns their root nodes; the settings nav gained the Automations item, shown to admins only, and the `automations` tRPC router joined the app router.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
