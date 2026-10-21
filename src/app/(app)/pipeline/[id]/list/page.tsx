@@ -5,6 +5,7 @@ import { DealListClient } from "@/features/deals/DealListClient";
 import { loadDealListPageData } from "@/features/deals/dealListPageData";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { resolveVisiblePipeline } from "@/features/navigation/resolvePipeline";
+import { can } from "@/features/permissions/can";
 import { canManagePipelines } from "@/features/pipelines/canManagePipelines";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -79,6 +80,7 @@ export default async function PipelineListPage({
             rates: rates.rates.map((row) => ({ code: row.code, rate: row.rate })),
           },
           canManagePipelines: canManagePipelines(ctx.actor),
+          canExport: can(ctx.actor, "data.export"),
           initialView,
           unfilteredTotal,
         }}

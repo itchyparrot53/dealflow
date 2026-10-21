@@ -21,6 +21,8 @@ export interface BoardToolbarProps {
   presence?: React.ReactNode;
   // The "+ Deal" control, rendered prominently at the left like Pipedrive.
   createSlot?: React.ReactNode;
+  // The list's CSV export link; the board view omits it.
+  exportSlot?: React.ReactNode;
   // The board filter dropdown (owners/filters/favorites), rendered in the right cluster.
   filterSlot?: React.ReactNode;
   // The "Sort by" field + direction toggle, rendered right-aligned on the quick-filter row (Pipedrive).
@@ -49,7 +51,15 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
     activeView = "board",
     baseCurrency,
   } = props;
-  const { presence, createSlot, filterSlot, sortSlot, quickFilters, canManagePipelines } = props;
+  const {
+    presence,
+    createSlot,
+    exportSlot,
+    filterSlot,
+    sortSlot,
+    quickFilters,
+    canManagePipelines,
+  } = props;
   const current = (view: BoardToolbarView): "page" | undefined =>
     activeView === view ? "page" : undefined;
 
@@ -87,6 +97,7 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
         </div>
 
         {createSlot}
+        {exportSlot}
 
         <div className="ml-auto flex items-center gap-3">
           <BoardSummary totalValue={totalValue} dealCount={dealCount} currency={baseCurrency} />

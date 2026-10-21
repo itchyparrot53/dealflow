@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { STRINGS } from "@/constants/strings";
 import { ActivitiesTable } from "@/features/activities/ActivitiesTable";
+import { ExportButton } from "@/features/export/ui/ExportButton";
+import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 
 export const metadata = { title: STRINGS.nav.activities };
@@ -16,6 +18,14 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
   }
   return (
     <main aria-label="Activities" className="h-full">
+      <div className="flex justify-end p-2">
+        {can(ctx.actor, "data.export") && (
+          <ExportButton
+            entity="activities"
+            columns={["subject", "typeKey", "done", "dueAt", "assigneeName", "dealTitle"]}
+          />
+        )}
+      </div>
       <ActivitiesTable currentUserId={ctx.actor.id} />
     </main>
   );

@@ -6,7 +6,9 @@ import { STRINGS } from "@/constants/strings";
 import { PeopleList } from "@/features/contacts/PeopleList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import { ExportButton } from "@/features/export/ui/ExportButton";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -29,7 +31,17 @@ export default async function PeopleListPage(): Promise<React.ReactNode> {
           { label: STRINGS.contacts.peopleHeading },
         ]}
         title={STRINGS.contacts.peopleHeading}
-        actions={<QuickAddContact kind="person" />}
+        actions={
+          <div className="flex items-center gap-2">
+            {can(ctx.actor, "data.export") && (
+              <ExportButton
+                entity="persons"
+                columns={["name", "primaryEmail", "phone", "orgName", "updatedAt"]}
+              />
+            )}
+            <QuickAddContact kind="person" />
+          </div>
+        }
       />
       <Suspense fallback={<ListSectionSkeleton />}>
         <PeopleSection actorId={ctx.actor.id} />

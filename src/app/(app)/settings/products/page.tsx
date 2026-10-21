@@ -4,6 +4,7 @@ import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
 import { readBaseCurrency } from "@/features/currency/rates";
 import { supportedCurrencyCodes } from "@/features/currency/schemas";
+import { ExportButton } from "@/features/export/ui/ExportButton";
 import { can } from "@/features/permissions/can";
 import { listProducts } from "@/features/products/products";
 import { type ProductRow, ProductsSettings } from "@/features/products/ui/ProductsSettings";
@@ -39,7 +40,18 @@ export default async function ProductsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
-      <SettingsHeading title={PRODUCTS_STRINGS.title} description={PRODUCTS_STRINGS.intro} />
+      <SettingsHeading
+        title={PRODUCTS_STRINGS.title}
+        description={PRODUCTS_STRINGS.intro}
+        actions={
+          can(actor, "data.export") ? (
+            <ExportButton
+              entity="products"
+              columns={["name", "code", "unit", "price", "currency", "taxPercent", "active"]}
+            />
+          ) : undefined
+        }
+      />
       <ProductsSettings
         products={products}
         baseCurrency={baseCurrency}

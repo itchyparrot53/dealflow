@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-21 15:34
+Current: 3.4 · Last updated: 2026-10-21 15:38
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -25,7 +25,7 @@ Current: 3.3 · Last updated: 2026-10-21 15:34
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Recycle bin service and purge (test-first)
 - [x] 3.2 Recycle bin page
-- [ ] 3.3 CSV export everywhere (test-first)
+- [x] 3.3 CSV export everywhere (test-first)
 - [ ] 3.4 Audit log page
 - [ ] 3.5 Backups (test-first)
 - [ ] 3.6 Backups page, demo seed and docs
@@ -128,6 +128,10 @@ Current: 3.3 · Last updated: 2026-10-21 15:34
 
 - 3.2: the page is server-fronted (filters and search in the URL, `listDeleted` on the server) with one client table for restore; restore goes through a CSRF-guarded server action and refreshes. Entity, name, deleted-at, deleted-by and days-left columns, a destructive days-left badge under 3 days, and the "permanently deleted after 30 days" line.
 - 3.2: Recycle bin sits in the settings nav's My account group because any user restores their own deletions; the service still hides everyone else's rows.
+
+- 3.3: `exportTable` gates on `can(actor, "data.export")` (E_EXPORT_001), checks the count before loading (E_EXPORT_002 with an injectable cap for the test), selects the requested columns (unknown keys fall back to all) and returns header/rows/filename; the route streams them through `csvStream`, so the BOM, CRLF, quoting and formula guard are the shared writer's.
+- 3.3: the seven cases pass: the gate, visibility (a regular exporter does not see another user's private deal while an admin does), the chosen column header, the cap, the formula-leading title, the route's attachment name and headers, and the 401 without a session.
+- 3.3: deals reuse `listDeals` (so the pipeline filter and its visibility clause apply), people/organizations reuse `listPeople`/`listOrgs`, activities `listActivityRows`, products `listProducts`, and invoices a documents query joined to deals with the deal visibility clause. The export button is hidden server-side without the flag on all six lists; the deals one rides in the list toolbar via a new `exportSlot`, and the activities one sits above the client table (its filters live in client state, not the URL, so they are not carried; logged as a limitation).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

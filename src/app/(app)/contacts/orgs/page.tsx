@@ -6,7 +6,9 @@ import { STRINGS } from "@/constants/strings";
 import { OrgsList } from "@/features/contacts/OrgsList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
 import { listDefs } from "@/features/custom-fields/defsRepo";
+import { ExportButton } from "@/features/export/ui/ExportButton";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -29,7 +31,14 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
           { label: STRINGS.contacts.orgsHeading },
         ]}
         title={STRINGS.contacts.orgsHeading}
-        actions={<QuickAddContact kind="org" />}
+        actions={
+          <div className="flex items-center gap-2">
+            {can(ctx.actor, "data.export") && (
+              <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />
+            )}
+            <QuickAddContact kind="org" />
+          </div>
+        }
       />
       <Suspense fallback={<ListSectionSkeleton />}>
         <OrgsSection actorId={ctx.actor.id} />

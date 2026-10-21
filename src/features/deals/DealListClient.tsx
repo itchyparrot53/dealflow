@@ -16,6 +16,7 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import type { CustomFieldSortKey } from "@/features/custom-fields/sortKey";
+import { ExportButton } from "@/features/export/ui/ExportButton";
 import { hasDateCondition } from "@/features/saved-filters/filterFields";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
@@ -55,6 +56,8 @@ type InitialData = Omit<
   customFieldDefs?: CustomFieldDef[];
   refLabels?: CustomFieldRefLabels;
   canManagePipelines?: boolean;
+  // Server-computed: the Export CSV link is hidden without data.export.
+  canExport?: boolean;
   initialView?: BoardViewState;
   unfilteredTotal?: number;
   excluded?: { id: string; currency: string }[];
@@ -242,6 +245,11 @@ export function DealListClient({
         baseCurrency={currency}
         activeView={variant}
         canManagePipelines={initial.canManagePipelines}
+        exportSlot={
+          initial.canExport === true ? (
+            <ExportButton entity="deals" columns={columns.visibleColumns.map((column) => column.key)} />
+          ) : undefined
+        }
         createSlot={addDeal}
         sortSlot={
           <BoardSortControl<DealListSortKey>
