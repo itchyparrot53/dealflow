@@ -4,6 +4,7 @@ export * from "./activityParticipants";
 export * from "./activityTypes";
 export * from "./ai";
 export * from "./authLocal";
+export * from "./automations";
 export * from "./changeLogs";
 export * from "./comments";
 export * from "./contactFollowers";

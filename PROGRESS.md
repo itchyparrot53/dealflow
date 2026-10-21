@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-21 01:18
+Current: 0.3 · Last updated: 2026-10-21 01:22
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -9,7 +9,7 @@ Current: 0.2 · Last updated: 2026-10-21 01:18
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
 - [x] 0.2 Trusted client IP (test-first)
-- [ ] 0.3 Automations schema and migration
+- [x] 0.3 Automations schema and migration
 - [ ] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Emit from recordChange (test-first)
@@ -55,6 +55,10 @@ Current: 0.2 · Last updated: 2026-10-21 01:18
 - 0.2: `clientIp` lives in `src/features/net/clientIp.ts` and replaces Part 4's first-entry helper (removed from `publicDocuments.ts`, which now imports it), so the documents page and both public POST routes share one rule: hops are counted from the right, `hops=0` trusts only `x-real-ip`, and a chain shorter than the hop count falls back to the leftmost entry.
 - 0.2: `TRUSTED_PROXY_HOPS` (integer 0..5, default 1) and `WEBHOOK_ALLOW_PRIVATE` (boolean, default false) are appended to the env schema and `.env.example`; `src/constants/automations.ts` now holds every 6.1 constant plus `DOMAIN_EVENTS_CHANNEL`, the LISTEN channel name 6.5's emit needs.
 - 0.2: `src/server/rateLimit.ts` still reads `x-forwarded-for` directly for the signed-in limiter; it already takes the last entry (equivalent to the new default of one hop), sits outside 6.2's named paths, and changing its missing-header `SHARED_BUCKET` fallback would alter behaviour, so it is logged for the checklist instead of rewritten.
+
+- 0.3: `drizzle-kit generate --name dealflow_automations` produced `0083_dealflow_automations.sql` creating exactly the five tables of 6.4 (`domain_events`, `automations`, `automation_runs`, `webhook_subscriptions`, `webhook_deliveries`), and `pnpm db:migrate:dev` applied it to the host dev database; all five tables and every named index were confirmed by query.
+- 0.3: `txid` is a Drizzle `bigint` in `number` mode defaulting to SQL `txid_current()`, and `event_id` in runs and deliveries is nullable with no FK so event retention can delete events while the run and delivery logs outlive them, as 6.4 notes.
+- 0.3: `secret_enc` reuses the same local `bytea` customType `src/db/schema/email.ts` uses, so encrypted webhook secrets are bytea exactly like mail passwords and OAuth tokens, and `steps` defaults to `'[]'::jsonb`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
