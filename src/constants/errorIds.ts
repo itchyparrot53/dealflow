@@ -263,6 +263,21 @@ export const ERROR_IDS = {
   WEBHOOK_DISABLED: "E_WEBHOOK_004", // subscription disabled
   WEBHOOK_INPUT_INVALID: "E_WEBHOOK_005", // action input failed Zod
 
+  // FORM (public web forms)
+  FORM_NOT_FOUND: "E_FORM_001", // form missing, inactive, or owner inactive
+  FORM_DEFINITION_INVALID: "E_FORM_002", // invalid form definition (context: issues)
+  FORM_SUBMISSION_INVALID: "E_FORM_003", // submission failed validation (context: fieldErrors)
+  FORM_RATE_LIMITED: "E_FORM_004", // public submission rate-limited
+  FORM_INPUT_INVALID: "E_FORM_005", // action input failed Zod
+
+  // BOOKING (public booking pages)
+  BOOKING_NOT_FOUND: "E_BOOKING_001", // page missing, inactive, or host inactive
+  BOOKING_SLOT_TAKEN: "E_BOOKING_002", // slot no longer free
+  BOOKING_INVALID: "E_BOOKING_003", // invalid availability or page settings (context: issues)
+  BOOKING_RATE_LIMITED: "E_BOOKING_004", // public booking rate-limited
+  BOOKING_CANCEL_INVALID: "E_BOOKING_005", // cancel link invalid or already used
+  BOOKING_INPUT_INVALID: "E_BOOKING_006", // action input failed Zod
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy

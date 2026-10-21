@@ -13,6 +13,7 @@ describe("error IDs", () => {
     // UI covers design-system invariants, e.g. a chart part rendered outside its container.
     // Part 3 adds PRODUCT (catalog and deal lines) and CURRENCY (rates and conversion).
     // Part 4 adds DOC (quotes and invoices). Part 5 adds AUTOMATION and WEBHOOK.
+    // Part 6 adds FORM and BOOKING.
     const domains = [
       "AUTH",
       "OAUTH",
@@ -49,6 +50,8 @@ describe("error IDs", () => {
       "DOC",
       "AUTOMATION",
       "WEBHOOK",
+      "FORM",
+      "BOOKING",
     ];
     for (const id of Object.values(ERROR_IDS)) {
       const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);

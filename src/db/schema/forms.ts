@@ -58,7 +58,10 @@ export const webForms = pgTable(
     check("web_forms_title_ck", sql`char_length(${t.title}) between 1 and 150`),
     check("web_forms_description_ck", sql`char_length(${t.description}) <= 1000`),
     check("web_forms_creates_ck", sql`${t.creates} in ('lead', 'deal')`),
-    check("web_forms_redirect_url_ck", sql`${t.redirectUrl} is null or ${t.redirectUrl} ~ '^https://'`),
+    check(
+      "web_forms_redirect_url_ck",
+      sql`${t.redirectUrl} is null or ${t.redirectUrl} ~ '^https://'`,
+    ),
   ],
 );
 

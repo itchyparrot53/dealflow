@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-21 03:45
+Current: 0.4 · Last updated: 2026-10-21 03:46
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-21 03:45
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
 - [x] 0.2 Forms and booking schema and migrations
-- [ ] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
+- [x] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Forms service and the capability
 - [ ] 1.2 Public submit and events (test-first)
@@ -47,6 +47,15 @@ Current: 0.3 · Last updated: 2026-10-21 03:45
 - 0.2: `fields`, `availability` and submission `values` are untyped `jsonb` columns (Part 5's `automations.definition` precedent), because the feature schemas own those shapes and importing feature types into `src/db/schema` would invert the dependency.
 - 0.2: two constraints beyond the 6.4 column list are declarative guards for rules 6.8 already states: `web_forms_redirect_url_ck` requires an `https://` prefix, and `bookings_span_ck` requires `end_at > start_at`. Neither changes the planned shape; both keep a bad row out of the database even if a future caller skips the service.
 - 0.2: adding the three notification kinds to `NOTIFICATION_TYPES` made the per-type exhaustive maps incomplete, so `deepLink.ts`, `NotificationItem.tsx`, `strings.ts` (feed and preference labels) and the notification email renderer gained entries now; otherwise a new-kind row would hit a missing key at runtime. Email defaults are off for `form_submission` and on for both booking kinds, per 6.8.
+
+- 0.3: the five test files were written first (67 cases) and all five failed with "Cannot find module" before any implementation; the modules then made 67/67 pass.
+- 0.3: `zonedToUtc` follows the plan's explicit test over its two-offset sketch, which returns the second occurrence of an ambiguous fall-back time. Both candidate offsets (sampled a day either side) are tried, only instants that render back to the requested wall clock count, the earliest valid one wins, and a spring-forward gap takes the later candidate, so it resolves forward by the gap. Pinned by London 2026-03-29 01:30 and 2026-10-25 01:30.
+- 0.3: a slot window wider than 14 days is clamped to the first 14 days rather than refused (the public route rejects wider windows anyway, and clamping keeps a direct caller bounded).
+- 0.3: the form spam token is signed with `env.WS_TICKET_SECRET`, the install's existing 32+ character HMAC secret, under a `dealflow-form-token:` purpose prefix so the two signature namespaces cannot be swapped. Comparison is constant time, future timestamps are rejected as forged, and the age bounds are `FORM_MIN_FILL_MS` and `FORM_TOKEN_MAX_AGE_MS`.
+- 0.3: custom field mapping is `text` to text, `large_text` to long text, `numeric` to number, `date` to date and `single_option` to single option; those are the only types a form field may reference, checked both at definition time (`ALLOWED_CUSTOM_TYPES`) and at submit time, and a single-option value is normalised to the option id.
+- 0.3: the eleven FORM and BOOKING error IDs from 6.2 landed here rather than in Task 1.1, because `zonedTime.ts` needs a registry ID for an impossible internal date; Task 1.1 consumes them for the services.
+- 0.3: `buildIcs` takes an optional `now` for DTSTAMP so the exact-string test is deterministic; this is additive to 6.8's argument list, and an omitted `now` uses the current time.
+- 0.3: `availabilitySchema` and `DEFAULT_AVAILABILITY` live in `slots.ts` (at most three ranges a day, `from < to`, no overlaps, HH:MM); `FORM_*`, `BOOKING_*` and `SLOT_RANGE_MAX_DAYS` live in `src/constants/formsBooking.ts`, and the section 6.2 copy in `src/constants/formsBookingStrings.ts`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
