@@ -89,7 +89,10 @@ export async function logCall(
       dueAt: input.at ?? new Date().toISOString(),
       allDay: false,
       endAt: null,
-      durationMinutes: durationSeconds === null ? null : Math.ceil(durationSeconds / 60),
+      // The activity schema requires a positive duration, so a 0-second call stores no
+      // duration instead of an invalid 0.
+      durationMinutes:
+        durationSeconds === null || durationSeconds === 0 ? null : Math.ceil(durationSeconds / 60),
       priority: null,
       dealId: input.dealId ?? null,
       leadId: null,

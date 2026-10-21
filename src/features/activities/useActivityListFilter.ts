@@ -46,8 +46,9 @@ function parseFilter(
     done: DONE_VALUES.includes(done as (typeof DONE_VALUES)[number])
       ? (done as ActivityListFilter["done"])
       : base.done,
-    from: from !== null && DATE.test(from) ? from : base.from,
-    to: to !== null && DATE.test(to) ? to : base.to,
+    // "none" is the explicit cleared range (a null from/to would otherwise re-derive today).
+    from: from === "none" ? null : from !== null && DATE.test(from) ? from : base.from,
+    to: to === "none" ? null : to !== null && DATE.test(to) ? to : base.to,
     typeKey: params.get("typeKey"),
   };
 }
@@ -60,8 +61,9 @@ function serialize(filter: ActivityListFilter): string {
   const params = new URLSearchParams();
   params.set("ownerId", filter.ownerId ?? "");
   params.set("done", filter.done);
-  if (filter.from !== null) params.set("from", filter.from);
-  if (filter.to !== null) params.set("to", filter.to);
+  // Always write both range keys: an omitted key would fall back to today's default on reload.
+  params.set("from", filter.from ?? "none");
+  params.set("to", filter.to ?? "none");
   if (filter.typeKey !== null) params.set("typeKey", filter.typeKey);
   return params.toString();
 }
@@ -94,10 +96,11 @@ export function useActivityListFilter(currentUserId: string): ActivityListFilter
   // Normalise a bare URL to the visible defaults once, so the export link (which reads the query
   // string) carries the same filter the table shows instead of exporting everything.
   useEffect(() => {
-    if (!ready || hasFilterParams(searchParams)) return;
+    // `chosen !== null` means the user already set a filter; the default write must not race it.
+    if (!ready || chosen !== null || hasFilterParams(searchParams)) return;
     const next = defaultFilter(currentUserId, { from: rangeFrom, to: rangeTo });
     router.replace(`${pathname}?${serialize(next)}`, { scroll: false });
-  }, [ready, searchParams, pathname, router, currentUserId, rangeFrom, rangeTo]);
+  }, [ready, chosen, searchParams, pathname, router, currentUserId, rangeFrom, rangeTo]);
 
   const setFilter = useCallback<Dispatch<SetStateAction<ActivityListFilter | null>>>(
     (updater) => {

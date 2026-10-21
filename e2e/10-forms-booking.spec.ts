@@ -121,6 +121,8 @@ test("forms and booking pages: build, submit and cancel through the public pages
   // 7. The host has the activity; the confirmation email carries the cancel link.
   const host = await adminPage(browser);
   await host.goto("/activities/list");
+  // The list defaults to today's open activities; a booking later in the week must still be found.
+  await host.getByRole("button", { name: "To-do", exact: true }).click();
   await expect(host.getByText("Discovery call with Sam Ortiz").first()).toBeVisible({
     timeout: 30_000,
   });

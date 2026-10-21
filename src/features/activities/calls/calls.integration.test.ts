@@ -92,6 +92,30 @@ describe("logCall", () => {
     });
   });
 
+  it("stores no duration for a zero-length call", async () => {
+    await withTestDb(async (db) => {
+      const user = await seedUser(db, { isAdmin: true });
+      const created = await logCall(
+        db,
+        makeActor(user),
+        { outcome: "busy", direction: "outbound", durationSeconds: 0 },
+        signal,
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+      const [activity] = await db
+        .select()
+        .from(activities)
+        .where(eq(activities.id, created.value.id));
+      expect(activity?.durationMinutes).toBeNull();
+      const [call] = await db
+        .select()
+        .from(activityCalls)
+        .where(eq(activityCalls.activityId, created.value.id));
+      expect(call?.durationSeconds).toBe(0);
+    });
+  });
+
   it("returns E_CALL_001 when no call type exists", async () => {
     await withTestDb(async (db) => {
       const user = await seedUser(db, { isAdmin: true });

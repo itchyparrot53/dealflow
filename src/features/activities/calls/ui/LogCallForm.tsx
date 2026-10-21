@@ -64,32 +64,37 @@ export function LogCallForm({
     setErrorId(null);
     const durationSeconds =
       Math.max(0, Number(minutes) || 0) * 60 + Math.max(0, Math.min(59, Number(seconds) || 0));
-    const result = await logCallAction(
-      {
-        dealId: target.dealId ?? null,
-        personId: target.personId ?? null,
-        organizationId: target.organizationId ?? null,
-        outcome,
-        direction,
-        durationSeconds,
-        note: note.trim() === "" ? null : note,
-        at: new Date().toISOString(),
-      },
-      readCsrfToken(),
-    );
-    setBusy(false);
-    if (!result.ok) {
-      setErrorId(result.error.id);
-      return;
+    try {
+      const result = await logCallAction(
+        {
+          dealId: target.dealId ?? null,
+          personId: target.personId ?? null,
+          organizationId: target.organizationId ?? null,
+          outcome,
+          direction,
+          durationSeconds,
+          note: note.trim() === "" ? null : note,
+          at: new Date().toISOString(),
+        },
+        readCsrfToken(),
+      );
+      if (!result.ok) {
+        setErrorId(result.error.id);
+        return;
+      }
+      await Promise.all([
+        utils.activities.listForEntity.invalidate(),
+        utils.activities.calendarRange.invalidate(),
+        utils.activities.listRows.invalidate(),
+        utils.contacts.contactTimeline.invalidate(),
+      ]);
+      onSaved?.(result.value.id);
+      onClose();
+    } catch {
+      setErrorId("E_CALL_002");
+    } finally {
+      setBusy(false);
     }
-    await Promise.all([
-      utils.activities.listForEntity.invalidate(),
-      utils.activities.calendarRange.invalidate(),
-      utils.activities.listRows.invalidate(),
-      utils.contacts.contactTimeline.invalidate(),
-    ]);
-    onSaved?.(result.value.id);
-    onClose();
   }
 
   return (

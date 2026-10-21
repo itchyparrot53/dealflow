@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
-import { buttonVariants } from "@/components/ui/Button";
+import { LinkButton } from "@/components/ui/LinkButton";
 import { STRINGS } from "@/constants/strings";
 import { OrgsList } from "@/features/contacts/OrgsList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
@@ -39,12 +38,7 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
               <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />
             )}
             <QuickAddContact kind="org" />
-            <Link
-              href="/contacts/duplicates"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Find duplicates
-            </Link>
+            <LinkButton href="/contacts/duplicates">Find duplicates</LinkButton>
           </div>
         }
       />

@@ -154,6 +154,8 @@ function text(row: Record<string, unknown>, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
 // The Activities list keeps its filters in the URL as ownerId / done / from / to / typeKey.
 // ownerId is the assignee (Pipedrive calls it the owner), not the creating owner column.
 function filterActivities(
@@ -180,8 +182,8 @@ function filterActivities(
     filtered = filtered.filter((row) => row.done === (done === "true"));
   }
   filtered = by("typeKey", "typeKey");
-  const from = params.from;
-  const to = params.to;
+  const from = DATE_ONLY.test(params.from ?? "") ? params.from : undefined;
+  const to = DATE_ONLY.test(params.to ?? "") ? params.to : undefined;
   if (from !== undefined && from !== "") {
     filtered = filtered.filter((row) => {
       const due = row.dueAtIso;

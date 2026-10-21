@@ -34,6 +34,7 @@ function DraggableCard(props: DraggableCardProps): React.ReactNode {
   return (
     <div
       ref={setNodeRef}
+      data-testid="deal-card"
       {...attributes}
       {...listeners}
       style={{ opacity: isDragging ? 0.4 : undefined }}
@@ -100,6 +101,7 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
   return (
     <section
       ref={setNodeRef}
+      data-testid="board-column"
       aria-roledescription="stage column"
       aria-label={stageName}
       className={[
