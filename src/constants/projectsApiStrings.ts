@@ -119,6 +119,8 @@ export type ProjectsApiStringErrorId = keyof typeof PROJECTS_API_STRINGS.errors;
 
 export function projectsErrorMessage(id: string | null | undefined): string {
   if (id === null || id === undefined) return PROJECTS_API_STRINGS.projects.updateError;
-  const copy = PROJECTS_API_STRINGS.errors[id as ProjectsApiStringErrorId];
+  const copy: string | undefined = (
+    PROJECTS_API_STRINGS.errors as Readonly<Record<string, string>>
+  )[id];
   return copy ?? PROJECTS_API_STRINGS.projects.updateError;
 }

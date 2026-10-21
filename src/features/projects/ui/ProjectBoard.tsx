@@ -14,7 +14,7 @@ import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -78,15 +78,6 @@ export function ProjectBoard({
   } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    setName(project.name);
-    setStatus(project.status);
-    setStartDate(project.startDate);
-    setDueDate(project.dueDate);
-    setPhases(project.phases);
-    setTasks(project.tasks);
-  }, [project]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -372,27 +363,31 @@ export function ProjectBoard({
         </DragOverlay>
       </DndContext>
 
-      <TaskDialog
-        open={pendingTask !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingTask(null);
-        }}
-        projectId={project.id}
-        task={pendingTask?.task ?? null}
-        defaultPhaseId={pendingTask?.phaseId ?? null}
-        phases={phases}
-        users={users}
-        canEdit={canEdit}
-        onSaved={saveTask}
-        onMoved={(next) => {
-          setTasks(next);
-          router.refresh();
-        }}
-        onDeleted={(id) => {
-          setTasks((previous) => previous.filter((task) => task.id !== id));
-          router.refresh();
-        }}
-      />
+      {pendingTask !== null && (
+        <TaskDialog
+          // Remounting per task gives the form fresh field state without a setState effect.
+          key={pendingTask.task?.id ?? `new:${pendingTask.phaseId ?? "none"}`}
+          open
+          onOpenChange={(open) => {
+            if (!open) setPendingTask(null);
+          }}
+          projectId={project.id}
+          task={pendingTask.task}
+          defaultPhaseId={pendingTask.phaseId}
+          phases={phases}
+          users={users}
+          canEdit={canEdit}
+          onSaved={saveTask}
+          onMoved={(next) => {
+            setTasks(next);
+            router.refresh();
+          }}
+          onDeleted={(id) => {
+            setTasks((previous) => previous.filter((task) => task.id !== id));
+            router.refresh();
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmDelete}

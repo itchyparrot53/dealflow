@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -57,24 +57,14 @@ export function TaskDialog({
   onMoved: (tasks: TaskView[]) => void;
   onDeleted: (id: string) => void;
 }): React.ReactNode {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [assigneeId, setAssigneeId] = useState("");
-  const [dueDate, setDueDate] = useState<string | null>(null);
-  const [phaseId, setPhaseId] = useState<string | null>(null);
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [description, setDescription] = useState(task?.description ?? "");
+  const [assigneeId, setAssigneeId] = useState(task?.assigneeId ?? "");
+  const [dueDate, setDueDate] = useState<string | null>(task?.dueDate ?? null);
+  const [phaseId, setPhaseId] = useState<string | null>(task?.phaseId ?? defaultPhaseId);
   const [errorId, setErrorId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setTitle(task?.title ?? "");
-    setDescription(task?.description ?? "");
-    setAssigneeId(task?.assigneeId ?? "");
-    setDueDate(task?.dueDate ?? null);
-    setPhaseId(task?.phaseId ?? defaultPhaseId);
-    setErrorId(null);
-  }, [open, task, defaultPhaseId]);
 
   async function save(): Promise<void> {
     if (title.trim() === "") {

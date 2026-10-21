@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-21 14:55
+Current: 2.1 · Last updated: 2026-10-21 15:00
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
 - Phase 1: 51fad6304187d6be0b3acdb00376b735c4bb020b
+- Phase 2: 06cbab182446003d05378bdb00ced999e9d06bb8
 
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
@@ -16,7 +17,7 @@ Current: 1.5 · Last updated: 2026-10-21 14:55
 - [x] 1.2 From a won deal and the automation action
 - [x] 1.3 Projects list and board
 - [x] 1.4 Deal projects section
-- [ ] 1.5 Phase 1 QA gate
+- [x] 1.5 Phase 1 QA gate
 - [ ] 2.1 Tokens service and settings tab
 - [ ] 2.2 Registry, handler and resources (test-first)
 - [ ] 2.3 API docs
@@ -36,6 +37,7 @@ Current: 1.5 · Last updated: 2026-10-21 14:55
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 in 813 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5261/5261 in 818 files · no named integration files in this gate · image client check: pg_dump 16.15 installs on node:22-alpine
+- Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5265/5265 in 819 files · projects/automations/events/notifications integration 94/94 (14 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p7-v1` with `STATUS: COMPLETE`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -92,6 +94,10 @@ Current: 1.5 · Last updated: 2026-10-21 14:55
 - 1.4: the Projects section is registered in `DEAL_SIDEBAR_SECTION_IDS`/`DEAL_SIDEBAR_SECTIONS` like Documents, but it renders from data the server already loaded: `DealDetailView` adds `listProjects(db, actor, { dealId }, signal)` to its read and threads the rows through `DealWorkspaceClient` to the sidebar. That keeps the section free of a second client query and leaves every existing sidebar fixture working because the new prop defaults to an empty list.
 - 1.4: "Create project" shows only when the deal is won and the actor can edit it; it calls `createProjectFromDealAction`, which reuses `createProjectFromDeal`, so the won-status and deal-visibility rules are the same as the service path (the button is UX only).
 - 1.4: the section shows each linked project's name, status badge and done/total progress, and links to `/projects/{id}`; the empty state says "No projects linked yet."
+
+- 1.5: the gate's first lint run found two React hook errors introduced by this part: `ProjectBoard` and `TaskDialog` synced props into state with `useEffect`. Both effects were removed: the board keeps local state seeded once (every server change is already applied locally by the action result), and the task dialog is mounted per task with a `key`, so its fields initialize from props without a cascading render.
+- 1.5: the same run found one `no-unnecessary-condition` error in `projectsErrorMessage` (a typed index made `??` look impossible); the lookup is now typed `string | undefined`, so the fallback is honest.
+- 1.5: Phase 2's base is `06cbab1` (the last task commit before this gate commit).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
