@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 05:55
+Current: 4.4 · Last updated: 2026-10-21 06:20
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -29,7 +29,7 @@ Current: 4.3 · Last updated: 2026-10-21 05:55
 - [x] 3.6 Phase 3 QA gate
 - [x] 4.1 E2E forms and booking spec and screenshots
 - [x] 4.2 Integration suite and smoke
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
@@ -39,6 +39,8 @@ Current: 4.3 · Last updated: 2026-10-21 05:55
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/events/automations/leads integration SKIPPED (Docker daemon unresponsive; Testcontainers global setup hung for 15+ minutes and was killed, per section 10)
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · scheduling/activities/events integration SKIPPED (Docker still unresponsive, per section 10)
 - Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/scheduling/automations/webhooks integration SKIPPED (Docker still unresponsive, per section 10)
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/3 majors/7 minors · fixed 11
+- Independent review: subagent (fresh context) round 2: QA RESULT PASS · 0 blockers/0 majors/0 minors · fixed 0
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p5-v1` with `STATUS: COMPLETE`, and HEAD was `935685bd476eb7d5c75d51b3439a8ffe7711aa4c`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
