@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-21 14:27
+Current: 4.1 · Last updated: 2026-10-21 14:32
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
 - Phase 1: 4d77639
 - Phase 2: b1d3d81
 - Phase 3: 64a1153
+- Phase 4: 2bee558
 
 ## Tasks
 - [x] 0.1 Start Part 7: progress files, kit and baseline
@@ -26,7 +27,7 @@ Current: 3.5 · Last updated: 2026-10-21 14:27
 - [x] 3.2 Dashboards
 - [x] 3.3 Score badge and bulk scoring UI
 - [x] 3.4 Demo seed and docs
-- [ ] 3.5 Phase 3 QA gate
+- [x] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E insights spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
@@ -39,6 +40,7 @@ Current: 3.5 · Last updated: 2026-10-21 14:27
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · forms/scheduling integration 17/17
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/stats/goals integration 119/119
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/ai/notifications integration 104/104
+- Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/stats/goals/ai integration 156/156
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p6-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
