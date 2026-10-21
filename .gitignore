@@ -26,9 +26,12 @@ docs/parity-captures/
 .e2e/
 .smoke/
 .mail-capture/
+.push-capture/
 e2e/screenshots/
 test-results/
 playwright-report/
+# Bundled by `pnpm build:sw` at build time; never commit a generated worker.
+/public/sw.js
 .dsh/logs/
 .dsh/guard.enabled
 docs/dealflow/*.local.*

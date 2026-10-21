@@ -35,6 +35,8 @@ export default tseslint.config(
       "playwright-report/**",
       ".smoke/**",
       ".mail-capture/**",
+      ".push-capture/**",
+      "public/sw.js",
       "e2e/**",
       "playwright.config.ts",
       "DEALFLOW/**",

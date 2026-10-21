@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-22 00:45
+Current: 0.3 · Last updated: 2026-10-22 00:58
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
 
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
-- [ ] 0.2 Schema, dependencies, env and scripts
+- [x] 0.2 Schema, dependencies, env and scripts
 - [ ] 0.3 Pure core (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Manifest, icons, metadata and install
@@ -41,6 +41,10 @@ Current: 0.2 · Last updated: 2026-10-22 00:45
 - 0.1: `src/app/icon.png` (512x512) and `src/app/apple-icon.png` (180x180) both exist, so Task 1.1 generates the PWA icons from `src/app/icon.png` with `sips` and no new dependency.
 - 0.1: the notification producer is `src/features/notifications/produce.ts` (`createNotification`), called from `deliver()` in `src/features/notifications/wire.ts`; the email channel is decided in `src/features/notifications/emailDispatch.ts` through `resolveDelivery` in `preferences.ts` with the defaults in `src/constants/notificationDefaults.ts`. Task 2.2 hooks push into `deliver()` after the row commits.
 - 0.1: the shell is `src/app/(app)/layout.tsx` with `src/components/shell/LeftNav.tsx`, `TopBar.tsx` and `UserMenu.tsx`; Task 3.1 adds the bottom navigation beside them and Task 1.1 mounts the install entry in the user menu and Settings > Profile.
+- 0.2: `drizzle/0092_dealflow_push.sql` creates exactly `push_subscriptions` and `notification_push_prefs` (plus the user index) and is applied to the dev database (93 migration rows). `build:docker` and `e2e:build` also run `build:sw`, because the Docker image and the e2e production stack both serve the worker and neither runs the plain `build` script.
+- 0.2: VAPID is all-or-nothing in `src/config/env.ts` (same rule as Google): one or two of the three set is a boot error, all empty is "push off". `PUSH_FAKE`/`PUSH_FAKE_DIR` are separate so capture mode works with no keys.
+- 0.2: `public/sw.js` and `.push-capture/` are git-ignored and excluded from biome and eslint; the bundled worker is a build output and lint would otherwise try to type-check it outside the app tsconfig.
+- 0.2: `e2e/fixtures/vapid.json` holds a generated test pair (public values only) and `scripts/e2e/e2e-env.mjs` reads it to set `VAPID_*`, `PUSH_FAKE=true` and `PUSH_FAKE_DIR=.push-capture`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

@@ -131,6 +131,19 @@ const base = z.object({
   // Client binaries from the runtime image (postgresql16-client, matching the server major).
   PG_DUMP_PATH: z.string().min(1).default("pg_dump"),
   PG_RESTORE_PATH: z.string().min(1).default("pg_restore"),
+  // Web push. All three VAPID values are set together (superRefine below) or push is off; an
+  // empty pair is the normal state for a deploy that never enables push. PUSH_FAKE captures
+  // deliveries to PUSH_FAKE_DIR instead of calling a push service (tests and e2e only).
+  VAPID_PUBLIC_KEY: z.string().default(""),
+  VAPID_PRIVATE_KEY: z.string().default(""),
+  VAPID_SUBJECT: z
+    .string()
+    .default("")
+    .refine((v) => v === "" || /^mailto:[^@\s]+@[^@\s]+$/.test(v) || /^https:\/\/\S+$/.test(v), {
+      message: "must be a mailto: or https: URL",
+    }),
+  PUSH_FAKE: boolFromString.default(false),
+  PUSH_FAKE_DIR: z.string().min(1).default(".push-capture"),
 });
 
 // Production guardrails for the first-run bootstrap (ops spec E6).
@@ -156,6 +169,17 @@ const schema = base.superRefine((v, ctx) => {
       code: z.ZodIssueCode.custom,
       path: ["OAUTH_SIGNING_KEY"],
       message: "OAUTH_SIGNING_KEY (base64 32 bytes) is required when MCP_ENABLED",
+    });
+  }
+  // VAPID is all-or-nothing for the same reason as Google: two of the three values would build a
+  // sender that fails at the first push instead of at boot. All empty means push is simply off.
+  const vapidConfigured = [v.VAPID_PUBLIC_KEY, v.VAPID_PRIVATE_KEY, v.VAPID_SUBJECT];
+  const vapidSet = vapidConfigured.filter((value) => value !== "").length;
+  if (vapidSet > 0 && vapidSet < 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["VAPID_PUBLIC_KEY"],
+      message: "VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together",
     });
   }
   if (v.NODE_ENV === "production") {

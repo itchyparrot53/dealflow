@@ -6,9 +6,11 @@
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "next dev",
-    "build": "ALLOW_FIRST_LOGIN_ADMIN=false next build",
+    "build": "pnpm build:sw && ALLOW_FIRST_LOGIN_ADMIN=false next build",
+    "build:sw": "node scripts/dealflow/build-sw.mjs",
     "build:workers": "node scripts/build-workers.mjs",
-    "build:docker": "next build && node scripts/build-workers.mjs",
+    "build:docker": "pnpm build:sw && next build && node scripts/build-workers.mjs",
+    "push:vapid": "node scripts/dealflow/push-vapid.mjs",
     "start": "next start",
     "test": "vitest run",
     "test:unit": "TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 vitest run --project unit",
@@ -34,7 +36,7 @@
     "mail:live-check": "tsx scripts/dealflow/mail-live-check.ts",
     "ai:check-model": "tsx scripts/dealflow/check-model.ts",
     "auth:bootstrap-link": "tsx --env-file=.env scripts/dealflow/bootstrap-link.ts",
-    "e2e:build": "node scripts/e2e/build.mjs",
+    "e2e:build": "pnpm build:sw && node scripts/e2e/build.mjs",
     "e2e": "pnpm e2e:build && playwright test",
     "smoke": "node scripts/dealflow/smoke.mjs"
   },
@@ -102,6 +104,7 @@
     "sanitize-html": "^2.17.5",
     "superjson": "^2.2.6",
     "tailwind-merge": "^3.6.0",
+    "web-push": "3.6.7",
     "ws": "^8.21.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
@@ -122,6 +125,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/sanitize-html": "^2.16.1",
+    "@types/web-push": "3.6.4",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.0.3",
     "babel-plugin-react-compiler": "^1.0.0",

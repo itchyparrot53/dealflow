@@ -28,6 +28,8 @@
       "!playwright-report",
       "!.smoke",
       "!.mail-capture",
+      "!.push-capture",
+      "!public/sw.js",
       "!DEALFLOW",
       "!PLAN AND EXECUTE",
       "!docs/dealflow/mail-probe-result.json"

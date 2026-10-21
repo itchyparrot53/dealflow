@@ -33,7 +33,24 @@ export function readDevMinioCreds() {
   };
 }
 
+// A generated-once VAPID pair for the e2e stack. These are test-only values committed on purpose
+// (the fixture holds no secret that could reach a real push service); generating them per run
+// would rotate the subscription keys every time and add nothing.
+export function readVapidFixture() {
+  try {
+    const fixture = JSON.parse(readFileSync("e2e/fixtures/vapid.json", "utf8"));
+    return {
+      publicKey: fixture.publicKey,
+      privateKey: fixture.privateKey,
+      subject: fixture.subject ?? "mailto:e2e@example.com",
+    };
+  } catch {
+    return { publicKey: "", privateKey: "", subject: "" };
+  }
+}
+
 export function e2eEnv(secrets) {
+  const vapid = readVapidFixture();
   return {
     NODE_ENV: "production",
     PORT: "3210",
@@ -72,6 +89,12 @@ export function e2eEnv(secrets) {
     MAIL_INITIAL_SYNC_DAYS: "90",
     MAIL_BACKFILL_DAYS: "0",
     AI_FAKE: "true",
+    // Push runs in capture mode: the spec reads .push-capture instead of calling a push service.
+    VAPID_PUBLIC_KEY: vapid.publicKey,
+    VAPID_PRIVATE_KEY: vapid.privateKey,
+    VAPID_SUBJECT: vapid.subject,
+    PUSH_FAKE: "true",
+    PUSH_FAKE_DIR: ".push-capture",
     // The e2e spec runs a webhook receiver on 127.0.0.1, so private targets are allowed there.
     WEBHOOK_ALLOW_PRIVATE: "true",
     OPENROUTER_API_KEY: "",

@@ -46,6 +46,7 @@ export * from "./persons";
 export * from "./pipelines";
 export * from "./projects";
 export * from "./prospects";
+export * from "./push";
 export * from "./realtime";
 export * from "./release";
 export * from "./sales";
