@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-21 14:45
+Current: 1.3 · Last updated: 2026-10-21 14:48
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -13,7 +13,7 @@ Current: 1.2 · Last updated: 2026-10-21 14:45
 - [x] 0.3 Pure core (test-first)
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Projects services, events and notifications (test-first)
-- [ ] 1.2 From a won deal and the automation action
+- [x] 1.2 From a won deal and the automation action
 - [ ] 1.3 Projects list and board
 - [ ] 1.4 Deal projects section
 - [ ] 1.5 Phase 1 QA gate
@@ -76,6 +76,12 @@ Current: 1.2 · Last updated: 2026-10-21 14:45
 - 1.1: the snapshot builds `{ project: { id, name, status, dealId, ownerId, dueDate }, task?: { id, title, assigneeId } }`, and `loadEventTarget`/`resolveTarget` treat a project event's condition target as its linked deal; an unlinked project therefore skips a condition (the existing runner rule).
 - 1.1: assignment notifications go through `createNotification` after the task commit and are best-effort (a failure is logged, never undoes the write). The project case was added to `canActorAccessParent`: unlinked projects require an active user, linked ones reuse the deal check, so an assignee who cannot see the deal gets no notification.
 - 1.1: project events were added to `DOMAIN_EVENT_TYPES`, the automation trigger union, the webhook event groups (a "Projects" group with both `project.` and `project_task.` prefixes) and the notification deep link (`/projects/{id}`).
+
+- 1.2: `createProjectFromDeal` goes through `loadEditableDeal`, so the deal must be visible and editable before a project can start; the user path refuses a non-won deal with `E_PROJECT_004` and `context.reason = "deal_not_won"`, while an automation passes `allowAnyStatus` (6.6).
+- 1.2: the automation action `create_project` takes optional `phases` (1..10, each 1..80) and `nameTemplate`; the runner renders the template with the Part 4 variable vocabulary and falls back to the deal title when it is unset or renders empty. The handler returns the shared `E_AUTOMATION_ACTION_FAILED` on refusal, like the other actions.
+- 1.2: the built-in template is "Start a project when a deal is won" (`deal.won` to `create_project`); the template-count assertion in the automations integration suite changed from 6 to 7 because the plan adds one template (no assertion weakened).
+- 1.2: the loop-guard case registers a second automation on `project.created` that creates another project from the same deal, then drains the dispatcher; the number of projects stays within `AUTOMATION_MAX_DEPTH + 2` and does not grow on later dispatches, so the chain depth guard really terminates the loop.
+- 1.2: `ActionList` gained the two fields (project name template and comma-separated phases), and the editor's default action uses the three default phase names.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

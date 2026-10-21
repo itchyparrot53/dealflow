@@ -88,6 +88,7 @@ export const AUTOMATIONS_STRINGS = {
     ai_summarize_deal: "Summarize the deal (AI)",
     ai_score_deal: "Score the deal (AI)",
     ai_draft_email: "Draft an email (AI)",
+    create_project: "Create a project",
   },
   fields: {
     anyPipeline: "Any pipeline",
@@ -114,6 +115,8 @@ export const AUTOMATIONS_STRINGS = {
     instructions: "Instructions",
     won: "Won",
     lost: "Lost",
+    projectName: "Project name",
+    projectPhases: "Phases (comma separated)",
   },
   runLog: {
     empty: "No runs yet.",

@@ -29,7 +29,8 @@ A trigger may carry pipelineId, stageId (the stage entered), kind ("quote" or "i
 Actions: update_deal {set: {stageId?, ownerId?, status?: "won"|"lost", lostReasonId?, expectedCloseInDays?}},
 create_activity {activityTypeId, subject, dueInDays, assignee: "deal_owner"|"automation_owner"|{userId}},
 add_note {body}, notify_user {to: "deal_owner"|{userId}, message}, send_email {templateId, to: "deal_person"},
-ai_summarize_deal, ai_score_deal, ai_draft_email {instructions}.
+ai_summarize_deal, ai_score_deal, ai_draft_email {instructions},
+create_project {phases?: string[] (each 1..80, at most 10), nameTemplate?: string}.
 Every id MUST come from the lists in the user message; never invent one. Use {{deal.title}},
 {{person.name}}, {{organization.name}} and {{owner.name}} in text fields. At most 10 actions.
 If the request cannot be expressed, return JSON that matches the shape as closely as possible.`;

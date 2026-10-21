@@ -110,6 +110,16 @@ export const AUTOMATION_TEMPLATES: readonly AutomationTemplate[] = [
       ],
     }),
   },
+  {
+    key: "project-on-won",
+    name: "Start a project when a deal is won",
+    description: "Create a project named after the deal, with the three default phases.",
+    build: () => ({
+      trigger: { type: "deal.won" },
+      condition: null,
+      actions: [{ type: "create_project" }],
+    }),
+  },
 ] as const;
 
 export async function buildTemplateContext(

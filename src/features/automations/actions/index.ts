@@ -3,6 +3,7 @@
 import "./addNote";
 import "./aiActions";
 import "./createActivity";
+import "./createProject";
 import "./notifyUser";
 import "./sendEmail";
 import "./updateDeal";

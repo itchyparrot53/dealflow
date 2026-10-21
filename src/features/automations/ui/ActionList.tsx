@@ -201,6 +201,35 @@ function ActionFields({
           aria-label={S.fields.instructions}
         />
       );
+    case "create_project":
+      return (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Input
+            value={action.nameTemplate ?? ""}
+            onChange={(event) =>
+              onChange({
+                ...action,
+                nameTemplate: event.target.value === "" ? undefined : event.target.value,
+              })
+            }
+            placeholder="{{deal.title}}"
+            aria-label={S.fields.projectName}
+          />
+          <Input
+            value={(action.phases ?? []).join(", ")}
+            onChange={(event) => {
+              const phases = event.target.value
+                .split(",")
+                .map((phase) => phase.trim())
+                .filter((phase) => phase !== "")
+                .slice(0, 10);
+              onChange({ ...action, phases: phases.length === 0 ? undefined : phases });
+            }}
+            placeholder={S.fields.projectPhases}
+            aria-label={S.fields.projectPhases}
+          />
+        </div>
+      );
     case "ai_summarize_deal":
     case "ai_score_deal":
       return <p className="text-sm text-muted-foreground">{S.actionTypes[action.type]}</p>;

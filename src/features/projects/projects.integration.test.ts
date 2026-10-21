@@ -1,11 +1,27 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { AUTOMATION_MAX_DEPTH } from "@/constants/automations";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { automations, deals, domainEvents, notifications } from "@/db/schema";
+import {
+  automationRuns,
+  automations,
+  deals,
+  domainEvents,
+  notifications,
+  organizations,
+  persons,
+  projects,
+} from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { runAutomation } from "@/features/automations/runner";
+import { createAutomation } from "@/features/automations/service";
+import { AUTOMATION_TEMPLATES, buildTemplateContext } from "@/features/automations/templates";
+import { markWon } from "@/features/deal-workspace/wonLost";
+import { dispatchEvents } from "@/features/events/dispatcher";
 import { buildEventPayload } from "@/features/events/snapshot";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
+import { createProjectFromDeal } from "./fromDeal";
 import { addPhase, deletePhase } from "./phases";
 import {
   createProject,
@@ -55,6 +71,17 @@ async function seedDeal(opts: {
     .returning();
   if (row === undefined) throw new Error("deal seed failed");
   return row;
+}
+
+async function dispatchAndRun(rounds = 1): Promise<void> {
+  for (let round = 0; round < rounds; round += 1) {
+    await dispatchEvents(h.db, sig());
+    const running = await h.db
+      .select({ id: automationRuns.id })
+      .from(automationRuns)
+      .where(eq(automationRuns.status, "running"));
+    for (const run of running) await runAutomation(h.db, run.id, sig());
+  }
 }
 
 beforeAll(async () => {
@@ -363,5 +390,107 @@ describe("projects service", () => {
       project: { id: project.value.id, name: "Snapshot" },
       task: { id: task.value.id, title: "Finish" },
     });
+  });
+});
+
+describe("create a project from a won deal", () => {
+  it("creates a linked project named after the won deal", async () => {
+    const [person] = await h.db
+      .insert(persons)
+      .values({
+        name: "Pat Person",
+        ownerId: regular.id,
+        visibilityLevel: "all",
+      })
+      .returning();
+    const [org] = await h.db
+      .insert(organizations)
+      .values({ name: "Acme", ownerId: regular.id, visibilityLevel: "all" })
+      .returning();
+    const [deal] = await h.db
+      .insert(deals)
+      .values({
+        title: "Onboarding retainer",
+        pipelineId,
+        stageId,
+        ownerId: regular.id,
+        personId: person?.id ?? null,
+        orgId: org?.id ?? null,
+        visibilityLevel: "all",
+        boardPosition: "0",
+        status: "won",
+      })
+      .returning();
+    if (deal === undefined) throw new Error("deal seed failed");
+
+    const result = await createProjectFromDeal(h.db, admin, deal.id, {}, sig());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.name).toBe("Onboarding retainer");
+    expect(result.value.dealId).toBe(deal.id);
+    expect(result.value.personId).toBe(person?.id ?? null);
+    expect(result.value.organizationId).toBe(org?.id ?? null);
+    expect(result.value.ownerId).toBe(regular.id);
+  });
+
+  it("refuses an open deal on the user path with E_PROJECT_004", async () => {
+    const deal = await seedDeal({ ownerId: admin.id });
+    const result = await createProjectFromDeal(h.db, admin, deal.id, {}, sig());
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.id).toBe(ERROR_IDS.PROJECT_INPUT_INVALID);
+    expect(result.error.context).toMatchObject({ reason: "deal_not_won" });
+  });
+
+  it("runs the project-on-won template end to end and the chain guard bounds a create loop", async () => {
+    const context = await buildTemplateContext(h.db, sig());
+    expect(context).not.toBeNull();
+    if (context === null) return;
+    const template = AUTOMATION_TEMPLATES.find((entry) => entry.key === "project-on-won");
+    expect(template).toBeDefined();
+    if (template === undefined) return;
+    const definition = template.build(context);
+    const created = await createAutomation(
+      h.db,
+      admin,
+      { name: template.name, definition, enabled: true },
+      sig(),
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    // A second automation turns every new project into another project on the same deal, so the
+    // only thing that can stop it is the chain guard.
+    const loop = await createAutomation(
+      h.db,
+      admin,
+      {
+        name: "Loop",
+        enabled: true,
+        definition: {
+          trigger: { type: "project.created" },
+          condition: null,
+          actions: [{ type: "create_project" }],
+        },
+      },
+      sig(),
+    );
+    expect(loop.ok).toBe(true);
+
+    const deal = await seedDeal({ title: "Won for project", ownerId: admin.id });
+    const won = await markWon(h.db, admin, deal.id, sig());
+    expect(won.ok).toBe(true);
+    await dispatchAndRun(6);
+
+    const rows = await h.db.select().from(projects).where(eq(projects.dealId, deal.id));
+    // The template alone makes one; the loop can add at most one more per allowed chain depth.
+    expect(rows.length).toBeGreaterThanOrEqual(1);
+    expect(rows.length).toBeLessThanOrEqual(AUTOMATION_MAX_DEPTH + 2);
+    expect(rows.some((row) => row.name === "Won for project")).toBe(true);
+
+    const before = rows.length;
+    await dispatchAndRun(3);
+    const after = await h.db.select().from(projects).where(eq(projects.dealId, deal.id));
+    expect(after.length).toBe(before);
   });
 });

@@ -112,6 +112,8 @@ export const ACTION_TYPES = [
   "ai_summarize_deal",
   "ai_score_deal",
   "ai_draft_email",
+  // Part 8: projects.
+  "create_project",
 ] as const;
 
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -164,6 +166,13 @@ export const actionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("ai_draft_email"),
     instructions: z.string().min(1).max(1000),
+  }),
+  z.object({
+    type: z.literal("create_project"),
+    // The project's phases; unset means the three defaults (Kickoff, Delivery, Wrap-up).
+    phases: z.array(z.string().trim().min(1).max(80)).min(1).max(10).optional(),
+    // Variables are rendered by the runner; unset means the deal title.
+    nameTemplate: z.string().min(1).max(200).optional(),
   }),
 ]);
 

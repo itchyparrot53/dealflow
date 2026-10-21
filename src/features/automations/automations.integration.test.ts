@@ -658,6 +658,6 @@ describe("describe it and templates", () => {
       const parsed = automationDefinitionSchema.safeParse(definition);
       expect(parsed.success, template.key).toBe(true);
     }
-    expect(AUTOMATION_TEMPLATES).toHaveLength(6);
+    expect(AUTOMATION_TEMPLATES).toHaveLength(7);
   });
 });

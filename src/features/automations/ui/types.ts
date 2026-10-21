@@ -74,6 +74,12 @@ export function defaultAction(type: Action["type"], lookups: EditorLookups): Act
       return { type: "ai_score_deal" };
     case "ai_draft_email":
       return { type: "ai_draft_email", instructions: "Follow up on our last conversation" };
+    case "create_project":
+      return {
+        type: "create_project",
+        nameTemplate: "{{deal.title}}",
+        phases: ["Kickoff", "Delivery", "Wrap-up"],
+      };
   }
 }
 
