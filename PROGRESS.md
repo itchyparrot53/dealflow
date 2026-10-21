@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 0.1 · Last updated: 2026-10-21 17:24
+Current: 0.3 · Last updated: 2026-10-21 17:37
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
 
 ## Tasks
 - [x] 0.1 Start Part 9: progress files, kit and baseline
-- [ ] 0.2 Prove Part 8
+- [x] 0.2 Prove Part 8
 - [ ] 0.3 Schema, migration and audit redaction
 - [ ] 0.4 Pure core (test-first)
 - [ ] 0.5 Phase 0 QA gate
@@ -35,6 +35,7 @@ Current: 0.1 · Last updated: 2026-10-21 17:24
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5269/5269 in 821 files
+- Part 8 proof: integration 2046/2046 (405 files) · e2e 22/22 (specs 00 to 12) · smoke PASS · backup round trip ok (0 deals) · no dealflow-smoke container or volume left
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p8-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -47,6 +48,8 @@ Current: 0.1 · Last updated: 2026-10-21 17:24
 - 0.1: merge has no route: `src/features/contacts/MergeDialog.tsx` handles one current record plus a candidate on the detail page, `BulkMergeDialog.tsx` handles two selected records, and `merge.ts` is the service behind the list merge actions. The duplicate finder (Task 2.1) opens `BulkMergeDialog` with both ids preselected.
 - 0.1: Part 1's deal AI filter is `src/features/ai/aiFilter.ts` (schema, `describeFilter`) behind `src/features/ai/actions/filterActions.ts` (CSRF, rate limit via `checkAiRateLimit`), so Task 2.3 generalises it by target and keeps the action's checks.
 - 0.1: `/tmp/dealflow-tools` holds pnpm 9.15.9 and `/tmp/dealflow-pnpm-store` exists, so no reinstall is needed; the `subagent` tool is available for Task 4.3.
+- 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
+- 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
