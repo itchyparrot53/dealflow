@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-21 15:49
+Current: 4.5 · Last updated: 2026-10-21 16:02
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -31,7 +31,7 @@ Current: 4.4 · Last updated: 2026-10-21 15:49
 - [x] 4.1 E2E insights spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -145,5 +145,27 @@ Current: 4.4 · Last updated: 2026-10-21 15:49
 - Build: `ALLOW_FIRST_LOGIN_ADMIN=false pnpm build`; if `next build` fails with `ENOTEMPTY`, remove `.next` and retry once.
 - Host database commands: `export DEV_DB_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` and prefix `DATABASE_URL=$DEV_DB_URL` (`.env` targets the container network).
 - E2E: `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` (reinstall browsers with `pnpm exec playwright install chromium` if `/tmp` was cleared); ports 3210/3211. Smoke: `DOCKER_BUILDKIT=0 pnpm smoke` (ports 3310/3311/3312).
-- Docker 24.0.5 answers, but no container is running: the owner's `warpdrive-main` stack (dev Postgres on 5433, MinIO on 9000/9001) is stopped, so `db:migrate:dev` and `db:seed:demo` need it started first. Never prune; if a build fails with "no space left", log `TODO(owner): free Docker disk space` and mark the step SKIPPED.
+- Docker 24.0.5 is up and the dev stack is running (Postgres on 5433, MinIO on 9000/9001; `pnpm dev:up` brings it back after a reboot or a Docker restart). Never prune; if a build fails with "no space left", log `TODO(owner): free Docker disk space` and mark the step SKIPPED.
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
+
+## Final report
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` printed nothing immediately before this record.
+2. PASS - `pnpm install --frozen-lockfile` exited 0 in 1s, and `git diff 8957a53..HEAD -- package.json pnpm-lock.yaml` printed nothing: no dependency changed.
+3. PASS - `pnpm typecheck` exited 0 on the final tree.
+4. PASS - `pnpm lint` exited 0 (biome checked 3055 files; 14 pre-existing warnings, 0 errors).
+5. PASS - `pnpm test:unit` passed 5237/5237 in 813 files (baseline 5197; the 40 new pure definition/range/CSV cases).
+6. PASS - `pnpm test:integration` passed 400 files and 2004 tests on the final tree.
+7. PASS - `pnpm build` exited 0 and lists `/insights`, `/insights/reports/[id]` and `/insights/dashboards/[id]` (plus `/insights/reports/[id]/export.csv`).
+8. PASS - `pnpm e2e` passed 21/21, specs `00` to `11`.
+9. PASS - 6 `p7-*` and 7 `p6-*` screenshots exist; the earlier sets are intact: 23 `p1-*`, 8 `p2-*`, 6 `p3-*`, 7 `p4-*`, 6 `p5-*`.
+10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS and left no `dealflow-smoke` container or volume.
+11. PASS - `drizzle/0087_dealflow_insights.sql` creates exactly `dashboard_widgets`, `dashboards` and `reports`; `0088` adds the one `ai_bulk_score` enum value.
+12. PASS - every `sum(value)` hit is grouped by currency: `compile/deals.ts` GROUP BY 1,2,3 (g,s,currency), `dealPerformance` GROUP BY 1 (currency), `lostReasons` 1,2,3 (reason,name,currency), `stageSums` 1,2,3,4 (stage,name,order,currency), `wonTrend` 1,2 (month,currency), `goalActual` 1 (currency), `goalSeries` 1,2 (day,currency); `wonDealStats` has no SQL sum (it converts one row per deal).
+13. PASS - `git grep -nE "#[0-9a-fA-F]{6}" -- src/features/insights/ui` printed nothing; colours come from the token palette and chart wrapper variables.
+14. PASS - the explain prompt test `sends only aggregated rows to the model` (in `insights.integration.test.ts`) asserts the prompt carries aggregated rows and no deal title or email.
+15. PASS - the em dash scan over every changed non-kit file printed nothing.
+16. PASS - `docs/dealflow/INSIGHTS.md` exists and `UPSTREAM.md` lists the Part 7 upstream files plus the demo/docs subsection.
+17. PASS - `pnpm check:progress --final` was run in Task 4.5 on the completed file.
