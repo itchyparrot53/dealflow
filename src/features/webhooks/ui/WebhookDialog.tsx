@@ -73,7 +73,11 @@ export function WebhookDialog({
       onCreated(created.value.secret);
       return;
     }
-    const updated = await updateSubscriptionAction(subscription.id, { name, url, events }, readCsrfToken());
+    const updated = await updateSubscriptionAction(
+      subscription.id,
+      { name, url, events },
+      readCsrfToken(),
+    );
     setBusy(false);
     if (!updated.ok) {
       setError(updated.error.id === "E_WEBHOOK_002" ? S.dialog.invalidUrl : updated.error.id);

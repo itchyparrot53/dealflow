@@ -62,15 +62,20 @@ export function AutomationsList({
   const [creating, setCreating] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [describeOpen, setDescribeOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   async function createAutomation(): Promise<void> {
     setCreating(true);
-    const result = await createAutomationAction({
-      name: "New automation",
-      definition: NEW_DEFINITION,
-    });
+    setCreateError(null);
+    const result = await createAutomationAction(
+      { name: "New automation", definition: NEW_DEFINITION },
+      readCsrfToken(),
+    );
     setCreating(false);
-    if (!result.ok) return;
+    if (!result.ok) {
+      setCreateError(result.error.id);
+      return;
+    }
     router.push(`/settings/automations/${result.value.id}`);
   }
 
@@ -101,6 +106,9 @@ export function AutomationsList({
         >
           {S.newAutomation}
         </Button>
+        {createError === null ? null : (
+          <span className="text-sm text-destructive">{createError}</span>
+        )}
         <Button
           type="button"
           variant="outline"

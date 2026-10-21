@@ -3,6 +3,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { persons } from "@/db/schema";
 import { scoreDeal, summarizeDeal } from "@/features/ai/dealInsights";
 import { draftEmail } from "@/features/ai/emailDraft";
+import { checkAiRateLimit } from "@/features/ai/rateLimit";
 import { createNote } from "@/features/collaboration/notesRepo";
 import { saveDraft } from "@/features/email/draftRepo";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
@@ -18,16 +19,24 @@ function failed(errorId: string, detail: string): StepResult {
   return { ok: false, errorId, detail };
 }
 
-async function actorFor(ctx: ActionContext) {
-  return hydrateActor(ctx.db, ctx.actor.id, ctx.signal);
+type ActorResult =
+  | { ok: true; actor: NonNullable<Awaited<ReturnType<typeof hydrateActor>>> }
+  | { ok: false; errorId: string };
+
+async function actorFor(ctx: ActionContext): Promise<ActorResult> {
+  // Part 1's per-user limiter lives in its server actions, which these bypass.
+  if (!checkAiRateLimit(ctx.actor.id)) return { ok: false, errorId: ERROR_IDS.AI_RATE_LIMITED };
+  const actor = await hydrateActor(ctx.db, ctx.actor.id, ctx.signal);
+  if (actor === null) return { ok: false, errorId: ERROR_IDS.AUTOMATION_ACTION_FAILED };
+  return { ok: true, actor };
 }
 
 registerActionHandler("ai_summarize_deal", async (ctx) => {
   if (ctx.dealId === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "no related deal");
-  const actor = await actorFor(ctx);
-  if (actor === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "actor inactive");
+  const current = await actorFor(ctx);
+  if (!current.ok) return failed(current.errorId, "actor unavailable");
 
-  const result = await summarizeDeal(ctx.db, actor, ctx.dealId, ctx.signal);
+  const result = await summarizeDeal(ctx.db, current.actor, ctx.dealId, ctx.signal);
   if (!result.ok) return failed(result.error.id, "AI summary failed");
   const data = result.value.summary;
   if (data === null || data.summary.trim() === "") {
@@ -42,7 +51,7 @@ registerActionHandler("ai_summarize_deal", async (ctx) => {
 
   const note = await createNote(
     ctx.db,
-    actor,
+    current.actor,
     { entityType: "deal", entityId: ctx.dealId, body, pinned: false },
     ctx.signal,
   );
@@ -52,10 +61,10 @@ registerActionHandler("ai_summarize_deal", async (ctx) => {
 
 registerActionHandler("ai_score_deal", async (ctx) => {
   if (ctx.dealId === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "no related deal");
-  const actor = await actorFor(ctx);
-  if (actor === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "actor inactive");
+  const current = await actorFor(ctx);
+  if (!current.ok) return failed(current.errorId, "actor unavailable");
 
-  const result = await scoreDeal(ctx.db, actor, ctx.dealId, ctx.signal);
+  const result = await scoreDeal(ctx.db, current.actor, ctx.dealId, ctx.signal);
   if (!result.ok) return failed(result.error.id, "AI score failed");
   return { ok: true, detail: `score ${result.value.score ?? ""}` };
 });
@@ -65,8 +74,8 @@ registerActionHandler("ai_draft_email", async (ctx, action) => {
     return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "wrong action");
   }
   if (ctx.dealId === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "no related deal");
-  const actor = await actorFor(ctx);
-  if (actor === null) return failed(ERROR_IDS.AUTOMATION_ACTION_FAILED, "actor inactive");
+  const current = await actorFor(ctx);
+  if (!current.ok) return failed(current.errorId, "actor unavailable");
 
   const deal = await loadDealRow(ctx.db, ctx.dealId, ctx.signal);
   if (deal === null || deal.personId === null) {
@@ -86,7 +95,7 @@ registerActionHandler("ai_draft_email", async (ctx, action) => {
 
   const draft = await draftEmail(
     ctx.db,
-    actor,
+    current.actor,
     {
       instruction: action.instructions.slice(0, 500),
       tone: "friendly",
@@ -102,7 +111,7 @@ registerActionHandler("ai_draft_email", async (ctx, action) => {
   const saved = await saveDraft(
     ctx.db,
     {
-      actor,
+      actor: current.actor,
       draft: {
         accountId: mailbox.id,
         subject: draft.value.subject,

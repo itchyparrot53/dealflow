@@ -13,7 +13,7 @@ import {
 } from "@/constants/automations";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
-import { type Db, db as defaultDb } from "@/db/client";
+import type { Db } from "@/db/client";
 import { users, webhookDeliveries, webhookSubscriptions } from "@/db/schema";
 import { decryptToken } from "@/features/email/crypto";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
@@ -421,19 +421,4 @@ export async function deliverWebhook(
     signal,
   );
   return { status, statusCode: attempt.statusCode, errorId: attempt.failure.errorId, durationMs };
-}
-
-export async function registerWebhookDeliveryJob(boss: PgBoss): Promise<void> {
-  await boss.createQueue(PGBOSS_QUEUE_WEBHOOK_DELIVER);
-  await boss.work(PGBOSS_QUEUE_WEBHOOK_DELIVER, async ([job]) => {
-    if (job === undefined) return;
-    const data = (job.data ?? {}) as Record<string, unknown>;
-    const deliveryId = typeof data.deliveryId === "string" ? data.deliveryId : null;
-    if (deliveryId === null) return;
-    try {
-      await deliverWebhook(defaultDb, deliveryId, AbortSignal.timeout(WEBHOOK_TIMEOUT_MS + 5_000));
-    } catch (error) {
-      console.error(`webhook delivery ${deliveryId} threw`, error);
-    }
-  });
 }

@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { can } from "@/features/permissions/can";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { getSubscription, listDeliveries, listSubscriptions } from "./service";
 
@@ -7,11 +8,21 @@ import { getSubscription, listDeliveries, listSubscriptions } from "./service";
 
 const SIG = (): AbortSignal => AbortSignal.timeout(15_000);
 
+function requireAdmin(actor: Parameters<typeof can>[0]): void {
+  if (!can(actor, "automations.manage")) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "E_PERM_001" });
+  }
+}
+
 export const webhooksRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => listSubscriptions(ctx.db, SIG())),
+  list: protectedProcedure.query(async ({ ctx }) => {
+    requireAdmin(ctx.actor);
+    return listSubscriptions(ctx.db, SIG());
+  }),
   get: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
+      requireAdmin(ctx.actor);
       const row = await getSubscription(ctx.db, input.id, SIG());
       if (row === null) throw new TRPCError({ code: "NOT_FOUND", message: "E_WEBHOOK_001" });
       return row;

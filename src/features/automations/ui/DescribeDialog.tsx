@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/Textarea";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
-import { readCsrfToken } from "@/utils/csrfCookie";
 import { aiErrorMessage } from "@/features/ai/aiErrors";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { createAutomationAction, draftAutomationAction } from "../actions";
 
 const S = AUTOMATIONS_STRINGS;

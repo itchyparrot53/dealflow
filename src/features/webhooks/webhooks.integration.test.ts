@@ -270,8 +270,9 @@ describe("deliverWebhook", () => {
 
   it("refuses a loopback target before connecting when private targets are off", async () => {
     const receiver = await startReceiver((_request, respond) => respond(200));
-    // https forces the scheme check to pass, so the refusal must come from the pinned lookup.
-    const url = receiver.url.replace("http://", "https://");
+    // https forces the scheme check to pass, and localhost is a name (not a literal IP), so the
+    // refusal must come from the DNS lookup.
+    const url = `https://localhost:${new URL(receiver.url).port}/hook`;
     const subscriptionId = await seedSubscription(url);
     const deliveryId = await seedDelivery(subscriptionId);
 

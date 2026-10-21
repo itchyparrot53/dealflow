@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import {
   type WebhookDeliveryRow,
@@ -13,6 +14,7 @@ import { encryptToken } from "@/features/email/crypto";
 import { DOMAIN_EVENT_TYPES } from "@/features/events/types";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { getBoss } from "@/jobs/boss";
 import { err, ok, type Result } from "@/types/result";
 import { deliverWebhook } from "./deliver";
 import { checkWebhookUrl } from "./ipRanges";
@@ -267,6 +269,12 @@ export async function redeliver(
     .returning({ id: webhookDeliveries.id });
   if (row === undefined) {
     return err(new AppError(ERROR_IDS.WEBHOOK_DELIVERY_FAILED, "Redelivery insert failed", {}));
+  }
+  // A redelivery is a new queued delivery, not just a row: without the enqueue it would sit
+  // pending forever in the log.
+  const boss = getBoss();
+  if (boss !== null) {
+    await boss.send(PGBOSS_QUEUE_WEBHOOK_DELIVER, { deliveryId: row.id });
   }
   return ok({ deliveryId: row.id });
 }

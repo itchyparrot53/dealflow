@@ -13,7 +13,7 @@ import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
-import { registerWebhookDeliveryJob } from "@/features/webhooks/deliver";
+import { registerWebhookDeliveryJob } from "@/features/webhooks/deliveryJob";
 import { setBoss } from "@/jobs/boss";
 
 // Register all job handlers and schedules. Called after boss.start() and

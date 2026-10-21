@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { activityTypes, emailTemplates, pipelines, stages, users } from "@/db/schema";
 import { chatJson } from "@/features/ai/chatJson";
+import { checkAiRateLimit } from "@/features/ai/rateLimit";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
@@ -82,6 +83,12 @@ export async function draftAutomation(
       new AppError(ERROR_IDS.AUTOMATION_INPUT_INVALID, "describe input invalid", {
         issues: parsed.error.issues,
       }),
+    );
+  }
+
+  if (!checkAiRateLimit(actor.id)) {
+    return err(
+      new AppError(ERROR_IDS.AI_RATE_LIMITED, "AI rate limit reached", { userId: actor.id }),
     );
   }
 

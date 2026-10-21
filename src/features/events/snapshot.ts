@@ -3,6 +3,7 @@ import { env } from "@/config/env";
 import type { Db } from "@/db/client";
 import {
   activities,
+  activityTypes,
   deals,
   dealTerms,
   documents,
@@ -142,16 +143,22 @@ async function organizationData(db: DbOrTx, entityId: string): Promise<Record<st
 }
 
 async function activityData(db: DbOrTx, entityId: string): Promise<Record<string, unknown>> {
-  const [row] = await db.select().from(activities).where(eq(activities.id, entityId));
-  if (row === undefined || row.deletedAt !== null) return { id: entityId };
+  const [row] = await db
+    .select({ activity: activities, typeKey: activityTypes.key })
+    .from(activities)
+    .leftJoin(activityTypes, eq(activityTypes.id, activities.typeId))
+    .where(eq(activities.id, entityId));
+  if (row === undefined || row.activity.deletedAt !== null) return { id: entityId };
   return {
-    id: row.id,
-    typeId: row.typeId,
-    subject: row.subject,
-    dueAt: row.dueAt?.toISOString() ?? null,
-    done: row.done,
-    dealId: row.dealId,
-    personId: row.personId,
+    id: row.activity.id,
+    // 6.5 names the activity type `type`; the key (call, task, ...) is the stable spelling.
+    type: row.typeKey ?? row.activity.typeId,
+    typeId: row.activity.typeId,
+    subject: row.activity.subject,
+    dueAt: row.activity.dueAt?.toISOString() ?? null,
+    done: row.activity.done,
+    dealId: row.activity.dealId,
+    personId: row.activity.personId,
   };
 }
 

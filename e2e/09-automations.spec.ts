@@ -141,12 +141,7 @@ test("automations and webhooks: describe, template, run log and a signed deliver
     const header = request.headers["x-dealflow-signature"];
     expect(typeof header).toBe("string");
     expect(
-      verifySignature(
-        secret,
-        header as string,
-        request.body,
-        Math.floor(Date.now() / 1000),
-      ),
+      verifySignature(secret, header as string, request.body, Math.floor(Date.now() / 1000)),
     ).toBe(true);
 
     // 8. The delivery log records the attempt.
@@ -172,5 +167,4 @@ test("automations and webhooks: describe, template, run log and a signed deliver
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
-
 });
