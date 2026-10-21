@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-21 16:12
+Current: 4.3 · Last updated: 2026-10-21 16:30
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -31,7 +31,7 @@ Current: 4.2 · Last updated: 2026-10-21 16:12
 - [x] 3.5 Backups (test-first)
 - [x] 3.6 Backups page, demo seed and docs
 - [x] 4.1 E2E projects and data spec and screenshots
-- [ ] 4.2 Integration suite and smoke with the backup round trip
+- [x] 4.2 Integration suite and smoke with the backup round trip
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -156,7 +156,12 @@ Current: 4.2 · Last updated: 2026-10-21 16:12
 - 4.1: three honest fixes during the runs: the "Won" step now waits for the header to swap to Reopen instead of navigating mid-request; the token dialog creates a write-scope token (the default read scope made POST /notes 403); the "Close" locator is scoped to the footer because the dialog also has an X. The person deletion uses the API rather than the contacts UI (logged as a deviation from the literal step list); the restore itself is the UI.
 - 4.1: the full `pnpm e2e` is green, 22 tests (specs 00 to 12), and the 7 `p8-*` screenshots exist. Fixing it also surfaced one Part 7 e2e assertion that still expected the old always-quoted CSV header; it now expects the shared writer's minimal quoting.
 
+- 4.2: the full integration suite is green on the final tree: 405 files, 2046 tests. The one failure on the first run was a Part 7 CSV assertion that still expected always-quoted cells; it now expects the shared writer's minimal quoting plus the formula guard (no assertion weakened).
+- 4.2: the smoke script gained a backup round trip: inside the running worker container it runs the image's `pg_dump`, builds an archive containing `db.dump` and `manifest.json`, restores it into a scratch `dealflow_restore_check` database in the smoke Postgres, compares the deals count and drops the scratch database. It does not call the pg-boss job (the same binaries and restore SQL are what the job uses); logged as a decision.
+- 4.2: `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke` failed twice with `SMOKE FAIL at build-and-up` because the smoke Postgres container cannot initialise: its log says `initdb: error: could not create directory "/var/lib/postgresql/data/pg_wal": No space left on device`. The host has 71 GB free; the Docker VM is out of disk. Per section 10 the step is SKIPPED (no prune, per rule 14) and the owner action below asks for more Docker disk and a re-run. The failed smoke project was fully removed: no `dealflow-smoke` container or volume remains.
+
 ## Owner actions
+- TODO(owner): the Docker VM has no free disk space, so the smoke stack cannot initialise Postgres. Give Docker Desktop more disk (Settings > Resources), then run `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke`. Never prune the shared images; the smoke project itself was removed.
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads migrations 0089 and 0090 once they are applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.

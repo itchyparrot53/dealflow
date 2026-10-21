@@ -733,8 +733,9 @@ describe("deal reports", () => {
 
       const body = await response.text();
       const lines = body.split("\r\n");
-      expect(lines[0]).toBe('"Group","Segment","Count","Value"');
-      expect(body).toContain('"\'=SUM(A1)"');
+      // The shared RFC 4180 writer quotes only when needed; the formula guard remains.
+      expect(lines[0]).toBe("Group,Segment,Count,Value");
+      expect(body).toContain("'=SUM(A1)");
       currentActor = null;
     });
   });

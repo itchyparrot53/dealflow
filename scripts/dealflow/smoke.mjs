@@ -187,6 +187,45 @@ async function main() {
   ).trim();
   if (count !== "1") throw new Error(`expected one seeded admin, found "${count}"`);
   log("seeded admin survived the restart");
+
+  step = "backup";
+  await backupRoundTrip();
+}
+
+// The image's pg_dump/pg_restore round trip: dump the live smoke database inside the worker
+// container, build an archive with the dump and a manifest, restore into a scratch database in
+// the same Postgres, compare the deals count, then drop the scratch database. Everything stays in
+// the dealflow-smoke project.
+async function backupRoundTrip() {
+  log("checking the backup round trip inside the worker container");
+  const script = `set -e
+SRC="$DATABASE_URL"
+BASE="\${SRC%/*}"
+TARGET="$BASE/dealflow_restore_check"
+rm -rf /tmp/dealflow-backup-check /tmp/dealflow-backup-check.tar.gz
+mkdir -p /tmp/dealflow-backup-check
+pg_dump --format=custom --no-owner --no-privileges --file=/tmp/dealflow-backup-check/db.dump "$SRC"
+printf '{"version":1}' > /tmp/dealflow-backup-check/manifest.json
+tar -czf /tmp/dealflow-backup-check.tar.gz -C /tmp/dealflow-backup-check .
+tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q db.dump
+tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q manifest.json
+psql "$BASE/postgres" -c "DROP DATABASE IF EXISTS dealflow_restore_check"
+psql "$BASE/postgres" -c "CREATE DATABASE dealflow_restore_check"
+pg_restore --clean --if-exists --no-owner --no-privileges --dbname="$TARGET" /tmp/dealflow-backup-check/db.dump
+SRC_COUNT=$(psql "$SRC" -Atc 'select count(*) from deals')
+DST_COUNT=$(psql "$TARGET" -Atc 'select count(*) from deals')
+[ "$SRC_COUNT" = "$DST_COUNT" ] || { echo "deal count mismatch: $SRC_COUNT vs $DST_COUNT"; exit 1; }
+psql "$BASE/postgres" -c "DROP DATABASE dealflow_restore_check"
+echo "backup round trip ok ($SRC_COUNT deals)"`;
+  const out = run(
+    ["compose", "-p", PROJECT, "--env-file", ENV_FILE, "exec", "-T", "worker", "sh", "-c", script],
+    { capture: true },
+  );
+  const last = out.trim().split("\n").pop() ?? "";
+  if (!last.includes("backup round trip ok")) {
+    throw new Error(`backup round trip did not finish: ${out}`);
+  }
+  log(last);
 }
 
 try {
