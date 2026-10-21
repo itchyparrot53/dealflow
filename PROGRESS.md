@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-21 01:22
+Current: 0.4 · Last updated: 2026-10-21 01:24
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -10,7 +10,7 @@ Current: 0.3 · Last updated: 2026-10-21 01:22
 - [x] 0.1 Start Part 5: progress files, kit and baseline
 - [x] 0.2 Trusted client IP (test-first)
 - [x] 0.3 Automations schema and migration
-- [ ] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
+- [x] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Emit from recordChange (test-first)
 - [ ] 1.2 Create and document events
@@ -59,6 +59,13 @@ Current: 0.3 · Last updated: 2026-10-21 01:22
 - 0.3: `drizzle-kit generate --name dealflow_automations` produced `0083_dealflow_automations.sql` creating exactly the five tables of 6.4 (`domain_events`, `automations`, `automation_runs`, `webhook_subscriptions`, `webhook_deliveries`), and `pnpm db:migrate:dev` applied it to the host dev database; all five tables and every named index were confirmed by query.
 - 0.3: `txid` is a Drizzle `bigint` in `number` mode defaulting to SQL `txid_current()`, and `event_id` in runs and deliveries is nullable with no FK so event retention can delete events while the run and delivery logs outlive them, as 6.4 notes.
 - 0.3: `secret_enc` reuses the same local `bytea` customType `src/db/schema/email.ts` uses, so encrypted webhook secrets are bytea exactly like mail passwords and OAuth tokens, and `steps` defaults to `'[]'::jsonb`.
+
+- 0.4: the three test files were written first and run red (all three failed with "Cannot find module") before any implementation; the pure modules then made all 57 cases pass.
+- 0.4: 6.3's literal `E_AUTOMATION_INPUT_INVALID` and `E_WEBHOOK_INPUT_INVALID` cannot satisfy the registry's enforced `E_<DOMAIN>_<NNN>` format (`errorIds.test.ts`), so they are `AUTOMATION_INPUT_INVALID: "E_AUTOMATION_006"` and `WEBHOOK_INPUT_INVALID: "E_WEBHOOK_005"`, following Part 4's `E_DOC_011` precedent; the other nine 6.3 IDs use their numbers unchanged, and AUTOMATION plus WEBHOOK joined the registry's domain allow-list in the test.
+- 0.4: the trigger helpers are generic over the literal type; a plain `(type: TriggerType)` helper widened every variant's `type` to the whole union, which collapsed Zod's discriminated union and broke narrowing (the first typecheck failure), so the fix was generics, not a cast.
+- 0.4: `deal.updated` with `fields: []` matches any change, because the editor leaves the field list unset by default and an empty list means the same thing; `matchesTrigger` still requires one of the listed fields when the list has entries.
+- 0.4: the signature test pins the HMAC vector `38877139021993b830af32feea6e18a8da83eb2f6e49ee50bd9e4cf4ca4d3789` computed once with `node:crypto` for secret `whsec_test`, timestamp `1700000000`, body `{"a":1}`, so a change to the signing input fails instead of agreeing with itself.
+- 0.4: 6.7 types the condition as the deal `FilterDefinition`, so the schema validates deal fields only; Task 2.1 will decide how a person/organization condition target evaluates a stored condition and log it then.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

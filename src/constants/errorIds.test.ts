@@ -12,7 +12,7 @@ describe("error IDs", () => {
     // GOAL covers quota goals and their progress. ENRICH covers the lead-research providers.
     // UI covers design-system invariants, e.g. a chart part rendered outside its container.
     // Part 3 adds PRODUCT (catalog and deal lines) and CURRENCY (rates and conversion).
-    // Part 4 adds DOC (quotes and invoices).
+    // Part 4 adds DOC (quotes and invoices). Part 5 adds AUTOMATION and WEBHOOK.
     const domains = [
       "AUTH",
       "OAUTH",
@@ -47,6 +47,8 @@ describe("error IDs", () => {
       "PRODUCT",
       "CURRENCY",
       "DOC",
+      "AUTOMATION",
+      "WEBHOOK",
     ];
     for (const id of Object.values(ERROR_IDS)) {
       const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);

@@ -248,6 +248,21 @@ export const ERROR_IDS = {
   DOC_INPUT_INVALID: "E_DOC_011", // document, template or settings input failed Zod validation
   DOC_LAST_TEMPLATE: "E_DOC_012", // delete refused: a kind must keep one template
 
+  // AUTOMATION (automations and their run log)
+  AUTOMATION_NOT_FOUND: "E_AUTOMATION_001", // automation not found
+  AUTOMATION_DEFINITION_INVALID: "E_AUTOMATION_002", // definition failed validation (context: issues)
+  AUTOMATION_ACTION_FAILED: "E_AUTOMATION_003", // action failed (context: index, type, cause id)
+  AUTOMATION_DRAFT_INVALID: "E_AUTOMATION_004", // AI draft could not be turned into a valid definition
+  AUTOMATION_EMAIL_SKIPPED: "E_AUTOMATION_005", // email action skipped by cooldown or missing recipient
+  AUTOMATION_INPUT_INVALID: "E_AUTOMATION_006", // action input failed Zod
+
+  // WEBHOOK (outgoing webhooks)
+  WEBHOOK_NOT_FOUND: "E_WEBHOOK_001", // subscription not found
+  WEBHOOK_URL_REFUSED: "E_WEBHOOK_002", // URL refused (scheme, credentials, or private target)
+  WEBHOOK_DELIVERY_FAILED: "E_WEBHOOK_003", // delivery failed (context: status code or network cause)
+  WEBHOOK_DISABLED: "E_WEBHOOK_004", // subscription disabled
+  WEBHOOK_INPUT_INVALID: "E_WEBHOOK_005", // action input failed Zod
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
