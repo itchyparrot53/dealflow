@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-21 01:49
+Current: 2.4 · Last updated: 2026-10-21 01:51
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -20,7 +20,7 @@ Current: 2.3 · Last updated: 2026-10-21 01:49
 - [x] 1.4 Phase 1 QA gate
 - [x] 2.1 Runner, conditions and the capability (test-first)
 - [x] 2.2 Core actions
-- [ ] 2.3 Email and AI actions
+- [x] 2.3 Email and AI actions
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Safe delivery (test-first)
 - [ ] 3.2 Subscriptions service, test send and redeliver
@@ -102,6 +102,11 @@ Current: 2.3 · Last updated: 2026-10-21 01:49
 - 2.2: `update_deal` calls the deal page's own services (`updateDeal` for the close date, `changeStage`, `changeOwner`, `markWon`, `markLost`) and re-reads the deal before each CAS-based step, so the optimistic timestamp is never stale.
 - 2.2: `create_activity` uses `createActivity`, `add_note` uses `createNote`, and `notify_user` uses `createNotification` with the new `automation` kind and the deal as visibility parent; a notification suppressed by the recipient's visibility is treated as a successful step (nothing to deliver, nothing to fail).
 - 2.2: subject, note body and message render through Part 4's `renderVariables` with a deal context built by `actions/context.ts` (`deal.*`, `person.*`, `organization.name`, `owner.*`).
+
+- 2.3: the four cases were written first and run red (missing modules, then three fixture mistakes), then passed 16/16 with the rest of the file; the cooldown case needed the second deal to reuse the first deal's person, because the cooldown is per automation and person.
+- 2.3: the email action reuses the documents send shape (`getActorMailboxStatus`, `resolveMailProvider`, `sendEmail`, `linkDealId`/`linkPersonId`) and renders the saved `email_templates` row; `send_email` skips with `E_AUTOMATION_005` when there is no person, no address, no mailbox, an unowned template, or an `email:<personId>` step in this automation's last 24 hours.
+- 2.3: the AI actions call `summarizeDeal`, `scoreDeal` and `draftEmail` as the hydrated creator, so provider selection, company and user caps, the rate limit and usage rows are Part 1's own; the summary is written as a note (summary, risks, next steps) and the draft is saved with `saveDraft`, never sent.
+- 2.3: tests install the fake IMAP transport through `setSendEmailActionDepsForTest` (the same injection pattern as Part 4's send) and the deterministic provider through `setAiProviderForTest(fakeProvider())`; the cap case sets the company limit to zero and expects `E_AI_COMPANY_LIMIT` on the step.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

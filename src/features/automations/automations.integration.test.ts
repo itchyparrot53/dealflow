@@ -1,16 +1,23 @@
 import { randomUUID } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { eq, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
   activityTypes,
+  aiUsage,
   automationRuns,
   automations,
   changeLogs,
   deals,
   domainEvents,
+  emailTemplates,
+  notes,
   notifications,
+  persons,
   users,
 } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
@@ -18,6 +25,15 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { dispatchEvents } from "@/features/events/dispatcher";
 import { changeStage } from "@/features/deal-workspace/changeStage";
 import { markWon } from "@/features/deal-workspace/wonLost";
+import { updateAiSettings } from "@/features/ai/aiSettings";
+import { fakeProvider } from "@/features/ai/fakeProvider";
+import { setAiProviderForTest } from "@/features/ai/provider";
+import { FakeStorageClient } from "@/features/files/storageFake";
+import { connectImapMailbox } from "@/features/mail/connect/connect";
+import { createFakeTransportFactory } from "@/features/mail/transport/fake";
+import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { hydrateActor } from "@/server/hydrateActor";
+import { setSendEmailActionDepsForTest } from "./actions/sendEmail";
 import { makeTestDb } from "@/test/db";
 import type { Action, AutomationDefinition, Trigger } from "./definition";
 import { runAutomation } from "./runner";
@@ -60,14 +76,48 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(async () => {
+  setAiProviderForTest(undefined);
+  setSendEmailActionDepsForTest(undefined);
+  if (mailDir !== "") rmSync(mailDir, { recursive: true, force: true });
   await h.close();
 });
+
+let mailDir = "";
+const MAIL_ADDRESS = "automation-owner@example.com";
+
+beforeAll(async () => {
+  mailDir = mkdtempSync(join(tmpdir(), "dfauto-"));
+  const hydrated = await hydrateActor(h.db, admin.id, sig());
+  if (hydrated === null) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "admin hydration failed");
+  await connectImapMailbox(
+    h.db,
+    hydrated,
+    { emailAddress: MAIL_ADDRESS, password: "fake-app-password-1", preset: "purelymail" },
+    { transports: createFakeTransportFactory(mailDir), enqueueSync: () => Promise.resolve() },
+    sig(),
+  );
+  setSendEmailActionDepsForTest({
+    resolveDeps: { transports: createFakeTransportFactory(mailDir) },
+    storage: new FakeStorageClient(),
+  });
+  setAiProviderForTest(fakeProvider());
+  await updateAiSettings(
+    h.db,
+    { enabled: true, companyMonthlyTokenLimit: 5_000_000, userMonthlyTokenLimit: null },
+    sig(),
+  );
+}, 60_000);
 
 beforeEach(async () => {
   // Each case starts with no automations and no pending events, so one case's automations cannot
   // run against the next case's records.
   await h.db.delete(automations);
   await h.db.update(domainEvents).set({ processedAt: new Date() }).where(isNull(domainEvents.processedAt));
+  await updateAiSettings(
+    h.db,
+    { enabled: true, companyMonthlyTokenLimit: 5_000_000, userMonthlyTokenLimit: null },
+    sig(),
+  );
 });
 
 async function seedDeal(value = "100.00"): Promise<typeof deals.$inferSelect> {
@@ -429,5 +479,140 @@ describe("automation service", () => {
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.AUTOMATION_INPUT_INVALID);
+  });
+});
+
+async function seedPerson(): Promise<string> {
+  const [row] = await h.db
+    .insert(persons)
+    .values({
+      name: "Ada Buyer",
+      firstName: "Ada",
+      primaryEmail: "ada@example.com",
+      emails: [{ label: "work", value: "ada@example.com", primary: true }],
+      ownerId: admin.id,
+      visibilityLevel: "all",
+    })
+    .returning({ id: persons.id });
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "person seed failed");
+  return row.id;
+}
+
+async function seedDealWithPerson(existingPersonId?: string): Promise<typeof deals.$inferSelect> {
+  const personId = existingPersonId ?? (await seedPerson());
+  const [row] = await h.db
+    .insert(deals)
+    .values({
+      title: "Email deal",
+      pipelineId,
+      stageId,
+      ownerId: admin.id,
+      visibilityLevel: "all",
+      boardPosition: "0",
+      value: "100.00",
+      personId,
+    })
+    .returning();
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "deal seed failed");
+  return row;
+}
+
+async function seedTemplate(): Promise<string> {
+  const [row] = await h.db
+    .insert(emailTemplates)
+    .values({
+      name: "Automation template",
+      subject: "Hello {{person.name}}",
+      bodyHtml: "<p>Hi {{person.first_name}}</p>",
+      ownerId: admin.id,
+    })
+    .returning({ id: emailTemplates.id });
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "template seed failed");
+  return row.id;
+}
+
+describe("email and AI actions", () => {
+  it("sends an email template once, then hits the cooldown", async () => {
+    const templateId = await seedTemplate();
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "send_email", templateId, to: "deal_person" }],
+    });
+    const deal = await seedDealWithPerson();
+    const mailbox = await getActorMailboxStatus(h.db, admin.id, sig());
+    expect(mailbox).not.toBeNull();
+    const countMessages = async (): Promise<number> => {
+      const result = await h.db.execute(
+        `SELECT count(*)::int AS count FROM email_messages WHERE account_id = '${mailbox?.id ?? ""}'`,
+      );
+      return (result.rows[0] as { count: number }).count;
+    };
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+    const [firstRun] = await runsFor(automationId);
+    expect(firstRun?.status).toBe("succeeded");
+    expect(await countMessages()).toBe(1);
+
+    const secondDeal = await seedDealWithPerson(deal.personId ?? undefined);
+    await markWon(h.db, admin, secondDeal.id, sig());
+    await dispatchAndRun();
+    const runs = await runsFor(automationId);
+    const cooldown = runs.find((run) => run.entityId === secondDeal.id);
+    expect(cooldown?.status).toBe("failed");
+    expect(cooldown?.errorId).toBe(ERROR_IDS.AUTOMATION_EMAIL_SKIPPED);
+    expect(await countMessages()).toBe(1);
+  });
+
+  it("skips send_email when the person has no address", async () => {
+    const templateId = await seedTemplate();
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "send_email", templateId, to: "deal_person" }],
+    });
+    const deal = await seedDeal();
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+    const [run] = await runsFor(automationId);
+    expect(run?.status).toBe("failed");
+    expect(run?.errorId).toBe(ERROR_IDS.AUTOMATION_EMAIL_SKIPPED);
+  });
+
+  it("writes an AI summary as a note and records usage", async () => {
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "ai_summarize_deal" }],
+    });
+    const deal = await seedDeal();
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+    const [run] = await runsFor(automationId);
+    expect(run?.status).toBe("succeeded");
+
+    const [note] = await h.db.select().from(notes).where(eq(notes.entityId, deal.id));
+    expect(note?.body).toContain("FAKE summary of this deal.");
+    const usage = await h.db.select().from(aiUsage).where(eq(aiUsage.feature, "deal_summary"));
+    expect(usage.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("fails the step with the AI cap error when the company is over its limit", async () => {
+    await updateAiSettings(
+      h.db,
+      { enabled: true, companyMonthlyTokenLimit: 0, userMonthlyTokenLimit: null },
+      sig(),
+    );
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "ai_score_deal" }],
+    });
+    const deal = await seedDeal();
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+    const [run] = await runsFor(automationId);
+    expect(run?.status).toBe("failed");
+    expect(run?.errorId).toBe(ERROR_IDS.AI_COMPANY_LIMIT);
   });
 });
