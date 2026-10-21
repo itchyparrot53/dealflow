@@ -21,20 +21,20 @@ import {
   users,
 } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { PermSetUser } from "@/features/permissions/effective";
-import { dispatchEvents } from "@/features/events/dispatcher";
-import { changeStage } from "@/features/deal-workspace/changeStage";
-import { markWon } from "@/features/deal-workspace/wonLost";
 import { updateAiSettings } from "@/features/ai/aiSettings";
 import { fakeProvider } from "@/features/ai/fakeProvider";
 import { setAiProviderForTest } from "@/features/ai/provider";
+import { changeStage } from "@/features/deal-workspace/changeStage";
+import { markWon } from "@/features/deal-workspace/wonLost";
+import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { dispatchEvents } from "@/features/events/dispatcher";
 import { FakeStorageClient } from "@/features/files/storageFake";
 import { connectImapMailbox } from "@/features/mail/connect/connect";
 import { createFakeTransportFactory } from "@/features/mail/transport/fake";
-import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
-import { setSendEmailActionDepsForTest } from "./actions/sendEmail";
 import { makeTestDb } from "@/test/db";
+import { setSendEmailActionDepsForTest } from "./actions/sendEmail";
 import type { Action, AutomationDefinition, Trigger } from "./definition";
 import { runAutomation } from "./runner";
 import {
@@ -112,7 +112,10 @@ beforeEach(async () => {
   // Each case starts with no automations and no pending events, so one case's automations cannot
   // run against the next case's records.
   await h.db.delete(automations);
-  await h.db.update(domainEvents).set({ processedAt: new Date() }).where(isNull(domainEvents.processedAt));
+  await h.db
+    .update(domainEvents)
+    .set({ processedAt: new Date() })
+    .where(isNull(domainEvents.processedAt));
   await updateAiSettings(
     h.db,
     { enabled: true, companyMonthlyTokenLimit: 5_000_000, userMonthlyTokenLimit: null },
@@ -227,9 +230,9 @@ describe("runAutomation", () => {
     const calls: string[] = [];
 
     const outcome = await runAutomation(h.db, runId, sig(), {
-      executeAction: async (_ctx, action) => {
+      executeAction: (_ctx, action) => {
         calls.push(action.type);
-        return { ok: false, errorId: ERROR_IDS.AUTOMATION_ACTION_FAILED };
+        return Promise.resolve({ ok: false, errorId: ERROR_IDS.AUTOMATION_ACTION_FAILED });
       },
     });
 
@@ -255,9 +258,9 @@ describe("runAutomation", () => {
     let calls = 0;
 
     const outcome = await runAutomation(h.db, runId, sig(), {
-      executeAction: async () => {
+      executeAction: () => {
         calls += 1;
-        return { ok: true };
+        return Promise.resolve({ ok: true });
       },
     });
 
@@ -309,10 +312,7 @@ describe("core actions", () => {
 
     const [run] = await runsFor(automationId);
     expect(run?.status).toBe("succeeded");
-    const [activity] = await h.db
-      .select()
-      .from(activities)
-      .where(eq(activities.dealId, deal.id));
+    const [activity] = await h.db.select().from(activities).where(eq(activities.dealId, deal.id));
     expect(activity?.subject).toBe("Onboarding call with ");
     expect(activity?.assigneeId).toBe(admin.id);
   });
@@ -343,10 +343,7 @@ describe("core actions", () => {
 
     const [run] = await runsFor(automationId);
     expect(run?.status).toBe("succeeded");
-    const logs = await h.db
-      .select()
-      .from(changeLogs)
-      .where(eq(changeLogs.entityId, deal.id));
+    const logs = await h.db.select().from(changeLogs).where(eq(changeLogs.entityId, deal.id));
     const log = logs.find((row) => row.field === "stageId");
     expect(log).toBeDefined();
     expect(log?.newValue).toBe(to);

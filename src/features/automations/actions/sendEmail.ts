@@ -4,14 +4,14 @@ import { EMAIL_ACTION_COOLDOWN_HOURS } from "@/constants/automations";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { emailTemplates, persons } from "@/db/schema";
+import { renderVariables } from "@/features/documents/variables";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
 import { type SendEmailInput, sendEmail as sendMail } from "@/features/email/send";
-import { renderVariables } from "@/features/documents/variables";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { type ResolveDeps, resolveMailProvider } from "@/features/mail/provider/resolve";
+import type { ActionContext, StepResult } from "../runner";
 import { loadDealRow, loadVariableContext } from "./context";
 import { registerActionHandler } from "./registry";
-import type { ActionContext, StepResult } from "../runner";
 
 // send_email sends one saved email template through the automation creator's connected mailbox to
 // the deal's primary person. It is rate-limited per automation and person (`EMAIL_ACTION_COOLDOWN_HOURS`)

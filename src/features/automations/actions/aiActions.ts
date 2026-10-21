@@ -7,9 +7,9 @@ import { createNote } from "@/features/collaboration/notesRepo";
 import { saveDraft } from "@/features/email/draftRepo";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
 import { hydrateActor } from "@/server/hydrateActor";
+import type { ActionContext, StepResult } from "../runner";
 import { loadDealRow } from "./context";
 import { registerActionHandler } from "./registry";
-import type { ActionContext, StepResult } from "../runner";
 
 // AI actions call Part 1's functions with the automation's creator as the actor, so the same
 // provider selection, company and user caps, rate limit and usage rows apply as for a manual call.

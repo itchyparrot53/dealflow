@@ -2,11 +2,11 @@ import { sql } from "drizzle-orm";
 import {
   compileContactFilter,
   ORG_COLUMN_SQL,
+  ORG_FILTER_CONFIG,
   orgFilterSchema,
   PERSON_COLUMN_SQL,
-  personFilterSchema,
-  ORG_FILTER_CONFIG,
   PERSON_FILTER_CONFIG,
+  personFilterSchema,
 } from "@/features/contacts/contactFilter";
 import { filterToSql } from "@/features/saved-filters/filterAst";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";

@@ -1,10 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { automations } from "@/db/schema";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { automationDefinitionSchema } from "./definition";
 
@@ -82,7 +82,9 @@ export async function createAutomation(
     })
     .returning();
   if (row === undefined) {
-    return err(new AppError(ERROR_IDS.AUTOMATION_NOT_FOUND, "Automation insert returned no row", {}));
+    return err(
+      new AppError(ERROR_IDS.AUTOMATION_NOT_FOUND, "Automation insert returned no row", {}),
+    );
   }
   return ok(row);
 }

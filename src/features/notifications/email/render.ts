@@ -114,6 +114,12 @@ export function renderNotificationEmail(
       line = `${recipientName}, a new email arrived on a deal you follow.`;
       break;
     }
+    case "automation": {
+      subject = "Automation notification";
+      const message = typeof row.payload.message === "string" ? row.payload.message : null;
+      line = message ?? `${recipientName}, an automation ran on a deal you own.`;
+      break;
+    }
     case "document_viewed":
     case "document_accepted":
     case "document_declined": {

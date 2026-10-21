@@ -2,6 +2,7 @@ import type { PgBoss as PgBossType } from "pg-boss";
 import { PgBoss } from "pg-boss";
 import { env } from "@/config/env";
 import { registerReminderWorker } from "@/features/activities/reminders";
+import { registerAutomationRunner } from "@/features/automations/runner";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerEventJobs } from "@/features/events/dispatcherJob";
@@ -11,7 +12,6 @@ import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleMan
 import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
-import { registerAutomationRunner } from "@/features/automations/runner";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { setBoss } from "@/jobs/boss";
 

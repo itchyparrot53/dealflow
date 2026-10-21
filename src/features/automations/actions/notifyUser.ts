@@ -30,7 +30,11 @@ registerActionHandler("notify_user", async (ctx, action) => {
       .from(users)
       .where(eq(users.id, action.to.userId));
     if (user === undefined || !user.isActive) {
-      return { ok: false, errorId: ERROR_IDS.AUTOMATION_ACTION_FAILED, detail: "recipient missing" };
+      return {
+        ok: false,
+        errorId: ERROR_IDS.AUTOMATION_ACTION_FAILED,
+        detail: "recipient missing",
+      };
     }
     recipientId = user.id;
   }

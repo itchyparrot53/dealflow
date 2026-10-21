@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { deals, organizations, persons, users } from "@/db/schema";
 import type { VarContext } from "@/features/documents/variables";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 
 // The deal context automation text fields render against. Keys match Part 4's variable vocabulary,
 // so {{person.name}} in an automation subject and in a template mean the same thing.

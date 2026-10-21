@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_AUTOMATION_RUN } from "@/constants/jobNames";
 import { type Db, db as defaultDb } from "@/db/client";
-import * as schema from "@/db/schema";
+import type * as schema from "@/db/schema";
 import { activities, automationRuns, automations, documents, users } from "@/db/schema";
 import { runInChain } from "@/features/events/chainContext";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -98,11 +98,7 @@ async function resolveTarget(db: Db, run: typeof automationRuns.$inferSelect): P
   }
 }
 
-async function defaultExecutor(
-  ctx: ActionContext,
-  action: Action,
-  _index: number,
-): Promise<StepResult> {
+async function defaultExecutor(ctx: ActionContext, action: Action): Promise<StepResult> {
   const handler = getActionHandler(action.type);
   if (handler === undefined) {
     return {
@@ -115,6 +111,51 @@ async function defaultExecutor(
 }
 
 type RunRow = typeof automationRuns.$inferSelect;
+
+async function conditionBlocks(
+  db: Tx,
+  run: RunRow,
+  definition: AutomationDefinition,
+  target: Target,
+  signal: AbortSignal,
+): Promise<boolean> {
+  if (definition.condition === null || definition.condition.conditions.length === 0) return false;
+  if (target.dealId === null && target.entity === "deal") return true;
+  const entityId = target.entity === "deal" ? target.dealId : run.entityId;
+  if (entityId === null) return true;
+  return !(await evaluateCondition(db, target.entity, entityId, definition.condition, signal));
+}
+
+async function executeSteps(
+  ctx: ActionContext,
+  definition: AutomationDefinition,
+  run: RunRow,
+  executeAction: ActionExecutor,
+): Promise<{ steps: StepRecord[]; failure: string | null }> {
+  const steps: StepRecord[] = [];
+  const state: { failure: string | null } = { failure: null };
+  await runInChain(
+    { chainId: run.chainId, depth: run.depth + 1, automationId: ctx.automationId },
+    async () => {
+      for (const [index, action] of definition.actions.entries()) {
+        ctx.signal.throwIfAborted();
+        const result = await executeAction(ctx, action, index);
+        steps.push({
+          index,
+          type: action.type,
+          ok: result.ok,
+          ...(result.errorId === undefined ? {} : { errorId: result.errorId }),
+          ...(result.detail === undefined ? {} : { detail: result.detail }),
+        });
+        if (!result.ok) {
+          state.failure = result.errorId ?? ERROR_IDS.AUTOMATION_ACTION_FAILED;
+          break;
+        }
+      }
+    },
+  );
+  return { steps, failure: state.failure };
+}
 
 async function finish(
   db: Tx,
@@ -130,7 +171,11 @@ async function finish(
     .where(eq(automationRuns.id, run.id));
   await db
     .update(automations)
-    .set({ runCount: sql`${automations.runCount} + 1`, lastRunAt: new Date(), updatedAt: new Date() })
+    .set({
+      runCount: sql`${automations.runCount} + 1`,
+      lastRunAt: new Date(),
+      updatedAt: new Date(),
+    })
     .where(eq(automations.id, run.automationId));
 }
 
@@ -161,7 +206,12 @@ export async function runAutomation(
       .where(eq(automations.id, run.automationId));
     if (automation === undefined || !automation.enabled) {
       await finish(tx, run, "skipped", [], null, "disabled");
-      return { status: "skipped", errorId: null, steps: [], skipReason: "disabled" } satisfies RunOutcome;
+      return {
+        status: "skipped",
+        errorId: null,
+        steps: [],
+        skipReason: "disabled",
+      } satisfies RunOutcome;
     }
 
     const [owner] =
@@ -194,30 +244,14 @@ export async function runAutomation(
     const definition = parsed.data;
 
     const target = await resolveTarget(tx, run);
-    if (definition.condition !== null && definition.condition.conditions.length > 0) {
-      if (target.dealId === null && target.entity === "deal") {
-        await finish(tx, run, "skipped", [], null, "condition_false");
-        return {
-          status: "skipped",
-          errorId: null,
-          steps: [],
-          skipReason: "condition_false",
-        } satisfies RunOutcome;
-      }
-      const entityId = target.entity === "deal" ? target.dealId : run.entityId;
-      const matches =
-        entityId === null
-          ? false
-          : await evaluateCondition(tx, target.entity, entityId, definition.condition, signal);
-      if (!matches) {
-        await finish(tx, run, "skipped", [], null, "condition_false");
-        return {
-          status: "skipped",
-          errorId: null,
-          steps: [],
-          skipReason: "condition_false",
-        } satisfies RunOutcome;
-      }
+    if (await conditionBlocks(tx, run, definition, target, signal)) {
+      await finish(tx, run, "skipped", [], null, "condition_false");
+      return {
+        status: "skipped",
+        errorId: null,
+        steps: [],
+        skipReason: "condition_false",
+      } satisfies RunOutcome;
     }
 
     const actor: PermSetUser = {
@@ -239,40 +273,23 @@ export async function runAutomation(
       signal,
     };
 
-    const steps: StepRecord[] = [];
-    const state: { failure: string | null } = { failure: null };
-    await runInChain(
-      { chainId: run.chainId, depth: run.depth + 1, automationId: automation.id },
-      async () => {
-        for (const [index, action] of definition.actions.entries()) {
-          signal.throwIfAborted();
-          const result = await executeAction(ctx, action, index);
-          steps.push({
-            index,
-            type: action.type,
-            ok: result.ok,
-            ...(result.errorId === undefined ? {} : { errorId: result.errorId }),
-            ...(result.detail === undefined ? {} : { detail: result.detail }),
-          });
-          if (!result.ok) {
-            state.failure = result.errorId ?? ERROR_IDS.AUTOMATION_ACTION_FAILED;
-            break;
-          }
-        }
-      },
-    );
-
-    if (state.failure !== null) {
-      await finish(tx, run, "failed", steps, state.failure, null);
+    const executed = await executeSteps(ctx, definition, run, executeAction);
+    if (executed.failure !== null) {
+      await finish(tx, run, "failed", executed.steps, executed.failure, null);
       return {
         status: "failed",
-        errorId: state.failure,
-        steps,
+        errorId: executed.failure,
+        steps: executed.steps,
         skipReason: null,
       } satisfies RunOutcome;
     }
-    await finish(tx, run, "succeeded", steps, null, null);
-    return { status: "succeeded", errorId: null, steps, skipReason: null } satisfies RunOutcome;
+    await finish(tx, run, "succeeded", executed.steps, null, null);
+    return {
+      status: "succeeded",
+      errorId: null,
+      steps: executed.steps,
+      skipReason: null,
+    } satisfies RunOutcome;
   });
 }
 const runPayloadSchema = z.object({ runId: z.string().uuid() });
