@@ -308,9 +308,23 @@ Upstream files edited for the part (port future upstream fixes here by hand):
 - `src/features/ai/types.ts`, `src/features/ai/actions/dealActions.ts`, `src/server/worker.ts`,
   `src/constants/jobNames.ts`: the `insight_explain` feature, the bulk score action, its queue and
   worker registration.
+- `src/constants/nav.ts`, `src/constants/strings.ts`, `src/components/shell/LeftNav.tsx`,
+  `src/components/shell/NavIcons.tsx`: the "Insights" main-navigation item and its icon.
+- `src/features/deals/DealCard.tsx`: renders the AI score badge from `BoardCard.score`.
+- `src/features/deals/DealList.tsx`, `DealListBulkBar.tsx`, `DealListClient.tsx`,
+  `useDealListActions.ts`, `src/constants/aiStrings.ts`: the "Score with AI" bulk action, its
+  confirm dialog, inline note and server action call.
+- `src/features/stats/ui/GoalsWidget.tsx`: `GoalRow` is exported so a dashboard goal widget reuses it.
+- `scripts/seed-demo.ts`: calls the new insights demo seed.
 - `src/db/schema/index.ts`: exports the insights schema.
 - `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the INSIGHT IDs and their domain.
 - `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,
   `src/features/notifications/ui/deepLink.ts`, `ui/NotificationItem.tsx`,
   `src/features/notifications/email/render.ts`, `src/features/notifications/preferences.test.ts`,
   `schema.test.ts`: the `ai_bulk_score` kind and its copy.
+
+### Part 7 demo and docs
+
+- `scripts/seed-demo-insights.ts`: the default dashboard, one private activities report and a shared
+  "Team activity" dashboard (with a goal widget when the demo has a goal).
+- `docs/dealflow/INSIGHTS.md`: new; `README.md` gained the "Insights" section.

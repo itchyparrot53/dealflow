@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-21 14:16
+Current: 3.5 · Last updated: 2026-10-21 14:27
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -25,7 +25,7 @@ Current: 3.4 · Last updated: 2026-10-21 14:16
 - [x] 3.1 Insights home and report builder
 - [x] 3.2 Dashboards
 - [x] 3.3 Score badge and bulk scoring UI
-- [ ] 3.4 Demo seed and docs
+- [x] 3.4 Demo seed and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E insights spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -107,6 +107,10 @@ Current: 3.4 · Last updated: 2026-10-21 14:16
 - 3.3: the board card shows `DealScoreBadge` only when the card row carries a numeric score. The badge uses three token bands (muted under 40, attention 40 to 69, success 70 and above) and always prints the number, so colour is never the only signal; its tooltip uses the sanctioned Tip primitive (no native title).
 - 3.3: "Score with AI" (`bulk-score`) sits in the deals bulk bar, confirms through the existing ConfirmDialog with "Score {n} deals with AI? This uses your AI allowance.", then calls `bulkScoreDealsAction` with the selected ids and shows the inline note "Scoring started. You'll get a notification when it's done." The selection stays, because scoring changes no rows.
 - 3.3: the action returns after enqueueing, so the note is truthful even before the job runs; failures still surface through the app-wide action error reporter.
+
+- 3.4: the demo seed runs `ensureDefaultDashboard` through a Drizzle handle built on the seed's own pool, then recreates its two named reports and the "Team activity" dashboard by name, so a re-run never duplicates. The demo has no goal, so the dashboard gets the activities-by-type widget only; the goal widget is added the moment a demo goal exists, exactly as 6.9 says.
+- 3.4: `pnpm db:seed:demo` ran against the dev database and printed `demo_insight_reports=2 demo_insight_dashboards=1 demo_insight_widgets=1`; a query confirmed "Sales overview" is the only default with 6 widgets, "Team activity" is shared with 1 widget, and "My activities by week" is private.
+- 3.4: `docs/dealflow/INSIGHTS.md` covers measures, groupings, segments, ranges and time zones, charts, caps, currency conversion and excluded deals, visibility, sharing, the default dashboard, CSV, explain (what is sent) and the score badge plus bulk scoring; the README gained a short "Insights" section and UPSTREAM.md lists every upstream file this part touched.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

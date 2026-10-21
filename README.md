@@ -211,3 +211,12 @@ minimum notice, the days-ahead window, buffers and the host's existing timed act
 visitor's own time zone. A booking re-checks the slot under a per-host lock, creates the activity,
 notifies the host and emails the visitor a cancel link. See `docs/dealflow/FORMS.md` and
 `docs/dealflow/SCHEDULING.md`.
+
+## Insights
+
+`/insights` is the reporting area: reports over deals and activities, saved privately or shared with
+the company, and dashboards that arrange reports and goals into widgets. A report compiles to one
+grouped SQL query with the viewer's deal or activity visibility applied, converts each currency to the
+base currency, and reports deals it had to leave out. Charts, CSV export, and an "Explain" insight that
+sends only aggregated rows to the AI layer follow from the same result. The first visit creates a
+shared "Sales overview" dashboard. See `docs/dealflow/INSIGHTS.md`.
