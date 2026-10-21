@@ -53,6 +53,36 @@ function documentEmailCopy(
   };
 }
 
+type FormsBookingType = "form_submission" | "booking_created" | "booking_cancelled";
+
+// One builder for the three Part 6 kinds (form submissions and bookings).
+function formsBookingEmailCopy(
+  type: FormsBookingType,
+  payload: Record<string, unknown>,
+  recipientName: string,
+): { subject: string; line: string } {
+  const formName = payloadString(payload.formName, "a form");
+  const pageTitle = payloadString(payload.pageTitle, "a booking page");
+  const visitor = payloadString(payload.name, "A visitor");
+  switch (type) {
+    case "form_submission":
+      return {
+        subject: `New submission on ${formName}`,
+        line: `${recipientName}, someone submitted ${formName}.`,
+      };
+    case "booking_created":
+      return {
+        subject: `Booked: ${pageTitle}`,
+        line: `${recipientName}, ${visitor} booked ${pageTitle}.`,
+      };
+    case "booking_cancelled":
+      return {
+        subject: `Cancelled: ${pageTitle}`,
+        line: `${recipientName}, ${visitor} cancelled ${pageTitle}.`,
+      };
+  }
+}
+
 // Per-type copy strings. No em dashes; no magic strings duplicated.
 export function renderNotificationEmail(
   row: NotificationRow,
@@ -120,26 +150,13 @@ export function renderNotificationEmail(
       line = message ?? `${recipientName}, an automation ran on a deal you own.`;
       break;
     }
-    case "form_submission": {
-      const formName = typeof row.payload.formName === "string" ? row.payload.formName : "a form";
-      subject = `New submission on ${formName}`;
-      line = `${recipientName}, someone submitted ${formName}.`;
-      break;
-    }
-    case "booking_created": {
-      const pageTitle =
-        typeof row.payload.pageTitle === "string" ? row.payload.pageTitle : "a booking page";
-      subject = `Booked: ${pageTitle}`;
-      const visitor = typeof row.payload.name === "string" ? row.payload.name : "A visitor";
-      line = `${recipientName}, ${visitor} booked ${pageTitle}.`;
-      break;
-    }
+    // Part 6 kinds share one builder for the same reason as documents: keep this switch flat.
+    case "form_submission":
+    case "booking_created":
     case "booking_cancelled": {
-      const pageTitle =
-        typeof row.payload.pageTitle === "string" ? row.payload.pageTitle : "a booking page";
-      subject = `Cancelled: ${pageTitle}`;
-      const visitor = typeof row.payload.name === "string" ? row.payload.name : "A visitor";
-      line = `${recipientName}, ${visitor} cancelled ${pageTitle}.`;
+      const copy = formsBookingEmailCopy(row.type, row.payload, recipientName);
+      subject = copy.subject;
+      line = copy.line;
       break;
     }
     case "document_viewed":

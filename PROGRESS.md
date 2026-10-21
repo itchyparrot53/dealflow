@@ -1,16 +1,17 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-21 03:46
+Current: 1.1 · Last updated: 2026-10-21 03:49
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
+- Phase 1: ceae046
 
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
 - [x] 0.2 Forms and booking schema and migrations
 - [x] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
-- [ ] 0.4 Phase 0 QA gate
+- [x] 0.4 Phase 0 QA gate
 - [ ] 1.1 Forms service and the capability
 - [ ] 1.2 Public submit and events (test-first)
 - [ ] 1.3 Phase 1 QA gate
@@ -31,6 +32,7 @@ Current: 0.4 · Last updated: 2026-10-21 03:46
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5124/5124
+- Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5191/5191 · pure core (zonedTime/slots/fields/spamToken/ics) 67/67
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p5-v1` with `STATUS: COMPLETE`, and HEAD was `935685bd476eb7d5c75d51b3439a8ffe7711aa4c`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
