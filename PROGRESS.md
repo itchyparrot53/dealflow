@@ -1,16 +1,17 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-22 01:10
+Current: 1.1 · Last updated: 2026-10-22 01:50
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
+- Phase 1: 93068017be4b4b47442fc9f0023b413bbfa90ef2
 
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
 - [x] 0.2 Schema, dependencies, env and scripts
 - [x] 0.3 Pure core (test-first)
-- [ ] 0.4 Phase 0 QA gate
+- [x] 0.4 Phase 0 QA gate
 - [ ] 1.1 Manifest, icons, metadata and install
 - [ ] 1.2 Service worker, registration and update prompt
 - [ ] 1.3 Offline records and the offline page
@@ -31,6 +32,7 @@ Current: 0.4 · Last updated: 2026-10-22 01:10
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5320/5320 in 828 files
+- Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5345/5345 in 832 files · no named integration files in this gate (DoD 1 to 4)
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p9-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P9.md` and starts Part 10 at Task 0.1.
