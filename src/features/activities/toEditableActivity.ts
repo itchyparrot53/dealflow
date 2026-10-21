@@ -21,5 +21,6 @@ export function toEditableActivity(
     location: row.location,
     done: row.done,
     assigneeId: row.assigneeId,
+    recurrence: row.recurrenceRule ?? null,
   };
 }

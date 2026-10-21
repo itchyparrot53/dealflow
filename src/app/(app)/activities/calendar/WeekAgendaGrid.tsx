@@ -23,6 +23,7 @@ import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { AgendaDayColumn } from "./AgendaDayColumn";
 import { AgendaDayHeader } from "./AgendaDayHeader";
 import { AllDayLane } from "./AllDayLane";
+import { CalendarDrag, useRescheduleActivity } from "./calendarDrag";
 import { NowLine } from "./NowLine";
 import { TimeGutter } from "./TimeGutter";
 
@@ -51,6 +52,7 @@ function toEditable(a: CalendarActivity, typeIdByKey: Map<string, string>): Edit
     location: a.location ?? null,
     done: a.done,
     assigneeId: a.assigneeId ?? null,
+    recurrence: a.recurrence?.rule ?? null,
   };
 }
 
@@ -137,89 +139,102 @@ export function WeekAgendaGrid({
     setCreateSlot(slotDateTime(iso, hour));
   }, []);
 
+  const { reschedule, error: dragError } = useRescheduleActivity();
+
   return (
-    <div>
-      <div className="overflow-hidden rounded-md border border-border bg-card">
-        {/* Headers, all-day lane and hour grid share ONE scroll box. Split across two, the scrolling
+    <CalendarDrag
+      onDrop={(activity, target) => {
+        void reschedule(activity, target);
+      }}
+    >
+      <div>
+        {dragError !== null && (
+          <p role="alert" className="mb-2 text-sm text-destructive">
+            {dragError}
+          </p>
+        )}
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          {/* Headers, all-day lane and hour grid share ONE scroll box. Split across two, the scrolling
             half loses the scrollbar's width wherever scrollbars are not overlays, and the same
             gridTemplateColumns then resolves against two different widths: the columns stop lining
             up with their own headings. Sticky keeps the pinned rows visible without that. */}
-        {/* relative so the hour grid's offsetTop measures from this box, which is what the scroll
+          {/* relative so the hour grid's offsetTop measures from this box, which is what the scroll
             anchor adds to the target hour to clear the pinned rows above it. */}
-        <div ref={scrollRef} data-agenda-scroll className="relative max-h-[60vh] overflow-y-auto">
-          <div className="sticky top-0 z-30 bg-card">
-            <div
-              className="grid border-b border-border"
-              style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
-            >
-              <div className="bg-muted/40" />
-              {dayIsos.map((iso) => (
-                <AgendaDayHeader key={iso} iso={iso} today={iso === todayIso} />
-              ))}
-            </div>
-
-            {allDayRows > 0 && (
+          <div ref={scrollRef} data-agenda-scroll className="relative max-h-[60vh] overflow-y-auto">
+            <div className="sticky top-0 z-30 bg-card">
               <div
                 className="grid border-b border-border"
                 style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
               >
-                <div className="bg-muted/40 px-1.5 py-1 text-right text-[10px] text-muted-foreground">
-                  All day
-                </div>
+                <div className="bg-muted/40" />
                 {dayIsos.map((iso) => (
-                  <AllDayLane
-                    key={iso}
-                    dayLabel={isoToDayLabel(iso)}
-                    items={grouped.get(iso) ?? NO_ITEMS}
-                    rows={allDayRows}
-                    onOpenActivity={openActivity}
-                  />
+                  <AgendaDayHeader key={iso} iso={iso} today={iso === todayIso} />
                 ))}
               </div>
-            )}
-          </div>
 
-          <div
-            ref={hoursRef}
-            className="relative grid"
-            style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
-          >
-            <TimeGutter />
-            {dayIsos.map((iso) => (
-              <AgendaDayColumn
-                key={iso}
-                iso={iso}
-                dayLabel={isoToDayLabel(iso)}
-                items={grouped.get(iso) ?? NO_ITEMS}
-                onOpenActivity={openActivity}
-                onOpenSlot={openSlot}
-              />
-            ))}
-            {showNowLine && now !== null && <NowLine now={now} />}
+              {allDayRows > 0 && (
+                <div
+                  className="grid border-b border-border"
+                  style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
+                >
+                  <div className="bg-muted/40 px-1.5 py-1 text-right text-[10px] text-muted-foreground">
+                    All day
+                  </div>
+                  {dayIsos.map((iso) => (
+                    <AllDayLane
+                      key={iso}
+                      dayLabel={isoToDayLabel(iso)}
+                      items={grouped.get(iso) ?? NO_ITEMS}
+                      rows={allDayRows}
+                      onOpenActivity={openActivity}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div
+              ref={hoursRef}
+              className="relative grid"
+              style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
+            >
+              <TimeGutter />
+              {dayIsos.map((iso) => (
+                <AgendaDayColumn
+                  key={iso}
+                  iso={iso}
+                  dayLabel={isoToDayLabel(iso)}
+                  items={grouped.get(iso) ?? NO_ITEMS}
+                  onOpenActivity={openActivity}
+                  onOpenSlot={openSlot}
+                />
+              ))}
+              {showNowLine && now !== null && <NowLine now={now} />}
+            </div>
           </div>
         </div>
+
+        {createSlot !== null && (
+          <AddActivityModal
+            onClose={() => setCreateSlot(null)}
+            onCreated={refresh}
+            defaultDate={createSlot.date}
+            defaultTime={createSlot.time}
+          />
+        )}
+
+        {selected !== null && (
+          <ActivityEditModal
+            activity={toEditable(selected, typeIdByKey)}
+            onClose={() => setSelectedId(null)}
+            onSaved={refresh}
+            onMarkedDone={(activityId) => {
+              if (activityId !== selected.id) return;
+              if (promptAfterDone(followUpLinksOf(selected), refresh)) setSelectedId(null);
+            }}
+          />
+        )}
       </div>
-
-      {createSlot !== null && (
-        <AddActivityModal
-          onClose={() => setCreateSlot(null)}
-          onCreated={refresh}
-          defaultDate={createSlot.date}
-          defaultTime={createSlot.time}
-        />
-      )}
-
-      {selected !== null && (
-        <ActivityEditModal
-          activity={toEditable(selected, typeIdByKey)}
-          onClose={() => setSelectedId(null)}
-          onSaved={refresh}
-          onMarkedDone={(activityId) => {
-            if (activityId !== selected.id) return;
-            if (promptAfterDone(followUpLinksOf(selected), refresh)) setSelectedId(null);
-          }}
-        />
-      )}
-    </div>
+    </CalendarDrag>
   );
 }

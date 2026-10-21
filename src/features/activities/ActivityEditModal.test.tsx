@@ -42,7 +42,12 @@ const { editActivityAction, deleteActivityAction, completeActivityAction } = vi.
   deleteActivityAction: vi.fn(() => Promise.resolve({ ok: true as const, value: { id: "a1" } })),
   completeActivityAction: vi.fn(() => Promise.resolve({ ok: true as const, value: { id: "a1" } })),
 }));
-vi.mock("./actions", () => ({ editActivityAction, deleteActivityAction, completeActivityAction }));
+vi.mock("./actions", () => ({
+  editActivityAction,
+  deleteActivityAction,
+  completeActivityAction,
+  setRecurrenceAction: vi.fn(async () => ({ ok: true, value: { id: "a1" } })),
+}));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
 import { ActivityEditModal } from "./ActivityEditModal";

@@ -18,6 +18,8 @@ export interface EditableActivity {
   location: string | null;
   done: boolean;
   assigneeId?: string | null;
+  // Raw recurrence rule for the editor; absent when the activity does not repeat.
+  recurrence?: unknown;
 }
 
 export interface EditFormState {

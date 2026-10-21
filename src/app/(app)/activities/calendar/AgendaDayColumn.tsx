@@ -1,4 +1,6 @@
 "use client";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { memo, useCallback, useRef, useState } from "react";
 import { layoutTimed, splitAllDay } from "@/features/activities/agendaLayout";
 import { DEFAULT_START_HOUR } from "@/features/activities/agendaScroll";
@@ -6,6 +8,7 @@ import type { CalendarActivity } from "@/features/activities/calendar";
 import { HOUR_HEIGHT_PX, HOURS, hourLabel } from "@/features/activities/weekAgenda";
 import { cn } from "@/lib/utils";
 import { ActivityChip } from "./calendarChip";
+import { useCalendarDrop } from "./calendarDrag";
 import { MoreActivitiesChip } from "./MoreActivitiesChip";
 
 const COLUMN_HEIGHT_PX = HOURS.length * HOUR_HEIGHT_PX;
@@ -18,6 +21,83 @@ const COLUMN_HEIGHT_PX = HOURS.length * HOUR_HEIGHT_PX;
 // class names from the source text, so an interpolated one is never generated.
 const MORE_WIDTH_CLASS = "w-[min(max(30%,5rem),60%)]";
 const CHIP_BESIDE_MORE_CLASS = "w-[calc(100%-min(max(30%,5rem),60%))]";
+
+// One droppable hour lane. Extracted so each lane can call the drop hook (hooks cannot run in a
+// map callback), while keeping the roving tabindex the column already implements.
+function HourLane({
+  iso,
+  hour,
+  tabIndex,
+  onSelect,
+  onKeyDown,
+}: {
+  iso: string;
+  hour: number;
+  tabIndex: number;
+  onSelect: (iso: string, hour: number) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>, hour: number) => void;
+}): React.ReactNode {
+  const { setNodeRef, isOver } = useCalendarDrop({ date: iso, hour });
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      data-hour={hour}
+      tabIndex={tabIndex}
+      aria-label={`Add activity on ${iso} at ${hourLabel(hour)}`}
+      onClick={() => onSelect(iso, hour)}
+      onKeyDown={(e) => onKeyDown(e, hour)}
+      className={
+        isOver
+          ? "absolute inset-x-0 border-t border-border/60 bg-accent/40"
+          : "absolute inset-x-0 border-t border-border/60 hover:bg-accent/30"
+      }
+      style={{ top: hour * HOUR_HEIGHT_PX, height: HOUR_HEIGHT_PX }}
+    />
+  );
+}
+
+// One timed block. Same wrapper element as before (the drag ref/listeners go on it), so the grid's
+// positioning and the pixel assertions that read it are unchanged.
+function TimedBlock({
+  activity,
+  topPx,
+  heightPx,
+  leftPct,
+  widthPct,
+  overflowing,
+  onOpenActivity,
+}: {
+  activity: CalendarActivity;
+  topPx: number;
+  heightPx: number;
+  leftPct: number;
+  widthPct: number;
+  overflowing: boolean;
+  onOpenActivity: (activity: CalendarActivity) => void;
+}): React.ReactNode {
+  const { listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: activity.id,
+    data: { activity },
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      className={cn("absolute z-10 overflow-hidden px-px", overflowing && CHIP_BESIDE_MORE_CLASS)}
+      style={{
+        top: topPx,
+        height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
+        left: overflowing ? 0 : `${leftPct}%`,
+        width: overflowing ? undefined : `${widthPct}%`,
+        transform: transform === null ? undefined : CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.4 : 1,
+      }}
+    >
+      <ActivityChip a={activity} onOpen={onOpenActivity} className="h-full" />
+    </div>
+  );
+}
 
 interface AgendaDayColumnProps {
   iso: string;
@@ -63,24 +143,19 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
       style={{ height: COLUMN_HEIGHT_PX }}
     >
       {placements.map(({ activity, topPx, heightPx, leftPct, widthPct, overflowing }) => (
-        <div
+        <TimedBlock
           key={activity.id}
-          className={cn(
-            "absolute z-10 overflow-hidden px-px",
-            overflowing && CHIP_BESIDE_MORE_CLASS,
-          )}
-          style={{
-            top: topPx,
-            // Clamp to the hours actually remaining in the day: an activity starting late (23:00 +
-            // 120min) would otherwise run past midnight and be clipped by the column instead of
-            // ending visibly at the day boundary.
-            height: Math.min(heightPx, COLUMN_HEIGHT_PX - topPx),
-            left: overflowing ? 0 : `${leftPct}%`,
-            width: overflowing ? undefined : `${widthPct}%`,
-          }}
-        >
-          <ActivityChip a={activity} onOpen={onOpenActivity} className="h-full" />
-        </div>
+          activity={activity}
+          // Clamp to the hours actually remaining in the day: an activity starting late (23:00 +
+          // 120min) would otherwise run past midnight and be clipped by the column instead of
+          // ending visibly at the day boundary.
+          topPx={topPx}
+          heightPx={heightPx}
+          leftPct={leftPct}
+          widthPct={widthPct}
+          overflowing={overflowing}
+          onOpenActivity={onOpenActivity}
+        />
       ))}
       {overflows.map(({ activities, topPx, heightPx }) => (
         <div
@@ -98,16 +173,13 @@ export const AgendaDayColumn = memo(function AgendaDayColumn({
         </div>
       ))}
       {HOURS.map((hour) => (
-        <button
+        <HourLane
           key={hour}
-          type="button"
-          data-hour={hour}
+          iso={iso}
+          hour={hour}
           tabIndex={hour === focusHour ? 0 : -1}
-          aria-label={`Add activity on ${iso} at ${hourLabel(hour)}`}
-          onClick={() => onOpenSlot(iso, hour)}
-          onKeyDown={(e) => onKeyDown(e, hour)}
-          className="absolute inset-x-0 border-t border-border/60 hover:bg-accent/30"
-          style={{ top: hour * HOUR_HEIGHT_PX, height: HOUR_HEIGHT_PX }}
+          onSelect={onOpenSlot}
+          onKeyDown={onKeyDown}
         />
       ))}
     </div>

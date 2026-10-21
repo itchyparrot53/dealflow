@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { HOUR_HEIGHT_PX } from "@/features/activities/weekAgenda";
 import { AgendaDayColumn } from "./AgendaDayColumn";
+import { CalendarDrag } from "./calendarDrag";
 
 afterEach(() => {
   cleanup();
@@ -29,13 +30,15 @@ function mk(id: string, dueAt: Date, durationMinutes: number | null): CalendarAc
 
 function renderColumn(items: CalendarActivity[], onOpenActivity = vi.fn(), onOpenSlot = vi.fn()) {
   render(
-    <AgendaDayColumn
-      iso="2026-07-15"
-      dayLabel="Wednesday 15 July 2026"
-      items={items}
-      onOpenActivity={onOpenActivity}
-      onOpenSlot={onOpenSlot}
-    />,
+    <CalendarDrag onDrop={() => undefined}>
+      <AgendaDayColumn
+        iso="2026-07-15"
+        dayLabel="Wednesday 15 July 2026"
+        items={items}
+        onOpenActivity={onOpenActivity}
+        onOpenSlot={onOpenSlot}
+      />
+    </CalendarDrag>,
   );
   return { onOpenActivity, onOpenSlot };
 }

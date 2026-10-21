@@ -7,6 +7,13 @@ import type { CalendarActivity } from "@/features/activities/calendar";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    useUtils: () => ({
+      activities: {
+        calendarRange: { invalidate: () => Promise.resolve() },
+        listForEntity: { invalidate: () => Promise.resolve() },
+        listRows: { invalidate: () => Promise.resolve() },
+      },
+    }),
     activities: { listTypes: { useQuery: () => ({ data: [] }) } },
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
   },

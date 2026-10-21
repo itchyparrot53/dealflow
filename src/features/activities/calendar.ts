@@ -2,7 +2,7 @@ import { and, eq, isNull, lte, sql } from "drizzle-orm";
 import type { CallDirection, CallOutcome } from "@/constants/productivity";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
-import { activities, activityCalls, activityTypes, users } from "@/db/schema";
+import { activities, activityCalls, activityRecurrence, activityTypes, users } from "@/db/schema";
 import { deals } from "@/db/schema/deals";
 import { leads } from "@/db/schema/leads";
 import { organizations } from "@/db/schema/organizations";
@@ -65,6 +65,8 @@ export interface CalendarActivity {
   orgName?: string | null;
   // Call metadata (outcome, direction, duration) from activity_calls; absent for non-calls.
   call?: { outcome: CallOutcome; direction: CallDirection; durationSeconds: number | null };
+  // Raw recurrence rule for the badge; absent when the activity does not repeat.
+  recurrence?: { rule: unknown; ended: boolean };
 }
 
 interface CalendarRow {
@@ -105,6 +107,8 @@ interface CalendarRow {
   callOutcome: string | null;
   callDirection: string | null;
   callDurationSeconds: number | null;
+  recurrenceRule: unknown;
+  recurrenceEnded: boolean | null;
 }
 
 // Which linked parents the actor may be told about. Seeing the activity comes from its dominant
@@ -174,6 +178,10 @@ function toCalendarActivity(
             direction: row.callDirection as CallDirection,
             durationSeconds: row.callDurationSeconds,
           },
+    recurrence:
+      row.recurrenceRule === null || row.recurrenceRule === undefined
+        ? undefined
+        : { rule: row.recurrenceRule, ended: row.recurrenceEnded === true },
   };
 }
 
@@ -234,10 +242,13 @@ export async function calendarRange(
       callOutcome: activityCalls.outcome,
       callDirection: activityCalls.direction,
       callDurationSeconds: activityCalls.durationSeconds,
+      recurrenceRule: activityRecurrence.rule,
+      recurrenceEnded: activityRecurrence.ended,
     })
     .from(activities)
     .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
     .leftJoin(activityCalls, eq(activityCalls.activityId, activities.id))
+    .leftJoin(activityRecurrence, eq(activityRecurrence.activityId, activities.id))
     .leftJoin(users, eq(users.id, activities.assigneeId))
     .leftJoin(deals, and(eq(deals.id, activities.dealId), isNull(deals.deletedAt)))
     .leftJoin(pipelines, eq(pipelines.id, deals.pipelineId))

@@ -1,9 +1,22 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { monthGridDays } from "@/features/activities/monthGrid";
+
+vi.mock("@/lib/trpc-client", () => ({
+  trpc: {
+    useUtils: () => ({
+      activities: {
+        calendarRange: { invalidate: () => Promise.resolve() },
+        listForEntity: { invalidate: () => Promise.resolve() },
+        listRows: { invalidate: () => Promise.resolve() },
+      },
+    }),
+  },
+}));
+
 import { CalendarClient } from "./CalendarClient";
 import { MonthView } from "./MonthView";
 

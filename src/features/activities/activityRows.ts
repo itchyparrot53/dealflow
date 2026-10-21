@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gte, isNull, lte, type SQL, sql } from "drizzle-orm
 import { alias } from "drizzle-orm/pg-core";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
-import { activities, activityTypes, users } from "@/db/schema";
+import { activities, activityRecurrence, activityTypes, users } from "@/db/schema";
 import { deals } from "@/db/schema/deals";
 import { leads } from "@/db/schema/leads";
 import { organizations } from "@/db/schema/organizations";
@@ -47,6 +47,10 @@ export interface ActivityTableRow {
   personPhone: string | null;
   orgId: string | null;
   orgName: string | null;
+  // Raw recurrence rule (JSONB) for the row badge; null when the activity does not repeat.
+  // Optional so older fixtures that build a row without a recurrence stay valid.
+  recurrenceRule?: unknown;
+  recurrenceEnded?: boolean;
 }
 
 // Structural contact-point shape (persons.phones jsonb) to avoid a nominal type-import mismatch.
@@ -198,9 +202,12 @@ export async function listActivityRows(
       orgLevel: organizations.visibilityLevel,
       orgGroupId: organizations.visibilityGroupId,
       orgVisibleTo: organizations.visibleToUserIds,
+      recurrenceRule: activityRecurrence.rule,
+      recurrenceEnded: activityRecurrence.ended,
     })
     .from(activities)
     .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
+    .leftJoin(activityRecurrence, eq(activityRecurrence.activityId, activities.id))
     .leftJoin(deals, and(eq(deals.id, activities.dealId), isNull(deals.deletedAt)))
     .leftJoin(pipelines, eq(pipelines.id, deals.pipelineId))
     .leftJoin(leads, and(eq(leads.id, activities.leadId), isNull(leads.deletedAt)))
@@ -248,6 +255,8 @@ type JoinedRow = LinkGateColumns & {
   personEmail: string | null;
   personPhones: Point[] | null;
   orgName: string | null;
+  recurrenceRule: unknown;
+  recurrenceEnded: boolean | null;
 };
 
 function toTableRow(row: JoinedRow, gates: LinkGates): ActivityTableRow {
@@ -274,5 +283,7 @@ function toTableRow(row: JoinedRow, gates: LinkGates): ActivityTableRow {
     personPhone: gates.personOk ? primaryPoint(row.personPhones) : null,
     orgId: gates.orgOk ? row.orgVisibleId : null,
     orgName: gates.orgOk ? row.orgName : null,
+    recurrenceRule: row.recurrenceRule ?? null,
+    recurrenceEnded: row.recurrenceEnded === true,
   };
 }

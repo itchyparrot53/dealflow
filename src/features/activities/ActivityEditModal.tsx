@@ -10,8 +10,15 @@ import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ActivityDatePicker } from "./ActivityDatePicker";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
-import { completeActivityAction, deleteActivityAction, editActivityAction } from "./actions";
+import {
+  completeActivityAction,
+  deleteActivityAction,
+  editActivityAction,
+  setRecurrenceAction,
+} from "./actions";
 import { buildActivityPatch, type EditableActivity, isoToLocalParts } from "./activityEditPatch";
+import { type RecurrenceRule, recurrenceRuleSchema } from "./recurrence/rule";
+import { RecurrenceField } from "./recurrence/ui/RecurrenceField";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
 
 const NO_PRIORITY_LABEL = "No priority";
@@ -47,6 +54,10 @@ export function ActivityEditModal({
   const [date, setDate] = useState(initialParts.date);
   const [time, setTime] = useState(initialParts.time);
   const [location, setLocation] = useState(activity.location ?? "");
+  const parsedRecurrence = recurrenceRuleSchema.safeParse(activity.recurrence);
+  const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(
+    parsedRecurrence.success ? parsedRecurrence.data : null,
+  );
   const [doneNow, setDoneNow] = useState(activity.done);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -67,6 +78,15 @@ export function ActivityEditModal({
     if (!r.ok) {
       setPending(false);
       setError(`Could not save activity (${r.error.id})`);
+      return;
+    }
+    const ruleResult = await setRecurrenceAction(
+      { activityId: activity.id, rule: recurrence },
+      readCsrfToken(),
+    );
+    if (!ruleResult.ok) {
+      setPending(false);
+      setError(`Could not save the repeat rule (${ruleResult.error.id})`);
       return;
     }
     await invalidateActivityLists();
@@ -174,6 +194,7 @@ export function ActivityEditModal({
             <span className="mb-1 block font-medium">Start time</span>
             <TimePicker ariaLabel="Start time" value={time} onChange={setTime} />
           </div>
+          <RecurrenceField value={recurrence} onChange={setRecurrence} />
           <label className="block">
             <span className="mb-1 block font-medium">Location</span>
             <input

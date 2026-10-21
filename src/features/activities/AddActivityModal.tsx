@@ -9,11 +9,13 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { ActivityDatePicker } from "@/features/activities/ActivityDatePicker";
 import { composeDueAt } from "@/features/activities/activityTime";
+import type { RecurrenceRule } from "@/features/activities/recurrence/rule";
+import { RecurrenceField } from "@/features/activities/recurrence/ui/RecurrenceField";
 import { ComposerFieldRow } from "@/features/deal-workspace/composer/ComposerFieldRow";
 import { TypeIconRail } from "@/features/deal-workspace/composer/TypeIconRail";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { createActivityAction } from "./actions";
+import { createActivityAction, setRecurrenceAction } from "./actions";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
 
 // Shared icon size for the composer-style field-row leading icons (matches ActivityComposerInline).
@@ -61,6 +63,7 @@ export function AddActivityModal({
   const [startTime, setStartTime] = useState(defaultTime);
   const [personId, setPersonId] = useState("");
   const [orgId, setOrgId] = useState("");
+  const [recurrence, setRecurrence] = useState<RecurrenceRule | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -103,6 +106,17 @@ export function AddActivityModal({
       setPending(false);
       setError(`Could not create activity (${r.error.id})`);
       return;
+    }
+    if (recurrence !== null) {
+      const rule = await setRecurrenceAction(
+        { activityId: r.value.id, rule: recurrence },
+        readCsrfToken(),
+      );
+      if (!rule.ok) {
+        setPending(false);
+        setError(`Could not save the repeat rule (${rule.error.id})`);
+        return;
+      }
     }
     await invalidateActivityLists();
     setPending(false);
@@ -171,6 +185,8 @@ export function AddActivityModal({
               />
             </div>
           </ComposerFieldRow>
+
+          <RecurrenceField value={recurrence} onChange={setRecurrence} />
 
           <ComposerFieldRow icon={<User className={ICON} />}>
             <Combobox

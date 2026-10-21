@@ -5,6 +5,7 @@ import {
   activities,
   activityGuests,
   activityParticipants,
+  activityRecurrence,
   deals,
   organizations,
   persons,
@@ -38,6 +39,8 @@ export interface EditableActivity {
   orgId: string | null;
   guestPersonIds: string[];
   participantUserIds: string[];
+  // Raw recurrence rule for the editor; null or absent when the activity does not repeat.
+  recurrence?: unknown;
   dealTitle: string | null;
   personName: string | null;
   orgName: string | null;
@@ -137,9 +140,14 @@ export async function getActivityForEdit(
     .from(activityParticipants)
     .where(eq(activityParticipants.activityId, id));
   const names = await linkNames(db, actor, row, signal);
+  const [recurrence] = await db
+    .select({ rule: activityRecurrence.rule })
+    .from(activityRecurrence)
+    .where(eq(activityRecurrence.activityId, id));
 
   return ok({
     ...names,
+    recurrence: recurrence?.rule ?? null,
     id: row.id,
     typeId: row.typeId,
     subject: row.subject,

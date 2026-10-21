@@ -9,6 +9,7 @@ import {
   type Activity,
   activities,
   activityCalls,
+  activityRecurrence,
   activityTypes,
   deals,
   organizations,
@@ -73,6 +74,8 @@ interface ActivityRow {
   callOutcome: string | null;
   callDirection: string | null;
   callDurationSeconds: number | null;
+  recurrenceRule: unknown;
+  recurrenceEnded: boolean | null;
 }
 
 function toActivity(row: ActivityRow): Activity {
@@ -165,6 +168,10 @@ function toCalendarActivity(
             direction: row.callDirection as CallDirection,
             durationSeconds: row.callDurationSeconds,
           },
+    recurrence:
+      row.recurrenceRule === null || row.recurrenceRule === undefined
+        ? undefined
+        : { rule: row.recurrenceRule, ended: row.recurrenceEnded === true },
   };
 }
 
@@ -230,10 +237,13 @@ export async function listActivitiesForEntity(
       callOutcome: activityCalls.outcome,
       callDirection: activityCalls.direction,
       callDurationSeconds: activityCalls.durationSeconds,
+      recurrenceRule: activityRecurrence.rule,
+      recurrenceEnded: activityRecurrence.ended,
     })
     .from(activities)
     .innerJoin(activityTypes, eq(activities.typeId, activityTypes.id))
     .leftJoin(activityCalls, eq(activityCalls.activityId, activities.id))
+    .leftJoin(activityRecurrence, eq(activityRecurrence.activityId, activities.id))
     .leftJoin(users, eq(users.id, activities.assigneeId))
     .leftJoin(deals, and(eq(deals.id, activities.dealId), isNull(deals.deletedAt)))
     .leftJoin(leads, and(eq(leads.id, activities.leadId), isNull(leads.deletedAt)))

@@ -4,6 +4,7 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ACTIVITY_PRIORITIES, isActivityPriorityKey } from "@/constants/activityPriorities";
+import { RecurrenceBadge } from "@/features/activities/recurrence/ui/RecurrenceBadge";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import { cn } from "@/lib/utils";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
@@ -99,6 +100,7 @@ export function ActivityRow({
           <span className={cn("font-medium", row.done && "text-muted-foreground line-through")}>
             {row.subject}
           </span>
+          <RecurrenceBadge rule={row.recurrenceRule} ended={row.recurrenceEnded} />
         </span>
       </td>
       <td className="px-3 py-2 text-muted-foreground">
