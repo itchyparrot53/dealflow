@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-21 06:20
+Current: 4.5 · Last updated: 2026-10-21 06:35
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -30,7 +30,7 @@ Current: 4.4 · Last updated: 2026-10-21 06:20
 - [x] 4.1 E2E forms and booking spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -152,4 +152,22 @@ Current: 4.4 · Last updated: 2026-10-21 06:20
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` printed nothing immediately before this record.
+2. PASS - `pnpm install --frozen-lockfile` exited 0, and `git diff 935685b..HEAD -- package.json pnpm-lock.yaml` printed nothing: no dependency changed.
+3. PASS - `pnpm typecheck` exited 0 on the final tree.
+4. PASS - `pnpm lint` exited 0 (biome checked 3004 files; 14 warnings, 0 errors).
+5. PASS - `pnpm test:unit` passed 5197/5197 in 810 files (baseline 5124; the 67 new pure-core cases plus the reworked notification assertions).
+6. SKIPPED - `pnpm test:integration` could not run: Docker never recovered (every `docker ps` timed out). Both new integration files are committed; rerun is Owner action 1.
+7. PASS - `pnpm build` exited 0 and the route list contains `/f/[publicId]`, `/book/[publicId]`, `/book/cancel/[token]`, `/settings/forms`, `/settings/forms/[id]`, `/settings/booking`, `/settings/booking/[id]`.
+8. SKIPPED - `pnpm e2e` could not run for the same Docker reason; `e2e/10-forms-booking.spec.ts` is written against the 6.3 hooks.
+9. SKIPPED - 0 of the 7 `p6-*` screenshots exist (they need the e2e stack). The Part 1 to 5 sets are still present: 23 `p1-*`, 8 `p2-*`, 6 `p3-*`, 7 `p4-*`, 6 `p5-*`.
+10. SKIPPED - `pnpm smoke` could not start the Compose project while Docker was unresponsive; nothing was created, so no `dealflow-smoke` container or volume exists.
+11. PASS - `drizzle/0085_dealflow_forms_booking.sql` creates exactly `web_forms`, `web_form_submissions`, `booking_pages` and `bookings`; `0086` adds exactly three notification enum values.
+12. PASS - `git grep -nE "x-forwarded-for" -- src/features/forms src/features/scheduling src/app/f src/app/book src/app/api/public` printed nothing (the test header helper lives in `src/test/publicRequest.ts`).
+13. PASS - `git grep -n "dangerouslySetInnerHTML" -- src/features/forms src/features/scheduling src/app/f src/app/book` printed nothing.
+14. PASS - on the built app, `curl -sI` showed `/settings` and `/deals` with `frame-ancestors 'none'` and `X-Frame-Options: DENY`, while `/f/x` and `/book/x` showed `frame-ancestors *` and no `X-Frame-Options`.
+15. PASS - the em dash scan over every changed non-kit file printed nothing.
+16. PASS - `docs/dealflow/FORMS.md` and `docs/dealflow/SCHEDULING.md` exist, `UPSTREAM.md` lists the Part 6 upstream files, and the README has the new section.
