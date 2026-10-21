@@ -52,6 +52,11 @@ export interface StorageClient {
   // Fetch the raw bytes of an object. Used at send-time to inline attachments into
   // the MIME message. Never used for presigned download URLs served to browsers.
   getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>>;
+  // List every object in the bucket (recursive). Used by the backup job to mirror the files; no
+  // other caller needs a full listing, so it is optional for the narrow fakes used elsewhere.
+  listObjects?(signal: AbortSignal): Promise<Result<{ key: string; size: number }[], AppError>>;
+  // Restore-only upload of raw bytes (the backup restore script). Optional for narrow fakes.
+  putObject?(key: string, body: Buffer, signal: AbortSignal): Promise<Result<void, AppError>>;
 }
 
 function buildMinioClient(): Minio.Client {
@@ -173,6 +178,38 @@ class MinioStorageClient implements StorageClient {
       return ok(undefined);
     } catch (cause) {
       return err(storageErr(cause, "delete object failed", { key }));
+    }
+  }
+
+  async putObject(key: string, body: Buffer, signal: AbortSignal): Promise<Result<void, AppError>> {
+    signal.throwIfAborted();
+    try {
+      await this.client.putObject(env.MINIO_BUCKET, key, body, body.length);
+      signal.throwIfAborted();
+      return ok(undefined);
+    } catch (cause) {
+      return err(storageErr(cause, "put object failed", { key }));
+    }
+  }
+
+  async listObjects(
+    signal: AbortSignal,
+  ): Promise<Result<{ key: string; size: number }[], AppError>> {
+    signal.throwIfAborted();
+    try {
+      const out: { key: string; size: number }[] = [];
+      const stream = this.client.listObjectsV2(env.MINIO_BUCKET, "", true);
+      await new Promise<void>((resolve, reject) => {
+        stream.on("data", (item: { name?: string; size?: number }) => {
+          if (typeof item.name === "string") out.push({ key: item.name, size: item.size ?? 0 });
+        });
+        stream.on("end", resolve);
+        stream.on("error", reject);
+      });
+      signal.throwIfAborted();
+      return ok(out);
+    } catch (cause) {
+      return err(storageErr(cause, "list objects failed", {}));
     }
   }
 

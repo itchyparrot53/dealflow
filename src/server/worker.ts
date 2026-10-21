@@ -4,6 +4,7 @@ import { env } from "@/config/env";
 import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerBulkScoreJob } from "@/features/ai/bulkScoreJob";
 import { registerAutomationRunner } from "@/features/automations/runner";
+import { registerBackupJob } from "@/features/backups/backupJob";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerEventJobs } from "@/features/events/dispatcherJob";
@@ -43,7 +44,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerWebhookDeliveryJob(boss);
   // Part 7 bulk AI scoring.
   await registerBulkScoreJob(boss);
-  // Part 8 daily recycle-bin purge (03:00 UTC).
+  // Part 8 daily backup (02:00 UTC) and recycle-bin purge (03:00 UTC).
+  await registerBackupJob(boss);
   await registerRecyclePurgeJob(boss);
 }
 

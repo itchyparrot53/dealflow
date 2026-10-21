@@ -49,7 +49,9 @@ export const PGBOSS_QUEUE_WEBHOOK_DELIVER = "webhooks.deliver";
 export const PGBOSS_QUEUE_DEAL_ROTTING = "deals.rotting";
 export const PGBOSS_QUEUE_EVENT_RETENTION = "events.retention";
 
-// Part 8: the daily recycle-bin purge. No payload.
+// Part 8: the daily backup (02:00 UTC) and the recycle-bin purge (03:00 UTC). No payloads.
+export const PGBOSS_QUEUE_BACKUP = "backups.run";
+export const BACKUP_CRON = "0 2 * * *";
 export const PGBOSS_QUEUE_RECYCLE_PURGE = "recycle.purge";
 export const RECYCLE_PURGE_CRON = "0 3 * * *";
 

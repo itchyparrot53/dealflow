@@ -9,7 +9,9 @@ export interface RecordedCall {
     | "presignGet"
     | "deleteObject"
     | "copyObject"
-    | "getObjectBytes";
+    | "getObjectBytes"
+    | "listObjects"
+    | "putObject";
   args: Record<string, unknown>;
 }
 
@@ -135,6 +137,23 @@ export class FakeStorageClient implements StorageClient {
     this.objectsByKey.delete(key);
     this.deletedKeys.push(key);
     return Promise.resolve(ok(undefined));
+  }
+
+  putObject(key: string, body: Buffer, signal: AbortSignal): Promise<Result<void, AppError>> {
+    signal.throwIfAborted();
+    this.calls.push({ method: "putObject", args: { key, size: body.length } });
+    this.objectBytes.set(key, body);
+    return Promise.resolve(ok(undefined));
+  }
+
+  listObjects(signal: AbortSignal): Promise<Result<{ key: string; size: number }[], AppError>> {
+    signal.throwIfAborted();
+    this.calls.push({ method: "listObjects", args: {} });
+    const rows = [...this.objectBytes.entries()].map(([key, bytes]) => ({
+      key,
+      size: bytes.length,
+    }));
+    return Promise.resolve(ok(rows));
   }
 
   getObjectBytes(key: string, signal: AbortSignal): Promise<Result<Buffer, AppError>> {

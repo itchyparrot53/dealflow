@@ -9,6 +9,10 @@ export function backupFileName(now: Date): string {
   return `dealflow-backup-${iso.slice(0, 4)}-${iso.slice(5, 7)}-${iso.slice(8, 10)}T${iso.slice(11, 13)}${iso.slice(14, 16)}${iso.slice(17, 19)}Z.tar.gz`;
 }
 
+export function isBackupFileName(name: string): boolean {
+  return BACKUP_NAME.test(name);
+}
+
 // Epoch milliseconds for a name we wrote, or null for anything else (foreign names, bad timestamps).
 function timestampOf(name: string): number | null {
   const match = BACKUP_NAME.exec(name);

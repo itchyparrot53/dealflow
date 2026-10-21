@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-21 15:42
+Current: 3.6 · Last updated: 2026-10-21 15:48
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -27,7 +27,7 @@ Current: 3.5 · Last updated: 2026-10-21 15:42
 - [x] 3.2 Recycle bin page
 - [x] 3.3 CSV export everywhere (test-first)
 - [x] 3.4 Audit log page
-- [ ] 3.5 Backups (test-first)
+- [x] 3.5 Backups (test-first)
 - [ ] 3.6 Backups page, demo seed and docs
 - [ ] 4.1 E2E projects and data spec and screenshots
 - [ ] 4.2 Integration suite and smoke with the backup round trip
@@ -135,6 +135,13 @@ Current: 3.5 · Last updated: 2026-10-21 15:42
 
 - 3.4: the audit page is admin-only because the service refuses everyone else with E_PERM_DENIED (403), and the nav item only renders for admins. Filters are actor, action (the distinct actions from the table) and a date range; pagination is a keyset cursor on `(created_at, id)` descending, 50 per page.
 - 3.4: the plan says the audit writer already redacts secrets. It does not: `recordAudit` stores the caller's before/after verbatim. The reader therefore redacts any key matching password/secret/token/hash/credential/api key (recursively, replacing with "[redacted]") before the page sees it, and the page states that secrets are redacted. Logged as the required check plus the defensive fix rather than trusting a writer that has no redaction.
+
+- 3.5: `runBackup` takes injectable dump/archive runners and a storage client, so the suite proves the steps without pg_dump or MinIO. The default dump runner passes the database password only in `PGPASSWORD` (never argv) and the archive runner uses `tar -czf`.
+- 3.5: the advisory lock is taken on a dedicated pool client (`pg_try_advisory_lock(hashtext('dealflow_backup'))`), so a second concurrent call gets the running run instead of starting a second dump; the lock is released in a finally and the client returned.
+- 3.5: failures mark the run `failed` with `E_BACKUP_001` and a step detail, remove the temp work dir and any partial archive, and email active admins (best-effort). Successful runs record sizes/file count and prune only names matching the archive pattern.
+- 3.5: the download route rejects any name that does not match the exact archive pattern before touching the filesystem, requires an admin, and streams the file with an attachment name.
+- 3.5: `StorageClient` gained optional `listObjects` and `putObject` (real MinIO implementation plus the fake), because the mirror and its restore need them; optional keeps every existing narrow test fake compiling. `pnpm backup:restore` runs the CLI-only restore (extract, manifest, `pg_restore --clean --if-exists`, optional `--files` re-upload).
+- 3.5: five integration cases pass: success with mirroring and pruning, pg_dump failure with no archive and an admin email, the concurrent second call, and the download route's admin/path checks.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

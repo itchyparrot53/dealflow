@@ -1,0 +1,279 @@
+import { spawn } from "node:child_process";
+import { mkdir, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { and, eq } from "drizzle-orm";
+import { env } from "@/config/env";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import { type Db, pool } from "@/db/client";
+import { backupRuns, users } from "@/db/schema";
+import type { StorageClient } from "@/features/files/storage";
+import { getSystemMailer } from "@/features/mailer/systemMailer";
+import { err, ok, type Result } from "@/types/result";
+import { buildManifest } from "./manifest";
+import { backupFileName, filesToPrune } from "./retention";
+
+// One backup run (6.9): a pg_dump custom-format dump, a mirror of the storage bucket, a
+// manifest, then a tar.gz in BACKUP_DIR with retention pruning. The dump password travels in
+// PGPASSWORD, never in argv. Runners and the storage client are injectable so the integration
+// suite can prove each step without pg_dump.
+
+export interface BackupRunners {
+  dump: (file: string, signal: AbortSignal) => Promise<{ exitCode: number }>;
+  archive: (file: string, workDir: string, signal: AbortSignal) => Promise<{ exitCode: number }>;
+}
+
+export interface BackupDeps {
+  dir?: string;
+  keep?: number;
+  enabled?: boolean;
+  storage?: Pick<StorageClient, "listObjects" | "getObjectBytes">;
+  runners?: BackupRunners;
+  appVersion?: string;
+}
+
+export interface BackupOutcome {
+  runId: string;
+  fileName: string | null;
+  running: boolean;
+}
+
+function databasePassword(): string | null {
+  try {
+    const parsed = new URL(env.DATABASE_URL);
+    return parsed.password === "" ? null : decodeURIComponent(parsed.password);
+  } catch {
+    return null;
+  }
+}
+
+function runCommand(
+  command: string,
+  args: string[],
+  extraEnv: Record<string, string>,
+  signal: AbortSignal,
+): Promise<{ exitCode: number }> {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      env: { ...process.env, ...extraEnv },
+      signal,
+    });
+    child.on("error", () => resolve({ exitCode: 127 }));
+    child.on("close", (code) => resolve({ exitCode: code ?? 1 }));
+  });
+}
+
+export const defaultBackupRunners: BackupRunners = {
+  dump: (file, signal) =>
+    runCommand(
+      env.PG_DUMP_PATH,
+      ["--format=custom", "--no-owner", "--no-privileges", `--file=${file}`, env.DATABASE_URL],
+      databasePassword() === null ? {} : { PGPASSWORD: databasePassword() ?? "" },
+      signal,
+    ),
+  archive: (file, workDir, signal) =>
+    runCommand("tar", ["-czf", file, "-C", workDir, "."], {}, signal),
+};
+
+function errWith(step: string, detail: string, exitCode?: number): AppError {
+  return new AppError(ERROR_IDS.BACKUP_FAILED, `backup step failed: ${step}`, {
+    step,
+    detail,
+    exitCode,
+  });
+}
+
+async function latestMigration(): Promise<string> {
+  try {
+    const files = await readdir("drizzle");
+    const sql = files.filter((name) => /^\d{4}_.+\.sql$/.test(name)).sort();
+    return (sql[sql.length - 1] ?? "unknown").replace(/\.sql$/, "");
+  } catch {
+    return "unknown";
+  }
+}
+
+async function notifyFailure(db: Db, detail: string, signal: AbortSignal): Promise<void> {
+  try {
+    const admins = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(and(eq(users.isAdmin, true), eq(users.isActive, true)));
+    const mailer = getSystemMailer();
+    for (const admin of admins) {
+      await mailer.send(
+        {
+          to: admin.email,
+          subject: "Dealflow backup failed",
+          text: `The scheduled backup failed: ${detail}`,
+          html: `<p>The scheduled backup failed:</p><pre>${detail}</pre>`,
+        },
+        signal,
+      );
+    }
+  } catch (error) {
+    console.warn("backup failure email could not be sent", { error });
+  }
+}
+
+async function executeRun(
+  db: Db,
+  options: { trigger: "schedule" | "manual"; startedBy: string | null },
+  deps: BackupDeps,
+  signal: AbortSignal,
+): Promise<Result<BackupOutcome, AppError>> {
+  const dir = deps.dir ?? env.BACKUP_DIR;
+  const keep = deps.keep ?? env.BACKUP_KEEP;
+  const runners = deps.runners ?? defaultBackupRunners;
+  const now = new Date();
+  const fileName = backupFileName(now);
+
+  const [run] = await db
+    .insert(backupRuns)
+    .values({ status: "running", trigger: options.trigger, startedBy: options.startedBy })
+    .returning({ id: backupRuns.id });
+  if (run === undefined) {
+    return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "backup run insert failed"));
+  }
+  const workDir = join(dir, `.tmp-${run.id}`);
+  const archivePath = join(dir, fileName);
+  let step = "prepare";
+
+  try {
+    await mkdir(join(workDir, "files"), { recursive: true });
+    signal.throwIfAborted();
+
+    step = "pg_dump";
+    const dumpFile = join(workDir, "db.dump");
+    const dumped = await runners.dump(dumpFile, signal);
+    if (dumped.exitCode !== 0) {
+      throw errWith("pg_dump", `pg_dump exited ${String(dumped.exitCode)}`, dumped.exitCode);
+    }
+    const dbStat = await stat(dumpFile);
+
+    step = "files";
+    const storage = deps.storage;
+    if (storage?.listObjects === undefined || storage.getObjectBytes === undefined) {
+      throw errWith("files", "storage client cannot list objects");
+    }
+    const listed = await storage.listObjects(signal);
+    if (!listed.ok) throw errWith("files", listed.error.id);
+    const manifestFiles: { key: string; size: number }[] = [];
+    for (const object of listed.value) {
+      const bytes = await storage.getObjectBytes(object.key, signal);
+      if (!bytes.ok) throw errWith("files", bytes.error.id);
+      const target = join(workDir, "files", object.key);
+      await mkdir(join(target, ".."), { recursive: true });
+      await writeFile(target, bytes.value);
+      manifestFiles.push({ key: object.key, size: bytes.value.length });
+    }
+
+    step = "manifest";
+    const manifest = buildManifest({
+      createdAt: now,
+      appVersion: deps.appVersion ?? process.env.APP_VERSION ?? "dev",
+      dbBytes: dbStat.size,
+      files: manifestFiles,
+      schemaMigration: await latestMigration(),
+    });
+    await writeFile(join(workDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+
+    step = "tar";
+    const archived = await runners.archive(archivePath, workDir, signal);
+    if (archived.exitCode !== 0) {
+      throw errWith("tar", `tar exited ${String(archived.exitCode)}`, archived.exitCode);
+    }
+    const archiveStat = await stat(archivePath);
+
+    step = "finish";
+    await db
+      .update(backupRuns)
+      .set({
+        fileName,
+        status: "succeeded",
+        sizeBytes: archiveStat.size,
+        dbBytes: dbStat.size,
+        fileCount: manifestFiles.length,
+        finishedAt: new Date(),
+      })
+      .where(eq(backupRuns.id, run.id));
+
+    await rm(workDir, { recursive: true, force: true });
+    const names = await readdir(dir);
+    for (const name of filesToPrune(names, keep)) {
+      await unlink(join(dir, name)).catch(() => undefined);
+    }
+    return ok({ runId: run.id, fileName, running: false });
+  } catch (error) {
+    const appError =
+      error instanceof AppError
+        ? error
+        : errWith(step, error instanceof Error ? error.message : String(error));
+    const detail = String(appError.context?.detail ?? appError.message).slice(0, 500);
+    await db
+      .update(backupRuns)
+      .set({
+        status: "failed",
+        errorId: appError.id,
+        errorDetail: detail,
+        finishedAt: new Date(),
+      })
+      .where(eq(backupRuns.id, run.id));
+    await rm(workDir, { recursive: true, force: true });
+    await unlink(archivePath).catch(() => undefined);
+    await notifyFailure(db, detail, signal);
+    return err(appError);
+  }
+}
+
+const BACKUP_LOCK_KEY = "dealflow_backup";
+
+export async function runBackup(
+  db: Db,
+  options: { trigger: "schedule" | "manual"; startedBy?: string | null },
+  signal: AbortSignal,
+  deps: BackupDeps = {},
+): Promise<Result<BackupOutcome, AppError>> {
+  if ((deps.enabled ?? env.BACKUP_ENABLED) === false) {
+    return err(new AppError(ERROR_IDS.BACKUP_UNAVAILABLE, "backups are disabled"));
+  }
+  const dir = deps.dir ?? env.BACKUP_DIR;
+  try {
+    await mkdir(dir, { recursive: true });
+  } catch {
+    return err(new AppError(ERROR_IDS.BACKUP_UNAVAILABLE, "BACKUP_DIR is not writable", { dir }));
+  }
+
+  const client = await pool.connect();
+  try {
+    const lockedResult = await client.query<{ locked: boolean }>(
+      "select pg_try_advisory_lock(hashtext($1)) as locked",
+      [BACKUP_LOCK_KEY],
+    );
+    if (lockedResult.rows[0]?.locked !== true) {
+      const [running] = await db
+        .select({ id: backupRuns.id, fileName: backupRuns.fileName })
+        .from(backupRuns)
+        .where(eq(backupRuns.status, "running"))
+        .limit(1);
+      return ok({
+        runId: running?.id ?? "",
+        fileName: running?.fileName ?? null,
+        running: true,
+      });
+    }
+    try {
+      return await executeRun(
+        db,
+        { trigger: options.trigger, startedBy: options.startedBy ?? null },
+        deps,
+        signal,
+      );
+    } finally {
+      await client
+        .query("select pg_advisory_unlock(hashtext($1))", [BACKUP_LOCK_KEY])
+        .catch(() => undefined);
+    }
+  } finally {
+    client.release();
+  }
+}
