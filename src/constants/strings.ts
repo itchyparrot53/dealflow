@@ -117,6 +117,7 @@ export const STRINGS = {
       document_viewed: "Document viewed",
       document_accepted: "Quote accepted",
       document_declined: "Quote declined",
+      automation: "Automation",
       fallback: "Notification",
     },
     preferences: {
@@ -139,6 +140,7 @@ export const STRINGS = {
         document_viewed: "Documents viewed",
         document_accepted: "Quotes accepted",
         document_declined: "Quotes declined",
+        automation: "Automation notifications",
       },
     },
   },

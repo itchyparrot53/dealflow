@@ -15,6 +15,8 @@ export const NOTIFICATION_TYPES = [
   "document_viewed",
   "document_accepted",
   "document_declined",
+  // Part 5: an automation's notify_user action.
+  "automation",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

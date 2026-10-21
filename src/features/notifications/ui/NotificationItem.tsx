@@ -30,6 +30,7 @@ const LABEL: Record<NotificationType, (p: Record<string, unknown>) => string> = 
   document_viewed: (p) => `${toStr(p.customer)} viewed ${toStr(p.title)}`,
   document_accepted: (p) => `${toStr(p.name)} accepted ${toStr(p.title)}`,
   document_declined: (p) => `${toStr(p.title)} was declined`,
+  automation: (p) => `${L.automation}: ${toStr(p.message)}`,
 };
 
 export function NotificationItem({

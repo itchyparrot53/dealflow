@@ -20,6 +20,7 @@ const FALLBACK: Record<NotificationType, string> = {
   document_viewed: "/documents",
   document_accepted: "/documents",
   document_declined: "/documents",
+  automation: "/settings/automations",
 };
 
 // Email notifications point at a thread, which the row carries in its payload rather than as an

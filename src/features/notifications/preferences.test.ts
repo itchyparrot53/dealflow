@@ -22,6 +22,7 @@ const EXPECTED_EMAIL_DEFAULT: Record<NotificationType, boolean> = {
   document_viewed: false,
   document_accepted: true,
   document_declined: true,
+  automation: false,
 };
 
 describe("notification preferences", () => {

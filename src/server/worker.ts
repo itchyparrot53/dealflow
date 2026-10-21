@@ -11,6 +11,7 @@ import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleMan
 import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
+import { registerAutomationRunner } from "@/features/automations/runner";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { setBoss } from "@/jobs/boss";
 
@@ -33,6 +34,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerReleaseCheckJob(boss);
   // Event backbone: rotting and retention crons, the dispatcher poll, and the LISTEN wake-up.
   await registerEventJobs(boss);
+  // Automation runs: the queue the dispatcher fills (2.1).
+  await registerAutomationRunner(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

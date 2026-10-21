@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-21 01:44
+Current: 2.2 · Last updated: 2026-10-21 01:47
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -18,7 +18,7 @@ Current: 2.1 · Last updated: 2026-10-21 01:44
 - [x] 1.2 Create and document events
 - [x] 1.3 Dispatcher, snapshot and retention (test-first)
 - [x] 1.4 Phase 1 QA gate
-- [ ] 2.1 Runner, conditions and the capability (test-first)
+- [x] 2.1 Runner, conditions and the capability (test-first)
 - [ ] 2.2 Core actions
 - [ ] 2.3 Email and AI actions
 - [ ] 2.4 Phase 2 QA gate
@@ -91,6 +91,12 @@ Current: 2.1 · Last updated: 2026-10-21 01:44
 
 - 1.4: the first gate fixes were formatter output, a cognitive-complexity cap on `eventTypesForChange` (the deal mapping became `dealEventTypes`) and a nullable predicate in the snapshot's phone lookup; after `1.4: fixes round 1` the gate passed with the baseline's 14 warnings.
 - 1.4: no `qa` review at this gate (fast profile, rule 9.4). Phase 2 base is the commit before the gate.
+
+- 2.1: the eight cases (five runner, three service) were written first and run red, then passed; the runner claims the run row `FOR UPDATE` and treats a finished row as a no-op, so a duplicate queue delivery cannot run twice.
+- 2.1: conditions reuse the list compilers: a deal target runs `filterToSql` with the `d`/`p`/`s`/`o` joins its allow-list expects, while a person or organization target validates and compiles with the contact filter (a deal-shaped condition that does not fit is treated as `condition_false`, never as an error).
+- 2.1: actions go through a handler registry (`actions/registry.ts`); an unregistered action fails its step with `E_AUTOMATION_003`, so the runner is testable with an injected executor before the real actions land in 2.2.
+- 2.1: `automations.manage` is a new global flag, also listed in `HIGH_RISK_FLAGS` and the `GlobalAction` union, admin-only by default; no migration was needed because the flag registry is code-defined, exactly like `documents.manage`.
+- 2.1: the `automation` notification kind needed migration `0084_dealflow_automation_notifications` (`ALTER TYPE`), and the enum and preferences assertions were updated to 14 values and the new `automation: false` email default, without weakening either assertion.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

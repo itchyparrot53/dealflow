@@ -213,6 +213,12 @@ the settings routes. Upstream files edited for the part (port future upstream fi
 - `src/config/env.ts`, `.env.example`: `TRUSTED_PROXY_HOPS` and `WEBHOOK_ALLOW_PRIVATE`.
 - `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the AUTOMATION and WEBHOOK IDs
   and their domains.
+- `src/constants/permissionFlags.ts`, `src/features/permissions/actions-meta.ts`: the
+  `automations.manage` capability (global, high risk).
+- `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,
+  `src/features/notifications/ui/deepLink.ts`, `ui/NotificationItem.tsx`: the `automation` kind.
+- `src/features/notifications/preferences.test.ts`, `schema.test.ts`: the new default and the
+  14-value enum.
 - `src/features/collaboration/changeLog.ts`: `recordChange` writes domain events in the same
   transaction.
 - Creates that emit their own event: `src/features/deals/dealActions.ts`,
