@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-21 04:58
+Current: 3.2 · Last updated: 2026-10-21 05:05
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -20,7 +20,7 @@ Current: 3.1 · Last updated: 2026-10-21 04:58
 - [x] 2.1 Booking pages service and busy time
 - [x] 2.2 Slots, booking and cancel (test-first)
 - [x] 2.3 Phase 2 QA gate
-- [ ] 3.1 Forms admin screens
+- [x] 3.1 Forms admin screens
 - [ ] 3.2 Public form page
 - [ ] 3.3 Booking admin screens
 - [ ] 3.4 Public booking and cancel pages
@@ -93,6 +93,12 @@ Current: 3.1 · Last updated: 2026-10-21 04:58
 - 2.2: `SystemMail` has no attachments, so the confirmation email carries the time, duration, location and cancel link in the body; the `.ics` is returned as a string in the book response for the confirmation page's download and is not emailed (section 10).
 - 2.2: the public booking pages use a classic form post to the route for a no-JavaScript path (303 back with `?booked=1` / `?cancelled=1`), and the slot and book routes are rate limited at 60 and 10 a minute; an unknown or already-used cancel link is a 404.
 - 2.2: the scheduling integration file (six cases plus the 429 route case) is written but SKIPPED for the same Docker failure as Phase 1; it needs a run once Docker is back.
+
+- 3.1: the list is a server page (admin-gated on `forms.manage`) feeding a client table with the active `Switch`, a `DropdownMenu` row menu and an `AlertDialog` delete; "New form" creates a draft through the action and opens its editor, and every client action passes `readCsrfToken()`.
+- 3.1: the editor holds the whole definition in local state and saves once through `updateFormAction`; pipeline and stage pickers only appear for a deal form, the owner picker lists active users, and a rejected save shows the error id inline (`E_FORM_002`/`E_FORM_005`).
+- 3.1: `FieldList` keeps name and email fixed and required (no remove, no optional switch), offers the remaining fixed keys plus eligible custom fields in one `Select`, reorders with up/down buttons, and every control is a shadcn wrapper.
+- 3.1: the editor carries a live preview, the public link and the exact iframe snippet in `EmbedCode`, plus a Submissions tab that reads `forms.submissions` through tRPC and links to the created lead, deal or person.
+- 3.1: the settings nav gained Forms (admin, after Webhooks) and Booking pages (every user, My account section); the labels use text-display and semantic colour tokens so the palette and type-scale guards stay green.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

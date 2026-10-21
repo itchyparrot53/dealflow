@@ -3,6 +3,8 @@ import {
   Bell,
   Bot,
   Building2,
+  CalendarClock,
+  ClipboardList,
   Coins,
   Eye,
   FileText,
@@ -28,6 +30,7 @@ import { AI_STRINGS } from "@/constants/aiStrings";
 import { AUTOMATIONS_STRINGS, WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
+import { BOOKING_STRINGS, FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { CURRENCY_STRINGS, PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { STRINGS } from "@/constants/strings";
@@ -51,6 +54,8 @@ const MY_ACCOUNT: NavSection = {
     { href: "/settings/email-sync", label: STRINGS.settings.emailSync, icon: MailCheck },
     { href: "/settings/email", label: STRINGS.settings.emailTemplates, icon: Mail },
     { href: "/settings/connections", label: STRINGS.settings.connectedApps, icon: Plug },
+    // Every user manages their own booking pages, so this one is not admin-only.
+    { href: "/settings/booking", label: BOOKING_STRINGS.nav, icon: CalendarClock },
   ],
 };
 
@@ -95,6 +100,12 @@ const WEBHOOKS_ITEM: NavItem = {
   label: WEBHOOKS_STRINGS.title,
   icon: Webhook,
 };
+// Public forms create leads or deals, so building one is an admin surface.
+const FORMS_ITEM: NavItem = {
+  href: "/settings/forms",
+  label: FORMS_STRINGS.title,
+  icon: ClipboardList,
+};
 
 // Same rule for the AI page: provider, usage and caps are admin-only reads and writes.
 const AI_ITEM: NavItem = {
@@ -122,7 +133,7 @@ export function SettingsNav({
   };
   const companyItems = [
     ...COMPANY.items,
-    ...(isAdmin ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
+    ...(isAdmin ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, FORMS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
     ...(canImport ? [importItem] : []),
   ];
   const sections = canManageCompany
