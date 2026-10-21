@@ -9,6 +9,7 @@ import { createContext } from "@/server/trpc/context";
 import { deleteActivity } from "./activityDelete";
 import { updateActivity } from "./activityUpdate";
 import { notifyOnActivityCreated } from "./notifyHelpers";
+import { setRecurrence } from "./recurrence/series";
 import { completeActivity, createActivity } from "./repo";
 import type { ActivityCreateInput, ActivityUpdateInput } from "./schemas";
 
@@ -66,6 +67,22 @@ export async function editActivityAction(
   const result = await updateActivity(db, actor, input, SIG());
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return { ok: true, value: { id: result.value.id } };
+}
+
+export async function setRecurrenceAction(
+  input: { activityId: string; rule: unknown },
+  csrfToken: string | null = null,
+): Promise<ActionResult> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+
+  // Record-scoped: setRecurrence gates via can(actor, "activity.edit", vis) and validates the rule.
+  const result = await setRecurrence(db, actor, input.activityId, input.rule, SIG());
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: { id: input.activityId } };
 }
 
 export async function deleteActivityAction(

@@ -19,6 +19,7 @@ import { assertReferenceVisible } from "@/features/permissions/referenceCheck";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { recomputeDealActivityDates } from "./nextActivity";
+import { createNextOccurrence } from "./recurrence/series";
 import { scheduleReminder } from "./reminders";
 import { type ActivityCreateInput, activityCreateInput } from "./schemas";
 import { resolveActivityVisibility } from "./visibility";
@@ -244,13 +245,20 @@ export async function completeActivity(
       return err(new AppError(ERROR_IDS.ACTIVITY_FORBIDDEN, "forbidden", { id }));
     }
 
+    // The conditional UPDATE is the exactly-once claim for recurrence: two concurrent completes
+    // both read done=false, but only one transitions the row, so only one next occurrence is made.
     const [row] = await tx
       .update(activities)
       .set({ done, doneAt: done ? new Date() : null })
-      .where(eq(activities.id, id))
+      .where(done ? and(eq(activities.id, id), eq(activities.done, false)) : eq(activities.id, id))
       .returning();
 
     if (row === undefined) {
+      if (done) {
+        // Lost the race, or it was already done: return the row without creating a duplicate.
+        const [existing] = await tx.select().from(activities).where(eq(activities.id, id));
+        if (existing !== undefined) return ok(existing);
+      }
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity update returned no rows", {}));
     }
     if (done && !current.done) {
@@ -259,6 +267,8 @@ export async function completeActivity(
         { type: "activity.completed", entityType: "activity", entityId: row.id, actorId: actor.id },
         signal,
       );
+      // Recurrence hook: inside the same transaction, so a rolled-back completion creates nothing.
+      await createNextOccurrence(tx, row, actor.id, signal);
     }
 
     if (row.dealId !== null) {

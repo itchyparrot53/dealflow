@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-21 17:45
+Current: 1.2 · Last updated: 2026-10-21 18:06
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -13,7 +13,7 @@ Current: 1.1 · Last updated: 2026-10-21 17:45
 - [x] 0.3 Schema, migration and audit redaction
 - [x] 0.4 Pure core (test-first)
 - [x] 0.5 Phase 0 QA gate
-- [ ] 1.1 Recurrence service and the completion hook (test-first)
+- [x] 1.1 Recurrence service and the completion hook (test-first)
 - [ ] 1.2 Call logging (test-first)
 - [ ] 1.3 Recurrence field and calendar drag
 - [ ] 1.4 Activities list: columns, URL filters, bulk actions
@@ -53,6 +53,7 @@ Current: 1.1 · Last updated: 2026-10-21 17:45
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 - 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
+- 1.1: all eight recurrence cases (weekly copy, assignee time zone, concurrent double-complete, count end, ending the series, editing occurrence 2, deleted occurrence, activity.created) were written first and pass on real Postgres. The hook runs inside completeActivity's transaction; the false-to-true claim is a conditional UPDATE (`WHERE done = false`), so two concurrent completes create one next occurrence. `setRecurrence` starts a series with a random `series_id` and the activity's local anchor day; null marks the row ended. The next activity copies type, subject, links, owner, assignee, duration, all-day, note, location and custom fields, shifts `end_at` by the same delta, and emits `activity.created` with the same `emitDomainEvent` insert the create service uses (no nested transaction).
 - 0.4: the six test files were written and run before their modules: the first run failed at import in all six, then the implemented modules passed 39 new cases (90/90 in those folders with the existing shortcut tests). `rule.ts` validates the 6.5 shape (interval 1..99, count 2..500, weekdays weekly-only and unique); `nextOccurrence` keeps the local wall clock through `zonedToUtc`/`utcToZoned`, clamps monthly and yearly with `anchorDay` (Jan 31 to Feb 28 to Mar 31, Feb 29 2028 to Feb 28 2029) and keeps 09:00 London across the 2026-03-29 DST change; `normalize.ts` folds NFKD diacritics and trailing legal suffixes; `toastStore` caps at 3, runs an action once and pauses/resumes with the remaining time; `visibleCommands` filters on the admin type or a `PermissionFlagKey`; `createSequenceMatcher` resets on a modifier and times out at 1200 ms. The eight new error IDs (RECUR, CALL, DUP, BULK, ORGREL) are appended with those domains in the test allow-list. `Result` takes two type arguments, so `ToastAction.run` is `Promise<Result<unknown, unknown>>`.
 
 ## Owner actions
