@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 15:31
+Current: 4.4 · Last updated: 2026-10-21 15:49
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -30,7 +30,7 @@ Current: 4.3 · Last updated: 2026-10-21 15:31
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 E2E insights spec and screenshots
 - [x] 4.2 Integration suite and smoke
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
@@ -41,6 +41,9 @@ Current: 4.3 · Last updated: 2026-10-21 15:31
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/stats/goals integration 119/119
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/ai/notifications integration 104/104
 - Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 · insights/stats/goals/ai integration 156/156
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/2 majors/3 minors · fixed 6
+- Independent review: subagent (fresh context) round 2: QA RESULT FAIL · 0 blockers/0 majors/1 minor · fixed 1
+- Independent review: subagent (fresh context) round 3: QA RESULT PASS · 0 blockers/0 majors/0 minors · fixed 0
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p6-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -121,6 +124,11 @@ Current: 4.3 · Last updated: 2026-10-21 15:31
 - 4.2: the full `pnpm test:integration` run is green on the final tree: 400 files, 2004 tests. `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS with `COMPOSE_PARALLEL_LIMIT=1` (four concurrent image builds exceed the Docker VM, as in Task 0.2) and left no `dealflow-smoke` container or volume.
 - 4.2: reviewing the `p7-report-builder` screenshot exposed a real bug: a date group over an all-time range had no date filter, so rows with a NULL date (an unwon deal in a "won by month" report) produced a NULL group key that the cap rolled into "Other". Both compilers now add `AND <date column> IS NOT NULL` when the group field is a date, and two integration cases pin it (deals and activities). The full integration suite was re-run after the fix (2004/2004) and `pnpm e2e` was re-run too (21/21), so both runs describe the final tree.
 - 4.2: `e2e/11-insights.spec.ts` now closes the select popover and waits out the 400 ms preview debounce before its builder screenshot, so the refreshed `p7-report-builder` shows the wired chart instead of a stale preview and an open dropdown.
+
+- 4.3: round 1 fixed six findings: the formatter errors Biome found (the blocker); `listDashboards` now orders the default dashboard first; Explain became a CSRF-guarded server action (`explainReportAction` with `readCsrfToken()`) and the unguarded tRPC mutation was removed, since 6.7 says mutations are server actions with CSRF; dashboard report charts carry `role="img"` and an aria-label; the 6.2 copy now maps through `insightErrorMessage` instead of raw ids; and chart axes and tooltips format money with `formatMoney` in the base currency rather than bare numbers.
+- 4.3: round 2 fixed the last minor (AddWidgetDialog also maps its error id through `insightErrorMessage`) and the `p7-explain` screenshot now waits for the Sheet slide to finish. Round 3 returned QA RESULT PASS.
+- 4.3: Docker Desktop's daemon died during a round 2 e2e run (the dev Postgres container stopped with it). I restarted Docker Desktop, ran `pnpm dev:up` to bring the dev stack back, and reran the full e2e green; nothing was removed or pruned.
+- 4.3: the round 1 review ran `typecheck`, `lint` (which exposed the formatter blocker), `test:unit` and `build`; after each fix round the Task 3.5 gate commands and the full e2e were re-run on that tree, and every review passed with the builder's evidence.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
