@@ -27,6 +27,11 @@ export const DOMAIN_EVENT_TYPES = [
   "form.submitted",
   "booking.created",
   "booking.cancelled",
+  // Part 8: projects and their tasks.
+  "project.created",
+  "project.status_changed",
+  "project.deleted",
+  "project_task.completed",
 ] as const;
 
 export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];

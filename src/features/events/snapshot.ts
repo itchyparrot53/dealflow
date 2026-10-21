@@ -13,6 +13,8 @@ import {
   organizations,
   persons,
   pipelines,
+  projects,
+  projectTasks,
   stages,
   users,
   webFormSubmissions,
@@ -169,6 +171,39 @@ async function activityData(db: DbOrTx, entityId: string): Promise<Record<string
   };
 }
 
+// A project payload is about the project and, for project_task.completed, the task that completed.
+async function projectData(
+  db: DbOrTx,
+  event: SnapshotEvent,
+  signal: AbortSignal,
+): Promise<Record<string, unknown>> {
+  signal.throwIfAborted();
+  const [row] = await db.select().from(projects).where(eq(projects.id, event.entityId));
+  if (row === undefined) return { project: { id: event.entityId } };
+  const project = {
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    dealId: row.dealId,
+    ownerId: row.ownerId,
+    dueDate: row.dueDate,
+  };
+  if (event.type !== "project_task.completed") return { project };
+  const taskId = changeValue(event, "task");
+  const [task] =
+    taskId === null
+      ? []
+      : await db
+          .select({
+            id: projectTasks.id,
+            title: projectTasks.title,
+            assigneeId: projectTasks.assigneeId,
+          })
+          .from(projectTasks)
+          .where(eq(projectTasks.id, taskId));
+  return { project, task: task ?? { id: taskId } };
+}
+
 async function documentData(db: DbOrTx, entityId: string): Promise<Record<string, unknown>> {
   const [row] = await db.select().from(documents).where(eq(documents.id, entityId));
   if (row === undefined) return { id: entityId };
@@ -199,6 +234,25 @@ export async function loadEventTarget(
     return {
       pipelineId: row?.pipelineId ?? null,
       stageId: row?.stageId ?? null,
+      documentKind: null,
+      formId: formIdOf(event),
+    };
+  }
+  if (event.entityType === "project") {
+    const [row] = await db
+      .select({ dealId: projects.dealId })
+      .from(projects)
+      .where(eq(projects.id, event.entityId));
+    if (row?.dealId == null) {
+      return { pipelineId: null, stageId: null, documentKind: null, formId: formIdOf(event) };
+    }
+    const [deal] = await db
+      .select({ pipelineId: deals.pipelineId, stageId: deals.stageId })
+      .from(deals)
+      .where(eq(deals.id, row.dealId));
+    return {
+      pipelineId: deal?.pipelineId ?? null,
+      stageId: deal?.stageId ?? null,
       documentKind: null,
       formId: formIdOf(event),
     };
@@ -386,6 +440,9 @@ export async function buildEventPayload(
       case "document":
       case "invoice":
         data = await documentData(db, event.entityId);
+        break;
+      case "project":
+        data = await projectData(db, event, signal);
         break;
       default:
         data = { id: event.entityId };

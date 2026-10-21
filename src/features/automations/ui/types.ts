@@ -38,6 +38,10 @@ export function defaultTrigger(type: TriggerType): Trigger {
     case "organization.created":
     case "activity.created":
     case "activity.completed":
+    case "project.created":
+    case "project.status_changed":
+    case "project.deleted":
+    case "project_task.completed":
       return { type };
   }
 }

@@ -27,6 +27,8 @@ const GROUPS: { title: string; prefixes: string[] }[] = [
   { title: "Invoices", prefixes: ["invoice."] },
   // Part 6: one group for the two public surfaces.
   { title: "Forms and booking", prefixes: ["form.", "booking."] },
+  // Part 8: projects and their tasks.
+  { title: "Projects", prefixes: ["project.", "project_task."] },
 ];
 
 export interface EditableSubscription {

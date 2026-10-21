@@ -22,6 +22,7 @@ import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { productsRouter } from "@/features/products/router";
+import { projectsRouter } from "@/features/projects/router";
 import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
 import { schedulingRouter } from "@/features/scheduling/router";
@@ -38,6 +39,7 @@ export const appRouter = router({
   realtime: realtimeRouter,
   pipeline: pipelineRouter,
   products: productsRouter,
+  projects: projectsRouter,
   deal: dealRouter,
   contacts: contactsRouter,
   currency: currencyRouter,

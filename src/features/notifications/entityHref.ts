@@ -37,6 +37,8 @@ export function entityHref(entityType: string | null, entityId: string | null): 
       return `/contacts/orgs/${entityId}`;
     case "lead":
       return `/leads/${entityId}`;
+    case "project":
+      return `/projects/${entityId}`;
     // "activity" and "email_message" are deliberately absent: neither has a detail route.
     default:
       return null;

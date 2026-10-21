@@ -30,6 +30,11 @@ export const TRIGGER_TYPES = [
   "form.submitted",
   "booking.created",
   "booking.cancelled",
+  // Part 8: projects.
+  "project.created",
+  "project.status_changed",
+  "project.deleted",
+  "project_task.completed",
 ] as const;
 
 export type TriggerType = (typeof TRIGGER_TYPES)[number];
@@ -89,6 +94,11 @@ export const triggerSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("form.submitted"), formId: uuid.optional() }),
   z.object({ type: z.literal("booking.created") }),
   z.object({ type: z.literal("booking.cancelled") }),
+  // A project event's condition runs against its linked deal; an unlinked project skips the run.
+  z.object({ type: z.literal("project.created") }),
+  z.object({ type: z.literal("project.status_changed") }),
+  z.object({ type: z.literal("project.deleted") }),
+  z.object({ type: z.literal("project_task.completed") }),
 ]);
 
 export type Trigger = z.infer<typeof triggerSchema>;
@@ -221,6 +231,11 @@ export function matchesTrigger(trigger: Trigger, event: TriggerEvent): boolean {
     case "booking.created":
     case "booking.cancelled":
       return true;
+    case "project.created":
+    case "project.status_changed":
+    case "project.deleted":
+    case "project_task.completed":
+      return true;
     default:
       return assertNever(trigger);
   }
@@ -260,5 +275,11 @@ export function conditionTarget(event: {
     case "booking.created":
     case "booking.cancelled":
       return "person";
+    // A project event runs against its linked deal; the runner skips a condition when there is none.
+    case "project.created":
+    case "project.status_changed":
+    case "project.deleted":
+    case "project_task.completed":
+      return "deal";
   }
 }

@@ -14,6 +14,7 @@ import {
   documents,
   domainEvents,
   leads,
+  projects,
   users,
 } from "@/db/schema";
 import { runInChain } from "@/features/events/chainContext";
@@ -158,6 +159,14 @@ async function resolveTarget(db: DbOrTx, run: typeof automationRuns.$inferSelect
         .select({ dealId: documents.dealId })
         .from(documents)
         .where(eq(documents.id, run.entityId));
+      return { entity: "deal", dealId: row?.dealId ?? null, entityId: row?.dealId ?? null };
+    }
+    case "project": {
+      // Condition target is the linked deal; an unlinked project has none, so a condition skips.
+      const [row] = await db
+        .select({ dealId: projects.dealId })
+        .from(projects)
+        .where(eq(projects.id, run.entityId));
       return { entity: "deal", dealId: row?.dealId ?? null, entityId: row?.dealId ?? null };
     }
     default:

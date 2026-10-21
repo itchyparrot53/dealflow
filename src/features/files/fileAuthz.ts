@@ -9,6 +9,7 @@ import {
   organizations,
   persons,
   pipelines,
+  projects,
 } from "@/db/schema";
 import { resolveActivityVisibility } from "@/features/activities/visibility";
 import { toVisibleDeal } from "@/features/deals/dealAuth";
@@ -42,9 +43,28 @@ export async function canActorAccessParent(
       return canSeeLeadParent(db, actor, entityId, signal);
     case "email_message":
       return canSeeEmailParent(db, actor, entityId, signal);
+    case "project":
+      return canSeeProjectParent(db, actor, entityId, signal);
     default:
       return false;
   }
+}
+
+// A project is visible when unlinked (every signed-in user) or when its deal is visible.
+async function canSeeProjectParent(
+  db: Db,
+  actor: AuthUser,
+  projectId: string,
+  signal: AbortSignal,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ dealId: projects.dealId, deletedAt: projects.deletedAt })
+    .from(projects)
+    .where(eq(projects.id, projectId));
+  signal.throwIfAborted();
+  if (row === undefined || row.deletedAt !== null) return false;
+  if (row.dealId === null) return actor.isActive;
+  return canSeeDealParent(db, actor, row.dealId, signal);
 }
 
 async function canSeeDealParent(

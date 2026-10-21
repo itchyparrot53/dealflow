@@ -74,6 +74,10 @@ export const AUTOMATIONS_STRINGS = {
     "form.submitted": "a form is submitted",
     "booking.created": "a booking is made",
     "booking.cancelled": "a booking is cancelled",
+    "project.created": "a project is created",
+    "project.status_changed": "a project's status changes",
+    "project.deleted": "a project is deleted",
+    "project_task.completed": "a project task is completed",
   },
   actionTypes: {
     update_deal: "Update the deal",

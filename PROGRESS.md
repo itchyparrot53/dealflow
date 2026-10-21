@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-21 14:36
+Current: 1.2 · Last updated: 2026-10-21 14:45
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -12,7 +12,7 @@ Current: 1.1 · Last updated: 2026-10-21 14:36
 - [x] 0.2 Schema, migrations, env and image
 - [x] 0.3 Pure core (test-first)
 - [x] 0.4 Phase 0 QA gate
-- [ ] 1.1 Projects services, events and notifications (test-first)
+- [x] 1.1 Projects services, events and notifications (test-first)
 - [ ] 1.2 From a won deal and the automation action
 - [ ] 1.3 Projects list and board
 - [ ] 1.4 Deal projects section
@@ -68,6 +68,14 @@ Current: 1.1 · Last updated: 2026-10-21 14:36
 - 0.4: the first `pnpm lint` run found two real errors introduced by this part, both fixed in the gate: the CSV test's async generator had no await (`require-await`), so it now builds an async iterator explicitly, and `notifications/email/render.ts` had a non-exhaustive switch for the new kind, so `project_task_assigned` gained an email copy case. A third baseline failure (biome import order in `schema/index.ts` and formatting in `smoke.mjs`) was fixed with `biome check --write`.
 - 0.4: the QA focus asks that the image change builds. In addition to the four gate commands, a throwaway `node:22-alpine` container installed `postgresql16-client` and reported `pg_dump (PostgreSQL) 16.15` and `pg_restore (PostgreSQL) 16.15`; the full multi-stage image build is covered by the smoke run in Task 4.2.
 - 0.4: Phase 1's base is `51fad63` (the last task commit before this gate commit), the same convention Part 7 used for its phase bases.
+
+- 1.1: the card was written before the services and the first run failed on the missing module, then one real bug surfaced: `moveTask` renumbered only the target column, so a cross-phase move left a gap in the source column. It now renumbers both, and the case asserts dense positions on each side.
+- 1.1: project visibility compiles into a SQL `EXISTS` subquery that reuses `dealVisibilityClause` with its required `d`/`p` aliases, so a deal-linked project follows exactly the deal predicate (deleted and archived-pipeline deals included) and an unlinked project is visible to every signed-in user.
+- 1.1: edit rights are owner, any task assignee, or admin. `loadEditableProject` checks visibility first, so an invisible project is `E_PROJECT_001` and a visible-but-unowned one is `E_PROJECT_003` (no existence leak).
+- 1.1: every project mutation writes its domain event inside the mutation transaction (`project.created`, `project.status_changed`, `project.deleted`, `project_task.completed`); the task completion event carries `{field:"task", new: taskId}` so the dispatcher snapshot can add the task to the payload.
+- 1.1: the snapshot builds `{ project: { id, name, status, dealId, ownerId, dueDate }, task?: { id, title, assigneeId } }`, and `loadEventTarget`/`resolveTarget` treat a project event's condition target as its linked deal; an unlinked project therefore skips a condition (the existing runner rule).
+- 1.1: assignment notifications go through `createNotification` after the task commit and are best-effort (a failure is logged, never undoes the write). The project case was added to `canActorAccessParent`: unlinked projects require an active user, linked ones reuse the deal check, so an assignee who cannot see the deal gets no notification.
+- 1.1: project events were added to `DOMAIN_EVENT_TYPES`, the automation trigger union, the webhook event groups (a "Projects" group with both `project.` and `project_task.` prefixes) and the notification deep link (`/projects/{id}`).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
