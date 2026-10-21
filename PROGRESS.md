@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-21 04:36
+Current: 2.3 · Last updated: 2026-10-21 04:52
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -17,7 +17,7 @@ Current: 2.2 · Last updated: 2026-10-21 04:36
 - [x] 1.2 Public submit and events (test-first)
 - [x] 1.3 Phase 1 QA gate
 - [x] 2.1 Booking pages service and busy time
-- [ ] 2.2 Slots, booking and cancel (test-first)
+- [x] 2.2 Slots, booking and cancel (test-first)
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Forms admin screens
 - [ ] 3.2 Public form page
@@ -83,6 +83,14 @@ Current: 2.2 · Last updated: 2026-10-21 04:36
 - 2.1: `loadBusy` reads open, non-deleted, non-all-day activities assigned to the host whose span (`end_at`, else `due_at + duration_minutes`, else 30 minutes) overlaps the window; upstream `activities.assignee_id` is NOT NULL, so the plan's "owner when the assignee is null" fallback has no column to read and is noted here instead of guessed at.
 - 2.1: booking-page Zod failures are `E_BOOKING_006`; semantic settings (unknown zone, inactive host, no activity type) are `E_BOOKING_003`, mirroring the forms split.
 - 2.1: the scheduling router serves `mine`, `all` (admin-gated), `get` and `options` (active activity types plus assignable users), and the actions follow the automations pattern with `guardCsrf` first.
+
+- 2.2: the double-booking guard is `pg_advisory_xact_lock(hashtext('booking:' || host_id))` opened before the slot re-check and the insert in the same transaction, so the re-check and the write are one critical section per host.
+- 2.2: a cancellation soft-deletes the activity directly instead of calling `deleteActivity`, because that service requires `activity.delete`, which regular users do not hold by default and a published cancel link is authority the host already handed the visitor. The booking row, the activity tombstone and the `booking.cancelled` event still commit together.
+- 2.2: the effective booking zone is the host's `user_preferences.timezone` when set and valid, else the page's own zone (section 3), and the slots response returns that zone.
+- 2.2: the cancel token is 24 random bytes base64url; only its SHA-256 hex is stored, the plaintext appears once in the visitor's email, and the service never returns it (the route, the page and the tests read it from the captured mail).
+- 2.2: `SystemMail` has no attachments, so the confirmation email carries the time, duration, location and cancel link in the body; the `.ics` is returned as a string in the book response for the confirmation page's download and is not emailed (section 10).
+- 2.2: the public booking pages use a classic form post to the route for a no-JavaScript path (303 back with `?booked=1` / `?cancelled=1`), and the slot and book routes are rate limited at 60 and 10 a minute; an unknown or already-used cancel link is a 404.
+- 2.2: the scheduling integration file (six cases plus the 429 route case) is written but SKIPPED for the same Docker failure as Phase 1; it needs a run once Docker is back.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
