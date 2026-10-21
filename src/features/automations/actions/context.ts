@@ -74,3 +74,29 @@ export async function loadVariableContext(
     "owner.email": owner?.email ?? "",
   };
 }
+
+// For record events that have no deal (person.created, organization.created), text fields still
+// get the record's own name.
+export async function loadEntityVariables(
+  db: DbOrTx,
+  entityType: string,
+  entityId: string,
+  signal: AbortSignal,
+): Promise<VarContext> {
+  signal.throwIfAborted();
+  if (entityType === "organization") {
+    const [org] = await db
+      .select({ name: organizations.name })
+      .from(organizations)
+      .where(eq(organizations.id, entityId));
+    return { "organization.name": org?.name ?? "" };
+  }
+  if (entityType === "person") {
+    const [person] = await db
+      .select({ name: persons.name, firstName: persons.firstName })
+      .from(persons)
+      .where(eq(persons.id, entityId));
+    return { "person.name": person?.name ?? "", "person.first_name": person?.firstName ?? "" };
+  }
+  return {};
+}

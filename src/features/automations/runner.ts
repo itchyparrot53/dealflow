@@ -10,7 +10,8 @@ import { activities, automationRuns, automations, documents, users } from "@/db/
 import { runInChain } from "@/features/events/chainContext";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { type Action, type AutomationDefinition, automationDefinitionSchema } from "./definition";
-import "./actions";
+// Explicit /index: "./actions" would resolve to the server-actions module actions.ts instead.
+import "./actions/index";
 import { getActionHandler } from "./actions/registry";
 import { type ConditionEntity, evaluateCondition } from "./conditions";
 

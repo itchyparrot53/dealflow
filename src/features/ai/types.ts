@@ -52,5 +52,6 @@ export const AI_FEATURES = [
   "email_draft",
   "notes_to_activities",
   "ai_filter",
+  "automation_describe",
 ] as const;
 export type AiFeature = (typeof AI_FEATURES)[number];

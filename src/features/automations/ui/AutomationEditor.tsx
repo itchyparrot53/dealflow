@@ -27,9 +27,11 @@ function initialDefinition(automation: Automation, lookups: EditorLookups): Auto
 export function AutomationEditor({
   automation,
   lookups,
+  reviewNote = false,
 }: {
   automation: Automation;
   lookups: EditorLookups;
+  reviewNote?: boolean;
 }): React.ReactNode {
   const router = useRouter();
   const [name, setName] = useState(automation.name);
@@ -74,6 +76,9 @@ export function AutomationEditor({
         </TabsTrigger>
       </TabsList>
       <TabsContent value="definition">
+        {reviewNote ? (
+          <p className="mb-3 rounded-md border bg-muted/40 p-2 text-sm">{S.reviewBeforeSaving}</p>
+        ) : null}
         <form
           className="space-y-6"
           data-testid="automation-editor"

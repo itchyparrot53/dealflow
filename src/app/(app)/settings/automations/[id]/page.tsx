@@ -16,10 +16,13 @@ export const metadata = { title: AUTOMATIONS_STRINGS.title };
 
 export default async function AutomationEditorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ drafted?: string }>;
 }): Promise<ReactNode> {
   const { id } = await params;
+  const { drafted } = await searchParams;
   const { actor } = await createContext();
   if (actor === null) {
     return <p className="text-sm text-muted-foreground">{SETTINGS_STRINGS.requiresAuth}</p>;
@@ -53,6 +56,7 @@ export default async function AutomationEditorPage({
     <SettingsPage className="max-w-3xl">
       <SettingsHeading title={automation.name} description={AUTOMATIONS_STRINGS.intro} />
       <AutomationEditor
+        reviewNote={drafted === "1"}
         automation={automation}
         lookups={{
           pipelines: pipelineRows.map((pipeline) => ({

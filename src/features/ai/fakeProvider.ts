@@ -57,6 +57,30 @@ function emailDraft(req: AiChatRequest): string {
   return JSON.stringify({ subject: "FAKE subject", body: `FAKE body: ${text}` });
 }
 
+function automationDraft(req: AiChatRequest): string {
+  const parsed = parseJson(lastUserContent(req));
+  const activityTypes: unknown = parsed?.activityTypes;
+  const list = Array.isArray(activityTypes) ? (activityTypes as unknown[]) : [];
+  const first: unknown = list[0];
+  const activityTypeId =
+    typeof first === "object" && first !== null && "id" in first && typeof first.id === "string"
+      ? first.id
+      : "";
+  return JSON.stringify({
+    trigger: { type: "deal.won" },
+    condition: null,
+    actions: [
+      {
+        type: "create_activity",
+        activityTypeId,
+        subject: "Follow up with {{person.name}}",
+        dueInDays: 1,
+        assignee: "deal_owner",
+      },
+    ],
+  });
+}
+
 function notesToActivities(): string {
   return JSON.stringify({
     activities: [
@@ -97,6 +121,8 @@ export function fakeProvider(): AiProvider {
         content = emailDraft(req);
       } else if (system.includes("turn meeting or call notes")) {
         content = notesToActivities();
+      } else if (system.includes("Dealflow automation builder")) {
+        content = automationDraft(req);
       } else if (system.includes("CRM filter builder")) {
         content = FILTER;
       } else if (system.includes("Dealflow Assistant")) {

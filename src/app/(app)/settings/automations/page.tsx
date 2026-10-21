@@ -3,6 +3,7 @@ import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
 import { listAutomations } from "@/features/automations/service";
+import { AUTOMATION_TEMPLATES } from "@/features/automations/templates";
 import { AutomationsList } from "@/features/automations/ui/AutomationsList";
 import { triggerSummary } from "@/features/automations/ui/summaries";
 import { can } from "@/features/permissions/can";
@@ -27,6 +28,11 @@ export default async function AutomationsSettingsPage(): Promise<ReactNode> {
     <SettingsPage className="max-w-5xl">
       <SettingsHeading title={AUTOMATIONS_STRINGS.title} description={AUTOMATIONS_STRINGS.intro} />
       <AutomationsList
+        templates={AUTOMATION_TEMPLATES.map((template) => ({
+          key: template.key,
+          name: template.name,
+          description: template.description,
+        }))}
         rows={rows.map((row) => ({
           id: row.id,
           name: row.name,

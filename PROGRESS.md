@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 02:18
+Current: 4.4 · Last updated: 2026-10-21 02:23
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -29,7 +29,7 @@ Current: 4.3 · Last updated: 2026-10-21 02:18
 - [x] 3.3 Phase 3 QA gate
 - [x] 4.1 Automations list and editor
 - [x] 4.2 Run log
-- [ ] 4.3 Describe it and the template gallery
+- [x] 4.3 Describe it and the template gallery
 - [ ] 4.4 Webhooks settings and delivery log
 - [ ] 4.5 Demo seed and docs
 - [ ] 4.6 Phase 4 QA gate
@@ -133,6 +133,11 @@ Current: 4.3 · Last updated: 2026-10-21 02:18
 - 4.1: `Select` and `Switch` gained an optional `testId` (the Part 4 `Checkbox` precedent) because Radix owns their root nodes; the settings nav gained the Automations item, shown to admins only, and the `automations` tRPC router joined the app router.
 
 - 4.2: `RunLog` reads the router's last-100 runs and renders time, record link, status badge and skip reason, with collapsible per-action steps; the editor gained Definition and Run log tabs, and the run table carries `automation-run-row` with `data-status` for the e2e poll.
+
+- 4.3: the three cases pass, 19/19 in the file; they also caught a real defect from 4.1: `import "./actions"` in the runner had started resolving to the new server-actions `actions.ts` instead of the `actions/` index, so no action had a handler. The import is now `./actions/index` with a comment explaining why.
+- 4.3: 6.7's `notify_user.to` lists only `deal_owner`, but 6.9's template 6 notifies the automation owner; the union gained `automation_owner`, the handler resolves it to the creator, and a notification on a record without a deal now uses that record (organization or person) as the visibility parent instead of refusing.
+- 4.3: `describe.ts` sends the install's real ids and relies on `chatJson`'s built-in one repair round (which sends the validation issues back); a second parse failure becomes `E_AUTOMATION_004`. The deterministic fake reads the first activity type from the prompt and returns "deal won, follow-up call in 1 day".
+- 4.3: "Draft it" creates the drafted automation disabled and opens the editor with `?drafted=1` and the "Review before saving" note, so an AI draft can never run before an admin saves it; template cards create the template as a disabled automation in the editor.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -131,7 +131,8 @@ export const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("add_note"), body: z.string().min(1).max(5000) }),
   z.object({
     type: z.literal("notify_user"),
-    to: z.union([z.literal("deal_owner"), z.object({ userId: uuid })]),
+    // 6.7 lists deal_owner; template 6 in 6.9 needs the automation owner, so both are offered.
+    to: z.union([z.enum(["deal_owner", "automation_owner"]), z.object({ userId: uuid })]),
     message: z.string().min(1).max(500),
   }),
   z.object({

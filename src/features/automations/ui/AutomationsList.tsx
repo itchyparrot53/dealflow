@@ -29,6 +29,8 @@ import {
   duplicateAutomationAction,
   setAutomationEnabledAction,
 } from "../actions";
+import { DescribeDialog } from "./DescribeDialog";
+import { type TemplateCard, TemplateGallery } from "./TemplateGallery";
 
 const S = AUTOMATIONS_STRINGS;
 
@@ -47,10 +49,18 @@ const NEW_DEFINITION = {
   actions: [{ type: "ai_score_deal" as const }],
 };
 
-export function AutomationsList({ rows }: { rows: AutomationRowView[] }): React.ReactNode {
+export function AutomationsList({
+  rows,
+  templates,
+}: {
+  rows: AutomationRowView[];
+  templates: TemplateCard[];
+}): React.ReactNode {
   const router = useRouter();
   const [pendingDelete, setPendingDelete] = useState<AutomationRowView | null>(null);
   const [creating, setCreating] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [describeOpen, setDescribeOpen] = useState(false);
 
   async function createAutomation(): Promise<void> {
     setCreating(true);
@@ -90,7 +100,26 @@ export function AutomationsList({ rows }: { rows: AutomationRowView[] }): React.
         >
           {S.newAutomation}
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          data-testid="automation-templates"
+          onClick={() => setTemplatesOpen(true)}
+        >
+          {S.templates}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          data-testid="automation-describe"
+          onClick={() => setDescribeOpen(true)}
+        >
+          {S.describe}
+        </Button>
       </div>
+
+      <TemplateGallery open={templatesOpen} onOpenChange={setTemplatesOpen} templates={templates} />
+      <DescribeDialog open={describeOpen} onOpenChange={setDescribeOpen} />
 
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{S.empty}</p>

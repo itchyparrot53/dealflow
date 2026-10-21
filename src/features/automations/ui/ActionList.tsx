@@ -159,10 +159,17 @@ function ActionFields({
             onChange={(next) =>
               onChange({
                 ...action,
-                to: next === "deal_owner" ? "deal_owner" : { userId: next.slice("user:".length) },
+                to:
+                  next === "deal_owner" || next === "automation_owner"
+                    ? next
+                    : { userId: next.slice("user:".length) },
               })
             }
-            options={[{ value: "deal_owner", label: S.fields.dealOwner }, ...userOptions(lookups)]}
+            options={[
+              { value: "deal_owner", label: S.fields.dealOwner },
+              { value: "automation_owner", label: S.fields.automationOwner },
+              ...userOptions(lookups),
+            ]}
             ariaLabel={S.fields.recipient}
           />
           <Input

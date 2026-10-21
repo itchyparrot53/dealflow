@@ -24,6 +24,7 @@ import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { updateAiSettings } from "@/features/ai/aiSettings";
 import { fakeProvider } from "@/features/ai/fakeProvider";
 import { setAiProviderForTest } from "@/features/ai/provider";
+import { ScriptedAiProvider } from "@/features/ai/scriptedProvider";
 import { changeStage } from "@/features/deal-workspace/changeStage";
 import { markWon } from "@/features/deal-workspace/wonLost";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
@@ -35,7 +36,13 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
 import { makeTestDb } from "@/test/db";
 import { setSendEmailActionDepsForTest } from "./actions/sendEmail";
-import type { Action, AutomationDefinition, Trigger } from "./definition";
+import {
+  type Action,
+  type AutomationDefinition,
+  automationDefinitionSchema,
+  type Trigger,
+} from "./definition";
+import { draftAutomation } from "./describe";
 import { runAutomation } from "./runner";
 import {
   createAutomation,
@@ -44,6 +51,7 @@ import {
   setAutomationEnabled,
   updateAutomation,
 } from "./service";
+import { AUTOMATION_TEMPLATES, buildTemplateContext } from "./templates";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
 let admin: PermSetUser;
@@ -611,5 +619,45 @@ describe("email and AI actions", () => {
     const [run] = await runsFor(automationId);
     expect(run?.status).toBe("failed");
     expect(run?.errorId).toBe(ERROR_IDS.AI_COMPANY_LIMIT);
+  });
+});
+
+describe("describe it and templates", () => {
+  it("drafts a valid definition with the deterministic provider", async () => {
+    const result = await draftAutomation(
+      h.db,
+      admin,
+      { text: "When a deal is won, create a follow-up call tomorrow" },
+      sig(),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(automationDefinitionSchema.safeParse(result.value).success).toBe(true);
+    expect(result.value.actions[0]?.type).toBe("create_activity");
+  });
+
+  it("fails with E_AUTOMATION_004 when the model returns invalid JSON twice", async () => {
+    setAiProviderForTest(
+      new ScriptedAiProvider({ content: "not json" }, { content: "still not json" }),
+    );
+    try {
+      const result = await draftAutomation(h.db, admin, { text: "Anything" }, sig());
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.AUTOMATION_DRAFT_INVALID);
+    } finally {
+      setAiProviderForTest(fakeProvider());
+    }
+  });
+
+  it("builds a valid definition for every built-in template", async () => {
+    const context = await buildTemplateContext(h.db, sig());
+    expect(context).not.toBeNull();
+    if (context === null) return;
+    for (const template of AUTOMATION_TEMPLATES) {
+      const definition = template.build(context);
+      const parsed = automationDefinitionSchema.safeParse(definition);
+      expect(parsed.success, template.key).toBe(true);
+    }
+    expect(AUTOMATION_TEMPLATES).toHaveLength(6);
   });
 });
