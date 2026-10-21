@@ -335,6 +335,12 @@ export const ERROR_IDS = {
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
   UI_ACTION_UNCONFIRMED: "E_UI_003", // action rejected without returning a Result: answer was lost
+
+  // PUSH (web push subscriptions and delivery)
+  PUSH_NOT_CONFIGURED: "E_PUSH_001", // no VAPID keys and not PUSH_FAKE
+  PUSH_SUBSCRIPTION_INVALID: "E_PUSH_002", // endpoint not https, or subscription keys missing
+  PUSH_DELIVERY_FAILED: "E_PUSH_003", // push service rejected the send (context: status code)
+  PUSH_INPUT_INVALID: "E_PUSH_004", // push action input failed Zod validation
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

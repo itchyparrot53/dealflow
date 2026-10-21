@@ -14,7 +14,7 @@ describe("error IDs", () => {
     // Part 3 adds PRODUCT (catalog and deal lines) and CURRENCY (rates and conversion).
     // Part 4 adds DOC (quotes and invoices). Part 5 adds AUTOMATION and WEBHOOK.
     // Part 6 adds FORM and BOOKING. Part 7 adds INSIGHT. Part 8 adds PROJECT, API, RECYCLE,
-    // EXPORT and BACKUP. Part 9 adds RECUR, CALL, DUP, BULK and ORGREL.
+    // EXPORT and BACKUP. Part 9 adds RECUR, CALL, DUP, BULK and ORGREL. Part 10 adds PUSH.
     const domains = [
       "AUTH",
       "OAUTH",
@@ -64,6 +64,7 @@ describe("error IDs", () => {
       "DUP",
       "BULK",
       "ORGREL",
+      "PUSH",
     ];
     for (const id of Object.values(ERROR_IDS)) {
       const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);

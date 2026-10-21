@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-22 00:58
+Current: 0.4 · Last updated: 2026-10-22 01:10
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-22 00:58
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
 - [x] 0.2 Schema, dependencies, env and scripts
-- [ ] 0.3 Pure core (test-first)
+- [x] 0.3 Pure core (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Manifest, icons, metadata and install
 - [ ] 1.2 Service worker, registration and update prompt
@@ -45,6 +45,10 @@ Current: 0.3 · Last updated: 2026-10-22 00:58
 - 0.2: VAPID is all-or-nothing in `src/config/env.ts` (same rule as Google): one or two of the three set is a boot error, all empty is "push off". `PUSH_FAKE`/`PUSH_FAKE_DIR` are separate so capture mode works with no keys.
 - 0.2: `public/sw.js` and `.push-capture/` are git-ignored and excluded from biome and eslint; the bundled worker is a build output and lint would otherwise try to type-check it outside the app tsconfig.
 - 0.2: `e2e/fixtures/vapid.json` holds a generated test pair (public values only) and `scripts/e2e/e2e-env.mjs` reads it to set `VAPID_*`, `PUSH_FAKE=true` and `PUSH_FAKE_DIR=.push-capture`.
+- 0.3: the 25 pure-core cases were written before their four modules; the first run failed with "Cannot find module" in all four test files, then the implementation passed. `decide` applies the six rules in order and exempts `/insights/reports/{id}/export.csv` while a report page itself is still a navigation fallback.
+- 0.3: snapshot inputs list the fields that must not be stored (`note` on an activity, `notes` on a person) so the tests prove the body text is dropped; `toDealSnapshot` caps recent activities at 5 and all four builders take an injectable `now` for a deterministic `savedAt`.
+- 0.3: `trimToNewest` dedupes by id keeping the newest `savedAt` (ties keep the later copy) and sorts newest first, so a re-saved record replaces its old copy.
+- 0.3: `buildPushPayload` truncates the body to exactly 140 characters ending in "…" and only accepts links that start with `/` and not `//`; absolute, protocol-relative, `javascript:` and bare-relative links all become `/notifications`. The `PUSH` error domain (E_PUSH_001 to 004) is appended to the registry and its test allow-list.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
