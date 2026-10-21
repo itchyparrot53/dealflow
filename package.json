@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit",
     "format": "biome format --write .",
     "db:generate": "drizzle-kit generate",
+    "api:docs": "tsx scripts/dealflow/api-docs.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:seed:smoke": "tsx --env-file .env scripts/seed-smoke.ts",
     "db:seed:smoke:phase5": "tsx --env-file .env scripts/seed-smoke-phase5.ts",

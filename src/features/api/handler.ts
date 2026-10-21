@@ -6,6 +6,7 @@ import { apiTokens } from "@/db/schema";
 import { hydrateActor } from "@/server/hydrateActor";
 import { createRateLimiter } from "@/server/rateLimit";
 import { matchRoute } from "./registry";
+import { statusForError } from "./status";
 import { hashApiToken, parseBearer } from "./tokenFormat";
 import type { ApiMethod, ApiRoute } from "./types";
 
@@ -33,66 +34,6 @@ function json(body: unknown, status: number, headers?: Record<string, string>): 
 
 function errorBody(id: ErrorId, message: string): { error: { id: string; message: string } } {
   return { error: { id, message } };
-}
-
-const NOT_FOUND: ReadonlySet<string> = new Set([
-  ERROR_IDS.DEAL_NOT_FOUND,
-  ERROR_IDS.LEAD_NOT_FOUND,
-  ERROR_IDS.CONTACT_NOT_FOUND,
-  ERROR_IDS.ACTIVITY_NOT_FOUND,
-  ERROR_IDS.NOTE_NOT_FOUND,
-  ERROR_IDS.PRODUCT_NOT_FOUND,
-  ERROR_IDS.PROJECT_NOT_FOUND,
-  ERROR_IDS.PROJECT_TASK_NOT_FOUND,
-  ERROR_IDS.USER_NOT_FOUND,
-  ERROR_IDS.INSIGHT_NOT_FOUND,
-  ERROR_IDS.AUTOMATION_NOT_FOUND,
-  ERROR_IDS.DOC_NOT_FOUND,
-  ERROR_IDS.FORM_NOT_FOUND,
-  ERROR_IDS.BOOKING_NOT_FOUND,
-]);
-
-const FORBIDDEN: ReadonlySet<string> = new Set([
-  ERROR_IDS.PERM_DENIED,
-  ERROR_IDS.PROJECT_FORBIDDEN,
-  ERROR_IDS.ACTIVITY_FORBIDDEN,
-  ERROR_IDS.INSIGHT_FORBIDDEN,
-  ERROR_IDS.LEAD_ARCHIVE_FORBIDDEN,
-]);
-
-const VALIDATION: ReadonlySet<string> = new Set([
-  ERROR_IDS.API_BODY_INVALID,
-  ERROR_IDS.CONTACT_CREATE_INPUT_INVALID,
-  ERROR_IDS.CONTACT_UPDATE_INPUT_INVALID,
-  ERROR_IDS.ACTIVITY_UPDATE_INPUT_INVALID,
-  ERROR_IDS.PROJECT_INPUT_INVALID,
-  ERROR_IDS.PRODUCT_INPUT_INVALID,
-  ERROR_IDS.CURRENCY_UNKNOWN,
-  ERROR_IDS.CONTACT_ADDRESS_INVALID,
-  ERROR_IDS.INSIGHT_DEFINITION_INVALID,
-  ERROR_IDS.INSIGHT_INPUT_INVALID,
-]);
-
-export function statusForError(id: string): number {
-  switch (id) {
-    case ERROR_IDS.API_TOKEN_MISSING:
-    case ERROR_IDS.API_TOKEN_INVALID:
-      return 401;
-    case ERROR_IDS.API_SCOPE_DENIED:
-      return 403;
-    case ERROR_IDS.API_RATE_LIMITED:
-      return 429;
-    case ERROR_IDS.DEAL_PRECONDITION:
-    case ERROR_IDS.LEAD_PRECONDITION:
-      return 409;
-    case ERROR_IDS.API_ROUTE_NOT_FOUND:
-      return 404;
-    default:
-      if (NOT_FOUND.has(id)) return 404;
-      if (FORBIDDEN.has(id)) return 403;
-      if (VALIDATION.has(id)) return 422;
-      return 400;
-  }
 }
 
 interface Authed {
@@ -172,40 +113,51 @@ function readBody(
   return { ok: true, body: checked.data };
 }
 
+function checkedQuery(
+  route: ApiRoute,
+  raw: Record<string, string>,
+): { ok: true; query: unknown } | { ok: false; response: Response } {
+  if (route.query === undefined) return { ok: true, query: raw };
+  const checked = route.query.safeParse(raw);
+  if (checked.success) return { ok: true, query: checked.data };
+  return {
+    ok: false,
+    response: json(
+      {
+        error: {
+          id: ERROR_IDS.API_BODY_INVALID,
+          message: "invalid query",
+          issues: checked.error.issues,
+        },
+      },
+      422,
+    ),
+  };
+}
+
 async function parseRequest(
   req: Request,
   route: ApiRoute,
   method: ApiMethod,
 ): Promise<{ ok: true; query: unknown; body: unknown } | { ok: false; response: Response }> {
-  const queryRaw = Object.fromEntries(new URL(req.url).searchParams.entries());
-  let query: unknown = queryRaw;
-  if (route.query !== undefined) {
-    const checkedQuery = route.query.safeParse(queryRaw);
-    if (!checkedQuery.success) {
-      return {
-        ok: false,
-        response: json(
-          {
-            error: {
-              id: ERROR_IDS.API_BODY_INVALID,
-              message: "invalid query",
-              issues: checkedQuery.error.issues,
-            },
-          },
-          422,
-        ),
-      };
-    }
-    query = checkedQuery.data;
+  const query = checkedQuery(route, Object.fromEntries(new URL(req.url).searchParams.entries()));
+  if (!query.ok) return query;
+  if (method !== "POST" && method !== "PATCH") {
+    return { ok: true, query: query.query, body: undefined };
   }
+  const parsed = readBody(await req.text(), route);
+  if (!parsed.ok) return { ok: false, response: parsed.response };
+  return { ok: true, query: query.query, body: parsed.body };
+}
 
-  let body: unknown;
-  if (method === "POST" || method === "PATCH") {
-    const parsed = readBody(await req.text(), route);
-    if (!parsed.ok) return { ok: false, response: parsed.response };
-    body = parsed.body;
+function routeFailure(matched: ReturnType<typeof matchRoute>): Response | null {
+  if (matched.kind === "none") {
+    return json(errorBody(ERROR_IDS.API_ROUTE_NOT_FOUND, "unknown route"), 404);
   }
-  return { ok: true, query, body };
+  if (matched.kind === "method") {
+    return json(errorBody(ERROR_IDS.API_ROUTE_NOT_FOUND, "method not allowed"), 405);
+  }
+  return null;
 }
 
 export async function handleApiRequest(
@@ -230,11 +182,10 @@ export async function handleApiRequest(
     }
 
     const matched = matchRoute(method, segments);
-    if (matched.kind === "none") {
-      return json(errorBody(ERROR_IDS.API_ROUTE_NOT_FOUND, "unknown route"), 404);
-    }
-    if (matched.kind === "method") {
-      return json(errorBody(ERROR_IDS.API_ROUTE_NOT_FOUND, "method not allowed"), 405);
+    if (matched.kind !== "match") {
+      return (
+        routeFailure(matched) ?? json(errorBody(ERROR_IDS.DB_INVARIANT, "internal error"), 500)
+      );
     }
 
     const parsedRequest = await parseRequest(req, matched.route, method);

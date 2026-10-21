@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-21 15:10
+Current: 2.4 · Last updated: 2026-10-21 15:14
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -20,7 +20,7 @@ Current: 2.3 · Last updated: 2026-10-21 15:10
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Tokens service and settings tab
 - [x] 2.2 Registry, handler and resources (test-first)
-- [ ] 2.3 API docs
+- [x] 2.3 API docs
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Recycle bin service and purge (test-first)
 - [ ] 3.2 Recycle bin page
@@ -110,6 +110,10 @@ Current: 2.3 · Last updated: 2026-10-21 15:10
 - 2.2: auth order is exactly 6.7: bearer parse (a session cookie alone is E_API_001), hash lookup with revoked/expired/inactive checks (E_API_002), scope (E_API_003), per-token limiter (E_API_004 with Retry-After), route match (404/405), then Zod query/body (E_API_006, body capped at 262144 bytes). `last_used_at` is written at most once a minute, and every response carries `Cache-Control: no-store`.
 - 2.2: HTTP statuses map from explicit sets of error-ID values, because the ids are `E_X_00N` and a suffix check would never match; 404 for the domain not-founds, 403 for permission/scope, 422 for validation, 409 for CAS preconditions.
 - 2.2: the integration suite calls `handleApiRequest` (the same function the catch-all route invokes) with real Postgres; only `@/db/client` is mocked, so no service or SQL is faked. The suite covers all twelve required cases including the 121st-call limit and the private-deal 404.
+
+- 2.3: one registry feeds both surfaces: `buildApiDocSections(API_ROUTES)` turns each entry into serializable data (method, path, scope, summary, query/body field names, example, curl), `renderApiDocsMarkdown` writes docs/API.md, and `ApiDocs` renders the same sections in the Documentation tab. `pnpm api:docs` regenerates the file; `docs.test.ts` fails when it is stale and also checks every registered route appears once. Regenerating immediately after the test proves the file is current (`git diff --exit-code` clean).
+- 2.3: the docs script imports the registry (so the docs describe the real routes), which transitively imports services that validate env at import time. It fills obviously fake placeholders only for keys the process has not set, and never reads `.env`, so `pnpm api:docs` works on a bare shell.
+- 2.3: the plan asked to repoint "the upstream docs link in the app" at `/settings/api?tab=docs`. The only such link is the main navigation's Docs item, which points at the whole documentation site (`DOCS_SITE_URL`), not API docs; repointing it would remove every other doc topic from the app. Instead the API page carries the Documentation tab and the settings nav links to it, and the global Docs link is unchanged; logging the deviation here.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
