@@ -102,4 +102,22 @@ Current: 4.4 · Last updated: 2026-10-21 20:15
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist
+1. PASS - `git status --porcelain` was empty after the 4.3 commit.
+2. PASS - `pnpm install --frozen-lockfile` exit 0; `package.json`/`pnpm-lock.yaml` unchanged since the Phase 0 base.
+3. PASS - `pnpm typecheck` exit 0.
+4. PASS - `pnpm lint` exit 0 (15 pre-existing warnings).
+5. PASS - `pnpm test:unit` 5320/5320 in 828 files, above the 5269 baseline.
+6. PASS - `pnpm test:integration` 2077/2077 in 410 files on the final tree.
+7. PASS - `pnpm build` exit 0 and the build lists `/contacts/duplicates`.
+8. PASS - `pnpm e2e` 23/23 (specs 00 to 13).
+9. PASS - 77 screenshots in `e2e/screenshots`, 7 of them `p9-*`.
+10. PASS - smoke printed `SMOKE PASS` and `backup round trip ok (0 deals)`, with no leftover compose resources.
+11. PASS - `drizzle/0091_dealflow_activity_extras.sql` creates exactly the three tables of 6.4.
+12. PASS - PROGRESS.md QA log has the `Part 8 proof` line.
+13. PASS - no `role="alert"` under `src/features/forecast`; the four remaining under `src/features/projects` are in-dialog field validation (DealProjectsSection, NewProjectDialog, PhasesPopover, TaskDialog), not the board alert Task 3.1 replaced.
+14. PASS - no `dangerouslySetInnerHTML` under `src/features/duplicates`, `src/features/feedback` or `src/components/ui/toaster.tsx`.
+15. PASS - no em dash in any file changed since the Phase 0 base.
+16. PASS - `docs/dealflow/PRODUCTIVITY.md` exists and `docs/dealflow/UPSTREAM.md` has the Part 9 section.
+17. PASS - `pnpm check:progress --final` passes (Task 4.5).
