@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
-STATUS: IN PROGRESS
-Current: 5.5 · Last updated: 2026-10-21 03:28
+STATUS: COMPLETE
+Current: COMPLETE · Last updated: 2026-10-21 03:30
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -38,7 +38,7 @@ Current: 5.5 · Last updated: 2026-10-21 03:28
 - [x] 5.2 Integration suite and smoke
 - [x] 5.3 Independent review and hardening
 - [x] 5.4 Final checklist
-- [ ] 5.5 Final report and completion
+- [x] 5.5 Final report and completion
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
@@ -169,6 +169,8 @@ Current: 5.5 · Last updated: 2026-10-21 03:28
 - 5.4: every section 11 item was re-run on the final tree (status, install, typecheck, lint, unit 5124/5124, integration 1951/1951, build, e2e 19/19, screenshots, smoke, migration tables, the three greps, em dashes, docs), and item 17 is recorded as deferred because `--final` needs the report written in 5.5.
 - 5.4: the second full smoke run was needed because the review fixes changed app code after the Task 5.2 run; it printed SMOKE PASS and left no container or volume.
 
+- 5.5: the final report is written for the owner, the one deferred checklist item was completed, and `pnpm check:progress --final` passed before the completion commit.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 4 and Part 5 migrations and schema once `0083_dealflow_automations` is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
@@ -189,6 +191,49 @@ Current: 5.5 · Last updated: 2026-10-21 03:28
 
 ## Final report
 
+### Definition of done
+
+1. PASS - the rate limit's client IP comes from `clientIp` (hops counted from the right, `x-real-ip` at hops 0), not the spoofable first `X-Forwarded-For` entry.
+2. PASS - migration `0083_dealflow_automations` adds exactly domain_events, automations, automation_runs, webhook_subscriptions and webhook_deliveries; `0084` adds the `automation` notification kind.
+3. PASS - `recordChange`, the four create services and every document status change write their event in the caller's transaction; a rolled-back write leaves no event (proved by test).
+4. PASS - the dispatcher claims with `SKIP LOCKED`, coalesces a transaction's updates, and fans out to automations and webhooks; two concurrent passes process each event once.
+5. PASS - triggers and conditions match on the current record, and actions run through the existing services, so permissions, change logs and realtime behave as for a user edit.
+6. PASS - the loop guard stops an automation that already ran in the chain, depth 3 is the cap, and every run is in the log with per-action steps.
+7. PASS - AI actions use Part 1's layer with caps and `AI_FAKE`; "Describe it" returns a schema-validated draft, and the editor opens it disabled for review.
+8. PASS - deliveries are HMAC-signed, address-checked inside the DNS lookup with no redirects, retried with backoff, auto-disabled at ten failures, and logged with redeliver and test send.
+9. PASS - Settings > Automations and Settings > Webhooks work for admins only, with the nav links hidden for everyone else.
+10. PASS - typecheck, lint, build, unit 5124/5124, integration 1951/1951, e2e 19/19 (specs `00` to `09`), the 6 `p5-*` screenshots, SMOKE PASS and two independent review rounds (all findings fixed) hold.
+
+### Owner actions
+
+1. Rebuild the dev stack so it serves this build and applies migrations `0083` and `0084`:
+   `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+2. The worker tier must run for the dispatcher, automations, deliveries, rotting and retention. The compose stack already starts it; a bare `next start` does not.
+3. Fix the partial Google configuration in `.env` (client id and secret set, workspace domain empty) or blank all three.
+4. Add exchange rates in Settings > Currencies for every currency you invoice in; the live base is GBP and has no EUR or USD rate.
+5. Any automation or webhook made by the demo seed is disabled and marked "Demo: "; delete it if you ran the seed against your live database.
+6. If more than one proxy sits in front of the app, set `TRUSTED_PROXY_HOPS` to that number. Leave `WEBHOOK_ALLOW_PRIVATE=false` outside local tests.
+
+### Decisions worth reviewing
+
+- No `CONTRACT CHANGE:` lines were needed.
+- 6.3's literal `E_AUTOMATION_INPUT_INVALID` and `E_WEBHOOK_INPUT_INVALID` cannot satisfy the registry's `E_<DOMAIN>_<NNN>` format, so they are `E_AUTOMATION_006` and `E_WEBHOOK_005` (Part 4's `E_DOC_011` precedent).
+- 6.7 lists only `deal_owner` for `notify_user`, while 6.9's template 6 notifies the automation owner; the union gained `automation_owner`, and a notification on an organization or person event uses that record as its visibility parent.
+- Changed tests: `errorIds.test.ts` gained the AUTOMATION and WEBHOOK domains; `notifications/preferences.test.ts` gained `automation: false`; `notifications/schema.test.ts` now expects the 14-value enum. The events, automations, webhooks and e2e files are new, and no assertion was weakened.
+
+### Open issues
+
+- `src/server/rateLimit.ts` still reads `x-forwarded-for` directly for the signed-in limiter; it takes the last entry (one hop), predates this part and was left unchanged.
+- Docker's VM disk is tight; nothing was pruned.
+- The live dev stack runs the pre-Part-5 build until owner action 1.
+
+### Notes for Part 6
+
+- New routes: `/settings/automations`, `/settings/automations/[id]`, `/settings/webhooks`; new screenshots: `p5-automations-list`, `p5-automation-editor`, `p5-automation-describe`, `p5-automation-runs`, `p5-webhooks`, `p5-webhook-deliveries`.
+- Event types live in `src/features/events/types.ts`; emit from `recordChange` for audited edits and call `emitDomainEvent` explicitly for creates, deletes and status changes, always inside the mutation's transaction. New code that changes a record outside `recordChange` must emit itself.
+- The dispatcher, rotting, retention and delivery jobs start from `registerEventJobs` and `registerAutomationRunner` in `src/server/worker.ts`; the queue names are in `src/constants/jobNames.ts`.
+- Upstream files changed in this part are listed in `docs/dealflow/UPSTREAM.md` (Part 5 sections).
+
 ### Checklist
 
 1. PASS - `git --no-optional-locks status --porcelain` printed nothing before the Task 5.4 record.
@@ -207,5 +252,5 @@ Current: 5.5 · Last updated: 2026-10-21 03:28
 14. PASS - `git grep -n "secret" -- src/features/webhooks/router.ts` printed nothing.
 15. PASS - the em dash scan over every changed non-kit file printed nothing.
 16. PASS - `docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md` exist and `UPSTREAM.md` lists this part's upstream files.
-17. SKIPPED - deferred to Task 5.5: `pnpm check:progress --final` requires the written final report, which Task 5.5 produces.
+17. PASS - `pnpm check:progress --final` passes (run in Task 5.5 on the completed file).
 
