@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-21 05:18
+Current: 3.5 · Last updated: 2026-10-21 05:26
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -23,7 +23,7 @@ Current: 3.4 · Last updated: 2026-10-21 05:18
 - [x] 3.1 Forms admin screens
 - [x] 3.2 Public form page
 - [x] 3.3 Booking admin screens
-- [ ] 3.4 Public booking and cancel pages
+- [x] 3.4 Public booking and cancel pages
 - [ ] 3.5 Triggers in the editors, demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E forms and booking spec and screenshots
@@ -108,6 +108,11 @@ Current: 3.4 · Last updated: 2026-10-21 05:18
 - 3.3: the editor writes through `updateBookingPageAction` in one save, and only an admin's payload carries `hostId`; duration, buffer, notice and days-ahead are `Select`s, the zone is a searchable `Combobox` over `Intl.supportedValuesOf("timeZone")`, and activity types come from the active catalog.
 - 3.3: `AvailabilityEditor` is seven rows with a `Switch` and up to three 15-minute step from/to `Select` pairs; a closed day has no ranges, which is exactly what the slot engine reads.
 - 3.3: every client action passes `readCsrfToken()`, and all controls are shadcn wrappers (no native select/checkbox).
+
+- 3.4: `PublicBooking` is a client component that fetches `/slots` per selected day and posts to `/book`; the visitor's zone comes from `Intl.DateTimeFormat().resolvedOptions().timeZone` after mount (the page zone until then) and every label is rendered in that zone.
+- 3.4: a 409 from the book route shows 6.2's "no longer available" copy and refetches the day, so the visitor sees the slot disappear instead of a dead form; 429 and 404 show their own copy.
+- 3.4: the confirmation renders `BookingConfirmed`, which states the booked time in the visitor's zone and offers "Add to calendar" as the `.ics` data URL returned by the book route (the same bytes the email would have carried).
+- 3.4: the React rule against setState synchronously in an effect is respected by moving the clock read and the slot fetch into timer callbacks and by deriving the 14-day strip with `useMemo` from a `today` state, so there are no cascading renders.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
