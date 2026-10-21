@@ -3,6 +3,7 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/config/env";
 import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerAutomationRunner } from "@/features/automations/runner";
+import { registerWebhookDeliveryJob } from "@/features/webhooks/deliver";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerEventJobs } from "@/features/events/dispatcherJob";
@@ -36,6 +37,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerEventJobs(boss);
   // Automation runs: the queue the dispatcher fills (2.1).
   await registerAutomationRunner(boss);
+  // Webhook deliveries: the queue the dispatcher fills (3.1).
+  await registerWebhookDeliveryJob(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers
