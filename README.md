@@ -185,3 +185,15 @@ pipeline, deal, contact and email surfaces.
 ## License
 
 MIT. See [`LICENSE`](LICENSE). Dealflow builds on warpdrive, copyright Nikita Sawinyh, also MIT.
+
+## Automations and webhooks
+
+Automations run actions when domain events happen: create an activity, update a deal, send a saved
+email template, notify a user, or run an AI summary, score or draft. Admins create them under
+Settings > Automations from scratch, from six built-in templates, or by describing one in a sentence
+(the AI draft opens for review, disabled).
+
+Webhooks deliver the same events as signed JSON POSTs. Each delivery is retried with backoff,
+address-checked inside the DNS lookup, and auto-disabled after ten consecutive failures; the delivery
+log keeps the last 100 attempts per subscription with redeliver and test send. See
+`docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md`.

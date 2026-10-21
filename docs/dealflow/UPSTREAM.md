@@ -235,3 +235,10 @@ the settings routes. Upstream files edited for the part (port future upstream fi
   dispatcher poll and the automations and webhooks queues.
 - `src/app/d/[publicId]/page.tsx`, `src/app/api/public/documents/[publicId]/{accept,decline}/route.ts`:
   use the shared `clientIp`.
+
+### Part 5 demo and docs
+
+- `scripts/seed-demo.ts`, new `scripts/seed-demo-automations.ts`: two disabled demo automations and
+  one disabled example webhook.
+- `scripts/e2e/e2e-env.mjs`: `WEBHOOK_ALLOW_PRIVATE=true` for the local receiver.
+- `README.md`: the "Automations and webhooks" section.

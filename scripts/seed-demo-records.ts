@@ -67,6 +67,10 @@ export async function wipeDemo(db: Db, ownerIds: string[]): Promise<void> {
   // an activity on it). Unlink it rather than delete another user's record, so the demo
   // deal delete is not blocked by activities_deal_id_deals_id_fk on a re-seed.
   await db.q(`UPDATE activities SET deal_id = NULL WHERE deal_id IN ${demoDeals}`, u);
+  // Documents reference their deal with ON DELETE RESTRICT (Part 4), so a re-seed must clear the
+  // demo deals' documents before the deals themselves. Lines and payments cascade; a source-quote
+  // reference is ON DELETE SET NULL.
+  await db.q(`DELETE FROM documents WHERE deal_id IN ${demoDeals}`, u);
   await db.q(`DELETE FROM deals WHERE owner_id = ANY($1::uuid[])`, u);
   // Same reason: an activity from a non-demo user may reference a demo person.
   await db.q(

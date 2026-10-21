@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-21 02:27
+Current: 4.6 · Last updated: 2026-10-21 02:31
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -31,7 +31,7 @@ Current: 4.5 · Last updated: 2026-10-21 02:27
 - [x] 4.2 Run log
 - [x] 4.3 Describe it and the template gallery
 - [x] 4.4 Webhooks settings and delivery log
-- [ ] 4.5 Demo seed and docs
+- [x] 4.5 Demo seed and docs
 - [ ] 4.6 Phase 4 QA gate
 - [ ] 5.1 E2E automations spec and screenshots
 - [ ] 5.2 Integration suite and smoke
@@ -142,6 +142,10 @@ Current: 4.5 · Last updated: 2026-10-21 02:27
 - 4.4: `/settings/webhooks` renders the subscription table with status (enabled, or disabled with its reason), the row menu (edit, send test, rotate, delivery log, enable/disable, delete), the grouped event checkboxes and the one-time secret panel with the exact "Copy this secret now. You won't see it again." copy.
 - 4.4: the delivery log is a dialog that queries the last 100 deliveries when opened, shows status/attempts/code/duration, expands the payload and can redeliver (then invalidates the query); the settings nav gained the Webhooks item for admins after Automations.
 - 4.4: the webhook dialog is remounted with a key per open target instead of resetting its form from an effect (the React lint rule forbids synchronous setState in an effect), and `pnpm build` lists `/settings/automations`, `/settings/automations/[id]` and `/settings/webhooks`.
+
+- 4.5: the seed adds `scripts/seed-demo-automations.ts` (template 1 and template 3 as disabled "Demo: " automations, and one disabled `https://example.invalid/hooks/dealflow` subscription with reason "Demo"), runs from `seed-demo.ts`, and a real `pnpm db:seed:demo` printed `demo_automations=2 demo_webhooks=1`.
+- 4.5: the first re-seed failed on a pre-existing gap: `wipeDemo` deleted demo deals while Part 4 documents still referenced them with ON DELETE RESTRICT. It now deletes the demo deals' documents first; this was required to run the seed at all and is logged as a pre-existing upstream fix.
+- 4.5: `docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md` cover events, triggers, conditions, actions, the loop guard, AI actions, describe it, templates, run log, retention, the payload and signature example, retries, auto-disable and the blocked ranges; `UPSTREAM.md` has the Part 5 demo/docs section and the README gained "Automations and webhooks"; the e2e env sets `WEBHOOK_ALLOW_PRIVATE=true`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

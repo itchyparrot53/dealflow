@@ -72,6 +72,8 @@ export function e2eEnv(secrets) {
     MAIL_INITIAL_SYNC_DAYS: "90",
     MAIL_BACKFILL_DAYS: "0",
     AI_FAKE: "true",
+    // The e2e spec runs a webhook receiver on 127.0.0.1, so private targets are allowed there.
+    WEBHOOK_ALLOW_PRIVATE: "true",
     OPENROUTER_API_KEY: "",
     NEXT_TELEMETRY_DISABLED: "1",
   };

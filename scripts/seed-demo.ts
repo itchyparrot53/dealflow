@@ -19,6 +19,7 @@ import {
   insertActivities,
   seedStandaloneActivities,
 } from "./seed-demo-activities";
+import { seedAutomations } from "./seed-demo-automations";
 import {
   seedCustomFieldDefs,
   seedEmailTemplates,
@@ -131,6 +132,9 @@ async function main(): Promise<void> {
   // invoices on the deals that now have lines.
   const documents = await seedDocuments(db, { pipelineId, ownerId: at(userIds, 0) });
 
+  // Part 5: two disabled automations and one disabled example webhook.
+  const automations = await seedAutomations(db, { pipelineId, ownerId: at(userIds, 0) });
+
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
     id: at(dealIds, i),
@@ -234,7 +238,7 @@ async function main(): Promise<void> {
     `demo_org_relations=${relationCount} demo_contact_followers=${followerCount} demo_invited=1`,
   );
   console.warn(
-    `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated} demo_documents=${documents.documents} demo_templates=${documents.templates}`,
+    `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated} demo_documents=${documents.documents} demo_templates=${documents.templates} demo_automations=${automations.automations} demo_webhooks=${automations.webhooks}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

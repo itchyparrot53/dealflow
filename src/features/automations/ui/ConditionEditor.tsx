@@ -78,7 +78,6 @@ export function ConditionEditor({
         const ops = OPS_BY_FIELD[condition.field];
         const showValue = !VALUELESS.has(condition.op);
         return (
-          // biome-ignore lint/suspicious/noArrayIndexKey: condition rows are positional and reorder by index
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: condition rows are positional and reorder by index
             key={index}
