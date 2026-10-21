@@ -67,6 +67,11 @@ describe("toast store", () => {
     expect(useToastStore.getState().toasts).toHaveLength(0);
   });
 
+  test("keeps the tone so errors announce assertively", () => {
+    useToastStore.getState().push({ message: "Couldn't save", tone: "error" });
+    expect(useToastStore.getState().toasts[0]?.tone).toBe("error");
+  });
+
   test("dismiss removes a toast immediately", () => {
     const id = useToastStore.getState().push({ message: "Undo" });
     useToastStore.getState().dismiss(id);

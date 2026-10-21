@@ -14,7 +14,7 @@ import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
+import { useToastStore } from "@/features/feedback/toastStore";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   completeTaskAction,
@@ -71,6 +72,14 @@ export function ProjectBoard({
   const [phases, setPhases] = useState<PhaseView[]>(project.phases);
   const [tasks, setTasks] = useState<TaskView[]>(project.tasks);
   const [errorId, setErrorId] = useState<string | null>(null);
+
+  // The board's ad-hoc inline alert became the shared error toast (6.8); dialog-level field
+  // validation keeps its own inline copy.
+  useEffect(() => {
+    if (errorId !== null) {
+      useToastStore.getState().push({ message: projectsErrorMessage(errorId), tone: "error" });
+    }
+  }, [errorId]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pendingTask, setPendingTask] = useState<{
     task: TaskView | null;
@@ -314,12 +323,6 @@ export function ProjectBoard({
           {S.owner}: {project.ownerName}
         </span>
       </div>
-
-      {errorId !== null && (
-        <p role="alert" className="text-sm text-destructive">
-          {projectsErrorMessage(errorId)}
-        </p>
-      )}
 
       <DndContext
         sensors={sensors}

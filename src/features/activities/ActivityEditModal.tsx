@@ -6,6 +6,7 @@ import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
 import { FIELD_INPUT as FIELD } from "@/constants/formStyles";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ActivityDatePicker } from "./ActivityDatePicker";
@@ -89,6 +90,14 @@ export function ActivityEditModal({
       setError(`Could not save the repeat rule (${ruleResult.error.id})`);
       return;
     }
+    pushDeleteUndo({
+      entity: "activity",
+      ids: [activity.id],
+      noun: "activity",
+      onRestored: () => {
+        void invalidateActivityLists();
+      },
+    });
     await invalidateActivityLists();
     setPending(false);
     onSaved?.();

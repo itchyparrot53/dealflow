@@ -19,6 +19,7 @@ import {
   CustomFieldRefLabelsProvider,
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
@@ -142,6 +143,17 @@ export function PeopleList({
       ids.map(async (id) => ({ id, result: await deletePersonAction({ id }, readCsrfToken()) })),
     );
     const failedIds = outcomes.filter((o) => o.result.ok === false).map((o) => o.id);
+    const deletedIds = outcomes.filter((o) => o.result.ok === true).map((o) => o.id);
+    if (deletedIds.length > 0) {
+      pushDeleteUndo({
+        entity: "person",
+        ids: deletedIds,
+        noun: "person",
+        onRestored: () => {
+          void reload();
+        },
+      });
+    }
     // Don't silently drop failures: clear only the ids that actually deleted, keep the
     // failed ones selected (so the user sees exactly what still needs attention).
     selection.clear();

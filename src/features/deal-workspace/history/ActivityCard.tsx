@@ -10,6 +10,7 @@ import { followUpLinksOf, useFollowUpAfterDone } from "@/features/activities/fol
 import { ActivityTypeIcon } from "@/features/activities/typeIcons";
 import { useInvalidateActivityLists } from "@/features/activities/useInvalidateActivityLists";
 import { linkifyHtml } from "@/features/collaboration/linkify";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
@@ -120,6 +121,14 @@ export function ActivityCard({
     setBusy(true);
     const res = await deleteActivityAction({ id: activity.id }, readCsrfToken());
     if (res.ok) {
+      pushDeleteUndo({
+        entity: "activity",
+        ids: [activity.id],
+        noun: "activity",
+        onRestored: () => {
+          void invalidateActivityLists();
+        },
+      });
       for (const key of entityKeys) {
         utils.activities.listForEntity.setData(key, (old) =>
           old === undefined ? old : old.filter((a) => a.id !== activity.id),

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { RowSelection } from "@/components/data-table/useRowSelection";
 import { PRODUCTIVITY_STRINGS } from "@/constants/productivityStrings";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { type BulkActivityResult, bulkActivityAction } from "./list/bulkActions";
 import { useInvalidateActivityLists } from "./useInvalidateActivityLists";
@@ -30,6 +31,16 @@ export function useActivityBulkActions(selection: RowSelection): ActivityBulkAct
     if (ids.length === 0) return;
     const result: BulkActivityResult = await bulkActivityAction({ ...input, ids }, readCsrfToken());
     if (result.ok) {
+      if (input.kind === "delete") {
+        pushDeleteUndo({
+          entity: "activity",
+          ids,
+          noun: "activity",
+          onRestored: () => {
+            void invalidateActivityLists();
+          },
+        });
+      }
       await invalidateActivityLists();
       selection.clear();
       setError(null);

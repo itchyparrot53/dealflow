@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { pushStageUndo } from "@/features/feedback/undo";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { applyMove, type BoardData } from "./boardCache";
 import { midpoint } from "./boardPosition";
@@ -13,9 +14,11 @@ export function useDealMove(pipelineId: string) {
   const key = BOARD_QUERY_KEY(pipelineId);
 
   const mutation = useMutation({
-    mutationFn: (input: DealMoveInput) => moveDealAction(input, readCsrfToken()),
+    mutationFn: (variables: { input: DealMoveInput; toStageName?: string }) =>
+      moveDealAction(variables.input, readCsrfToken()),
 
-    onMutate: async (input: DealMoveInput) => {
+    onMutate: async (variables) => {
+      const input = variables.input;
       await client.cancelQueries({ queryKey: key });
       const previous = client.getQueryData<BoardData>(key);
       if (previous !== undefined) {
@@ -38,7 +41,26 @@ export function useDealMove(pipelineId: string) {
       }
     },
 
-    onSettled: (result, _err, _input, ctx) => {
+    onSuccess: (result, variables: { input: DealMoveInput; toStageName?: string }, ctx) => {
+      if (!result.ok || variables.toStageName === undefined) return;
+      const previous = ctx.previous;
+      const fromStageId = previous?.cards.find(
+        (card) => card.id === variables.input.dealId,
+      )?.stageId;
+      if (fromStageId === undefined) return;
+      // Undo goes back through the same action with the updatedAt this move returned, so a second
+      // edit in between is refused by the compare-and-swap.
+      pushStageUndo({
+        dealId: variables.input.dealId,
+        fromStageId,
+        toStageName: variables.toStageName,
+        updatedAt: result.deal.updatedAt,
+        onUndone: () => {
+          void client.invalidateQueries({ queryKey: key });
+        },
+      });
+    },
+    onSettled: (result, _err, _variables, ctx) => {
       // E_DEAL_002 (stale precondition) is a non-throwing ok:false result, not
       // an exception, so it arrives here via onSettled rather than onError.
       // Roll back the optimistic patch so the card snaps to its prior position,
@@ -50,5 +72,7 @@ export function useDealMove(pipelineId: string) {
     },
   });
 
-  return { move: (input: DealMoveInput) => mutation.mutate(input) };
+  return {
+    move: (input: DealMoveInput, toStageName?: string) => mutation.mutate({ input, toStageName }),
+  };
 }

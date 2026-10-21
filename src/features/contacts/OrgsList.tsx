@@ -19,6 +19,7 @@ import {
   EMPTY_REF_LABELS,
   mergeRefLabels,
 } from "@/features/custom-fields/refLabelsContext";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -195,6 +196,17 @@ export function OrgsList({
       ids.map(async (id) => ({ id, result: await deleteOrgAction({ id }, readCsrfToken()) })),
     );
     const failedIds = outcomes.filter((o) => o.result.ok === false).map((o) => o.id);
+    const deletedIds = outcomes.filter((o) => o.result.ok === true).map((o) => o.id);
+    if (deletedIds.length > 0) {
+      pushDeleteUndo({
+        entity: "organization",
+        ids: deletedIds,
+        noun: "organization",
+        onRestored: () => {
+          void reload();
+        },
+      });
+    }
     // Don't silently drop failures: clear only the ids that actually deleted, keep the
     // failed ones selected (so the user sees exactly what still needs attention).
     selection.clear();

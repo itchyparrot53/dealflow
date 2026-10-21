@@ -15,6 +15,7 @@ import { deleteDealAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { duplicateDealAction } from "@/features/deal-workspace/duplicateDealAction";
 import { archiveDealAction } from "@/features/deals/archiveActions";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { useDetailDrawerClose } from "@/features/navigation/detailDrawerClose";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ConvertToLeadDialog } from "./ConvertToLeadDialog";
@@ -77,6 +78,12 @@ export function DealActionsMenu({
       reportError(r.error.id);
       return;
     }
+    pushDeleteUndo({
+      entity: "deal",
+      ids: [dealId],
+      noun: "deal",
+      onRestored: () => router.refresh(),
+    });
     // Opened as a slide-over, the deal has a list behind it to return to, and pushing would be a
     // soft navigation that leaves the slot rendering the deal just deleted.
     if (closeDrawer !== null) closeDrawer();

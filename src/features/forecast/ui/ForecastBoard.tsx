@@ -11,10 +11,11 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
+import { useToastStore } from "@/features/feedback/toastStore";
 import { moveDealToMonthAction } from "@/features/forecast/actions";
 import type { Forecast, ForecastDeal } from "@/features/forecast/forecast";
 import { trpc } from "@/lib/trpc-client";
@@ -96,6 +97,11 @@ export function ForecastBoard({ pipelines }: Props): React.ReactNode {
   const [startMonth, setStartMonth] = useState(currentMonth);
   const [moves, setMoves] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+
+  // Failures surface in the shared toast region instead of an ad-hoc inline alert (6.8).
+  useEffect(() => {
+    if (error !== null) useToastStore.getState().push({ message: error, tone: "error" });
+  }, [error]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor),
@@ -185,12 +191,6 @@ export function ForecastBoard({ pipelines }: Props): React.ReactNode {
           </Button>
         </div>
       </div>
-
-      {error !== null && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
 
       {data === undefined ? (
         <p className="text-sm text-muted-foreground">{S.loading}</p>

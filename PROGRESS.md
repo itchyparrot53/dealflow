@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-21 18:55
+Current: 3.2 · Last updated: 2026-10-21 18:57
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -25,7 +25,7 @@ Current: 3.1 · Last updated: 2026-10-21 18:55
 - [x] 2.3 AI filters on people, organizations and leads
 - [x] 2.4 Organization parent-loop guard
 - [x] 2.5 Phase 2 QA gate
-- [ ] 3.1 Toaster and undo
+- [x] 3.1 Toaster and undo
 - [ ] 3.2 Palette commands
 - [ ] 3.3 Shortcut sequences and the help sheet
 - [ ] 3.4 Demo seed and docs
@@ -57,6 +57,7 @@ Current: 3.1 · Last updated: 2026-10-21 18:55
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 - 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
+- 3.1: the toaster is one region mounted in the app layout; toasts pause on hover/focus, dismiss on Escape or the X, and an error tone announces assertively. `pushStageUndo` reverses a board move through `moveDealAction` with the updatedAt the forward move returned (a stale one shows "Couldn't undo: the deal changed since"); `pushDeleteUndo` restores through `restoreItemAction` for deal, person, organization and activity, including the activity and contact bulk deletes. The forecast and project-board inline alerts became error toasts; the remaining in-dialog field alerts in the projects dialogs stay as inline validation copy (checklist item 13 explains them). Two real-Postgres cases prove the move-back and the stale-CAS refusal, and the toast store keeps the tone. The board pushes the toast from `useDealMove` with the stage name from `Board`.
 - 2.4: organizations have no parent column, so the guard sits in `addOrgRelation` for a `parent`/`parents` relation type (case-insensitive). A recursive CTE follows target-side parent links from the proposed parent up to 50 levels and returns `E_ORGREL_001` when the child is among the ancestors; self-parenting keeps the earlier `CONTACT_RELATION_SELF` refusal. Three real-Postgres cases pass (loop refused, legal re-parent, self refused). The plan's A-to-B-to-C wording is implemented with target-is-parent direction (the label on A names A's parent), so the loop case makes A the parent of C.
 - 2.3: Part 1's filter flow was already target-generic (`aiFilterInputSchema` takes deal, person, organization and lead and validates with that target's saved-filter schema), so this task covered the fake and the inputs. `fakeProvider` now returns a valid definition per target (people by name, organizations by name, leads by title, deals by value), and the people and organizations lists mount `AiFilterBox`, which parses the returned definition with `savedFilterDefinitionSchema` before applying it as the list filter. Unit tests prove every target's fake passes its schema and that a person definition using the deal-only `value` field is rejected with `E_AI_005`. The leads list exposes only an inbox/archived toggle (no condition surface), so no input was mounted there; the lead target still works through `describeFilterAction` and is logged under Open issues.
 - 2.2: People and organizations gained bulk change owner alongside the existing bulk delete. Both lists call one `bulkContactAction` that loops `updatePerson`/`updateOrg` or `deletePerson`/`deleteOrg`, so every row keeps its own permission check, and a partial batch returns `E_BULK_002` with the failed ids and the applied count; more than `BULK_MAX` ids is `E_BULK_001` before any write. The three real-Postgres cases pass (owner partial with two applied, delete then restore through `restoreItem`, over-limit). The per-row delete buttons were left as they were.

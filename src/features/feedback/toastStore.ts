@@ -17,12 +17,15 @@ export interface ToastItem {
   action?: ToastAction;
   durationMs: number;
   paused: boolean;
+  // Errors are announced assertively; ordinary confirmations politely.
+  tone: "info" | "error";
 }
 
 export interface ToastInput {
   message: string;
   action?: ToastAction;
   durationMs?: number;
+  tone?: "info" | "error";
 }
 
 interface ToastState {
@@ -74,7 +77,14 @@ export const useToastStore = create<ToastState>((set, get) => {
       set((state) => {
         const toasts = [
           ...state.toasts,
-          { id, message: input.message, action: input.action, durationMs, paused: false },
+          {
+            id,
+            message: input.message,
+            action: input.action,
+            durationMs,
+            paused: false,
+            tone: input.tone ?? "info",
+          },
         ];
         while (toasts.length > TOAST_MAX) {
           const dropped = toasts.shift();

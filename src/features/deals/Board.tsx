@@ -173,7 +173,10 @@ export function Board(props: BoardProps): React.ReactNode {
     const { beforePosition, afterPosition } = resolveNeighbors(destCards, destCards.length);
     const expectedUpdatedAt = cardUpdatedAt[dealId];
     if (expectedUpdatedAt === undefined) return;
-    move({ dealId, toStageId, beforePosition, afterPosition, expectedUpdatedAt });
+    move(
+      { dealId, toStageId, beforePosition, afterPosition, expectedUpdatedAt },
+      stageNameById.get(toStageId) ?? "another stage",
+    );
   }
 
   function onDragEnd(e: DragEndEvent): void {

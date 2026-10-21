@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ICON_BUTTON } from "@/constants/formStyles";
 import { deleteOrgAction, deletePersonAction } from "@/features/contacts/actions";
+import { pushDeleteUndo } from "@/features/feedback/undo";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 interface ContactActionsMenuProps {
@@ -50,7 +51,15 @@ export function ContactActionsMenu({
         ? await deletePersonAction({ id: entityId }, readCsrfToken())
         : await deleteOrgAction({ id: entityId }, readCsrfToken());
     setPending(false);
-    if (r.ok) router.push(basePath);
+    if (r.ok) {
+      pushDeleteUndo({
+        entity: entityType,
+        ids: [entityId],
+        noun: entityType === "person" ? "person" : "organization",
+        onRestored: () => router.refresh(),
+      });
+      router.push(basePath);
+    }
   }
 
   return (
