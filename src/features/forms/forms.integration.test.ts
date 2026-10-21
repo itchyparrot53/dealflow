@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST, resetFormRateLimitForTest } from "@/app/api/public/forms/[publicId]/submit/route";
 import {
   automationRuns,
@@ -24,7 +24,19 @@ import { makeTestDb, type TestDb } from "@/test/db";
 import { publicJsonHeaders } from "@/test/publicRequest";
 import { createForm, setFormActive, type WebForm } from "./forms";
 
+// The public route binds the app's shared pool when it is imported, so the test points that
+// binding at its per-test database instead. It is still a real Drizzle client over real Postgres
+// (Testcontainers); only the connection string is swapped.
 let h: TestDb;
+vi.mock("@/db/client", () => ({
+  get db() {
+    return h.db;
+  },
+  get pool() {
+    return h.pool;
+  },
+}));
+
 let admin: PermSetUser;
 let adminId: string;
 let pipelineId: string;

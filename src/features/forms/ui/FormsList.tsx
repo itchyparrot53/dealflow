@@ -59,9 +59,18 @@ export function FormsList({
       {
         name: "New form",
         title: "Contact us",
+        // A contact form is what "New form" is for, so the draft starts with the four fields a
+        // visitor expects; more can be added in the editor.
         fields: [
           { key: "name", label: S.fieldLabels.name, required: true, placeholder: null },
           { key: "email", label: S.fieldLabels.email, required: true, placeholder: null },
+          {
+            key: "organization",
+            label: S.fieldLabels.organization,
+            required: false,
+            placeholder: null,
+          },
+          { key: "message", label: S.fieldLabels.message, required: false, placeholder: null },
         ],
         creates: "lead",
         ownerId: currentUserId,
