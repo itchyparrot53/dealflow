@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-21 06:35
+STATUS: COMPLETE WITH OPEN ISSUES
+Current: COMPLETE · Last updated: 2026-10-21 06:45
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -31,7 +31,7 @@ Current: 4.5 · Last updated: 2026-10-21 06:35
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5124/5124
@@ -153,6 +153,51 @@ Current: 4.5 · Last updated: 2026-10-21 06:35
 
 ## Final report
 
+### Definition of done
+
+1. PASS - `0085_dealflow_forms_booking` adds exactly the four tables of 6.4, and `0086` adds the three notification kinds; nothing else changed.
+2. PASS - `zonedTime`, `slots`, `fields`, `spamToken` and `ics` are pure and unit-tested, 67/67, including London and New York DST gaps and ambiguous hours, buffers, notice, days-ahead and clamping.
+3. PASS - admins build forms under Settings > Forms with fixed and custom fields, a lead or a deal target, live preview and embed code; `/f/{publicId}` renders without sign-in and only `/f/*` and `/book/*` may be framed.
+4. SKIPPED - the submit path (person and organization find-or-create, lead or deal, note, submission, count, `form.submitted`, notification, silent spam paths, 422/404/429) is implemented and reviewed; its integration cases are committed but could not run because Docker is down.
+5. SKIPPED - booking pages, defaults, owner-or-admin rules, the 14-day public page in the visitor's zone and the editor are implemented; the integration and e2e proofs are unrun for the same reason.
+6. SKIPPED - the slot engine is unit-tested and the per-host advisory lock plus in-transaction re-check are implemented; the 10-concurrent-bookings case is committed but unrun.
+7. SKIPPED - booking creates the activity and person, notifies the host, emails the visitor a cancel link and emits `booking.created`; cancelling removes the activity, notifies the host and emits `booking.cancelled`. Both services are reviewed; integration/e2e are unrun.
+8. PASS - automations and webhooks offer `form.submitted` (with a form filter), `booking.created` and `booking.cancelled`; the condition target is the visitor's person and snapshots carry the form/booking payloads.
+9. PASS - every public page carries the "Powered by Dealflow" footer, and the built app sends `frame-ancestors *` only on `/f/*` and `/book/*`.
+10. FAIL - typecheck, lint, build, unit (5197/5197) and two independent review rounds pass, but the full integration suite, e2e specs 00 to 10, the 7 `p6-*` screenshots and smoke did not run because Docker was unresponsive all run. They are Owner action 1.
+
+### Owner actions
+
+1. Docker Desktop stopped responding mid-run and never recovered (every `docker ps` timed out). Restart it, then run, in this order:
+   - `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`)
+   - `pnpm test:integration`
+   - `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers && pnpm e2e`
+   - `DOCKER_BUILDKIT=0 pnpm smoke`
+   No `p6-*` screenshots exist yet; `pnpm e2e` creates them.
+2. Fix the partial Google configuration in `.env` (client id and secret set, workspace domain empty) or blank all three.
+3. Set your time zone in Settings > Profile before sharing a booking page; until then a page uses the zone it was created with (UTC if you had none).
+4. Create your booking page: Settings > Booking pages > New booking page, review the week, save, and copy the public link.
+5. Add exchange rates in Settings > Currencies for every currency you invoice in.
+6. If more than one proxy sits in front of the app, set `TRUSTED_PROXY_HOPS` to that number; leave `WEBHOOK_ALLOW_PRIVATE=false` outside local tests.
+7. Keep the worker tier running: the dispatcher, automations, webhook deliveries and the rotting/retention jobs live there.
+
+### Decisions worth reviewing
+
+- CONTRACT CHANGE: cancellation soft-deletes the activity directly instead of calling `deleteActivity`, because that service requires `activity.delete`, which regular hosts do not hold by default and a published cancel link is authority the host already handed the visitor. The booking row, tombstone and event still commit together.
+- Changed tests: `errorIds.test.ts` gained the FORM and BOOKING domains; `notifications/preferences.test.ts` and `schema.test.ts` gained the three kinds and the 17-value enum; `automations/definition.test.ts` gained the three triggers, the form filter and the person condition target; `next.config.test.ts` pins the public framing carve-out. No assertion was weakened, and the forms/scheduling/ics/slots files are new.
+
+### Open issues
+
+- Docker never recovered, so `pnpm test:integration`, `pnpm e2e` and `pnpm smoke` are SKIPPED rather than passed, and 0 of 7 `p6-*` screenshots exist. Nothing was pruned and no container was stopped by this run.
+- `src/server/rateLimit.ts` still reads `x-forwarded-for` directly for the signed-in limiter (a Part 5 note, unchanged here).
+
+### Notes for Part 7
+
+- New routes: `/f/[publicId]`, `/book/[publicId]`, `/book/cancel/[token]`, `/settings/forms`, `/settings/forms/[id]`, `/settings/booking`, `/settings/booking/[id]`, plus `POST /api/public/forms/[publicId]/submit`, `GET /api/public/booking/[publicId]/slots`, `POST /api/public/booking/[publicId]/book` and `POST /api/public/booking/cancel`.
+- Expected screenshots once e2e runs: `p6-forms-list`, `p6-form-editor`, `p6-public-form`, `p6-booking-pages`, `p6-booking-editor`, `p6-public-booking`, `p6-booking-confirmed`.
+- New event types: `form.submitted`, `booking.created`, `booking.cancelled`. Emit them inside the mutation's transaction; booking and form payloads are built in `events/snapshot.ts`.
+- Upstream files changed are listed in `docs/dealflow/UPSTREAM.md` (Part 6 section).
+
 ### Checklist
 
 1. PASS - `git --no-optional-locks status --porcelain` printed nothing immediately before this record.
@@ -171,3 +216,4 @@ Current: 4.5 · Last updated: 2026-10-21 06:35
 14. PASS - on the built app, `curl -sI` showed `/settings` and `/deals` with `frame-ancestors 'none'` and `X-Frame-Options: DENY`, while `/f/x` and `/book/x` showed `frame-ancestors *` and no `X-Frame-Options`.
 15. PASS - the em dash scan over every changed non-kit file printed nothing.
 16. PASS - `docs/dealflow/FORMS.md` and `docs/dealflow/SCHEDULING.md` exist, `UPSTREAM.md` lists the Part 6 upstream files, and the README has the new section.
+17. PASS - `pnpm check:progress --final` passes on the completed file (run in Task 4.5).
