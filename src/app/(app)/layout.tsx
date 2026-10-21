@@ -5,8 +5,8 @@ import { ActionErrorProvider } from "@/components/shell/ActionErrorProvider";
 import { CsrfRefresher } from "@/components/shell/CsrfRefresher";
 import { LeftNav } from "@/components/shell/LeftNav";
 import { ReconnectBanner } from "@/components/shell/ReconnectBanner";
-import { Toaster } from "@/components/ui/toaster";
 import { TopBar } from "@/components/shell/TopBar";
+import { Toaster } from "@/components/ui/toaster";
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
@@ -68,7 +68,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
               <LeftNav initialExpanded={navExpanded} />
               <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
             </div>
-            <CommandPalette />
+            <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
             <GlobalShortcuts />
             <Toaster />
           </div>

@@ -22,7 +22,7 @@ export interface Command {
 }
 
 export interface CommandActor {
-  type: "admin" | "member";
+  type: "admin" | "regular";
   flags: ReadonlySet<PermissionFlagKey>;
 }
 

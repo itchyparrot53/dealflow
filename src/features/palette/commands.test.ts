@@ -36,7 +36,7 @@ function actor(type: CommandActor["type"], flags: PermissionFlagKey[] = []): Com
 
 describe("visibleCommands", () => {
   test("hides admin commands from a regular user", () => {
-    expect(visibleCommands(commands, actor("member", ["deal.create"])).map((c) => c.id)).toEqual([
+    expect(visibleCommands(commands, actor("regular", ["deal.create"])).map((c) => c.id)).toEqual([
       "create.deal",
       "go.deals",
     ]);
@@ -50,10 +50,10 @@ describe("visibleCommands", () => {
   });
 
   test("hides commands whose flag the actor lacks", () => {
-    expect(visibleCommands(commands, actor("member")).map((c) => c.id)).toEqual(["go.deals"]);
+    expect(visibleCommands(commands, actor("regular")).map((c) => c.id)).toEqual(["go.deals"]);
   });
 
   test("keeps commands that require nothing", () => {
-    expect(visibleCommands(commands, actor("member")).some((c) => c.id === "go.deals")).toBe(true);
+    expect(visibleCommands(commands, actor("regular")).some((c) => c.id === "go.deals")).toBe(true);
   });
 });

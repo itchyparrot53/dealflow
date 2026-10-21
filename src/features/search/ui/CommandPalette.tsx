@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { STRINGS } from "@/constants/strings";
+import { COMMAND_GROUP_ORDER, COMMANDS, filterCommands } from "@/features/palette/commandRegistry";
+import { type Command, type CommandActor, visibleCommands } from "@/features/palette/commands";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
 import { OPEN_SEARCH_EVENT } from "./events";
@@ -121,10 +123,55 @@ function Section({
   );
 }
 
+// Command groups (6.8) rendered above the record results. They are click-driven: the arrow keys and
+// Enter keep walking the record list, so a typed query never hijacks search selection.
+function CommandGroups({
+  commands,
+  onRun,
+}: {
+  commands: readonly Command[];
+  onRun: (command: Command) => void;
+}): React.ReactNode {
+  return (
+    <div data-testid="palette-commands">
+      {COMMAND_GROUP_ORDER.map((group) => {
+        const items = commands.filter((command) => command.group === group);
+        if (items.length === 0) return null;
+        return (
+          <div key={group}>
+            <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {group}
+            </p>
+            {items.map((command) => (
+              <button
+                key={command.id}
+                type="button"
+                data-testid="palette-command"
+                data-command-id={command.id}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                onClick={() => onRun(command)}
+              >
+                <span>{command.label}</span>
+                {command.shortcut !== undefined && (
+                  <span className="text-xs text-muted-foreground">{command.shortcut}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // -- CommandPalette --
 // Overlay that owns open/close state, the hotkey, and the window event listener.
 // Mount once in the app layout so it is always available.
-export function CommandPalette() {
+export function CommandPalette({
+  actor = { type: "regular", flags: new Set() },
+}: {
+  actor?: CommandActor;
+}) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -163,6 +210,7 @@ export function CommandPalette() {
   const failed = error != null;
   const pending = typed && !failed && (data === undefined || q.trim() !== debounced.trim());
 
+  const commands = filterCommands(visibleCommands(COMMANDS, actor), typed ? q : "");
   const results = data ?? EMPTY_RESULTS;
   const { flat, active, moveDown, moveUp } = useActiveIndex(results);
   const activeId = flat[active]?.r.id;
@@ -171,6 +219,11 @@ export function CommandPalette() {
     setOpen(false);
     setQ("");
     setDebounced("");
+  }
+
+  function runCommand(command: Command): void {
+    close();
+    command.run({ router, openDialog: () => undefined });
   }
 
   function handleSelect(kind: "deal" | "person" | "organization" | "lead", r: SearchResult) {
@@ -223,8 +276,11 @@ export function CommandPalette() {
           />
         </div>
         <div className="max-h-96 overflow-y-auto">
+          {commands.length > 0 && <CommandGroups commands={commands} onRun={runCommand} />}
           {!typed && !searched ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
+            commands.length === 0 ? (
+              <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
+            ) : null
           ) : failed ? (
             <p role="alert" className="px-3 py-4 text-sm text-destructive">
               {SEARCH_ERROR}
