@@ -5,6 +5,7 @@ import {
   seedActivityType,
   seedDeal,
   seedPipeline,
+  seedUsdBaseWithEurRate,
   seedUser,
   toActor,
 } from "@/features/stats/statsTestHelpers";
@@ -277,5 +278,40 @@ describe("goalProgress", () => {
       new AbortController().signal,
     );
     expect(Number(p?.actual)).toBe(0);
+  });
+
+  it("counts a EUR won deal toward a USD goal at the stored rate", async () => {
+    const user = await seedUser(h, { isAdmin: true });
+    const { pipeline, stages } = await seedPipeline(h);
+    const stage = stages[0];
+    if (stage === undefined) throw new Error("no stage");
+    await seedUsdBaseWithEurRate(h);
+    const base = {
+      status: "won" as const,
+      value: "100.00",
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: user.id,
+      visibilityLevel: "all" as const,
+      wonTime: new Date("2026-03-05T12:00:00Z"),
+    };
+    const eur = await seedDeal(h, { ...base, title: "eur" });
+    const jpy = await seedDeal(h, { ...base, title: "jpy", value: "500.00" });
+    await h.db.insert(schema.dealTerms).values([
+      { dealId: eur.id, currency: "EUR", probability: 100 },
+      { dealId: jpy.id, currency: "JPY", probability: 100 },
+    ]);
+    const goal = await seedGoal({ pipelineId: pipeline.id, target: "1000.00" });
+
+    const p = await goalProgress(
+      h.db,
+      toActor(user),
+      goal,
+      "2026-03-15",
+      new AbortController().signal,
+    );
+    expect(p?.actual).toBe("108.00");
+    expect(p?.attainment).toBeCloseTo(0.108, 5);
+    expect(p?.excluded).toEqual([{ currency: "JPY", count: 1 }]);
   });
 });

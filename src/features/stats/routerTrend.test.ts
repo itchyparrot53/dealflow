@@ -59,6 +59,7 @@ describe("stats.dashboard won trend", () => {
         month: "2026-06",
         count: 1,
         value: "4200.00",
+        excluded: [],
       });
       expect(out.wonTrend.filter((p) => p.count === 0)).toHaveLength(11);
     });

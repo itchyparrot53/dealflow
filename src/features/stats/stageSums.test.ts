@@ -8,6 +8,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { EVERYONE, onlyOwners } from "./ownerIds";
 import { stageSums } from "./stageSums";
+import { seedUsdBaseWithEurRate } from "./statsTestHelpers";
 
 let h: TestDb;
 
@@ -228,5 +229,45 @@ describe("stageSums", () => {
     // me-scope: only Alice's own deal is counted.
     expect(row?.dealCount).toBe(1);
     expect(Number(row?.total)).toBe(100);
+  });
+
+  it("converts each stage's open value per currency and lists a rate-less currency", async () => {
+    const admin = await seedUser({ isAdmin: true });
+    const pipeline = await seedPipeline();
+    const stage = await seedStage(pipeline.id, "S1", 0);
+    await seedUsdBaseWithEurRate(h);
+    const base = {
+      status: "open" as const,
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: admin.id,
+      visibilityLevel: "all" as const,
+    };
+    const [eur] = await h.db
+      .insert(schema.deals)
+      .values({ ...base, title: "EUR open", value: "100.00" })
+      .returning();
+    if (eur === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "eur deal");
+    const [jpy] = await h.db
+      .insert(schema.deals)
+      .values({ ...base, title: "JPY open", value: "500.00" })
+      .returning();
+    if (jpy === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "jpy deal");
+    await h.db.insert(schema.dealTerms).values([
+      { dealId: eur.id, currency: "EUR", probability: 100 },
+      { dealId: jpy.id, currency: "JPY", probability: 100 },
+    ]);
+
+    const sums = await stageSums(
+      h.db,
+      toActor(admin),
+      pipeline.id,
+      EVERYONE,
+      new AbortController().signal,
+    );
+    const row = sums.find((s) => s.stageId === stage.id);
+    expect(row?.dealCount).toBe(2);
+    expect(row?.total).toBe("108.00");
+    expect(row?.excluded).toEqual([{ currency: "JPY", count: 1 }]);
   });
 });

@@ -1,15 +1,25 @@
+import type React from "react";
 import { STRINGS } from "@/constants/strings";
 import type { ActivityCounters, DealCounters, WonDealStats } from "@/types/stats";
-import { durationDays, money } from "./Panel";
+import { durationDays, ExcludedNote, money } from "./Panel";
 
 // Pipedrive's scoreboard view: the handful of numbers a manager reads first, above the charts.
 // A metric with no data renders a dash, never a zero. "Nobody closed anything" and "everybody
 // lost" must not look identical.
-function Tile({ label, value }: { label: string; value: string }) {
+function Tile({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="rounded-lg border p-4">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-medium tabular-nums">{value}</p>
+      {children}
     </div>
   );
 }
@@ -40,7 +50,9 @@ export function Scoreboard({
       <Tile
         label={STRINGS.dashboard.scoreAvgDeal}
         value={won.avgValue === null ? STRINGS.dashboard.noValue : money(won.avgValue, currency)}
-      />
+      >
+        <ExcludedNote excluded={won.excluded} />
+      </Tile>
       <Tile label={STRINGS.dashboard.scoreCycle} value={cycle} />
       <Tile label={STRINGS.dashboard.scoreActivities} value={String(activities.completed)} />
     </div>

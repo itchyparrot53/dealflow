@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/chart";
 import { STRINGS } from "@/constants/strings";
 import type { WonTrendPoint } from "@/types/stats";
-import { money, monthLabel, Panel } from "./Panel";
+import { ExcludedNote, money, monthLabel, Panel } from "./Panel";
 import { trendTooltipValue } from "./trendTooltip";
 
 // Value, not count, is the line: "are we going to make the number" is a money question. The
@@ -42,6 +42,7 @@ export function WonTrendWidget({
   // The money arrives as a decimal string; recharts plots numbers. count rides along on the row
   // so the tooltip can say how many deals made up the month.
   const points = data.map((p) => ({ month: p.month, count: p.count, [SERIES]: Number(p.value) }));
+  const excluded = data.flatMap((p) => p.excluded ?? []);
 
   return (
     <Panel
@@ -106,6 +107,7 @@ export function WonTrendWidget({
               ))}
             </tbody>
           </table>
+          <ExcludedNote excluded={excluded} />
         </>
       )}
     </Panel>

@@ -1,5 +1,6 @@
 import type React from "react";
 import { STRINGS } from "@/constants/strings";
+import type { ExcludedCurrency } from "@/types/stats";
 
 // Every dashboard panel goes through here so an empty one says why it is empty. A heading
 // over dead space reads as a broken page, not as "there is nothing to show".
@@ -22,6 +23,18 @@ export function Panel({
           children here made the "set up goals" link unreachable exactly when it was needed. */}
       {children}
     </section>
+  );
+}
+
+// Money totals leave out deals whose currency has no stored rate. Saying so under the total is
+// the difference between "this is the number" and a number that quietly lost rows.
+export function ExcludedNote({ excluded }: { excluded?: ExcludedCurrency[] }): React.ReactNode {
+  const count = (excluded ?? []).reduce((sum, row) => sum + row.count, 0);
+  if (count === 0) return null;
+  return (
+    <p className="text-xs text-muted-foreground">
+      {STRINGS.dashboard.excludedExchangeRate.replace("{n}", String(count))}
+    </p>
   );
 }
 

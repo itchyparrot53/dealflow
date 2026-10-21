@@ -2,11 +2,12 @@ import { STRINGS } from "@/constants/strings";
 import type {
   ActivityCounters,
   DealCounters,
+  MoneyBucket,
   OwnerScope,
   StageConversionRow,
   StageSum,
 } from "@/types/stats";
-import { Bar, durationDays, money, Panel } from "./Panel";
+import { Bar, durationDays, ExcludedNote, money, Panel } from "./Panel";
 
 export function DealPerformanceWidget({
   data,
@@ -17,7 +18,7 @@ export function DealPerformanceWidget({
 }) {
   // Added/won/lost are windowed by their own date column; "Open now" is a snapshot, so it is
   // labelled differently to stop it reading as a fourth measure of the same period.
-  const rows: [string, { count: number; value: string }][] = [
+  const rows: [string, MoneyBucket][] = [
     [STRINGS.dashboard.added, data.added],
     [STRINGS.dashboard.won, data.won],
     [STRINGS.dashboard.lost, data.lost],
@@ -28,12 +29,15 @@ export function DealPerformanceWidget({
       {/* Both numeric columns are their own grid track, so counts and money each line up on a
           single right edge instead of floating wherever justify-between put them. */}
       {rows.map(([label, b]) => (
-        <div key={label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-4 py-1">
-          <span className="truncate">{label}</span>
-          <span className="min-w-8 text-right tabular-nums text-muted-foreground">{b.count}</span>
-          <span className="min-w-24 text-right font-medium tabular-nums text-foreground">
-            {money(b.value, currency)}
-          </span>
+        <div key={label} className="py-1">
+          <div className="grid grid-cols-[1fr_auto_auto] items-baseline gap-4">
+            <span className="truncate">{label}</span>
+            <span className="min-w-8 text-right tabular-nums text-muted-foreground">{b.count}</span>
+            <span className="min-w-24 text-right font-medium tabular-nums text-foreground">
+              {money(b.value, currency)}
+            </span>
+          </div>
+          <ExcludedNote excluded={b.excluded} />
         </div>
       ))}
     </Panel>
@@ -124,6 +128,7 @@ export function StageSumsWidget({ data, currency }: { data: StageSum[]; currency
               <span className="tabular-nums text-muted-foreground">{money(s.total, currency)}</span>
             </div>
             <Bar label={s.name} pct={(Number(s.total) / max) * 100} />
+            <ExcludedNote excluded={s.excluded} />
           </div>
         ))}
       </div>

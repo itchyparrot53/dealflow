@@ -4,7 +4,13 @@ import { makeTestDb, type TestDb } from "@/test/db";
 import type { DashboardFilters } from "@/types/stats";
 import { lostReasonBreakdown } from "./lostReasons";
 import { EVERYONE } from "./ownerIds";
-import { seedDeal, seedPipeline, seedUser, toActor } from "./statsTestHelpers";
+import {
+  seedDeal,
+  seedPipeline,
+  seedUsdBaseWithEurRate,
+  seedUser,
+  toActor,
+} from "./statsTestHelpers";
 
 let h: TestDb;
 beforeAll(async () => {
@@ -163,5 +169,40 @@ describe("lostReasonBreakdown", () => {
       new AbortController().signal,
     );
     expect(rows).toHaveLength(0);
+  });
+
+  it("converts lost value per currency and lists a rate-less currency", async () => {
+    const user = await seedUser(h, { isAdmin: true });
+    const { pipeline, stages } = await seedPipeline(h);
+    const stage = stages[0];
+    if (stage === undefined) throw new Error("no stage");
+    await seedUsdBaseWithEurRate(h);
+    const reason = await seedReason(`Mixed-${Date.now()}`);
+    const base = {
+      status: "lost" as const,
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: user.id,
+      visibilityLevel: "all" as const,
+      lostTime: new Date("2025-05-01T00:00:00Z"),
+      lostReasonId: reason.id,
+    };
+    const eur = await seedDeal(h, { ...base, title: "eur lost", value: "100.00" });
+    const jpy = await seedDeal(h, { ...base, title: "jpy lost", value: "500.00" });
+    await h.db.insert(schema.dealTerms).values([
+      { dealId: eur.id, currency: "EUR", probability: 100 },
+      { dealId: jpy.id, currency: "JPY", probability: 100 },
+    ]);
+
+    const rows = await lostReasonBreakdown(
+      h.db,
+      toActor(user),
+      { ...BASE, pipelineId: pipeline.id },
+      new AbortController().signal,
+    );
+    const row = rows.find((r) => r.reasonId === reason.id);
+    expect(row?.count).toBe(2);
+    expect(row?.value).toBe("108.00");
+    expect(row?.excluded).toEqual([{ currency: "JPY", count: 1 }]);
   });
 });

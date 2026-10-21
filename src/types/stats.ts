@@ -1,6 +1,13 @@
+export interface ExcludedCurrency {
+  currency: string;
+  count: number;
+}
+
 export interface MoneyBucket {
   count: number;
   value: string;
+  /** Deals left out of `value` because their currency has no stored rate. */
+  excluded?: ExcludedCurrency[];
 }
 
 // added/won/lost each window on their own date column (created_at, won_time, lost_time).
@@ -19,6 +26,7 @@ export interface WonDealStats {
   medianValue: string | null;
   avgCycleDays: number | null;
   medianCycleDays: number | null;
+  excluded?: ExcludedCurrency[];
 }
 
 export interface FunnelStage {
@@ -52,6 +60,7 @@ export interface LostReasonCount {
   name: string | null;
   count: number;
   value: string;
+  excluded?: ExcludedCurrency[];
 }
 
 // reached counts deals that ever got to this stage (from change-log history), not deals
@@ -71,6 +80,7 @@ export interface WonTrendPoint {
   month: string;
   count: number;
   value: string;
+  excluded?: ExcludedCurrency[];
 }
 
 export interface StageSum {
@@ -81,6 +91,7 @@ export interface StageSum {
   order: number;
   dealCount: number;
   total: string;
+  excluded?: ExcludedCurrency[];
 }
 
 export type OwnerScope =

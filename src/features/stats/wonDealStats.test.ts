@@ -1,8 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import * as schema from "@/db/schema";
 import { makeTestDb, type TestDb } from "@/test/db";
 import type { DashboardFilters } from "@/types/stats";
 import { EVERYONE } from "./ownerIds";
-import { seedDeal, seedPipeline, seedUser, toActor } from "./statsTestHelpers";
+import {
+  seedDeal,
+  seedPipeline,
+  seedUsdBaseWithEurRate,
+  seedUser,
+  toActor,
+} from "./statsTestHelpers";
 import { wonDealStats } from "./wonDealStats";
 
 let h: TestDb;
@@ -155,5 +162,40 @@ describe("wonDealStats", () => {
       new AbortController().signal,
     );
     expect(r.avgValue).toBeNull();
+  });
+
+  it("converts before averaging and lists a rate-less currency", async () => {
+    const user = await seedUser(h, { isAdmin: true });
+    const { pipeline, stages } = await seedPipeline(h);
+    const stage = stages[0];
+    if (stage === undefined) throw new Error("no stage");
+    await seedUsdBaseWithEurRate(h);
+    const base = {
+      status: "won" as const,
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: user.id,
+      visibilityLevel: "all" as const,
+      createdAt: new Date("2025-01-01T00:00:00Z"),
+      wonTime: new Date("2025-06-01T00:00:00Z"),
+    };
+    const usd = await seedDeal(h, { ...base, title: "usd", value: "100.00" });
+    const eur = await seedDeal(h, { ...base, title: "eur", value: "100.00" });
+    const jpy = await seedDeal(h, { ...base, title: "jpy", value: "500.00" });
+    await h.db.insert(schema.dealTerms).values([
+      { dealId: usd.id, currency: "USD", probability: 100 },
+      { dealId: eur.id, currency: "EUR", probability: 100 },
+      { dealId: jpy.id, currency: "JPY", probability: 100 },
+    ]);
+
+    const r = await wonDealStats(
+      h.db,
+      toActor(user),
+      { ...BASE, pipelineId: pipeline.id },
+      new AbortController().signal,
+    );
+    expect(r.avgValue).toBe("104.00");
+    expect(r.medianValue).toBe("104.00");
+    expect(r.excluded).toEqual([{ currency: "JPY", count: 1 }]);
   });
 });

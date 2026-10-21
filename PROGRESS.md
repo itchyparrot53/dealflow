@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-21 12:34
+Current: 1.4 · Last updated: 2026-10-21 13:02
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -15,7 +15,7 @@ Current: 1.3 · Last updated: 2026-10-21 12:34
 - [x] 0.5 Phase 0 QA gate
 - [x] 1.1 Deal reports (test-first)
 - [x] 1.2 Activity reports and the funnel
-- [ ] 1.3 Currency-correct stats and goals
+- [x] 1.3 Currency-correct stats and goals
 - [ ] 1.4 Phase 1 QA gate
 - [ ] 2.1 Reports, dashboards, default dashboard, CSV export
 - [ ] 2.2 Explain, score data and bulk scoring
@@ -69,6 +69,12 @@ Current: 1.3 · Last updated: 2026-10-21 12:34
 - 1.2: `ReportResult` gained an additive `funnel` field (stage id, name, order, reached, conversion, median days) because 6.6's rows have no conversion column; the rows mirror the stages so tables and CSV still work.
 - 1.2: activity queries select a constant empty currency and never load rates, since counts and minutes have no currency; durations are `sum(coalesce(duration_minutes, 0))` in minutes.
 - 1.2: the three activity filter inputs (owner ids, type ids, done) are ANDed into the one query with the range and the activity visibility SQL from Part 5.
+
+- 1.3: the new `excluded` field is optional on every money result, so an absent list means none and the existing single-currency fixtures and assertions stay untouched; only the trend router test changed, and only to add `excluded: []` to its expected point.
+- 1.3: the SQL groups by currency for `dealPerformance` (all four windows in one scan), `lostReasonBreakdown`, `stageSums`, `wonTrend`, `goalActual` and `goalSeries`, and the values convert with `toBase` in TypeScript. `wonDealStats` fetches one row per won deal (value, currency, cycle days) and computes the converted mean and the interpolated median in integer cents, because SQL `avg`/`percentile_cont` cannot span currencies.
+- 1.3: a count column counts the deals in an excluded currency (they exist); only the money total leaves them out, and the note says how many. Activity goals and the funnel are unaffected.
+- 1.3: one `ExcludedNote` component renders "{n} excluded: no exchange rate" under each money total: the four deal counters, the average-deal tile, lost reasons, stage sums, the won trend and each value goal.
+- 1.3: `docs/dealflow/UPSTREAM.md` gained the Part 7 section listing every upstream stats, goals, UI and constant file touched here.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

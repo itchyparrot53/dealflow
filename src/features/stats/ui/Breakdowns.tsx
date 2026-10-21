@@ -1,6 +1,6 @@
 import { STRINGS } from "@/constants/strings";
 import type { ActivityTypeCount, LostReasonCount } from "@/types/stats";
-import { Bar, money, Panel } from "./Panel";
+import { Bar, ExcludedNote, money, Panel } from "./Panel";
 
 export function ActivityTypesWidget({ data }: { data: ActivityTypeCount[] }) {
   const max = Math.max(1, ...data.map((t) => t.completed));
@@ -60,6 +60,7 @@ export function LostReasonsWidget({
                 </span>
               </div>
               <Bar label={label} pct={(Number(r.value) / max) * 100} />
+              <ExcludedNote excluded={r.excluded} />
             </div>
           );
         })}

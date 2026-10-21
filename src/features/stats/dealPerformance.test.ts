@@ -8,6 +8,7 @@ import { makeTestDb, type TestDb } from "@/test/db";
 import type { DashboardFilters } from "@/types/stats";
 import { dealPerformance } from "./dealPerformance";
 import { EVERYONE, onlyOwners } from "./ownerIds";
+import { seedUsdBaseWithEurRate } from "./statsTestHelpers";
 
 let h: TestDb;
 
@@ -372,5 +373,46 @@ describe("dealPerformance date basis", () => {
 
     expect(result.open.count).toBe(0);
     expect(Number(result.open.value)).toBe(0);
+  });
+
+  it("converts won value per currency and lists a rate-less currency", async () => {
+    const user = await seedUser({ isAdmin: true });
+    const { pipeline, stage } = await seedPipeline();
+    await seedUsdBaseWithEurRate(h);
+    const base = {
+      pipelineId: pipeline.id,
+      stageId: stage.id,
+      ownerId: user.id,
+      visibilityLevel: "all" as const,
+      status: "won" as const,
+      wonTime: new Date("2025-06-01T00:00:00Z"),
+    };
+    const [eur] = await h.db
+      .insert(schema.deals)
+      .values({ ...base, title: "EUR win", value: "100.00" })
+      .returning();
+    if (eur === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "eur deal");
+    await h.db.insert(schema.deals).values({ ...base, title: "USD win", value: "50.00" });
+    const [jpy] = await h.db
+      .insert(schema.deals)
+      .values({ ...base, title: "JPY win", value: "500.00" })
+      .returning();
+    if (jpy === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "jpy deal");
+    await h.db.insert(schema.dealTerms).values([
+      { dealId: eur.id, currency: "EUR", probability: 100 },
+      { dealId: jpy.id, currency: "JPY", probability: 100 },
+    ]);
+
+    const result = await dealPerformance(
+      h.db,
+      toActor(user),
+      { ...BASE_FILTERS, pipelineId: pipeline.id },
+      new AbortController().signal,
+    );
+    expect(result.won).toEqual({
+      count: 3,
+      value: "158.00",
+      excluded: [{ currency: "JPY", count: 1 }],
+    });
   });
 });

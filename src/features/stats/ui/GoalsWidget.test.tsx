@@ -40,6 +40,7 @@ function countGoal(target: string, actual: string): GoalWithProgress {
       target,
       attainment: Number(actual) / Number(target),
       pace: 3.44,
+      excluded: [],
     },
   };
 }

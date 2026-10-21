@@ -3,6 +3,7 @@
 import type { Db } from "@/db/client";
 import type { Goal } from "@/db/schema/goals";
 import type { PermSetUser } from "@/features/permissions/effective";
+import type { ExcludedCurrency } from "@/types/stats";
 import { goalActual } from "./goalActual";
 import { attainment, pace } from "./goalMath";
 import { currentPeriod, elapsedFraction } from "./goalPeriod";
@@ -15,6 +16,8 @@ export interface GoalProgress {
   target: string;
   attainment: number | null;
   pace: number | null;
+  /** Deals left out of a value goal because their currency has no rate. */
+  excluded: ExcludedCurrency[];
 }
 
 // Null when `on` falls outside the goal's life: a goal that has not started or has ended has
@@ -31,14 +34,15 @@ export async function goalProgress(
   if (period === null) return null;
 
   const actual = await goalActual(db, actor, goal, period, signal);
-  const attained = attainment(actual, goal.target);
+  const attained = attainment(actual.value, goal.target);
   return {
     goalId: goal.id,
     periodStart: period.start,
     periodEnd: period.end,
-    actual,
+    actual: actual.value,
     target: goal.target,
     attainment: attained,
     pace: pace(attained, elapsedFraction(period, on)),
+    excluded: actual.excluded,
   };
 }

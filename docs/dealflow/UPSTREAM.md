@@ -285,3 +285,27 @@ upstream fixes here by hand):
 - `docs/dealflow/FORMS.md`, `docs/dealflow/SCHEDULING.md`: new; `AUTOMATIONS.md` and
   `WEBHOOKS.md` gained the new events.
 - `README.md`: the "Forms and booking pages" section.
+
+## Part 7 (insights) base
+
+Part 7 builds on the Part 6 result at commit `8957a53` (PROGRESS-P6.md). New work lives in
+`src/features/insights/`, `src/db/schema/insights.ts`, migrations `0087_dealflow_insights` and
+`0088_dealflow_insights_notifications`, the `/insights` routes and `src/features/ai/bulkScore*`.
+Upstream files edited for the part (port future upstream fixes here by hand):
+
+- `src/features/stats/dealPerformance.ts`, `wonTrend.ts`, `wonDealStats.ts`, `lostReasons.ts`,
+  `stageSums.ts`: group by currency in SQL and convert with `toBase`; every money result gained
+  `excluded`.
+- `src/features/goals/goalActual.ts`, `goalSeries.ts`, `goalProgress.ts`: same conversion, and
+  `GoalProgress` carries `excluded`.
+- `src/types/stats.ts`: `ExcludedCurrency`, and the optional `excluded` field on the money results.
+- `src/features/stats/ui/Panel.tsx` (the `ExcludedNote`), `Scoreboard.tsx`, `widgets.tsx`,
+  `Breakdowns.tsx`, `TrendWidget.tsx`, `GoalsWidget.tsx`: the note under each money total.
+- `src/constants/strings.ts`: `excludedExchangeRate`.
+- `src/features/stats/routerTrend.test.ts`: the trend point now also carries `excluded`.
+- `src/db/schema/index.ts`: exports the insights schema.
+- `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the INSIGHT IDs and their domain.
+- `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,
+  `src/features/notifications/ui/deepLink.ts`, `ui/NotificationItem.tsx`,
+  `src/features/notifications/email/render.ts`, `src/features/notifications/preferences.test.ts`,
+  `schema.test.ts`: the `ai_bulk_score` kind and its copy.

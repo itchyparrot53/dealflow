@@ -58,6 +58,19 @@ export async function seedPipeline(h: TestDb, stageCount = 1) {
   return { pipeline, stages };
 }
 
+// A USD base plus a stored EUR rate and a deal in a currency nobody rated (JPY), so a
+// mixed-currency case can assert both the conversion and the excluded list.
+export async function seedUsdBaseWithEurRate(h: TestDb) {
+  await h.db
+    .insert(schema.settings)
+    .values({ id: true, baseCurrency: "USD" })
+    .onConflictDoNothing();
+  await h.db
+    .insert(schema.currencyRates)
+    .values({ code: "EUR", rateToBase: "1.08" })
+    .onConflictDoNothing();
+}
+
 export async function seedActivityType(h: TestDb, name = "Call") {
   const [type] = await h.db
     .insert(schema.activityTypes)

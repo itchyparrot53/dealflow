@@ -1,7 +1,7 @@
 // Integration test: real Postgres, real migrations. The trend is the only stats query that is
 // not a resting-state snapshot, so what it must prove is bucketing, gap filling and scoping.
 import { describe, expect, it } from "vitest";
-import { deals } from "@/db/schema/deals";
+import { currencyRates, deals, dealTerms } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { adminSession, regularSession, seedSettings } from "@/features/deals/dealMove.test-helpers";
@@ -30,16 +30,21 @@ async function seedWon(
     status?: "won" | "lost" | "open";
   },
 ) {
-  await db.insert(deals).values({
-    title: "Deal",
-    pipelineId: args.pipelineId,
-    stageId: args.stageId,
-    ownerId: args.ownerId,
-    visibilityLevel: args.visibilityLevel ?? "all",
-    status: args.status ?? "won",
-    value: args.value,
-    wonTime: args.wonTime === null ? null : new Date(args.wonTime),
-  });
+  const [row] = await db
+    .insert(deals)
+    .values({
+      title: "Deal",
+      pipelineId: args.pipelineId,
+      stageId: args.stageId,
+      ownerId: args.ownerId,
+      visibilityLevel: args.visibilityLevel ?? "all",
+      status: args.status ?? "won",
+      value: args.value,
+      wonTime: args.wonTime === null ? null : new Date(args.wonTime),
+    })
+    .returning();
+  if (row === undefined) throw new Error("seed failed");
+  return row;
 }
 
 async function fixture(db: Db) {
@@ -242,6 +247,42 @@ describe("wonTrend", () => {
       await expect(
         wonTrend(db, adminSession(f.user.id), BASE, controller.signal),
       ).rejects.toThrow();
+    });
+  });
+
+  it("converts each month's won value and lists a rate-less currency", async () => {
+    await withTestDb(async (db) => {
+      const f = await fixture(db);
+      await db
+        .insert(currencyRates)
+        .values({ code: "EUR", rateToBase: "1.08" })
+        .onConflictDoNothing();
+      const common = {
+        pipelineId: f.pipelineId,
+        stageId: f.stageId,
+        ownerId: f.user.id,
+        wonTime: "2026-01-10T12:00:00Z",
+        value: "100.00",
+      };
+      const eur = await seedWon(db, common);
+      const jpy = await seedWon(db, common);
+      await db.insert(dealTerms).values([
+        { dealId: eur.id, currency: "EUR", probability: 100 },
+        { dealId: jpy.id, currency: "JPY", probability: 100 },
+      ]);
+
+      const points = await wonTrend(
+        db,
+        adminSession(f.user.id),
+        BASE,
+        new AbortController().signal,
+      );
+      expect(points[0]).toEqual({
+        month: "2026-01",
+        count: 2,
+        value: "108.00",
+        excluded: [{ currency: "JPY", count: 1 }],
+      });
     });
   });
 });

@@ -200,6 +200,7 @@ export const STRINGS = {
     emptyGoals: "No goals apply to you yet.",
     goalsSettingsLink: "Set up goals",
     lostReasonUnspecified: "No reason recorded",
+    excludedExchangeRate: "{n} excluded: no exchange rate",
     goalPeriod: "Period",
     goalTarget: "Target",
     goalPace: "Pace",

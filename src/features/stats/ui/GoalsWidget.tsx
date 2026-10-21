@@ -8,7 +8,7 @@ import { goalLabel } from "@/features/goals/goalLabel";
 import { goalNumberText } from "@/features/goals/goalTargetText";
 import type { GoalWithProgress } from "@/features/goals/router";
 import { GoalChart } from "./GoalChart";
-import { money, Panel } from "./Panel";
+import { ExcludedNote, money, Panel } from "./Panel";
 
 function paceTone(pace: number | null): string {
   if (pace === null) return "text-muted-foreground";
@@ -40,6 +40,7 @@ function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string })
           {fmt(progress.actual)} / {fmt(progress.target)}
         </span>
       </div>
+      <ExcludedNote excluded={progress.excluded} />
       <GoalChart
         period={{ start: progress.periodStart, end: progress.periodEnd }}
         series={series}
