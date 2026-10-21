@@ -8,7 +8,7 @@
 // relation in EITHER direction before insert, since the composite PK only dedupes the exact
 // ordered (source, target) pair and would otherwise let (A,B) and (B,A) coexist as distinct
 // rows, double-listing the same org.
-import { and, eq, isNull, or } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { organizationRelations, organizations } from "@/db/schema";
@@ -63,6 +63,40 @@ async function assertOrgVisible(
   return ok(toVisible(row));
 }
 
+const PARENT_RELATION = /^(parent|parents)$/i;
+
+export function isParentRelationType(relationType: string): boolean {
+  return PARENT_RELATION.test(relationType.trim());
+}
+
+// Recursive CTE over parent links: walks the proposed parent's ancestors (target side) up to 50
+// levels and reports whether the child already appears. A loop would make the child its own
+// ancestor, which the UI could then never display or edit sensibly.
+async function parentLoopExists(
+  db: Db,
+  childId: string,
+  parentId: string,
+  signal: AbortSignal,
+): Promise<boolean> {
+  const result = await db.execute(sql`
+    WITH RECURSIVE ancestors AS (
+      SELECT r.target_org_id AS id, 1 AS depth
+      FROM organization_relations r
+      WHERE r.source_org_id = ${parentId}::uuid
+        AND lower(trim(r.relation_type)) = 'parent'
+      UNION ALL
+      SELECT r.target_org_id, a.depth + 1
+      FROM organization_relations r
+      JOIN ancestors a ON r.source_org_id = a.id
+      WHERE lower(trim(r.relation_type)) = 'parent' AND a.depth < 50
+    )
+    SELECT id FROM ancestors WHERE id = ${childId}::uuid LIMIT 1
+  `);
+  signal.throwIfAborted();
+  const rows = (result as unknown as { rows: { id: string }[] }).rows;
+  return rows.length > 0;
+}
+
 export async function addOrgRelation(
   db: Db,
   actor: PermSetUser,
@@ -114,6 +148,22 @@ export async function addOrgRelation(
     );
   signal.throwIfAborted();
   if (existing !== undefined) return ok(undefined);
+
+  // Parent-loop guard (2.4/6.7): a "parent" relation stores the parent in target_org_id, so
+  // ancestors are found by following target links. If the proposed parent already has the child
+  // among its ancestors, the new link would make the organization its own ancestor. The walk stops
+  // at 50 levels so a corrupt chain cannot run forever. Self-parenting is refused earlier.
+  if (isParentRelationType(input.relationType)) {
+    const loop = await parentLoopExists(db, input.sourceOrgId, input.targetOrgId, signal);
+    if (loop) {
+      return err(
+        new AppError(ERROR_IDS.ORGREL_LOOP, "that would make the organization its own parent", {
+          sourceOrgId: input.sourceOrgId,
+          targetOrgId: input.targetOrgId,
+        }),
+      );
+    }
+  }
 
   // Idempotent: re-adding the same (source, target) pair is a no-op (composite PK conflict).
   await db

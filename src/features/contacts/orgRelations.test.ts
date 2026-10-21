@@ -287,3 +287,89 @@ it("denies add/remove to an actor who can see both orgs but lacks contact.edit",
     expect(await listRelatedOrgs(db, me, orgA.id, sig())).toHaveLength(1);
   });
 });
+
+it("refuses a parent relation that would create a loop", async () => {
+  await withTestDb(async (db) => {
+    const owner = await seedUser(db);
+    const me = actor(owner.id);
+    const a = await seedOrg(db, owner.id, "Loop A");
+    const b = await seedOrg(db, owner.id, "Loop B");
+    const c = await seedOrg(db, owner.id, "Loop C");
+
+    // B is A's parent, C is B's parent, so A's ancestors are B and C.
+    expect(
+      (
+        await addOrgRelation(
+          db,
+          me,
+          { sourceOrgId: a.id, targetOrgId: b.id, relationType: "parent" },
+          sig(),
+        )
+      ).ok,
+    ).toBe(true);
+    expect(
+      (
+        await addOrgRelation(
+          db,
+          me,
+          { sourceOrgId: b.id, targetOrgId: c.id, relationType: "parent" },
+          sig(),
+        )
+      ).ok,
+    ).toBe(true);
+
+    // Making A the parent of C would close the loop (C -> A -> B -> C).
+    const loop = await addOrgRelation(
+      db,
+      me,
+      { sourceOrgId: c.id, targetOrgId: a.id, relationType: "parent" },
+      sig(),
+    );
+    expect(loop.ok).toBe(false);
+    if (!loop.ok) expect(loop.error.id).toBe("E_ORGREL_001");
+  });
+});
+
+it("allows a legal re-parent", async () => {
+  await withTestDb(async (db) => {
+    const owner = await seedUser(db);
+    const me = actor(owner.id);
+    const a = await seedOrg(db, owner.id, "Legal A");
+    const b = await seedOrg(db, owner.id, "Legal B");
+    const c = await seedOrg(db, owner.id, "Legal C");
+
+    expect(
+      (
+        await addOrgRelation(
+          db,
+          me,
+          { sourceOrgId: a.id, targetOrgId: b.id, relationType: "parent" },
+          sig(),
+        )
+      ).ok,
+    ).toBe(true);
+    // C is a fresh branch, so making C A's parent is fine.
+    const legal = await addOrgRelation(
+      db,
+      me,
+      { sourceOrgId: a.id, targetOrgId: c.id, relationType: "parent" },
+      sig(),
+    );
+    expect(legal.ok).toBe(true);
+  });
+});
+
+it("refuses a parent relation to itself", async () => {
+  await withTestDb(async (db) => {
+    const owner = await seedUser(db);
+    const me = actor(owner.id);
+    const a = await seedOrg(db, owner.id, "Self A");
+    const self = await addOrgRelation(
+      db,
+      me,
+      { sourceOrgId: a.id, targetOrgId: a.id, relationType: "parent" },
+      sig(),
+    );
+    expect(self.ok).toBe(false);
+  });
+});
