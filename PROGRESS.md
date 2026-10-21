@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-21 12:01
+Current: 0.3 · Last updated: 2026-10-21 12:11
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
 
 ## Tasks
 - [x] 0.1 Start Part 7: progress files, kit and baseline
-- [ ] 0.2 Prove Part 6
+- [x] 0.2 Prove Part 6
 - [ ] 0.3 Insights schema and migrations
 - [ ] 0.4 Definition, date ranges, buckets, CSV (test-first)
 - [ ] 0.5 Phase 0 QA gate
@@ -32,6 +32,7 @@ Current: 0.2 · Last updated: 2026-10-21 12:01
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 in 810 files
+- Part 6 proof: integration 249/249 (51 files) · e2e 20/20 (specs 00 to 10) · p6 screenshots 7/7 · smoke PASS
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p6-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -42,6 +43,11 @@ Current: 0.2 · Last updated: 2026-10-21 12:01
 - 0.1: the stats and goals functions that sum `deals.value` and must convert are `stats/dealPerformance.ts` (added/won/lost/open value), `stats/lostReasons.ts` (value per reason), `stats/stageSums.ts` (total per stage), `stats/wonTrend.ts` (value per month), `stats/wonDealStats.ts` (avg and median value), `goals/goalActual.ts` (actual) and `goals/goalSeries.ts` (series). `stats/funnel.ts` and `stats/stageConversion.ts` count deals only, so they need no conversion. The conversion building blocks are `src/features/currency/money.ts` (`toBase`, `parseCents`, `weighted`) and `src/features/currency/totals.ts` (`summarize`, `loadRateMap`).
 - 0.1: the AI deal score is stored on `deal_ai_insights.score` (integer, with `score_reasons` jsonb and `scored_at`), read and written by `src/features/ai/dealInsights.ts`, so the board badge and bulk scoring read that column instead of a new table.
 - 0.1: `/tmp/dealflow-tools` and the pnpm store had been cleared since Part 6, so I reinstalled pnpm 9.15.9 into `/tmp/dealflow-tools` (npm needed `--cache /tmp/npm-cache` because `~/.npm/_logs` is not writable for this shell). The `subagent` tool is available for Task 4.3.
+
+- 0.2: the forms and scheduling integration files called the public route handlers directly, and those handlers bind the shared app pool at import, so they were querying the placeholder `localhost:5432` instead of the Testcontainers clone. Both files now mock only the `@/db/client` binding with a getter that returns the per-test Drizzle client (still real Postgres, no database mock), which is why all 249 cases in the six named directories pass.
+- 0.2: the e2e spec builds "Website enquiry" by adding a phone field and then expects organization and message inputs on the public page, but a new form draft carried only name and email. The draft now starts with name, email, organization and message (the same four fields as the demo seed's contact form), so the spec passes unedited and a new form is usable out of the box.
+- 0.2: the dev stack was down after Part 6, so I ran `pnpm dev:up` (Postgres on 5433, MinIO on 9000/9001) and applied every migration with `DATABASE_URL=$DEV_DB_URL pnpm db:migrate:dev`; the owner's compose project was started, never stopped, removed or recreated.
+- 0.2: `DOCKER_BUILDKIT=0 pnpm smoke` failed once at `build-and-up` with exit 137: compose v2 builds the four app services in parallel, three concurrent Turbopack builds exhausted the Docker VM and one was OOM-killed. Rerunning with `COMPOSE_PARALLEL_LIMIT=1` built them one at a time and printed SMOKE PASS; the project removed its containers and volumes, so no `dealflow-smoke` resource remains.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
