@@ -313,6 +313,24 @@ export const ERROR_IDS = {
   BACKUP_NOT_FOUND: "E_BACKUP_002", // the named archive is not in BACKUP_DIR
   BACKUP_UNAVAILABLE: "E_BACKUP_003", // backups disabled, or BACKUP_DIR not writable
 
+  // RECUR (recurring activities)
+  RECUR_RULE_INVALID: "E_RECUR_001", // repeat rule failed validation (context: Zod issues)
+  RECUR_SERIES_MISSING: "E_RECUR_002", // the series row is gone
+
+  // CALL (call logging)
+  CALL_TYPE_MISSING: "E_CALL_001", // no call activity type exists (context: hint to create one)
+  CALL_INPUT_INVALID: "E_CALL_002", // call input failed validation
+
+  // DUP (duplicate finder)
+  DUP_PAIR_MISSING: "E_DUP_001", // pair not found or not visible
+
+  // BULK (bulk actions)
+  BULK_TOO_MANY: "E_BULK_001", // more than BULK_MAX ids
+  BULK_PARTIAL: "E_BULK_002", // some ids failed (context: per-id error ids)
+
+  // ORGREL (organization parent relations)
+  ORGREL_LOOP: "E_ORGREL_001", // parent assignment would create a loop
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy

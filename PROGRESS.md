@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-21 17:39
+Current: 0.5 · Last updated: 2026-10-21 17:41
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -10,7 +10,7 @@ Current: 0.4 · Last updated: 2026-10-21 17:39
 - [x] 0.1 Start Part 9: progress files, kit and baseline
 - [x] 0.2 Prove Part 8
 - [x] 0.3 Schema, migration and audit redaction
-- [ ] 0.4 Pure core (test-first)
+- [x] 0.4 Pure core (test-first)
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Recurrence service and the completion hook (test-first)
 - [ ] 1.2 Call logging (test-first)
@@ -51,10 +51,11 @@ Current: 0.4 · Last updated: 2026-10-21 17:39
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 - 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
+- 0.4: the six test files were written and run before their modules: the first run failed at import in all six, then the implemented modules passed 39 new cases (90/90 in those folders with the existing shortcut tests). `rule.ts` validates the 6.5 shape (interval 1..99, count 2..500, weekdays weekly-only and unique); `nextOccurrence` keeps the local wall clock through `zonedToUtc`/`utcToZoned`, clamps monthly and yearly with `anchorDay` (Jan 31 to Feb 28 to Mar 31, Feb 29 2028 to Feb 28 2029) and keeps 09:00 London across the 2026-03-29 DST change; `normalize.ts` folds NFKD diacritics and trailing legal suffixes; `toastStore` caps at 3, runs an action once and pauses/resumes with the remaining time; `visibleCommands` filters on the admin type or a `PermissionFlagKey`; `createSequenceMatcher` resets on a modifier and times out at 1200 ms. The eight new error IDs (RECUR, CALL, DUP, BULK, ORGREL) are appended with those domains in the test allow-list. `Result` takes two type arguments, so `ToastAction.run` is `Promise<Result<unknown, unknown>>`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
-- TODO(owner): rebuild the dev stack so it reads migrations 0089 and 0090 (and 0091 once Part 9 applies it): `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+- TODO(owner): rebuild the dev stack so its app image reads migrations 0089, 0090 and 0091: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 
 ## Open issues
