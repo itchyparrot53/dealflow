@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 3.6 · Last updated: 2026-10-21 05:36
+Current: 4.1 · Last updated: 2026-10-21 05:44
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
 - Phase 1: ceae046
 - Phase 2: 8691903
 - Phase 3: a819c73
+- Phase 4: 520b0ca
 
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
@@ -25,7 +26,7 @@ Current: 3.6 · Last updated: 2026-10-21 05:36
 - [x] 3.3 Booking admin screens
 - [x] 3.4 Public booking and cancel pages
 - [x] 3.5 Triggers in the editors, demo seed and docs
-- [ ] 3.6 Phase 3 QA gate
+- [x] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E forms and booking spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
@@ -37,6 +38,7 @@ Current: 3.6 · Last updated: 2026-10-21 05:36
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5191/5191 · pure core (zonedTime/slots/fields/spamToken/ics) 67/67
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/events/automations/leads integration SKIPPED (Docker daemon unresponsive; Testcontainers global setup hung for 15+ minutes and was killed, per section 10)
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · scheduling/activities/events integration SKIPPED (Docker still unresponsive, per section 10)
+- Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/scheduling/automations/webhooks integration SKIPPED (Docker still unresponsive, per section 10)
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p5-v1` with `STATUS: COMPLETE`, and HEAD was `935685bd476eb7d5c75d51b3439a8ffe7711aa4c`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.

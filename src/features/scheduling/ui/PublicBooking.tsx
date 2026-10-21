@@ -63,12 +63,16 @@ interface SlotFetchResult {
 async function fetchSlots(
   publicId: string,
   day: string,
+  attempt: number,
   signal: AbortSignal,
 ): Promise<SlotFetchResult> {
   try {
-    const response = await fetch(`/api/public/booking/${publicId}/slots?from=${day}&to=${day}`, {
-      signal,
-    });
+    // `attempt` is not read by the server; it makes a post-409 refetch a distinct request for the
+    // effect's dependency list and any intermediary cache.
+    const response = await fetch(
+      `/api/public/booking/${publicId}/slots?from=${day}&to=${day}&attempt=${attempt}`,
+      { signal },
+    );
     if (response.status === 429) return { slots: [], error: BOOKING_COPY.rateLimited };
     if (!response.ok) return { slots: [], error: BOOKING_COPY.unavailable };
     const body = (await response.json()) as SlotResponse;
@@ -275,7 +279,7 @@ export function PublicBooking({
     const timer = setTimeout(() => {
       setLoading(true);
       setSlotError(null);
-      void fetchSlots(publicId, activeDay, controller.signal).then((result) => {
+      void fetchSlots(publicId, activeDay, refreshKey, controller.signal).then((result) => {
         if (controller.signal.aborted) return;
         setSlots(result.slots);
         setSlotError(result.error);
