@@ -89,3 +89,10 @@ address is blocked, so there is no check-then-connect gap. Blocked ranges:
 `WEBHOOK_ALLOW_PRIVATE=true` removes the block and allows plain `http`, which is only for local
 receivers and the e2e suite. The secret is stored encrypted and returned in plaintext exactly once,
 on create or rotate; use "Rotate secret" if it is lost.
+
+
+## Part 8 event additions
+
+`project.created`, `project.status_changed`, `project.deleted` and `project_task.completed` are
+delivered like every other event. The payload's `data.project` carries
+`{ id, name, status, dealId, ownerId, dueDate }`, plus `data.task` for a completed task.

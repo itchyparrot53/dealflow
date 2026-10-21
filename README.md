@@ -220,3 +220,11 @@ grouped SQL query with the viewer's deal or activity visibility applied, convert
 base currency, and reports deals it had to leave out. Charts, CSV export, and an "Explain" insight that
 sends only aggregated rows to the AI layer follow from the same result. The first visit creates a
 shared "Sales overview" dashboard. See `docs/dealflow/INSIGHTS.md`.
+
+
+## Projects, API and data safety (Part 8)
+
+Projects group phases and tasks and can be started from a won deal. The REST API is documented
+in-app at Settings > API and in [docs/API.md](docs/API.md); tokens are personal, hashed at rest and
+scoped read or read-write. Settings also gained a recycle bin (restore for 30 days), an admin audit
+log, and daily backups whose restore is documented in [docs/dealflow/BACKUPS.md](docs/dealflow/BACKUPS.md).

@@ -81,3 +81,12 @@ new organizations.
 The editor's Run log shows the last 100 runs with status, skip reason and per-action steps.
 Retention deletes processed events after 30 days and finished runs after 90 days; the dispatcher
 polls every 5 seconds and also wakes on `LISTEN dealflow_domain_events`.
+
+
+## Part 8 additions
+
+- Actions: `create_project` (optional `phases`, optional `nameTemplate`, default the deal title).
+- Triggers: `project.created`, `project.status_changed`, `project.deleted`,
+  `project_task.completed`. Their condition runs against the linked deal; an unlinked project skips
+  the run.
+- Built-in template: "Start a project when a deal is won".

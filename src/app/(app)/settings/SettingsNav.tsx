@@ -6,6 +6,7 @@ import {
   CalendarClock,
   ClipboardList,
   Coins,
+  Database,
   Eye,
   FileText,
   KeyRound,
@@ -106,6 +107,11 @@ const AUTOMATIONS_ITEM: NavItem = {
   label: AUTOMATIONS_STRINGS.title,
   icon: Bot,
 };
+const BACKUPS_ITEM: NavItem = {
+  href: "/settings/backups",
+  label: PROJECTS_API_STRINGS.backups.nav,
+  icon: Database,
+};
 const AUDIT_ITEM: NavItem = {
   href: "/settings/audit-log",
   label: PROJECTS_API_STRINGS.audit.nav,
@@ -150,7 +156,15 @@ export function SettingsNav({
   const companyItems = [
     ...COMPANY.items,
     ...(isAdmin
-      ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, FORMS_ITEM, ENRICHMENT_ITEM, AI_ITEM, AUDIT_ITEM]
+      ? [
+          AUTOMATIONS_ITEM,
+          WEBHOOKS_ITEM,
+          FORMS_ITEM,
+          ENRICHMENT_ITEM,
+          AI_ITEM,
+          AUDIT_ITEM,
+          BACKUPS_ITEM,
+        ]
       : []),
     ...(canImport ? [importItem] : []),
   ];

@@ -328,3 +328,15 @@ Upstream files edited for the part (port future upstream fixes here by hand):
 - `scripts/seed-demo-insights.ts`: the default dashboard, one private activities report and a shared
   "Team activity" dashboard (with a goal widget when the demo has a goal).
 - `docs/dealflow/INSIGHTS.md`: new; `README.md` gained the "Insights" section.
+
+
+## Part 8
+
+Upstream files changed: the notifications type/default/strings and email renderer, the events
+vocabulary and snapshot, the automation definition/runner/editor/templates/describe and webhooks
+dialog groups, the deal sidebar registry and strings, `DealSidebar`, `DealWorkspaceClient`,
+`DealDetailView`, `BoardToolbar` and `DealListClient` (export slot), the six list pages, the
+settings navigation, `src/server/worker.ts`, `src/constants/jobNames.ts`, `src/config/env.ts`,
+`.env.example`, `Dockerfile` and `docker-compose.yml` (backups volume and the Postgres client),
+`src/db/schema/index.ts`, `src/features/collaboration/changeLog.ts`, `src/types/entityRef.ts`,
+`src/features/files/storage.ts` and `storageFake.ts`, and the demo seed.

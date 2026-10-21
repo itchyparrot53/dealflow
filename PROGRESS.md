@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.6 · Last updated: 2026-10-21 15:48
+Current: 3.7 · Last updated: 2026-10-21 15:56
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -28,7 +28,7 @@ Current: 3.6 · Last updated: 2026-10-21 15:48
 - [x] 3.3 CSV export everywhere (test-first)
 - [x] 3.4 Audit log page
 - [x] 3.5 Backups (test-first)
-- [ ] 3.6 Backups page, demo seed and docs
+- [x] 3.6 Backups page, demo seed and docs
 - [ ] 4.1 E2E projects and data spec and screenshots
 - [ ] 4.2 Integration suite and smoke with the backup round trip
 - [ ] 4.3 Independent review and hardening
@@ -142,6 +142,10 @@ Current: 3.6 · Last updated: 2026-10-21 15:48
 - 3.5: the download route rejects any name that does not match the exact archive pattern before touching the filesystem, requires an admin, and streams the file with an attachment name.
 - 3.5: `StorageClient` gained optional `listObjects` and `putObject` (real MinIO implementation plus the fake), because the mirror and its restore need them; optional keeps every existing narrow test fake compiling. `pnpm backup:restore` runs the CLI-only restore (extract, manifest, `pg_restore --clean --if-exists`, optional `--files` re-upload).
 - 3.5: five integration cases pass: success with mirroring and pruning, pg_dump failure with no archive and an admin email, the concurrent second call, and the download route's admin/path checks.
+
+- 3.6: the Backups page is a server component (admin gate, status line, last 50 runs) with one client component for "Back up now"; the action runs the same `runBackup`, so a manual run and the schedule share every step, lock and cleanup path. The download link points at the guarded route. The restore panel shows the exact Compose commands (stop app/worker/ws, `docker compose run` the restore script, start them again).
+- 3.6: the demo seed gained `scripts/seed-demo-projects.ts`: the "Website relaunch" project linked to the first won demo deal with three phases and six tasks (two done), an unlinked "Internal: website refresh", and one read "Demo token" whose plain value is never printed. It reuses rows by name so a re-run never duplicates. `pnpm db:seed:demo` printed `demo_projects=2 demo_project_tasks=6 demo_api_tokens=1` on the dev database.
+- 3.6: docs added: `docs/dealflow/PROJECTS.md`, `docs/dealflow/BACKUPS.md` (contents, schedule, retention, download, exact restore commands, and the warning to copy archives off the machine), the Part 8 sections in AUTOMATIONS.md and WEBHOOKS.md, the Part 8 upstream file list, and a README section linking docs/API.md.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

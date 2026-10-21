@@ -48,6 +48,7 @@ import {
 import { seedFormsBooking } from "./seed-demo-forms";
 import { seedContactFollowers, seedInvitedUser, seedOrgRelations } from "./seed-demo-graph";
 import { seedInsights } from "./seed-demo-insights";
+import { seedProjects } from "./seed-demo-projects";
 import { insertDeals, insertLeads, insertOrgs, insertPeople, wipeDemo } from "./seed-demo-records";
 import { seedSales } from "./seed-demo-sales";
 import { type DemoUser, setupDemoUsers, softDeleteSamples } from "./seed-demo-users";
@@ -142,6 +143,7 @@ async function main(): Promise<void> {
 
   // Part 7: the default dashboard, a private activities report and a shared "Team activity" board.
   const insights = await seedInsights({ ownerId: at(userIds, 0), pool });
+  const projectsSeed = await seedProjects({ ownerId: at(userIds, 0), pool });
 
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
@@ -253,6 +255,9 @@ async function main(): Promise<void> {
   );
   console.warn(
     `demo_insight_reports=${insights.reports} demo_insight_dashboards=${insights.dashboards} demo_insight_widgets=${insights.widgets}`,
+  );
+  console.warn(
+    `demo_projects=${projectsSeed.projects} demo_project_tasks=${projectsSeed.tasks} demo_api_tokens=${projectsSeed.tokens}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }
