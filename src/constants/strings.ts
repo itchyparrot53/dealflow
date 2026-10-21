@@ -12,6 +12,7 @@ export const STRINGS = {
     forecast: "Forecast",
     documents: "Documents",
     insights: "Insights",
+    projects: "Projects",
     leads: "Leads",
     deals: "Deals",
     contacts: "Contacts",

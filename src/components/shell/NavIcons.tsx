@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ChartColumn,
   FileText,
+  FolderKanban,
   Inbox,
   Kanban,
   Lightbulb,
@@ -41,6 +42,10 @@ export function DealsIcon({ className }: IconProps): React.ReactNode {
 // identical glyphs in one viewport would read as the same thing.
 export function LeadsIcon({ className }: IconProps): React.ReactNode {
   return <Sprout aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
+}
+
+export function ProjectsIcon({ className }: IconProps): React.ReactNode {
+  return <FolderKanban aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
 
 export function InsightsIcon({ className }: IconProps): React.ReactNode {

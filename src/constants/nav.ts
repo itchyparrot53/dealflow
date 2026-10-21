@@ -5,6 +5,7 @@ export const NAV_ITEMS = [
   { href: "/forecast", key: "forecast", section: "/forecast" },
   { href: "/documents", key: "documents", section: "/documents" },
   { href: "/insights", key: "insights", section: "/insights" },
+  { href: "/projects", key: "projects", section: "/projects" },
   { href: "/leads", key: "leads", section: "/leads" },
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
   { href: "/activities", key: "activities", section: "/activities" },

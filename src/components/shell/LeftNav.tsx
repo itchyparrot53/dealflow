@@ -22,6 +22,7 @@ import {
   InsightsIcon,
   LeadsIcon,
   PipelineIcon,
+  ProjectsIcon,
   SettingsIcon,
 } from "./NavIcons";
 
@@ -32,6 +33,7 @@ const ICONS: Record<NavKey, typeof PipelineIcon> = {
   forecast: ForecastIcon,
   documents: DocumentsIcon,
   insights: InsightsIcon,
+  projects: ProjectsIcon,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-21 14:48
+Current: 1.4 · Last updated: 2026-10-21 14:52
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -14,7 +14,7 @@ Current: 1.3 · Last updated: 2026-10-21 14:48
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Projects services, events and notifications (test-first)
 - [x] 1.2 From a won deal and the automation action
-- [ ] 1.3 Projects list and board
+- [x] 1.3 Projects list and board
 - [ ] 1.4 Deal projects section
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Tokens service and settings tab
@@ -82,6 +82,12 @@ Current: 1.3 · Last updated: 2026-10-21 14:48
 - 1.2: the built-in template is "Start a project when a deal is won" (`deal.won` to `create_project`); the template-count assertion in the automations integration suite changed from 6 to 7 because the plan adds one template (no assertion weakened).
 - 1.2: the loop-guard case registers a second automation on `project.created` that creates another project from the same deal, then drains the dispatcher; the number of projects stays within `AUTOMATION_MAX_DEPTH + 2` and does not grow on later dispatches, so the chain depth guard really terminates the loop.
 - 1.2: `ActionList` gained the two fields (project name template and comma-separated phases), and the editor's default action uses the three default phase names.
+
+- 1.3: the board's move rule is a pure `applyMove` helper (`ui/boardMove.ts`) with four unit cases (within-column reorder, cross-column renumber, no-phase column, clamped index). The board applies it optimistically, calls `moveTaskAction`, then replaces the local list with the server's full task list; a failed call restores the previous list and shows an inline `role="alert"`.
+- 1.3: the drag uses dnd-kit's `PointerSensor` with an 8px activation distance (the deal board's rule), so a click still opens the task dialog. Cards are `useDraggable`, phase columns `useDroppable`, and the overlay renders a non-interactive `TaskCard`.
+- 1.3: list filters (status, owner, search) live in the URL; the `/projects` page parses them once through the status schema and delegates to `listProjects`, so the table shows exactly the server's visibility-filtered set rather than filtering a full list in the browser.
+- 1.3: every interactive surface is a design-system wrapper: Dialog (new project, task), Select (status, phase, filters), Combobox (deal, owner, assignee), DatePicker, Checkbox, Progress, Badge, DropdownMenu and the shared ConfirmDialog. Every mutation passes the CSRF token.
+- 1.3: `PhasesPopover` and `boardMove.ts` are extra files beyond the plan's structure, split out to keep `ProjectBoard.tsx` within the file-size convention; the navigation gained "Projects" after "Insights" with a FolderKanban icon, and the number-key shortcuts follow `NAV_ITEMS` automatically.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

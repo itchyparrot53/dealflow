@@ -3,7 +3,8 @@ import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PROJECT_DEFAULT_PHASES } from "@/constants/projectsApi";
 import type { Db } from "@/db/client";
-import { deals, projectPhases, projects, projectTasks, users } from "@/db/schema";
+import { deals, pipelines, projectPhases, projects, projectTasks, users } from "@/db/schema";
+import { dealVisibilityClause } from "@/features/deals/visibility";
 import { emitDomainEvent } from "@/features/events/emit";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -14,6 +15,7 @@ import {
   loadVisibleProject,
   notFound,
   projectVisibilityClause,
+  projectVisibilitySession,
 } from "./visibility";
 
 // Project reads and lifecycle. Mutations run in one transaction so the row and its phases land
@@ -342,4 +344,26 @@ export async function deleteProject(
     return deleted;
   });
   return ok(row);
+}
+
+// Picker options for "New project" -> link deal. Only deals the actor can see, newest first.
+export async function listProjectDealOptions(
+  db: Db,
+  actor: PermSetUser,
+  signal: AbortSignal,
+): Promise<{ id: string; title: string }[]> {
+  signal.throwIfAborted();
+  return db
+    .select({ id: deals.id, title: deals.title })
+    .from(deals)
+    .innerJoin(pipelines, eq(pipelines.id, deals.pipelineId))
+    .where(
+      and(
+        isNull(deals.deletedAt),
+        eq(pipelines.isArchived, false),
+        dealVisibilityClause(projectVisibilitySession(actor)),
+      ),
+    )
+    .orderBy(desc(deals.updatedAt))
+    .limit(200);
 }
