@@ -8,7 +8,9 @@ import { type ColumnSort, useColumnSort } from "@/components/data-table/useColum
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
+import { Select } from "@/components/ui/Select";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { PRODUCTIVITY_STRINGS } from "@/constants/productivityStrings";
 import { STRINGS } from "@/constants/strings";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
@@ -17,10 +19,12 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
+import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { deletePersonAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
+import { bulkContactAction } from "./bulk/actions";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
 import { type ContactFilterDefinition, PERSON_FILTER_CONFIG } from "./contactFilterConfig";
 import { PERSON_FILTER_LABELS } from "./contactFilterRows";
@@ -74,6 +78,11 @@ export function PeopleList({
   const columns = useColumns(catalog, initialColumns);
   usePersistColumns("people", columns.order);
   const selection = useRowSelection();
+  const ownersQ = trpc.identity.assignableUsers.useQuery();
+  const ownerOptions = useMemo(
+    () => (ownersQ.data ?? []).map((user) => ({ value: user.id, label: user.name })),
+    [ownersQ.data],
+  );
   // Depend on the stable callback, not the selection object, which is recreated every render.
   const clearSelection = selection.clear;
   const { effective, cycle } = useColumnSort<PersonSortField>(DEFAULT_SORT);
@@ -105,6 +114,24 @@ export function PeopleList({
     clearSelection();
     void reload();
   }, [reload, clearSelection]);
+
+  async function bulkChangeOwner(ownerId: string): Promise<void> {
+    const ids = [...selection.selected];
+    if (ids.length === 0) return;
+    const result = await bulkContactAction(
+      { entity: "person", kind: "owner", ids, ownerId },
+      readCsrfToken(),
+    );
+    if (result.ok) {
+      selection.clear();
+      await reload();
+      return;
+    }
+    selection.clear();
+    for (const failure of result.error.failed) selection.toggle(failure.id);
+    await reload();
+    setError(PRODUCTIVITY_STRINGS.bulkPartial);
+  }
 
   async function bulkDelete(): Promise<void> {
     const ids = [...selection.selected];
@@ -172,23 +199,36 @@ export function PeopleList({
         </div>
       </div>
       {selection.count > 0 && (
-        <BulkActionBar count={selection.count} onClear={selection.clear}>
-          {mergePair !== null && (
-            <button
-              type="button"
-              onClick={() => setMerging(true)}
-              className="rounded-md border px-3 py-1 text-sm hover:bg-accent active:scale-[0.96] transition-transform"
-            >
-              Merge duplicates
-            </button>
-          )}
-          <BulkDeleteButton
-            count={selection.count}
-            noun="person"
-            nounPlural="people"
-            onConfirm={() => void bulkDelete()}
-          />
-        </BulkActionBar>
+        <div data-testid="contacts-bulk-bar">
+          <BulkActionBar count={selection.count} onClear={selection.clear}>
+            <span className="w-40">
+              <Select
+                ariaLabel="Change owner of selected people"
+                value=""
+                onChange={(value) => {
+                  if (value !== "") void bulkChangeOwner(value);
+                }}
+                placeholder="Change owner"
+                options={ownerOptions}
+              />
+            </span>
+            {mergePair !== null && (
+              <button
+                type="button"
+                onClick={() => setMerging(true)}
+                className="rounded-md border px-3 py-1 text-sm hover:bg-accent active:scale-[0.96] transition-transform"
+              >
+                Merge duplicates
+              </button>
+            )}
+            <BulkDeleteButton
+              count={selection.count}
+              noun="person"
+              nounPlural="people"
+              onConfirm={() => void bulkDelete()}
+            />
+          </BulkActionBar>
+        </div>
       )}
       {merging && mergePair !== null && (
         <BulkMergeDialog
