@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-21 01:39
+Current: 2.1 · Last updated: 2026-10-21 01:44
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
 - Phase 1: 1673688
+- Phase 2: 682fb2d
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
@@ -16,7 +17,7 @@ Current: 1.4 · Last updated: 2026-10-21 01:39
 - [x] 1.1 Emit from recordChange (test-first)
 - [x] 1.2 Create and document events
 - [x] 1.3 Dispatcher, snapshot and retention (test-first)
-- [ ] 1.4 Phase 1 QA gate
+- [x] 1.4 Phase 1 QA gate
 - [ ] 2.1 Runner, conditions and the capability (test-first)
 - [ ] 2.2 Core actions
 - [ ] 2.3 Email and AI actions
@@ -38,6 +39,7 @@ Current: 1.4 · Last updated: 2026-10-21 01:39
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
+- Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · events/documents/deals/collaboration 219/219
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · documents 45/45
 
 ## Decisions
@@ -86,6 +88,9 @@ Current: 1.4 · Last updated: 2026-10-21 01:39
 - 1.3: the worker runs the dispatcher on a `DISPATCH_POLL_SECONDS` interval plus a `LISTEN dealflow_domain_events` client borrowed from the shared pool, with one in-flight pass; the interval is unref'd so it never holds the process open, and dispatcher failures are logged, never thrown at the worker.
 - 1.3: snapshots are built at dispatch time; a deal's currency comes from `deal_terms` or `env.BASE_CURRENCY`, a soft-deleted record yields `{ id }`, and documents expose `publicUrl` built from `BASE_URL` plus the public id.
 - 1.3: the rotting rule is `filterAst`'s exact condition (`status = 'open'` and `stage_entered_at <= now() - (rotting_days + 1) days`) with a `NOT EXISTS` guard for any `deal.rotting` event created since the stage was entered; retention deletes only processed events older than 30 days and finished runs and deliveries older than 90 days.
+
+- 1.4: the first gate fixes were formatter output, a cognitive-complexity cap on `eventTypesForChange` (the deal mapping became `dealEventTypes`) and a nullable predicate in the snapshot's phone lookup; after `1.4: fixes round 1` the gate passed with the baseline's 14 warnings.
+- 1.4: no `qa` review at this gate (fast profile, rule 9.4). Phase 2 base is the commit before the gate.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
