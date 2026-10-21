@@ -18,6 +18,7 @@ import {
   Sparkles,
   Table2,
   Target,
+  Trash2,
   Upload,
   User,
   Users,
@@ -58,6 +59,12 @@ const MY_ACCOUNT: NavSection = {
     { href: "/settings/connections", label: STRINGS.settings.connectedApps, icon: Plug },
     // Every user creates and revokes their own API tokens.
     { href: "/settings/api", label: PROJECTS_API_STRINGS.api.nav, icon: KeyRound },
+    // Every user can restore what they own or deleted.
+    {
+      href: "/settings/recycle-bin",
+      label: PROJECTS_API_STRINGS.recycle.nav,
+      icon: Trash2,
+    },
     // Every user manages their own booking pages, so this one is not admin-only.
     { href: "/settings/booking", label: BOOKING_STRINGS.nav, icon: CalendarClock },
   ],
@@ -99,6 +106,11 @@ const AUTOMATIONS_ITEM: NavItem = {
   label: AUTOMATIONS_STRINGS.title,
   icon: Bot,
 };
+const AUDIT_ITEM: NavItem = {
+  href: "/settings/audit-log",
+  label: PROJECTS_API_STRINGS.audit.nav,
+  icon: ClipboardList,
+};
 const WEBHOOKS_ITEM: NavItem = {
   href: "/settings/webhooks",
   label: WEBHOOKS_STRINGS.title,
@@ -137,7 +149,9 @@ export function SettingsNav({
   };
   const companyItems = [
     ...COMPANY.items,
-    ...(isAdmin ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, FORMS_ITEM, ENRICHMENT_ITEM, AI_ITEM] : []),
+    ...(isAdmin
+      ? [AUTOMATIONS_ITEM, WEBHOOKS_ITEM, FORMS_ITEM, ENRICHMENT_ITEM, AI_ITEM, AUDIT_ITEM]
+      : []),
     ...(canImport ? [importItem] : []),
   ];
   const sections = canManageCompany

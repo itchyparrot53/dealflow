@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-21 15:22
+Current: 3.3 · Last updated: 2026-10-21 15:34
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -24,7 +24,7 @@ Current: 3.2 · Last updated: 2026-10-21 15:22
 - [x] 2.3 API docs
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Recycle bin service and purge (test-first)
-- [ ] 3.2 Recycle bin page
+- [x] 3.2 Recycle bin page
 - [ ] 3.3 CSV export everywhere (test-first)
 - [ ] 3.4 Audit log page
 - [ ] 3.5 Backups (test-first)
@@ -125,6 +125,9 @@ Current: 3.2 · Last updated: 2026-10-21 15:22
 - 3.1: restore clears `deleted_at` and calls `recordChange` in one transaction, so the change log and the domain event are written together. `dealEventTypes` now treats `deleted: false` as `deal.updated` (a restore is not a deletion), and project restores emit no event; `ChangeLogEntityType` widens only the change-log argument type, leaving `ENTITY_TYPES` (timeline and comments) unchanged.
 - 3.1: an activity is blocked with `E_RECYCLE_002` when its dominant parent (deal, then person, then organization) is still deleted, and the context names the parent and id.
 - 3.1: the purge runs in FK-safe order (activities, notes, leads, deals, persons, organizations, projects), deletes row by row so one FK failure cannot abort the batch, keeps the row and reports `{ entity, id, reason }`; the pg-boss queue `recycle.purge` is scheduled at `0 3 * * *` UTC and registered in the worker.
+
+- 3.2: the page is server-fronted (filters and search in the URL, `listDeleted` on the server) with one client table for restore; restore goes through a CSRF-guarded server action and refreshes. Entity, name, deleted-at, deleted-by and days-left columns, a destructive days-left badge under 3 days, and the "permanently deleted after 30 days" line.
+- 3.2: Recycle bin sits in the settings nav's My account group because any user restores their own deletions; the service still hides everyone else's rows.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
