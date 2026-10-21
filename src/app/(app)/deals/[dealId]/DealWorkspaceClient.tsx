@@ -13,6 +13,7 @@ import { DealHeader } from "@/features/deal-workspace/header/DealHeader";
 import { useBlockVisibility } from "@/features/deal-workspace/header/useBlockVisibility";
 import type { DealWorkspace } from "@/features/deal-workspace/summaryRepo";
 import type { DraftSummary } from "@/features/email/draftRepo";
+import type { ProjectListItem } from "@/features/projects/types";
 import { trpc } from "@/lib/trpc-client";
 import { WorkspaceTabs } from "./tabs";
 
@@ -48,6 +49,8 @@ interface DealWorkspaceClientProps {
   // and Person sections drop the same rows the standalone detail pages do.
   hiddenOrgFields: ReadonlySet<string>;
   hiddenPersonFields: ReadonlySet<string>;
+  // Part 8: projects linked to this deal, shown in the sidebar's Projects section.
+  projects?: ProjectListItem[];
 }
 
 export function DealWorkspaceClient({
@@ -67,6 +70,7 @@ export function DealWorkspaceClient({
   scheduleFollowUpAfterWon,
   hiddenOrgFields,
   hiddenPersonFields,
+  projects = [],
 }: DealWorkspaceClientProps) {
   const { deal, person, org } = workspace;
   const [tab, setTab] = useState<Tab>("all");
@@ -138,6 +142,7 @@ export function DealWorkspaceClient({
             hiddenOrgFields={hiddenOrgFields}
             hiddenPersonFields={hiddenPersonFields}
             canEditDeal={canEditDeal}
+            projects={projects}
           />
 
           <div className="min-w-0">

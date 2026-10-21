@@ -15,6 +15,8 @@ import { useDealActionError } from "@/features/deal-workspace/DealActionErrorPro
 import { updateDealAction } from "@/features/deals/updateAction";
 import { DealDocumentsSection } from "@/features/documents/ui/DealDocumentsSection";
 import { DealProductsSection } from "@/features/products/ui/DealProductsSection";
+import type { ProjectListItem } from "@/features/projects/types";
+import { DealProjectsSection } from "@/features/projects/ui/DealProjectsSection";
 import { err, ok } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { CollapsibleSection } from "./CollapsibleSection";
@@ -53,6 +55,7 @@ export function DealSidebar({
   hiddenOrgFields = NONE,
   hiddenPersonFields = NONE,
   canEditDeal = true,
+  projects = [],
 }: {
   workspace: DealWorkspace;
   now: Date;
@@ -69,6 +72,9 @@ export function DealSidebar({
   hiddenOrgFields?: ReadonlySet<string>;
   hiddenPersonFields?: ReadonlySet<string>;
   canEditDeal?: boolean;
+  // Part 8: projects linked to this deal, loaded with the workspace (server) so the sidebar does
+  // not open its own query.
+  projects?: ProjectListItem[];
 }): React.ReactNode {
   const {
     deal,
@@ -209,6 +215,17 @@ export function DealSidebar({
       documentSummary === undefined ? null : (
         <DealDocumentsSection key="documents" dealId={deal.id} canEdit={canEditDeal} />
       ),
+
+    // Part 8: linked projects, loaded with the workspace. "Create project" is for won deals (6.6).
+    projects: (
+      <DealProjectsSection
+        key="projects"
+        dealId={deal.id}
+        dealWon={deal.status === "won"}
+        canEdit={canEditDeal}
+        projects={projects}
+      />
+    ),
 
     source: (
       <CollapsibleSection

@@ -13,6 +13,7 @@ import { getPreferencesForActor } from "@/features/identity/preferencesForActor"
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
+import { listProjects } from "@/features/projects/projects";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { DealWorkspaceClient } from "./DealWorkspaceClient";
 
@@ -42,6 +43,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
     personOptions,
     hiddenBuiltins,
     refLabels,
+    dealProjects,
   ] = await Promise.all([
     getActorMailbox(db, loaded.actor.id, AbortSignal.timeout(10_000)),
 
@@ -101,6 +103,10 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
       ],
       AbortSignal.timeout(8000),
     ),
+
+    // Part 8: projects linked to this deal, shown in the sidebar. Visibility follows the deal,
+    // so a project the actor cannot see never reaches the section.
+    listProjects(db, loaded.actor, { dealId: loaded.value.deal.id }, AbortSignal.timeout(8000)),
   ]);
 
   // getWorkspace already read the pipeline row for its own visibility gate and hands back the
@@ -131,6 +137,7 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
         scheduleFollowUpAfterWon={prefs.ui.scheduleFollowUpAfterWon ?? false}
         hiddenOrgFields={hiddenBuiltins.organization}
         hiddenPersonFields={hiddenBuiltins.person}
+        projects={dealProjects}
       />
     </CustomFieldRefLabelsProvider>
   );

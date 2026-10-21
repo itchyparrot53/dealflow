@@ -3,6 +3,7 @@ export const DEAL_SIDEBAR_STRINGS = {
     summary: "Summary",
     products: "Products",
     documents: "Documents",
+    projects: "Projects",
     details: "Details",
     source: "Source",
     person: "Person",
