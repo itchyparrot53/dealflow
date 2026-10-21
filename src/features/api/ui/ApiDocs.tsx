@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { API_DOC_PROSE, type ApiDocSection } from "../docs";
+import { API_DOC_PROSE, type ApiDocSection } from "../docSections";
 
 // The Documentation tab. It renders the same serializable sections `pnpm api:docs` writes to
 // docs/API.md, so the in-app copy and the repository file always match.
