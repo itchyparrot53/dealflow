@@ -1,4 +1,5 @@
 export * from "./activities";
+export * from "./activityExtras";
 export * from "./activityGuests";
 export * from "./activityParticipants";
 export * from "./activityTypes";

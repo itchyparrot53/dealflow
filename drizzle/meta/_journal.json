@@ -638,6 +638,13 @@
       "when": 1792589032722,
       "tag": "0090_dealflow_projects_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1792600656398,
+      "tag": "0091_dealflow_activity_extras",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-21 17:37
+Current: 0.4 · Last updated: 2026-10-21 17:39
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-21 17:37
 ## Tasks
 - [x] 0.1 Start Part 9: progress files, kit and baseline
 - [x] 0.2 Prove Part 8
-- [ ] 0.3 Schema, migration and audit redaction
+- [x] 0.3 Schema, migration and audit redaction
 - [ ] 0.4 Pure core (test-first)
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Recurrence service and the completion hook (test-first)
@@ -50,6 +50,7 @@ Current: 0.3 · Last updated: 2026-10-21 17:37
 - 0.1: `/tmp/dealflow-tools` holds pnpm 9.15.9 and `/tmp/dealflow-pnpm-store` exists, so no reinstall is needed; the `subagent` tool is available for Task 4.3.
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
+- 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

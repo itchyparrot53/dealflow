@@ -5,10 +5,10 @@ import { auditEvents, users } from "@/db/schema";
 import { decodeCursor, encodeCursor } from "@/features/api/cursor";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
+import { redact } from "./redact";
 
 // Admin audit log (6.8). Keyset paginated newest-first; the filters are actor, action and a date
-// range. The writer stores arbitrary before/after JSON, so the reader redacts anything that looks
-// like a credential before the page sees it.
+// range. Rows written before the writer redacted are still redacted here before the page sees them.
 
 export const AUDIT_PAGE_SIZE = 50;
 
@@ -29,18 +29,6 @@ export interface AuditFilter {
   action?: string;
   from?: string;
   to?: string;
-}
-
-const SECRET_KEY = /pass(word)?|secret|token|hash|credential|api.?key/i;
-
-export function redact(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map((entry) => redact(entry));
-  if (value === null || typeof value !== "object") return value;
-  const out: Record<string, unknown> = {};
-  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-    out[key] = SECRET_KEY.test(key) ? "[redacted]" : redact(entry);
-  }
-  return out;
 }
 
 export async function listAuditEvents(

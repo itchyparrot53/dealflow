@@ -51,6 +51,35 @@ describe("recordAudit (real Postgres)", () => {
     expect(row.createdAt).toBeInstanceOf(Date);
   });
 
+  test("redacts secret-looking keys before storing them", async () => {
+    const signal = AbortSignal.timeout(5_000);
+
+    await recordAudit(
+      tdb.db,
+      {
+        actorId: null,
+        targetType: "user",
+        targetId: null,
+        action: "user.password.changed",
+        before: { password: "hunter2", nested: { apiKey: "sk-fake", keep: "visible" } },
+        after: { password: "hunter3" },
+      },
+      signal,
+    );
+
+    const rows = await tdb.db
+      .select()
+      .from(auditEvents)
+      .where(eq(auditEvents.action, "user.password.changed"));
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.before).toEqual({
+      password: "[redacted]",
+      nested: { apiKey: "[redacted]", keep: "visible" },
+    });
+    expect(rows[0]?.after).toEqual({ password: "[redacted]" });
+  });
+
   test("aborted signal prevents the write", async () => {
     const controller = new AbortController();
     controller.abort();

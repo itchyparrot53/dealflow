@@ -1,5 +1,6 @@
 import type { Db } from "@/db/client";
 import { auditEvents } from "@/db/schema";
+import { redactRecord } from "@/features/audit/redact";
 
 type AuditTarget =
   | "permission_set"
@@ -21,7 +22,8 @@ export interface AuditEventInput {
   correlationId?: string | null;
 }
 
-// Writes one security-relevant change to audit_events (permissions spec 9).
+// Writes one security-relevant change to audit_events (permissions spec 9). Secret-looking keys
+// are redacted before storage; the reader redacts again so rows from older writers stay safe.
 export async function recordAudit(
   db: Db,
   event: AuditEventInput,
@@ -33,8 +35,8 @@ export async function recordAudit(
     targetType: event.targetType,
     targetId: event.targetId,
     action: event.action,
-    before: event.before ?? null,
-    after: event.after ?? null,
+    before: redactRecord(event.before),
+    after: redactRecord(event.after),
     correlationId: event.correlationId ?? null,
   });
   signal.throwIfAborted();
