@@ -168,6 +168,7 @@ export async function listProjects(
     dueDate: row.project.dueDate,
     taskCount: byProject.get(row.project.id)?.total ?? 0,
     doneCount: byProject.get(row.project.id)?.done ?? 0,
+    updatedAt: row.project.updatedAt.toISOString(),
   }));
 }
 

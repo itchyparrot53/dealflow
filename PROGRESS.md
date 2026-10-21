@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-21 15:06
+Current: 2.3 · Last updated: 2026-10-21 15:10
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -19,7 +19,7 @@ Current: 2.2 · Last updated: 2026-10-21 15:06
 - [x] 1.4 Deal projects section
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Tokens service and settings tab
-- [ ] 2.2 Registry, handler and resources (test-first)
+- [x] 2.2 Registry, handler and resources (test-first)
 - [ ] 2.3 API docs
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Recycle bin service and purge (test-first)
@@ -103,6 +103,13 @@ Current: 2.2 · Last updated: 2026-10-21 15:06
 - 2.1: revoking a token that is missing or belongs to someone else returns `E_API_002` (unknown), not a permission error, so a non-admin cannot probe other users' token ids. Admins may list and revoke any token, matching 6.7.
 - 2.1: the expiry choices are the fixed 7/30/90/365 days or never, as the contract lists; the service converts the choice to an absolute `expires_at` at creation.
 - 2.1: API lives in the settings nav's "My account" group because every signed-in user manages personal tokens; the page itself re-reads the session through `createContext` like the other settings pages.
+
+- 2.2: the twelve cases were written first and failed for real reasons, which the fixes pinned: raw `db.execute` returns timestamptz as strings (the serializers accept either), and GET/PATCH/DELETE initially read a deal by id without the visibility predicate, so a private deal leaked to another user's token. Deal reads now join the same `dealVisibilityClause` the board uses.
+- 2.2: field mapping to the real services: `value` decimal string to `Number` for createDeal/updateDeal, `organizationId` to `orgId`, `status` to markWon/markLost/reopenDeal, `stageId` to changeStage, `ownerId` to changeOwner, `currency` to setDealTerms; everyone else uses createPerson/updatePerson/createOrg/updateOrg/createActivity/updateActivity/createNote/updateNote/product services/createProject + task services. Person create uses the ContactActor shape (adds the user's primary visibility group) and person emails/phones string arrays become `{value,label,primary}` points.
+- 2.2: list visibility: deals use the SQL predicate; persons and organizations page-scan with `canSee`; activities resolve each row through `resolveActivityVisibility`; notes check `canActorAccessParent`; products are shared. Each list is keyset-ordered by `(updated_at, id)` and advances `nextCursor` from the last returned row.
+- 2.2: auth order is exactly 6.7: bearer parse (a session cookie alone is E_API_001), hash lookup with revoked/expired/inactive checks (E_API_002), scope (E_API_003), per-token limiter (E_API_004 with Retry-After), route match (404/405), then Zod query/body (E_API_006, body capped at 262144 bytes). `last_used_at` is written at most once a minute, and every response carries `Cache-Control: no-store`.
+- 2.2: HTTP statuses map from explicit sets of error-ID values, because the ids are `E_X_00N` and a suffix check would never match; 404 for the domain not-founds, 403 for permission/scope, 422 for validation, 409 for CAS preconditions.
+- 2.2: the integration suite calls `handleApiRequest` (the same function the catch-all route invokes) with real Postgres; only `@/db/client` is mocked, so no service or SQL is faked. The suite covers all twelve required cases including the 121st-call limit and the private-deal 404.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

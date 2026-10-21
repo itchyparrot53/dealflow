@@ -57,6 +57,7 @@ export interface ProjectListItem {
   dueDate: string | null;
   taskCount: number;
   doneCount: number;
+  updatedAt: string;
 }
 
 export interface ProjectFilter {
