@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-21 14:32
+Current: 4.2 · Last updated: 2026-10-21 15:15
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -28,7 +28,7 @@ Current: 4.1 · Last updated: 2026-10-21 14:32
 - [x] 3.3 Score badge and bulk scoring UI
 - [x] 3.4 Demo seed and docs
 - [x] 3.5 Phase 3 QA gate
-- [ ] 4.1 E2E insights spec and screenshots
+- [x] 4.1 E2E insights spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
@@ -113,6 +113,10 @@ Current: 4.1 · Last updated: 2026-10-21 14:32
 - 3.4: the demo seed runs `ensureDefaultDashboard` through a Drizzle handle built on the seed's own pool, then recreates its two named reports and the "Team activity" dashboard by name, so a re-run never duplicates. The demo has no goal, so the dashboard gets the activities-by-type widget only; the goal widget is added the moment a demo goal exists, exactly as 6.9 says.
 - 3.4: `pnpm db:seed:demo` ran against the dev database and printed `demo_insight_reports=2 demo_insight_dashboards=1 demo_insight_widgets=1`; a query confirmed "Sales overview" is the only default with 6 widgets, "Team activity" is shared with 1 widget, and "My activities by week" is private.
 - 3.4: `docs/dealflow/INSIGHTS.md` covers measures, groupings, segments, ranges and time zones, charts, caps, currency conversion and excluded deals, visibility, sharing, the default dashboard, CSV, explain (what is sent) and the score badge plus bulk scoring; the README gained a short "Insights" section and UPSTREAM.md lists every upstream file this part touched.
+
+- 4.1: `e2e/11-insights.spec.ts` drives the real screens: it lists "Sales overview" on `/insights`, opens it and sees six widgets, builds a won-value-by-month report through the Select wrappers, switches the segment and chart, saves, reads three explain items with `AI_FAKE`, checks the CSV download header and bulk-scores two deals before reading the completion notification and the board badge.
+- 4.1: the first run failed because `getByRole("checkbox", { name: /^Select / })` also matches "Select all deals", so the bulk action scored 34 deals and the job correctly stopped at the per-minute AI rate limit ("Scored 20 of 34 deals (AI limit reached)"). The spec now skips the header checkbox and scores exactly two, after which the job reports "Scored 2 of 2 deals"; this also confirmed the rate-limit stop works in the real stack.
+- 4.1: the full `pnpm e2e` run is green, 21 tests including spec 11, and the 6 `p7-*` screenshots exist.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
