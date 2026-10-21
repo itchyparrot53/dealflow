@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-21 16:05
+Current: 4.2 · Last updated: 2026-10-21 16:12
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -30,7 +30,7 @@ Current: 4.1 · Last updated: 2026-10-21 16:05
 - [x] 3.4 Audit log page
 - [x] 3.5 Backups (test-first)
 - [x] 3.6 Backups page, demo seed and docs
-- [ ] 4.1 E2E projects and data spec and screenshots
+- [x] 4.1 E2E projects and data spec and screenshots
 - [ ] 4.2 Integration suite and smoke with the backup round trip
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
@@ -151,6 +151,10 @@ Current: 4.1 · Last updated: 2026-10-21 16:05
 
 - 3.7: the gate's lint pass fixed the Phase 3 code's own findings: process.env access moved behind the existing env boundary (a new `childProcessEnv` helper for the spawn environment), the backup run split its file mirroring into a helper to stay under the complexity cap, raw `throw new Error` in the download route became a 404 response, the export route's async generator without an await became an explicit iterator, and unused imports/assertions were removed.
 - 3.7: Phase 4's base is the commit before this gate commit (`git rev-parse HEAD` at the time).
+
+- 4.1: `e2e/12-projects-data.spec.ts` drives the real screens: reopens/wins the seeded deal, creates a project from the deal sidebar, adds a task, drags it from Kickoff to Delivery with the dnd-kit pointer gesture, reloads and confirms it stayed, then screenshots the board and `/projects`; creates a read-write token, reads it once, calls `GET /api/v1/deals?limit=2` and `POST /api/v1/notes` with Playwright's request API and no cookies, and opens the Documentation tab; deletes a person through the API, restores it in the recycle bin and reopens the person page; downloads the deals CSV and checks its header line; opens the audit log and the backups page.
+- 4.1: three honest fixes during the runs: the "Won" step now waits for the header to swap to Reopen instead of navigating mid-request; the token dialog creates a write-scope token (the default read scope made POST /notes 403); the "Close" locator is scoped to the footer because the dialog also has an X. The person deletion uses the API rather than the contacts UI (logged as a deviation from the literal step list); the restore itself is the UI.
+- 4.1: the full `pnpm e2e` is green, 22 tests (specs 00 to 12), and the 7 `p8-*` screenshots exist. Fixing it also surfaced one Part 7 e2e assertion that still expected the old always-quoted CSV header; it now expects the shared writer's minimal quoting.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

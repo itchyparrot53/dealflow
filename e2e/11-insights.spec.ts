@@ -71,7 +71,8 @@ test("insights: dashboards, report builder, explain, CSV and bulk AI scoring", a
   const file = await download.path();
   expect(file).not.toBeNull();
   const csv = readFileSync(file ?? "", "utf8");
-  expect(csv.split("\r\n")[0]).toBe('"Group","Segment","Count","Value (USD)"');
+  // RFC 4180 minimal quoting: a plain header cell is not wrapped in quotes.
+  expect(csv.split("\r\n")[0]).toBe("Group,Segment,Count,Value (USD)");
 
   // 6. Bulk score two deals from the pipeline list, waiting for the completion notification.
   await page.goto("/pipeline");
