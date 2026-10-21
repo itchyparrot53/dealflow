@@ -12,6 +12,14 @@ import type { ProjectView } from "./types";
 // is a permission error. The project is named after the deal and links the deal, person and
 // organization, with the deal owner as the project owner.
 
+// The user-facing server action must not accept the automation-only escape hatch.
+export function sanitizeUserProjectInput(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const copy: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+  delete copy.allowAnyStatus;
+  return copy;
+}
+
 export const createProjectFromDealInput = z.object({
   name: z.string().trim().min(1).max(150).optional(),
   phases: z.array(z.string().trim().min(1).max(80)).min(1).max(10).optional(),

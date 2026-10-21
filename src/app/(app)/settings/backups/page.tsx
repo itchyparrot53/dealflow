@@ -33,6 +33,7 @@ export default async function BackupsPage(): Promise<ReactNode> {
         enabled={env.BACKUP_ENABLED}
         directory={env.BACKUP_DIR}
         keep={env.BACKUP_KEEP}
+        nextRun="02:00 UTC daily"
         rows={rows.map((row) => ({
           id: row.id,
           fileName: row.fileName,

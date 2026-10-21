@@ -250,6 +250,7 @@ export function DealListClient({
             <ExportButton
               entity="deals"
               columns={columns.visibleColumns.map((column) => column.key)}
+              params={{ pipelineId }}
             />
           ) : undefined
         }

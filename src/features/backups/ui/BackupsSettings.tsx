@@ -34,11 +34,13 @@ export function BackupsSettings({
   directory,
   keep,
   rows,
+  nextRun,
 }: {
   enabled: boolean;
   directory: string;
   keep: number;
   rows: BackupRunRow[];
+  nextRun: string;
 }): React.ReactNode {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -73,6 +75,9 @@ export function BackupsSettings({
         </span>
         <span>
           {S.keep}: {keep}
+        </span>
+        <span>
+          {S.nextRun}: {nextRun}
         </span>
       </div>
       {errorId !== null && (
@@ -156,7 +161,7 @@ export function BackupsSettings({
         <pre className="overflow-x-auto rounded bg-muted p-2 text-xs">
           {`docker compose stop app worker ws
 docker compose run --rm -v ./backups:/restore worker \\
-  node dist/scripts/backup-restore.js /restore/{{file}} \\
+  node dist/backup-restore.mjs /restore/{{file}} \\
   --database-url "$DATABASE_URL" --files --yes
 docker compose start app worker ws`}
         </pre>

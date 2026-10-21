@@ -189,14 +189,14 @@ async function main() {
   log("seeded admin survived the restart");
 
   step = "backup";
-  await backupRoundTrip();
+  backupRoundTrip();
 }
 
 // The image's pg_dump/pg_restore round trip: dump the live smoke database inside the worker
 // container, build an archive with the dump and a manifest, restore into a scratch database in
 // the same Postgres, compare the deals count, then drop the scratch database. Everything stays in
 // the dealflow-smoke project.
-async function backupRoundTrip() {
+function backupRoundTrip() {
   log("checking the backup round trip inside the worker container");
   const script = `set -e
 SRC="$DATABASE_URL"
@@ -211,7 +211,7 @@ tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q db.dump
 tar -tzf /tmp/dealflow-backup-check.tar.gz | grep -q manifest.json
 psql "$BASE/postgres" -c "DROP DATABASE IF EXISTS dealflow_restore_check"
 psql "$BASE/postgres" -c "CREATE DATABASE dealflow_restore_check"
-pg_restore --clean --if-exists --no-owner --no-privileges --dbname="$TARGET" /tmp/dealflow-backup-check/db.dump
+node dist/backup-restore.mjs /tmp/dealflow-backup-check.tar.gz --database-url "$TARGET" --yes
 SRC_COUNT=$(psql "$SRC" -Atc 'select count(*) from deals')
 DST_COUNT=$(psql "$TARGET" -Atc 'select count(*) from deals')
 [ "$SRC_COUNT" = "$DST_COUNT" ] || { echo "deal count mismatch: $SRC_COUNT vs $DST_COUNT"; exit 1; }

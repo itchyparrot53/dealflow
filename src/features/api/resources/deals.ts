@@ -162,21 +162,31 @@ async function patchStageOwner(
   row: DealRow,
   signal: AbortSignal,
 ): Promise<{ ok: true } | { ok: false; error: AppError }> {
-  const expectedUpdatedAt = new Date(row.updatedAt).toISOString();
-  if (parsed.stageId !== undefined && parsed.stageId !== row.stageId) {
+  let current = row;
+  if (parsed.stageId !== undefined && parsed.stageId !== current.stageId) {
     const moved = await changeStage(
       ctx.db,
       ctx.actor,
-      { dealId: id, toStageId: parsed.stageId, expectedUpdatedAt },
+      {
+        dealId: id,
+        toStageId: parsed.stageId,
+        expectedUpdatedAt: new Date(current.updatedAt).toISOString(),
+      },
       signal,
     );
     if (!moved.ok) return { ok: false, error: moved.error };
+    // The stage change advances updated_at, so the owner CAS must use the fresh value.
+    current = (await loadRow(ctx.db, id, ctx.actor)) ?? current;
   }
-  if (parsed.ownerId !== undefined && parsed.ownerId !== row.ownerId) {
+  if (parsed.ownerId !== undefined && parsed.ownerId !== current.ownerId) {
     const owned = await changeOwner(
       ctx.db,
       ctx.actor,
-      { dealId: id, ownerId: parsed.ownerId, expectedUpdatedAt },
+      {
+        dealId: id,
+        ownerId: parsed.ownerId,
+        expectedUpdatedAt: new Date(current.updatedAt).toISOString(),
+      },
       signal,
     );
     if (!owned.ok) return { ok: false, error: owned.error };

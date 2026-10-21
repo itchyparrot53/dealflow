@@ -9,7 +9,8 @@ import { createOrg, getOrg, toVisibleRecord, updateOrg } from "@/features/contac
 import type { OrgCreateInput, OrgUpdateInput } from "@/features/contacts/schemas";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { decodeCursor, encodeCursor } from "../cursor";
+import { err, ok, type Result } from "@/types/result";
+import { scanVisiblePage } from "../listScan";
 import { contactActor, iso } from "../shared";
 import { type ApiRoute, payload } from "../types";
 
@@ -57,39 +58,38 @@ async function page(
   db: Db,
   actor: PermSetUser,
   q: z.infer<typeof listQuery>,
-): Promise<{ rows: OrgRow[]; nextCursor?: string }> {
+): Promise<Result<{ rows: OrgRow[]; nextCursor?: string }, AppError>> {
   const limit = q.limit ?? API_PAGE_DEFAULT;
-  const clauses: SQL[] = [isNull(organizations.deletedAt)];
-  if (q.search !== undefined && q.search !== "") {
-    const pattern = `%${q.search.replace(/[\\%_]/g, "\\$&")}%`;
-    clauses.push(sql`${organizations.name} ILIKE ${pattern}`);
+  const scanned = await scanVisiblePage<OrgRow>(
+    ({ after, size }) => {
+      const clauses: SQL[] = [isNull(organizations.deletedAt)];
+      if (q.search !== undefined && q.search !== "") {
+        const pattern = `%${q.search.replace(/[\\%_]/g, "\\$&")}%`;
+        clauses.push(sql`${organizations.name} ILIKE ${pattern}`);
+      }
+      if (q.updated_since !== undefined) {
+        clauses.push(sql`${organizations.updatedAt} >= ${q.updated_since}::timestamptz`);
+      }
+      if (after !== null) {
+        clauses.push(
+          sql`(${organizations.updatedAt}, ${organizations.id}) > (${after.updatedAt}::timestamptz, ${after.id}::uuid)`,
+        );
+      }
+      return db
+        .select()
+        .from(organizations)
+        .where(and(...clauses))
+        .orderBy(sql`${organizations.updatedAt} ASC, ${organizations.id} ASC`)
+        .limit(size);
+    },
+    (row) => canSee(actor, toVisibleRecord(row)),
+    q.cursor,
+    limit,
+  );
+  if (!scanned.ok) {
+    return err(new AppError(ERROR_IDS.API_BODY_INVALID, "invalid cursor"));
   }
-  if (q.updated_since !== undefined) {
-    clauses.push(sql`${organizations.updatedAt} >= ${q.updated_since}::timestamptz`);
-  }
-  if (q.cursor !== undefined) {
-    const cursor = decodeCursor(q.cursor);
-    if (cursor.ok) {
-      clauses.push(
-        sql`(${organizations.updatedAt}, ${organizations.id}) > (${cursor.value.updatedAt}::timestamptz, ${cursor.value.id}::uuid)`,
-      );
-    }
-  }
-  const scanned = await db
-    .select()
-    .from(organizations)
-    .where(and(...clauses))
-    .orderBy(sql`${organizations.updatedAt} ASC, ${organizations.id} ASC`)
-    .limit(limit * 4);
-  const visible = scanned.filter((row) => canSee(actor, toVisibleRecord(row))).slice(0, limit);
-  const last = visible[visible.length - 1];
-  return {
-    rows: visible,
-    nextCursor:
-      visible.length === limit && last !== undefined
-        ? encodeCursor({ updatedAt: last.updatedAt.toISOString(), id: last.id })
-        : undefined,
-  };
+  return ok({ rows: scanned.rows, nextCursor: scanned.nextCursor });
 }
 
 export const organizationsRoutes: ApiRoute[] = [
@@ -104,7 +104,8 @@ export const organizationsRoutes: ApiRoute[] = [
       const q = listQuery.parse(query);
       signal.throwIfAborted();
       const result = await page(ctx.db, ctx.actor, q);
-      return { ok: true, value: payload(result.rows.map(view), result.nextCursor) };
+      if (!result.ok) return result;
+      return { ok: true, value: payload(result.value.rows.map(view), result.value.nextCursor) };
     },
     example: {
       request: "GET /api/v1/organizations?search=acme",
@@ -148,6 +149,16 @@ export const organizationsRoutes: ApiRoute[] = [
       const actor = await contactActor(ctx.db, ctx.actor);
       const result = await createOrg(ctx.db, actor, input, signal);
       if (!result.ok) return result;
+      if (parsed.ownerId !== undefined && parsed.ownerId !== result.value.ownerId) {
+        const owned = await updateOrg(
+          ctx.db,
+          actor,
+          { id: result.value.id, ownerId: parsed.ownerId },
+          signal,
+        );
+        if (!owned.ok) return owned;
+        return { ok: true, value: payload(view(owned.value)) };
+      }
       return { ok: true, value: payload(view(result.value)) };
     },
     example: { request: { name: "Acme" }, response: { data: { id: "…", name: "Acme" } } },

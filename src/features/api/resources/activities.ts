@@ -11,7 +11,7 @@ import type { ActivityCreateInput, ActivityUpdateInput } from "@/features/activi
 import { resolveActivityVisibility } from "@/features/activities/visibility";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { decodeCursor, encodeCursor } from "../cursor";
+import { scanVisiblePage } from "../listScan";
 import { iso } from "../shared";
 import { type ApiRoute, payload } from "../types";
 
@@ -98,32 +98,30 @@ export const activitiesRoutes: ApiRoute[] = [
       if (q.updated_since !== undefined) {
         clauses.push(sql`${activities.updatedAt} >= ${q.updated_since}::timestamptz`);
       }
-      if (q.cursor !== undefined) {
-        const cursor = decodeCursor(q.cursor);
-        if (cursor.ok) {
-          clauses.push(
-            sql`(${activities.updatedAt}, ${activities.id}) > (${cursor.value.updatedAt}::timestamptz, ${cursor.value.id}::uuid)`,
-          );
-        }
+      const baseClauses = clauses;
+      const scanned = await scanVisiblePage<ActivityRow>(
+        ({ after, size }) => {
+          const batchClauses = [...baseClauses];
+          if (after !== null) {
+            batchClauses.push(
+              sql`(${activities.updatedAt}, ${activities.id}) > (${after.updatedAt}::timestamptz, ${after.id}::uuid)`,
+            );
+          }
+          return ctx.db
+            .select()
+            .from(activities)
+            .where(and(...batchClauses))
+            .orderBy(sql`${activities.updatedAt} ASC, ${activities.id} ASC`)
+            .limit(size);
+        },
+        (row) => visibleRow(ctx.db, ctx.actor, row, signal),
+        q.cursor,
+        limit,
+      );
+      if (!scanned.ok) {
+        return { ok: false, error: new AppError(ERROR_IDS.API_BODY_INVALID, "invalid cursor") };
       }
-      const scanned = await ctx.db
-        .select()
-        .from(activities)
-        .where(and(...clauses))
-        .orderBy(sql`${activities.updatedAt} ASC, ${activities.id} ASC`)
-        .limit(limit * 4);
-      signal.throwIfAborted();
-      const visible: ActivityRow[] = [];
-      for (const row of scanned) {
-        if (visible.length >= limit) break;
-        if (await visibleRow(ctx.db, ctx.actor, row, signal)) visible.push(row);
-      }
-      const last = visible[visible.length - 1];
-      const nextCursor =
-        visible.length === limit && last !== undefined
-          ? encodeCursor({ updatedAt: last.updatedAt.toISOString(), id: last.id })
-          : undefined;
-      return { ok: true, value: payload(visible.map(view), nextCursor) };
+      return { ok: true, value: payload(scanned.rows.map(view), scanned.nextCursor) };
     },
     example: {
       request: "GET /api/v1/activities?dealId={dealId}",
@@ -214,6 +212,9 @@ export const activitiesRoutes: ApiRoute[] = [
           : { durationMinutes: parsed.durationMinutes }),
         ...(parsed.assigneeId === undefined ? {} : { assigneeId: parsed.assigneeId }),
         ...(parsed.note === undefined ? {} : { note: parsed.note }),
+        ...(parsed.dealId === undefined ? {} : { dealId: parsed.dealId }),
+        ...(parsed.personId === undefined ? {} : { personId: parsed.personId }),
+        ...(parsed.organizationId === undefined ? {} : { orgId: parsed.organizationId }),
       };
       const updated = await updateActivity(ctx.db, ctx.actor, input, signal);
       if (!updated.ok) return updated;

@@ -11,6 +11,7 @@ const entries = [
   { in: "src/entrypoints/worker.ts", out: "dist/worker.mjs" },
   { in: "src/entrypoints/migrate.ts", out: "dist/migrate.mjs" },
   { in: "src/entrypoints/sweepSpam.ts", out: "dist/sweep-spam.mjs" },
+  { in: "src/entrypoints/backupRestore.ts", out: "dist/backup-restore.mjs" },
 ];
 
 await Promise.all(

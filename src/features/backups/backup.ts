@@ -37,12 +37,20 @@ export interface BackupOutcome {
   running: boolean;
 }
 
-function databasePassword(): string | null {
+// Connection parts for libpq, so the URL (which embeds the password in Compose) never reaches
+// argv or a log line.
+function databaseConnection(): Record<string, string> {
   try {
     const parsed = new URL(env.DATABASE_URL);
-    return parsed.password === "" ? null : decodeURIComponent(parsed.password);
+    return {
+      PGHOST: parsed.hostname,
+      PGPORT: parsed.port === "" ? "5432" : parsed.port,
+      PGUSER: decodeURIComponent(parsed.username),
+      PGDATABASE: parsed.pathname.replace(/^\//, ""),
+      ...(parsed.password === "" ? {} : { PGPASSWORD: decodeURIComponent(parsed.password) }),
+    };
   } catch {
-    return null;
+    return {};
   }
 }
 
@@ -66,8 +74,8 @@ export const defaultBackupRunners: BackupRunners = {
   dump: (file, signal) =>
     runCommand(
       env.PG_DUMP_PATH,
-      ["--format=custom", "--no-owner", "--no-privileges", `--file=${file}`, env.DATABASE_URL],
-      databasePassword() === null ? {} : { PGPASSWORD: databasePassword() ?? "" },
+      ["--format=custom", "--no-owner", "--no-privileges", `--file=${file}`],
+      databaseConnection(),
       signal,
     ),
   archive: (file, workDir, signal) =>
@@ -249,8 +257,12 @@ export async function runBackup(
     return err(new AppError(ERROR_IDS.BACKUP_UNAVAILABLE, "backups are disabled"));
   }
   const dir = deps.dir ?? env.BACKUP_DIR;
+  const probe = join(dir, `.write-check-${String(Date.now())}`);
   try {
     await mkdir(dir, { recursive: true });
+    // An existing read-only directory survives mkdir; only a real write proves writability.
+    await writeFile(probe, "");
+    await unlink(probe);
   } catch {
     return err(new AppError(ERROR_IDS.BACKUP_UNAVAILABLE, "BACKUP_DIR is not writable", { dir }));
   }

@@ -8,7 +8,7 @@ import { createNote, softDeleteNote, updateNote } from "@/features/collaboration
 import type { NoteCreateInput } from "@/features/collaboration/notesSchemas";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { PermSetUser } from "@/features/permissions/effective";
-import { decodeCursor, encodeCursor } from "../cursor";
+import { scanVisiblePage } from "../listScan";
 import { iso } from "../shared";
 import { type ApiRoute, payload } from "../types";
 
@@ -88,36 +88,58 @@ export const notesRoutes: ApiRoute[] = [
       if (q.organizationId !== undefined) {
         clauses.push(eq(notes.entityType, "organization"), eq(notes.entityId, q.organizationId));
       }
-      if (q.cursor !== undefined) {
-        const cursor = decodeCursor(q.cursor);
-        if (cursor.ok) {
-          clauses.push(
-            sql`(${notes.updatedAt}, ${notes.id}) > (${cursor.value.updatedAt}::timestamptz, ${cursor.value.id}::uuid)`,
-          );
-        }
+      const baseClauses = clauses;
+      const scanned = await scanVisiblePage<NoteRow>(
+        ({ after, size }) => {
+          const batchClauses = [...baseClauses];
+          if (after !== null) {
+            batchClauses.push(
+              sql`(${notes.updatedAt}, ${notes.id}) > (${after.updatedAt}::timestamptz, ${after.id}::uuid)`,
+            );
+          }
+          return ctx.db
+            .select()
+            .from(notes)
+            .where(and(...batchClauses))
+            .orderBy(sql`${notes.updatedAt} ASC, ${notes.id} ASC`)
+            .limit(size);
+        },
+        (row) => canRead(ctx.db, ctx.actor, row, signal),
+        q.cursor,
+        limit,
+      );
+      if (!scanned.ok) {
+        return { ok: false, error: new AppError(ERROR_IDS.API_BODY_INVALID, "invalid cursor") };
       }
-      const scanned = await ctx.db
-        .select()
-        .from(notes)
-        .where(and(...clauses))
-        .orderBy(sql`${notes.updatedAt} ASC, ${notes.id} ASC`)
-        .limit(limit * 4);
-      signal.throwIfAborted();
-      const visible: NoteRow[] = [];
-      for (const row of scanned) {
-        if (visible.length >= limit) break;
-        if (await canRead(ctx.db, ctx.actor, row, signal)) visible.push(row);
-      }
-      const last = visible[visible.length - 1];
-      const nextCursor =
-        visible.length === limit && last !== undefined
-          ? encodeCursor({ updatedAt: last.updatedAt.toISOString(), id: last.id })
-          : undefined;
-      return { ok: true, value: payload(visible.map(view), nextCursor) };
+      return { ok: true, value: payload(scanned.rows.map(view), scanned.nextCursor) };
     },
     example: {
       request: "GET /api/v1/notes?dealId={dealId}",
       response: { data: [{ id: "…", body: "Called back", dealId: "…" }] },
+    },
+  },
+  {
+    resource: "notes",
+    method: "GET",
+    path: "/notes/:id",
+    scope: "read",
+    summary: "Read one visible note.",
+    handler: async (ctx, params) => {
+      const [row] = await ctx.db
+        .select()
+        .from(notes)
+        .where(and(eq(notes.id, params.id ?? ""), isNull(notes.deletedAt)));
+      if (
+        row === undefined ||
+        !(await canRead(ctx.db, ctx.actor, row, AbortSignal.timeout(10_000)))
+      ) {
+        return { ok: false, error: new AppError(ERROR_IDS.NOTE_NOT_FOUND, "note not found") };
+      }
+      return { ok: true, value: payload(view(row)) };
+    },
+    example: {
+      request: "GET /api/v1/notes/{id}",
+      response: { data: { id: "…", body: "Called back" } },
     },
   },
   {

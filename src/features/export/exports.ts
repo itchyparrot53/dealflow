@@ -148,6 +148,58 @@ function selectedColumns(entity: ExportEntity, raw: string | undefined): ExportC
   return chosen.length === 0 ? all : chosen;
 }
 
+function text(row: Record<string, unknown>, key: string): string {
+  const value = row[key];
+  return typeof value === "string" ? value : "";
+}
+
+function filterRows(
+  entity: ExportEntity,
+  rows: Record<string, unknown>[],
+  params: Record<string, string>,
+): Record<string, unknown>[] {
+  const search = params.search?.toLowerCase() ?? "";
+  const by = (key: string, param: string): Record<string, unknown>[] => {
+    const wanted = params[param];
+    if (wanted === undefined || wanted === "") return rows;
+    return rows.filter((row) => text(row, key) === wanted);
+  };
+  let filtered = rows;
+  if (search !== "") {
+    filtered = filtered.filter(
+      (row) =>
+        text(row, "title").toLowerCase().includes(search) ||
+        text(row, "name").toLowerCase().includes(search) ||
+        text(row, "subject").toLowerCase().includes(search) ||
+        text(row, "primaryEmail").toLowerCase().includes(search),
+    );
+  }
+  if (entity === "deals") {
+    filtered = by("status", "status");
+    filtered = by("ownerId", "ownerId");
+    filtered = by("stageId", "stageId");
+  } else if (entity === "persons") {
+    filtered = by("orgId", "organizationId");
+  } else if (entity === "activities") {
+    filtered = by("dealId", "dealId");
+    filtered = by("personId", "personId");
+    filtered = by("assigneeId", "assigneeId");
+    const done = params.done;
+    if (done !== undefined && done !== "") {
+      filtered = filtered.filter((row) => row.done === (done === "true"));
+    }
+    filtered = by("typeKey", "typeKey");
+  } else if (entity === "products") {
+    const active = params.active;
+    if (active !== undefined && active !== "") {
+      filtered = filtered.filter((row) => row.active === (active === "true"));
+    }
+  } else if (entity === "invoices") {
+    filtered = by("status", "status");
+  }
+  return filtered;
+}
+
 function tooLarge(): AppError {
   return new AppError(ERROR_IDS.EXPORT_TOO_LARGE, "export is larger than the row cap");
 }
@@ -313,9 +365,10 @@ export async function exportTable(
         ? await dealRows(db, actor, params, cap, signal)
         : await apiRows(db, actor, entity, params, cap, signal);
     const columns = selectedColumns(entity, params.columns);
+    const filtered = filterRows(entity, rows, params);
     return ok({
       header: columns.map((column) => column.header),
-      rows: rows.map((row) => columns.map((column) => column.value(row))),
+      rows: filtered.map((row) => columns.map((column) => column.value(row))),
       filename: filenameFor(entity),
     });
   } catch (error) {

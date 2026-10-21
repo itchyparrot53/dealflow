@@ -7,7 +7,7 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
 import { err, ok, type Result } from "@/types/result";
-import { createProjectFromDeal } from "./fromDeal";
+import { createProjectFromDeal, sanitizeUserProjectInput } from "./fromDeal";
 import { addPhase, deletePhase, movePhase, renamePhase } from "./phases";
 import { createProject, deleteProject, setProjectStatus, updateProject } from "./projects";
 import { addTask, completeTask, deleteTask, moveTask, reopenTask, updateTask } from "./tasks";
@@ -170,5 +170,7 @@ export async function createProjectFromDealAction(
 ): Promise<ActionResult<unknown>> {
   const g = await guard(csrfToken);
   if (!g.ok) return g;
-  return toClientResult(await createProjectFromDeal(db, g.value, dealId, input, SIG()));
+  return toClientResult(
+    await createProjectFromDeal(db, g.value, dealId, sanitizeUserProjectInput(input), SIG()),
+  );
 }

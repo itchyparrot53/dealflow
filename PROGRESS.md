@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-21 16:30
+Current: 4.3 · Last updated: 2026-10-21 16:40
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -159,6 +159,9 @@ Current: 4.3 · Last updated: 2026-10-21 16:30
 - 4.2: the full integration suite is green on the final tree: 405 files, 2046 tests. The one failure on the first run was a Part 7 CSV assertion that still expected always-quoted cells; it now expects the shared writer's minimal quoting plus the formula guard (no assertion weakened).
 - 4.2: the smoke script gained a backup round trip: inside the running worker container it runs the image's `pg_dump`, builds an archive containing `db.dump` and `manifest.json`, restores it into a scratch `dealflow_restore_check` database in the smoke Postgres, compares the deals count and drops the scratch database. It does not call the pg-boss job (the same binaries and restore SQL are what the job uses); logged as a decision.
 - 4.2: `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke` failed twice with `SMOKE FAIL at build-and-up` because the smoke Postgres container cannot initialise: its log says `initdb: error: could not create directory "/var/lib/postgresql/data/pg_wal": No space left on device`. The host has 71 GB free; the Docker VM is out of disk. Per section 10 the step is SKIPPED (no prune, per rule 14) and the owner action below asks for more Docker disk and a re-run. The failed smoke project was fully removed: no `dealflow-smoke` container or volume remains.
+
+- 4.3 round 1 (QA RESULT FAIL, 2 blockers / 8 majors / 7 minors) fixed: the pg_dump runner now passes only PGHOST/PGPORT/PGUSER/PGDATABASE/PGPASSWORD through the child env (no URL in argv); the restore CLI is bundled as `dist/backup-restore.mjs` and the UI/docs/smoke use it; `createProjectFromDealAction` strips the automation-only `allowAnyStatus` (unit-tested); exports carry the pipeline and apply the documented filters; `GET /notes/:id` exists; list visibility now scans keyset batches until the page is full (so hidden rows can never truncate a page); a PATCH with stage and owner refreshes updated_at between the two CAS operations; person/org create honor ownerId, products honor active, activities accept reparenting; the lint failures in the e2e spec and smoke script are fixed. Minors fixed: project/person restore parent checks, next-run line, BACKUP_DIR write probe, manifest preview before --yes, JSON content-type/body cap checks, and ERROR_IDS in route responses.
+- 4.3 round 1 leftover: the Docker VM ran out of disk while re-running the integration lane after these fixes (Testcontainers Postgres health check fails with the same `No space left on device`); pruning is forbidden, so the final-tree integration re-run is blocked and logged as an owner action. Targeted unit tests for the changed modules pass.
 
 ## Owner actions
 - TODO(owner): the Docker VM has no free disk space, so the smoke stack cannot initialise Postgres. Give Docker Desktop more disk (Settings > Resources), then run `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke`. Never prune the shared images; the smoke project itself was removed.

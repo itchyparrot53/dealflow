@@ -9,6 +9,7 @@ import {
   getProduct,
   type productCreateInput,
   type productUpdateInput,
+  setProductActive,
   updateProduct,
 } from "@/features/products/products";
 import { decodeCursor, encodeCursor } from "../cursor";
@@ -26,6 +27,7 @@ const listQuery = z.object({
 
 const createBody = z.object({
   name: z.string().trim().min(1).max(200),
+  active: z.boolean().optional(),
   code: z.string().trim().min(1).max(64).nullable().optional(),
   unit: z.string().trim().max(50).nullable().optional(),
   price: z
@@ -135,6 +137,16 @@ export const productsRoutes: ApiRoute[] = [
         signal,
       );
       if (!result.ok) return result;
+      if (parsed.active !== undefined && parsed.active !== result.value.active) {
+        const active = await setProductActive(
+          ctx.db,
+          ctx.actor,
+          { id: result.value.id, active: parsed.active },
+          signal,
+        );
+        if (!active.ok) return active;
+        return { ok: true, value: payload(view(active.value)) };
+      }
       return { ok: true, value: payload(view(result.value)) };
     },
     example: {
@@ -162,6 +174,16 @@ export const productsRoutes: ApiRoute[] = [
         signal,
       );
       if (!result.ok) return result;
+      if (parsed.active !== undefined && parsed.active !== result.value.active) {
+        const active = await setProductActive(
+          ctx.db,
+          ctx.actor,
+          { id: result.value.id, active: parsed.active },
+          signal,
+        );
+        if (!active.ok) return active;
+        return { ok: true, value: payload(view(active.value)) };
+      }
       return { ok: true, value: payload(view(result.value)) };
     },
     example: { request: { price: "12.00" }, response: { data: { id: "…" } } },

@@ -21,6 +21,8 @@ export interface RestoreOptions {
 export interface RestoreDeps {
   run?: (command: string, args: string[], signal: AbortSignal) => Promise<number>;
   storage?: Pick<StorageClient, "putObject">;
+  // The CLI prints the manifest and the plan before requiring --yes.
+  log?: (line: string) => void;
 }
 
 function run(command: string, args: string[], signal: AbortSignal): Promise<number> {
@@ -47,13 +49,7 @@ export async function restoreBackup(
   signal: AbortSignal,
   deps: RestoreDeps = {},
 ): Promise<Result<{ summary: string }, AppError>> {
-  if (!options.yes) {
-    return err(
-      new AppError(ERROR_IDS.BACKUP_FAILED, "refusing to restore without --yes", {
-        step: "confirm",
-      }),
-    );
-  }
+  const log = deps.log ?? (() => undefined);
   const runStep = deps.run ?? run;
   const workDir = await mkdtemp(join(tmpdir(), "dealflow-restore-"));
   try {
@@ -66,6 +62,23 @@ export async function restoreBackup(
     const manifest = JSON.parse(
       await readFile(join(workDir, "manifest.json"), "utf8"),
     ) as BackupManifest;
+    log(
+      `manifest: app ${manifest.appVersion}, migration ${manifest.schemaMigration}, ` +
+        `${String(manifest.dbBytes)} database bytes, ${String(manifest.fileCount)} files, created ${manifest.createdAt}`,
+    );
+    log(`restore target: ${options.databaseUrl}`);
+    log(
+      options.files
+        ? "the stored files will be uploaded back after the database."
+        : "files will not be restored (pass --files).",
+    );
+    if (!options.yes) {
+      return err(
+        new AppError(ERROR_IDS.BACKUP_FAILED, "refusing to restore without --yes", {
+          step: "confirm",
+        }),
+      );
+    }
     const dump = join(workDir, "db.dump");
     const restored = await runStep(
       env.PG_RESTORE_PATH,

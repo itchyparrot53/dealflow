@@ -58,9 +58,9 @@ test("projects, API, recycle bin, export, audit log and backups", async ({ page,
   await expect(page.getByTestId("task-card")).toHaveCount(1, { timeout: 20_000 });
   await dragFirstCardToSecondColumn(page);
   await page.reload();
-  await expect(
-    page.getByTestId("phase-column").nth(1).getByTestId("task-card"),
-  ).toHaveCount(1, { timeout: 30_000 });
+  await expect(page.getByTestId("phase-column").nth(1).getByTestId("task-card")).toHaveCount(1, {
+    timeout: 30_000,
+  });
   await shot(page, "p8-project-board");
 
   await page.goto("/projects");
@@ -101,9 +101,7 @@ test("projects, API, recycle bin, export, audit log and backups", async ({ page,
   expect(removed.status()).toBe(200);
   await page.goto("/settings/recycle-bin");
   await expect(page.getByTestId("recycle-table")).toBeVisible({ timeout: 20_000 });
-  const row = page.locator(
-    `[data-testid="recycle-row"][data-id="${personId ?? ""}"]`,
-  );
+  const row = page.locator(`[data-testid="recycle-row"][data-id="${personId ?? ""}"]`);
   await expect(row).toBeVisible({ timeout: 20_000 });
   await shot(page, "p8-recycle-bin");
   await row.getByTestId("recycle-restore").click();

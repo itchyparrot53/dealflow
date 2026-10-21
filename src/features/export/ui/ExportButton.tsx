@@ -13,12 +13,18 @@ const S = PROJECTS_API_STRINGS.export;
 export function ExportButton({
   entity,
   columns,
+  params,
 }: {
   entity: string;
   columns: string[];
+  // Filters the table holds outside the URL (the pipeline is in the path, for example).
+  params?: Record<string, string>;
 }): React.ReactNode {
-  const params = useSearchParams();
-  const query = new URLSearchParams(params.toString());
+  const search = useSearchParams();
+  const query = new URLSearchParams(search.toString());
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value !== "") query.set(key, value);
+  }
   query.set("columns", columns.join(","));
   return (
     <a
