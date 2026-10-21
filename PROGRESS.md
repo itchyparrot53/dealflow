@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-21 18:59
+Current: 4.1 · Last updated: 2026-10-21 19:09
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
 - Phase 1: fcd660bfaae40d7206ddafdb3f07b69b5ad078bd
 - Phase 2: 05e0cb6
 - Phase 3: 9d4c5146d5caf213f60698a92a33cde8ec11b19b
+- Phase 4: 99b4a59e321c0f4b5f89e019d7bd9ab30a569d34
 
 ## Tasks
 - [x] 0.1 Start Part 9: progress files, kit and baseline
@@ -29,7 +30,7 @@ Current: 3.5 · Last updated: 2026-10-21 18:59
 - [x] 3.2 Palette commands
 - [x] 3.3 Shortcut sequences and the help sheet
 - [x] 3.4 Demo seed and docs
-- [ ] 3.5 Phase 3 QA gate
+- [x] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E productivity spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
@@ -42,6 +43,7 @@ Current: 3.5 · Last updated: 2026-10-21 18:59
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5308/5308 in 827 files · no named integration files in this gate (DoD 1 to 4)
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5313/5313 in 828 files · activities/export/events integration 140/140 (35 files)
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5318/5318 in 828 files · duplicates/contacts/ai/leads integration 264/264 (51 files)
+- Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5320/5320 in 828 files · activities/duplicates/contacts/deals integration 395/395 (96 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p8-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
