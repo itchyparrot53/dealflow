@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-21 04:30
+Current: 2.2 · Last updated: 2026-10-21 04:36
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -16,7 +16,7 @@ Current: 2.1 · Last updated: 2026-10-21 04:30
 - [x] 1.1 Forms service and the capability
 - [x] 1.2 Public submit and events (test-first)
 - [x] 1.3 Phase 1 QA gate
-- [ ] 2.1 Booking pages service and busy time
+- [x] 2.1 Booking pages service and busy time
 - [ ] 2.2 Slots, booking and cancel (test-first)
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Forms admin screens
@@ -78,6 +78,12 @@ Current: 2.1 · Last updated: 2026-10-21 04:30
 - 1.2: the route rejects a body over `FORM_BODY_MAX_BYTES` with 413 and maps `E_FORM_001` to 404, `E_FORM_003` to 422 and `E_FORM_004` to 429 with `Retry-After`; the honeypot, a too-fast token and a forged token all answer 200 with the success copy and write nothing.
 
 - TODO(owner): Docker stopped responding mid-run on 2026-10-21 (the owner's containers were no longer running when it came back). Restart Docker Desktop, then run `pnpm test:integration`, `pnpm e2e` and `DOCKER_BUILDKIT=0 pnpm smoke`, and restart the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+- 2.1: a new page takes its host zone from `user_preferences.timezone`, else `UTC`; an explicit input wins. Its activity type is the first active type named "meeting", else the first active type by order, and the default availability is the Mon to Fri 09:00 to 17:00 week from `slots.ts`.
+- 2.1: the host id is fixed at creation for regular users; an admin may reassign it, and every read, update and delete checks owner-or-admin in the service (`listAllPages` requires the admin type, not a permission flag, matching 3.3's "admins manage all").
+- 2.1: `loadBusy` reads open, non-deleted, non-all-day activities assigned to the host whose span (`end_at`, else `due_at + duration_minutes`, else 30 minutes) overlaps the window; upstream `activities.assignee_id` is NOT NULL, so the plan's "owner when the assignee is null" fallback has no column to read and is noted here instead of guessed at.
+- 2.1: booking-page Zod failures are `E_BOOKING_006`; semantic settings (unknown zone, inactive host, no activity type) are `E_BOOKING_003`, mirroring the forms split.
+- 2.1: the scheduling router serves `mine`, `all` (admin-gated), `get` and `options` (active activity types plus assignable users), and the actions follow the automations pattern with `guardCsrf` first.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 4 and Part 5 migrations and schema once `0083_dealflow_automations` is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).

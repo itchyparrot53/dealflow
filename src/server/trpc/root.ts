@@ -23,6 +23,7 @@ import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { productsRouter } from "@/features/products/router";
 import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
+import { schedulingRouter } from "@/features/scheduling/router";
 import { searchRouter } from "@/features/search/router";
 import { statsRouter } from "@/features/stats/router";
 import { webhooksRouter } from "@/features/webhooks/router";
@@ -42,6 +43,7 @@ export const appRouter = router({
   documents: documentsRouter,
   automations: automationsRouter,
   forms: formsRouter,
+  scheduling: schedulingRouter,
   webhooks: webhooksRouter,
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,
