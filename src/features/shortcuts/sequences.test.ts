@@ -45,3 +45,19 @@ describe("createSequenceMatcher", () => {
     expect(matcher.press("d", 2_050)).toBe("new.deal");
   });
 });
+
+describe("shortcut registry", () => {
+  test("every documented sequence has a route and a help entry", async () => {
+    const { SHORTCUT_SEQUENCES, SEQUENCE_MAP, SHORTCUT_HELP_GROUPS } = await import("./registry");
+    expect(Object.keys(SEQUENCE_MAP)).toHaveLength(SHORTCUT_SEQUENCES.length);
+    const documented = SHORTCUT_HELP_GROUPS.flatMap((group) =>
+      group.items.map((item) => item.keys),
+    );
+    for (const sequence of SHORTCUT_SEQUENCES) {
+      expect(sequence.href.startsWith("/")).toBe(true);
+      expect(documented).toContain(sequence.keys);
+    }
+    expect(documented).toContain("?");
+    expect(documented).toContain("Cmd/Ctrl+K");
+  });
+});
