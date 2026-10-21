@@ -14,8 +14,20 @@ async function collect(stream: ReadableStream<Uint8Array>): Promise<string> {
   return out;
 }
 
-async function* rows(lines: string[][]): AsyncIterable<string[]> {
-  for (const line of lines) yield line;
+function rows(lines: string[][]): AsyncIterable<string[]> {
+  let index = 0;
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        next(): Promise<IteratorResult<string[]>> {
+          const line = lines[index];
+          index += 1;
+          if (line === undefined) return Promise.resolve({ done: true, value: undefined });
+          return Promise.resolve({ done: false, value: line });
+        },
+      };
+    },
+  };
 }
 
 describe("csvLine", () => {

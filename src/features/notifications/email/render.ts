@@ -173,6 +173,16 @@ export function renderNotificationEmail(
       line = message ?? `${recipientName}, your AI deal scoring finished.`;
       break;
     }
+    case "project_task_assigned": {
+      const taskTitle = payloadString(row.payload.taskTitle, "a task");
+      const projectName = payloadString(row.payload.projectName, "");
+      subject = `Task assigned: ${taskTitle}`;
+      line =
+        projectName.length > 0
+          ? `${recipientName}, "${taskTitle}" in ${projectName} was assigned to you.`
+          : `${recipientName}, "${taskTitle}" was assigned to you.`;
+      break;
+    }
     default: {
       // Unknown future type: render a generic fallback. Never throw (pg-boss resilience).
       subject = "Dealflow notification";

@@ -130,13 +130,7 @@ function compose(args) {
 function cleanup() {
   log("removing the compose project and its volumes");
   dockerQuiet(["compose", "-p", PROJECT, "--env-file", ENV_FILE, "down", "--remove-orphans"]);
-  dockerQuiet([
-    "volume",
-    "rm",
-    `${PROJECT}_pgdata`,
-    `${PROJECT}_miniodata`,
-    `${PROJECT}_backups`,
-  ]);
+  dockerQuiet(["volume", "rm", `${PROJECT}_pgdata`, `${PROJECT}_miniodata`, `${PROJECT}_backups`]);
 }
 
 async function main() {

@@ -1,16 +1,17 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-21 14:34
+Current: 1.1 · Last updated: 2026-10-21 14:36
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
+- Phase 1: 51fad6304187d6be0b3acdb00376b735c4bb020b
 
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
 - [x] 0.2 Schema, migrations, env and image
 - [x] 0.3 Pure core (test-first)
-- [ ] 0.4 Phase 0 QA gate
+- [x] 0.4 Phase 0 QA gate
 - [ ] 1.1 Projects services, events and notifications (test-first)
 - [ ] 1.2 From a won deal and the automation action
 - [ ] 1.3 Projects list and board
@@ -34,6 +35,7 @@ Current: 0.4 · Last updated: 2026-10-21 14:34
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 in 813 files
+- Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5261/5261 in 818 files · no named integration files in this gate · image client check: pg_dump 16.15 installs on node:22-alpine
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p7-v1` with `STATUS: COMPLETE`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -62,6 +64,10 @@ Current: 0.4 · Last updated: 2026-10-21 14:34
 - 0.3: `filesToPrune` sorts by the parsed UTC timestamp (not by input order) and ignores both foreign names and a matching name whose timestamp is impossible, so a prune can never delete a file this job did not write.
 - 0.3: the manifest is `version: 1` with files sorted by key and a `fileCount`, so two runs over the same bucket produce identical bytes.
 - 0.3: 16 error IDs (PROJECT, API, RECYCLE, EXPORT, BACKUP) are appended to the registry and the test allow-list; user copy lives in `src/constants/projectsApiStrings.ts`.
+
+- 0.4: the first `pnpm lint` run found two real errors introduced by this part, both fixed in the gate: the CSV test's async generator had no await (`require-await`), so it now builds an async iterator explicitly, and `notifications/email/render.ts` had a non-exhaustive switch for the new kind, so `project_task_assigned` gained an email copy case. A third baseline failure (biome import order in `schema/index.ts` and formatting in `smoke.mjs`) was fixed with `biome check --write`.
+- 0.4: the QA focus asks that the image change builds. In addition to the four gate commands, a throwaway `node:22-alpine` container installed `postgresql16-client` and reported `pg_dump (PostgreSQL) 16.15` and `pg_restore (PostgreSQL) 16.15`; the full multi-stage image build is covered by the smoke run in Task 4.2.
+- 0.4: Phase 1's base is `51fad63` (the last task commit before this gate commit), the same convention Part 7 used for its phase bases.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
