@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 5.4 · Last updated: 2026-10-21 03:19
+Current: 5.5 · Last updated: 2026-10-21 03:28
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -37,7 +37,7 @@ Current: 5.4 · Last updated: 2026-10-21 03:19
 - [x] 5.1 E2E automations spec and screenshots
 - [x] 5.2 Integration suite and smoke
 - [x] 5.3 Independent review and hardening
-- [ ] 5.4 Final checklist
+- [x] 5.4 Final checklist
 - [ ] 5.5 Final report and completion
 
 ## QA log
@@ -166,13 +166,16 @@ Current: 5.4 · Last updated: 2026-10-21 03:19
 - 5.3: round 2 (one minor) found the editor comparing the save error against the retired literal instead of `ERROR_IDS.AUTOMATION_INPUT_INVALID` (`E_AUTOMATION_006`), so the inline Zod copy never displayed; fixed in `5.3: QA fixes round 2`, which also waits for the delivery dialog before its screenshot so `p5-webhook-deliveries` shows the log rather than the row menu.
 - 5.3: after both fix rounds the Task 4.6 gate was re-run green (typecheck, lint 14 warnings, build, unit 5124/5124, automations/webhooks 35/35), the focused events/automations/webhooks suite passed 49/49, and the full e2e passed 19/19 again.
 
+- 5.4: every section 11 item was re-run on the final tree (status, install, typecheck, lint, unit 5124/5124, integration 1951/1951, build, e2e 19/19, screenshots, smoke, migration tables, the three greps, em dashes, docs), and item 17 is recorded as deferred because `--final` needs the report written in 5.5.
+- 5.4: the second full smoke run was needed because the review fixes changed app code after the Task 5.2 run; it printed SMOKE PASS and left no container or volume.
+
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 4 and Part 5 migrations and schema once `0083_dealflow_automations` is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 
 ## Open issues
-- None
+- `src/server/rateLimit.ts` still reads `x-forwarded-for` directly for the signed-in limiter. It already takes the last entry (equivalent to `TRUSTED_PROXY_HOPS=1`), predates Part 5 and sits outside 6.2's named paths, so it was left unchanged (logged in 0.2).
 
 ## Environment
 - `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH npm_config_store_dir=/tmp/dealflow-pnpm-store` (pnpm 9.15.9 lives in `/tmp/dealflow-tools`; the global pnpm here is 8.9.2).
@@ -185,4 +188,24 @@ Current: 5.4 · Last updated: 2026-10-21 03:19
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 5.5)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` printed nothing before the Task 5.4 record.
+2. PASS - `pnpm install --frozen-lockfile` exited 0 and `git diff ebbf7d2..HEAD -- package.json pnpm-lock.yaml` printed nothing: no dependency changed.
+3. PASS - `pnpm typecheck` exited 0.
+4. PASS - `pnpm lint` exited 0 (biome checked 2951 files; 14 warnings, 0 errors).
+5. PASS - `pnpm test:unit` passed 5124/5124 in 805 files (baseline 5063).
+6. PASS - `pnpm test:integration` passed 1951/1951 in 397 files (78.8 s), re-run on the final tree after the review fixes.
+7. PASS - `pnpm build` exited 0; `/settings/automations`, `/settings/automations/[id]` and `/settings/webhooks` are in the route list.
+8. PASS - `pnpm e2e` passed 19/19 across specs `00` to `09` (1.2 min) after the review fixes; `test-results/.last-run.json` records the passed status.
+9. PASS - 6 `e2e/screenshots/p5-*.png` exist, and the 23 `p1-*`, 8 `p2-*`, 6 `p3-*` and 7 `p4-*` screenshots are still present.
+10. PASS - `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS on the final tree; no `dealflow-smoke` container or volume remains.
+11. PASS - `drizzle/0083_dealflow_automations.sql` creates exactly domain_events, automations, automation_runs, webhook_subscriptions and webhook_deliveries.
+12. PASS - `git grep -n "x-forwarded-for" -- src/features/documents src/app/d src/app/api/public` printed nothing; the one other upstream use is listed under Open issues.
+13. PASS - `git grep -nE "fetch\(" -- src/features/webhooks` printed nothing.
+14. PASS - `git grep -n "secret" -- src/features/webhooks/router.ts` printed nothing.
+15. PASS - the em dash scan over every changed non-kit file printed nothing.
+16. PASS - `docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md` exist and `UPSTREAM.md` lists this part's upstream files.
+17. SKIPPED - deferred to Task 5.5: `pnpm check:progress --final` requires the written final report, which Task 5.5 produces.
+
