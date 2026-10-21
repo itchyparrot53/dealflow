@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-21 03:55
+Current: 1.3 · Last updated: 2026-10-21 04:23
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -13,7 +13,7 @@ Current: 1.2 · Last updated: 2026-10-21 03:55
 - [x] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Forms service and the capability
-- [ ] 1.2 Public submit and events (test-first)
+- [x] 1.2 Public submit and events (test-first)
 - [ ] 1.3 Phase 1 QA gate
 - [ ] 2.1 Booking pages service and busy time
 - [ ] 2.2 Slots, booking and cancel (test-first)
@@ -66,6 +66,16 @@ Current: 1.2 · Last updated: 2026-10-21 03:55
 - 1.1: eligible custom fields are the active definitions on person, lead and deal limited to the five type names of 6.7; `ALLOWED_CUSTOM_FIELD_TYPES` is exported from `fields.ts` so the save-time check and the submit-time check share one set.
 - 1.1: `public_id` is `randomBytes(12).toString("base64url")` (16 characters) generated in the service, and `redirect_url` is also guarded by the `web_forms_redirect_url_ck` check from 0.2.
 
+- 1.2: the submit route was designed test-first: the integration file (`forms.integration.test.ts`, nine cases plus two route cases) was written before the service. Docker stopped responding while that file was being run (Testcontainers hung in global setup for over fifteen minutes and was killed), so the cases are written but not yet executed; the integration gate line is SKIPPED per section 10 and the rerun is an owner action.
+- 1.2: a form submission runs in one transaction with the create services called on the transaction handle (a nested `.transaction()` is a savepoint), so person, organization, lead or deal, note, submission row, counter and the `form.submitted` event commit together or not at all. The notification is sent after commit and a suppressed or failed notification never fails the visitor's submission.
+- 1.2: `job_title` is captured in the submission values and written into the note, not to the person: upstream `persons` has no job-title column, and Part 6's Definition of done 1 says the migrations add nothing beyond the four tables and three notification kinds.
+- 1.2: a submission is created as the form owner via `hydrateActor` plus the existing services, with the owner's real flags in the create session; a lead gets `sourceOrigin = "web_form"` and `sourceChannel = "web_form"`, and a deal goes into the form's pipeline and stage.
+- 1.2: the run row carries no event type, so the runner reads the retained event by `eventId` to decide whether a condition targets the visitor's person (`form.submitted`, `booking.created`, `booking.cancelled`) or the record itself; that keeps 6.8's condition target without a schema change.
+- 1.2: a `form_submission` notification on a lead needed a lead visibility parent, so `VisibleRecord` gained a `lead` variant and `canActorAccessParent` a `lead` case; the lead rule reuses `canSee` (no pipeline gate) and the change is listed for UPSTREAM.md in 3.5.
+- 1.2: framing is a path-scoped `next.config.ts` entry for `/(f|book)(/.*)?` carved out of the strict entry (a second CSP would be intersected, not loosened) and it drops `X-Frame-Options`; `next.config.test.ts` pins the public paths, the neighbours, and the scoped matcher.
+- 1.2: the route rejects a body over `FORM_BODY_MAX_BYTES` with 413 and maps `E_FORM_001` to 404, `E_FORM_003` to 422 and `E_FORM_004` to 429 with `Retry-After`; the honeypot, a too-fast token and a forged token all answer 200 with the success copy and write nothing.
+
+- TODO(owner): Docker stopped responding mid-run on 2026-10-21 (the owner's containers were no longer running when it came back). Restart Docker Desktop, then run `pnpm test:integration`, `pnpm e2e` and `DOCKER_BUILDKIT=0 pnpm smoke`, and restart the dev stack with `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads the Part 4 and Part 5 migrations and schema once `0083_dealflow_automations` is applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).

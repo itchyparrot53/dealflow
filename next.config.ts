@@ -16,12 +16,19 @@ import type { NextConfig } from "next";
 // cannot see that attack; only refusing to be framed can.
 export const CONSENT_PATH = "/oauth/authorize/consent";
 
+// Public forms and booking pages are designed to be embedded on other sites, so these two path
+// prefixes are the only routes that may be framed (PLAN-PART6 section 6.8). Like the consent
+// carve-out, they must be removed from the strict entry rather than given a second header: a
+// browser intersects two CSP headers, so a looser frame-ancestors would lose to 'none'.
+export const PUBLIC_PATHS = "/(f|book)(/.*)?";
+
 // Every route except the consent screen. Next applies every matching headers() entry and a browser
 // intersects two Content-Security-Policy headers, so the consent screen cannot relax a directive by
 // adding a second header: it has to be carved out of the strict entry. Pinned by next.config.test.
 // The `/?` matters: without it the trailing-slash spelling slips past the carve-out and matches
 // both entries, which is the two-header case described above.
-const ALL_ROUTES_EXCEPT_CONSENT = "/((?!oauth/authorize/consent/?$).*)";
+const ALL_ROUTES_EXCEPT_CONSENT_AND_PUBLIC =
+  "/((?!oauth/authorize/consent/?$|(?:f|book)(?:/|$)).*)";
 
 const BASE_CSP = [
   "frame-ancestors 'none'",
@@ -42,6 +49,9 @@ const BASE_CSP = [
 // the clickjacking path, and redirect_uri is still checked against the client's registered set in
 // the route handler before any redirect is issued.
 const FORM_ACTION = "form-action 'self'";
+
+// Embeddable public pages: same hardening, except they may be framed by any site.
+const PUBLIC_CSP = ["frame-ancestors *", "base-uri 'self'", "object-src 'none'"];
 
 function securityHeaders(directives: string[]): { key: string; value: string }[] {
   return [
@@ -64,7 +74,18 @@ const nextConfig: NextConfig = {
   headers() {
     return Promise.resolve([
       { source: CONSENT_PATH, headers: securityHeaders(BASE_CSP) },
-      { source: ALL_ROUTES_EXCEPT_CONSENT, headers: securityHeaders([...BASE_CSP, FORM_ACTION]) },
+      // Public pages drop X-Frame-Options entirely; DENY would override frame-ancestors * in
+      // older browsers, and the CSP is the directive that matters on current ones.
+      {
+        source: PUBLIC_PATHS,
+        headers: securityHeaders([...PUBLIC_CSP, FORM_ACTION]).filter(
+          (header) => header.key !== "X-Frame-Options",
+        ),
+      },
+      {
+        source: ALL_ROUTES_EXCEPT_CONSENT_AND_PUBLIC,
+        headers: securityHeaders([...BASE_CSP, FORM_ACTION]),
+      },
     ]);
   },
   // "x-powered-by: Next.js" hands a scanner the framework for free.

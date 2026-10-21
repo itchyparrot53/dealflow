@@ -23,6 +23,10 @@ export const DOMAIN_EVENT_TYPES = [
   "invoice.overdue",
   "invoice.paid",
   "invoice.voided",
+  // Part 6: public web forms and booking pages.
+  "form.submitted",
+  "booking.created",
+  "booking.cancelled",
 ] as const;
 
 export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
@@ -36,6 +40,9 @@ export const DOMAIN_ENTITY_TYPES = [
   "activity",
   "document",
   "invoice",
+  // Part 6: a form submission is about the lead or deal it created, and a booking is about its
+  // activity (or the person, once the activity is gone).
+  "lead",
 ] as const;
 
 export type DomainEntityType = (typeof DOMAIN_ENTITY_TYPES)[number];

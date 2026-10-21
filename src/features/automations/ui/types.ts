@@ -13,6 +13,11 @@ export function defaultTrigger(type: TriggerType): Trigger {
   switch (type) {
     case "deal.updated":
       return { type: "deal.updated" };
+    case "form.submitted":
+      return { type: "form.submitted" };
+    case "booking.created":
+    case "booking.cancelled":
+      return { type };
     case "deal.stage_changed":
       return { type: "deal.stage_changed" };
     case "document.sent":

@@ -12,6 +12,8 @@ const STAGE = "33333333-3333-4333-8333-333333333333";
 const ACTIVITY_TYPE = "44444444-4444-4444-8444-444444444444";
 const TEMPLATE = "55555555-5555-4555-8555-555555555555";
 const USER = "66666666-6666-4666-8666-666666666666";
+const FORM = "77777777-7777-4777-8777-777777777777";
+const OTHER_FORM = "88888888-8888-4888-8888-888888888888";
 
 const VALID_TRIGGERS: Trigger[] = [
   { type: "deal.created" },
@@ -163,6 +165,7 @@ describe("matchesTrigger", () => {
     pipelineId: PIPELINE as string | null,
     stageId: STAGE as string | null,
     documentKind: null as "quote" | "invoice" | null,
+    formId: null as string | null,
   };
 
   it("requires the event type to match", () => {
@@ -212,6 +215,29 @@ describe("matchesTrigger", () => {
     expect(matchesTrigger(trigger, { ...base, type: "deal.stage_changed" })).toBe(true);
   });
 
+  it("filters a form trigger by form id", () => {
+    const trigger: Trigger = { type: "form.submitted", formId: FORM };
+    expect(matchesTrigger(trigger, { ...base, type: "form.submitted", formId: OTHER_FORM })).toBe(
+      false,
+    );
+    expect(matchesTrigger(trigger, { ...base, type: "form.submitted", formId: FORM })).toBe(true);
+    expect(matchesTrigger({ type: "form.submitted" }, { ...base, type: "form.submitted" })).toBe(
+      true,
+    );
+  });
+
+  it("fires booking triggers regardless of extra fields", () => {
+    expect(matchesTrigger({ type: "booking.created" }, { ...base, type: "booking.created" })).toBe(
+      true,
+    );
+    expect(
+      matchesTrigger({ type: "booking.cancelled" }, { ...base, type: "booking.cancelled" }),
+    ).toBe(true);
+    expect(
+      matchesTrigger({ type: "booking.created" }, { ...base, type: "booking.cancelled" }),
+    ).toBe(false);
+  });
+
   it("filters document and invoice events by kind", () => {
     const quote: Trigger = { type: "document.sent", kind: "quote" };
     expect(matchesTrigger(quote, { ...base, type: "document.sent", documentKind: "invoice" })).toBe(
@@ -251,5 +277,11 @@ describe("conditionTarget", () => {
     expect(conditionTarget({ type: "document.accepted" })).toBe("deal");
     expect(conditionTarget({ type: "invoice.paid" })).toBe("deal");
     expect(conditionTarget({ type: "invoice.overdue" })).toBe("deal");
+  });
+
+  it("targets the visitor's person for form and booking events", () => {
+    expect(conditionTarget({ type: "form.submitted" })).toBe("person");
+    expect(conditionTarget({ type: "booking.created" })).toBe("person");
+    expect(conditionTarget({ type: "booking.cancelled" })).toBe("person");
   });
 });

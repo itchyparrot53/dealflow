@@ -6,12 +6,22 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_AUTOMATION_RUN } from "@/constants/jobNames";
 import { type Db, db as defaultDb } from "@/db/client";
 import type * as schema from "@/db/schema";
-import { activities, automationRuns, automations, documents, users } from "@/db/schema";
+import {
+  activities,
+  automationRuns,
+  automations,
+  deals,
+  documents,
+  domainEvents,
+  leads,
+  users,
+} from "@/db/schema";
 import { runInChain } from "@/features/events/chainContext";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { type Action, type AutomationDefinition, automationDefinitionSchema } from "./definition";
 // Explicit /index: "./actions" would resolve to the server-actions module actions.ts instead.
 import "./actions/index";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { getActionHandler } from "./actions/registry";
 import { type ConditionEntity, evaluateCondition } from "./conditions";
 
@@ -69,22 +79,78 @@ export interface RunOutcome {
 interface Target {
   entity: ConditionEntity;
   dealId: string | null;
+  // The id the condition is evaluated against; for deal targets this is the deal, for the
+  // Part 6 events it is the visitor's person (6.8).
+  entityId: string | null;
 }
 
-async function resolveTarget(db: Db, run: typeof automationRuns.$inferSelect): Promise<Target> {
+// The run row stores no event type, but it does store the event id. Form and booking runs need
+// that distinction to evaluate their condition against the visitor's person, so read the event
+// row when it is still retained.
+const PERSON_CONDITION_EVENTS: ReadonlySet<string> = new Set([
+  "form.submitted",
+  "booking.created",
+  "booking.cancelled",
+]);
+
+async function personTarget(
+  db: DbOrTx,
+  run: typeof automationRuns.$inferSelect,
+): Promise<{ personId: string | null; dealId: string | null } | null> {
+  if (run.eventId === null) return null;
+  const [event] = await db
+    .select({ type: domainEvents.type })
+    .from(domainEvents)
+    .where(eq(domainEvents.id, run.eventId));
+  if (event === undefined || !PERSON_CONDITION_EVENTS.has(event.type)) return null;
+
+  switch (run.entityType) {
+    case "person":
+      return { personId: run.entityId, dealId: null };
+    case "lead": {
+      const [row] = await db
+        .select({ personId: leads.personId })
+        .from(leads)
+        .where(eq(leads.id, run.entityId));
+      return { personId: row?.personId ?? null, dealId: null };
+    }
+    case "deal": {
+      const [row] = await db
+        .select({ personId: deals.personId })
+        .from(deals)
+        .where(eq(deals.id, run.entityId));
+      return { personId: row?.personId ?? null, dealId: run.entityId };
+    }
+    case "activity": {
+      const [row] = await db
+        .select({ personId: activities.personId, dealId: activities.dealId })
+        .from(activities)
+        .where(eq(activities.id, run.entityId));
+      return { personId: row?.personId ?? null, dealId: row?.dealId ?? null };
+    }
+    default:
+      return null;
+  }
+}
+
+async function resolveTarget(db: DbOrTx, run: typeof automationRuns.$inferSelect): Promise<Target> {
+  const person = await personTarget(db, run);
+  if (person !== null) {
+    return { entity: "person", dealId: person.dealId, entityId: person.personId };
+  }
   switch (run.entityType) {
     case "deal":
-      return { entity: "deal", dealId: run.entityId };
+      return { entity: "deal", dealId: run.entityId, entityId: run.entityId };
     case "person":
-      return { entity: "person", dealId: null };
+      return { entity: "person", dealId: null, entityId: run.entityId };
     case "organization":
-      return { entity: "organization", dealId: null };
+      return { entity: "organization", dealId: null, entityId: run.entityId };
     case "activity": {
       const [row] = await db
         .select({ dealId: activities.dealId })
         .from(activities)
         .where(eq(activities.id, run.entityId));
-      return { entity: "deal", dealId: row?.dealId ?? null };
+      return { entity: "deal", dealId: row?.dealId ?? null, entityId: row?.dealId ?? null };
     }
     case "document":
     case "invoice": {
@@ -92,10 +158,10 @@ async function resolveTarget(db: Db, run: typeof automationRuns.$inferSelect): P
         .select({ dealId: documents.dealId })
         .from(documents)
         .where(eq(documents.id, run.entityId));
-      return { entity: "deal", dealId: row?.dealId ?? null };
+      return { entity: "deal", dealId: row?.dealId ?? null, entityId: row?.dealId ?? null };
     }
     default:
-      return { entity: "deal", dealId: null };
+      return { entity: "deal", dealId: null, entityId: null };
   }
 }
 
@@ -115,14 +181,13 @@ type RunRow = typeof automationRuns.$inferSelect;
 
 async function conditionBlocks(
   db: Tx,
-  run: RunRow,
   definition: AutomationDefinition,
   target: Target,
   signal: AbortSignal,
 ): Promise<boolean> {
   if (definition.condition === null || definition.condition.conditions.length === 0) return false;
   if (target.dealId === null && target.entity === "deal") return true;
-  const entityId = target.entity === "deal" ? target.dealId : run.entityId;
+  const entityId = target.entityId;
   if (entityId === null) return true;
   return !(await evaluateCondition(db, target.entity, entityId, definition.condition, signal));
 }
@@ -245,7 +310,7 @@ export async function runAutomation(
     const definition = parsed.data;
 
     const target = await resolveTarget(tx, run);
-    if (await conditionBlocks(tx, run, definition, target, signal)) {
+    if (await conditionBlocks(tx, definition, target, signal)) {
       await finish(tx, run, "skipped", [], null, "condition_false");
       return {
         status: "skipped",

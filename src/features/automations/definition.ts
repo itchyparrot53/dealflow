@@ -26,6 +26,10 @@ export const TRIGGER_TYPES = [
   "document.declined",
   "invoice.overdue",
   "invoice.paid",
+  // Part 6: forms and booking pages.
+  "form.submitted",
+  "booking.created",
+  "booking.cancelled",
 ] as const;
 
 export type TriggerType = (typeof TRIGGER_TYPES)[number];
@@ -81,6 +85,10 @@ export const triggerSchema = z.discriminatedUnion("type", [
   documentTrigger("document.declined"),
   documentTrigger("invoice.overdue"),
   documentTrigger("invoice.paid"),
+  // One form or every form; the picker offers a form id.
+  z.object({ type: z.literal("form.submitted"), formId: uuid.optional() }),
+  z.object({ type: z.literal("booking.created") }),
+  z.object({ type: z.literal("booking.cancelled") }),
 ]);
 
 export type Trigger = z.infer<typeof triggerSchema>;
@@ -169,6 +177,8 @@ export interface TriggerEvent {
   pipelineId: string | null;
   stageId: string | null;
   documentKind: (typeof DOCUMENT_KINDS)[number] | null;
+  // A form submission's form. Read from the event's changes by the dispatcher.
+  formId: string | null;
 }
 
 function matchesPipeline(filter: string | undefined, actual: string | null): boolean {
@@ -206,6 +216,11 @@ export function matchesTrigger(trigger: Trigger, event: TriggerEvent): boolean {
     case "invoice.overdue":
     case "invoice.paid":
       return trigger.kind === undefined || trigger.kind === event.documentKind;
+    case "form.submitted":
+      return trigger.formId === undefined || trigger.formId === event.formId;
+    case "booking.created":
+    case "booking.cancelled":
+      return true;
     default:
       return assertNever(trigger);
   }
@@ -240,5 +255,10 @@ export function conditionTarget(event: {
     case "invoice.paid":
     case "invoice.voided":
       return "deal";
+    // Forms and bookings run their condition against the visitor's person (6.8).
+    case "form.submitted":
+    case "booking.created":
+    case "booking.cancelled":
+      return "person";
   }
 }

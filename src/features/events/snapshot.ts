@@ -1,17 +1,22 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { env } from "@/config/env";
 import type { Db } from "@/db/client";
 import {
   activities,
   activityTypes,
+  bookingPages,
+  bookings,
   deals,
   dealTerms,
   documents,
+  leads,
   organizations,
   persons,
   pipelines,
   stages,
   users,
+  webFormSubmissions,
+  webForms,
 } from "@/db/schema";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { DomainEventType, EventChange } from "./types";
@@ -43,6 +48,8 @@ export interface EventTarget {
   pipelineId: string | null;
   stageId: string | null;
   documentKind: "quote" | "invoice" | null;
+  // The form a form.submitted event came from; the trigger's optional form filter reads it.
+  formId: string | null;
 }
 
 const USER_FIELDS = { id: users.id, name: users.name, email: users.email };
@@ -193,6 +200,7 @@ export async function loadEventTarget(
       pipelineId: row?.pipelineId ?? null,
       stageId: row?.stageId ?? null,
       documentKind: null,
+      formId: formIdOf(event),
     };
   }
   if (event.entityType === "document" || event.entityType === "invoice") {
@@ -204,9 +212,150 @@ export async function loadEventTarget(
       pipelineId: null,
       stageId: null,
       documentKind: row?.kind === "quote" || row?.kind === "invoice" ? row.kind : null,
+      formId: null,
     };
   }
-  return { pipelineId: null, stageId: null, documentKind: null };
+  return { pipelineId: null, stageId: null, documentKind: null, formId: formIdOf(event) };
+}
+
+function changeValue(event: SnapshotEvent, field: string): string | null {
+  const change = event.changes.find((entry) => entry.field === field);
+  return typeof change?.new === "string" ? change.new : null;
+}
+
+function formIdOf(event: SnapshotEvent): string | null {
+  return event.type === "form.submitted" ? changeValue(event, "form") : null;
+}
+
+// A form submission's payload carries the form, the answers, the record it created and the visitor.
+async function formSubmissionData(
+  db: DbOrTx,
+  event: SnapshotEvent,
+  signal: AbortSignal,
+): Promise<Record<string, unknown>> {
+  signal.throwIfAborted();
+  const formId = formIdOf(event);
+  const [form] =
+    formId === null
+      ? []
+      : await db
+          .select({ id: webForms.id, name: webForms.name })
+          .from(webForms)
+          .where(eq(webForms.id, formId));
+
+  let recordId: string | null = null;
+  let recordTitle: string | null = null;
+  let personId: string | null = null;
+  if (event.entityType === "deal") {
+    const [row] = await db
+      .select({ id: deals.id, title: deals.title, personId: deals.personId })
+      .from(deals)
+      .where(eq(deals.id, event.entityId));
+    recordId = row?.id ?? null;
+    recordTitle = row?.title ?? null;
+    personId = row?.personId ?? null;
+  } else if (event.entityType === "lead") {
+    const [row] = await db
+      .select({ id: leads.id, title: leads.title, personId: leads.personId })
+      .from(leads)
+      .where(eq(leads.id, event.entityId));
+    recordId = row?.id ?? null;
+    recordTitle = row?.title ?? null;
+    personId = row?.personId ?? null;
+  }
+
+  const person =
+    personId === null
+      ? null
+      : ((
+          await db
+            .select({ id: persons.id, name: persons.name, email: persons.primaryEmail })
+            .from(persons)
+            .where(eq(persons.id, personId))
+        )[0] ?? null);
+
+  const [submission] =
+    formId === null || recordId === null
+      ? []
+      : await db
+          .select({ values: webFormSubmissions.values })
+          .from(webFormSubmissions)
+          .where(
+            event.entityType === "deal"
+              ? and(eq(webFormSubmissions.formId, formId), eq(webFormSubmissions.dealId, recordId))
+              : and(eq(webFormSubmissions.formId, formId), eq(webFormSubmissions.leadId, recordId)),
+          )
+          .orderBy(desc(webFormSubmissions.createdAt))
+          .limit(1);
+
+  const record = recordId === null ? null : { id: recordId, title: recordTitle };
+  return {
+    form: form ?? (formId === null ? null : { id: formId, name: null }),
+    values: submission?.values ?? {},
+    ...(event.entityType === "deal" ? { deal: record } : { lead: record }),
+    person,
+  };
+}
+
+async function bookingRow(
+  db: DbOrTx,
+  event: SnapshotEvent,
+): Promise<{
+  booking: typeof bookings.$inferSelect;
+  pageTitle: string | null;
+  hostId: string | null;
+  hostName: string | null;
+} | null> {
+  const bookingId = changeValue(event, "booking");
+  const [row] =
+    bookingId !== null
+      ? await db
+          .select({
+            booking: bookings,
+            pageTitle: bookingPages.title,
+            hostId: bookingPages.hostId,
+            hostName: users.name,
+          })
+          .from(bookings)
+          .leftJoin(bookingPages, eq(bookingPages.id, bookings.pageId))
+          .leftJoin(users, eq(users.id, bookingPages.hostId))
+          .where(eq(bookings.id, bookingId))
+      : await db
+          .select({
+            booking: bookings,
+            pageTitle: bookingPages.title,
+            hostId: bookingPages.hostId,
+            hostName: users.name,
+          })
+          .from(bookings)
+          .leftJoin(bookingPages, eq(bookingPages.id, bookings.pageId))
+          .leftJoin(users, eq(users.id, bookingPages.hostId))
+          .where(eq(bookings.activityId, event.entityId))
+          .orderBy(desc(bookings.createdAt))
+          .limit(1);
+  return row ?? null;
+}
+
+async function bookingData(
+  db: DbOrTx,
+  event: SnapshotEvent,
+  signal: AbortSignal,
+): Promise<Record<string, unknown>> {
+  signal.throwIfAborted();
+  const row = await bookingRow(db, event);
+  if (row === null) return { booking: { id: changeValue(event, "booking") }, host: null };
+  return {
+    booking: {
+      id: row.booking.id,
+      start: row.booking.startAt.toISOString(),
+      end: row.booking.endAt.toISOString(),
+      status: row.booking.status,
+      pageTitle: row.pageTitle,
+      visitorName: row.booking.visitorName,
+      visitorEmail: row.booking.visitorEmail,
+    },
+    host: row.hostId === null ? null : { id: row.hostId, name: row.hostName },
+  };
 }
 
 export async function buildEventPayload(
@@ -216,26 +365,31 @@ export async function buildEventPayload(
 ): Promise<EventPayload> {
   signal.throwIfAborted();
   let data: Record<string, unknown>;
-  switch (event.entityType) {
-    case "deal":
-      data = await dealData(db, event.entityId);
-      break;
-    case "person":
-      data = await personData(db, event.entityId);
-      break;
-    case "organization":
-      data = await organizationData(db, event.entityId);
-      break;
-    case "activity":
-      data = await activityData(db, event.entityId);
-      break;
-    case "document":
-    case "invoice":
-      data = await documentData(db, event.entityId);
-      break;
-    default:
-      data = { id: event.entityId };
-  }
+  if (event.type === "form.submitted") {
+    data = await formSubmissionData(db, event, signal);
+  } else if (event.type === "booking.created" || event.type === "booking.cancelled") {
+    data = await bookingData(db, event, signal);
+  } else
+    switch (event.entityType) {
+      case "deal":
+        data = await dealData(db, event.entityId);
+        break;
+      case "person":
+        data = await personData(db, event.entityId);
+        break;
+      case "organization":
+        data = await organizationData(db, event.entityId);
+        break;
+      case "activity":
+        data = await activityData(db, event.entityId);
+        break;
+      case "document":
+      case "invoice":
+        data = await documentData(db, event.entityId);
+        break;
+      default:
+        data = { id: event.entityId };
+    }
   return {
     id: `evt_${event.eventId}`,
     type: event.type,

@@ -44,7 +44,12 @@ export interface VisibleActivity extends VisibleBase {
   pipelineVisibilityGroupId: string | null;
 }
 
-export type VisibleRecord = VisibleDeal | VisiblePersonOrOrg | VisibleActivity;
+// A lead carries the same visibility columns as a deal but no pipeline restriction.
+export interface VisibleLead extends VisibleBase {
+  kind: "lead";
+}
+
+export type VisibleRecord = VisibleDeal | VisiblePersonOrOrg | VisibleActivity | VisibleLead;
 
 // Direct membership only (no nesting in Phase 1, permissions spec 4.4).
 export function isMemberOfGroup(user: AuthUser, groupId: string | null): boolean {

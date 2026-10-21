@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
-import nextConfig, { CONSENT_PATH } from "./next.config";
+import nextConfig, { CONSENT_PATH, PUBLIC_PATHS } from "./next.config";
 import { MAX_IMPORT_CSV_BYTES } from "./src/features/import/importFields";
 
 // The exact matcher Next runs a headers() `source` through, so these tests resolve a path the way
@@ -131,6 +131,33 @@ describe("next.config security headers", () => {
 
   it("does not advertise the framework version", () => {
     expect(nextConfig.poweredByHeader).toBe(false);
+  });
+});
+
+// Part 6: /f/* and /book/* are embedded on other sites, so they are the only routes allowed to
+// be framed. Everything else keeps the strict pair, and the public paths must be carved out of
+// the strict entry (not added as a second CSP) for the reason above.
+describe("next.config public framing exemption", () => {
+  it("allows framing on public forms and booking pages", async () => {
+    for (const path of ["/f/abc123", "/f", "/book/abc123", "/book/cancel/token"]) {
+      expect(await cspForPath(path), path).toContain("frame-ancestors *");
+      expect((await headersForPath(path)).get("x-frame-options"), path).toBeUndefined();
+    }
+  });
+
+  it("keeps the strict headers on neighbouring routes", async () => {
+    for (const path of ["/settings/forms", "/settings/booking", "/foo", "/facebook", "/books"]) {
+      expect(await cspForPath(path), path).toContain("frame-ancestors 'none'");
+      expect((await headersForPath(path)).get("x-frame-options"), path).toEqual(["DENY"]);
+    }
+  });
+
+  it("keeps the public matcher scoped to the two prefixes", () => {
+    const matcher = pathToRegexp(PUBLIC_PATHS);
+    expect(matcher.test("/f/abc")).toBe(true);
+    expect(matcher.test("/book/abc")).toBe(true);
+    expect(matcher.test("/foo")).toBe(false);
+    expect(matcher.test("/settings/forms")).toBe(false);
   });
 });
 

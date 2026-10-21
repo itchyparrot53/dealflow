@@ -71,6 +71,9 @@ export const AUTOMATIONS_STRINGS = {
     "document.declined": "a quote is declined",
     "invoice.overdue": "an invoice is overdue",
     "invoice.paid": "an invoice is paid",
+    "form.submitted": "a form is submitted",
+    "booking.created": "a booking is made",
+    "booking.cancelled": "a booking is cancelled",
   },
   actionTypes: {
     update_deal: "Update the deal",

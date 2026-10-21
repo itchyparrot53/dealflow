@@ -5,6 +5,7 @@ import {
   deals,
   emailMessages,
   emailThreads,
+  leads,
   organizations,
   persons,
   pipelines,
@@ -37,6 +38,8 @@ export async function canActorAccessParent(
       return canSeePersonOrOrg(db, actor, "organization", entityId, signal);
     case "activity":
       return canSeeActivityParent(db, actor, entityId, signal);
+    case "lead":
+      return canSeeLeadParent(db, actor, entityId, signal);
     case "email_message":
       return canSeeEmailParent(db, actor, entityId, signal);
     default:
@@ -103,6 +106,27 @@ function toVisibleRecord(
     visibilityGroupId: row.visibilityGroupId,
     visibleToUserIds: row.visibleToUserIds,
   };
+}
+
+async function canSeeLeadParent(
+  db: Db,
+  actor: AuthUser,
+  leadId: string,
+  signal: AbortSignal,
+): Promise<boolean> {
+  const [row] = await db
+    .select()
+    .from(leads)
+    .where(and(eq(leads.id, leadId), isNull(leads.deletedAt)));
+  signal.throwIfAborted();
+  if (row === undefined) return false;
+  return canSee(actor, {
+    kind: "lead",
+    ownerId: row.ownerId,
+    visibilityLevel: row.visibilityLevel,
+    visibilityGroupId: row.visibilityGroupId,
+    visibleToUserIds: row.visibleToUserIds,
+  });
 }
 
 async function canSeeActivityParent(
