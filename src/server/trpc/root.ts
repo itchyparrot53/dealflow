@@ -15,6 +15,7 @@ import { forecastRouter } from "@/features/forecast/router";
 import { formsRouter } from "@/features/forms/router";
 import { goalsRouter } from "@/features/goals/router";
 import { importRouter } from "@/features/import/router";
+import { insightsRouter } from "@/features/insights/router";
 import { labelsRouter } from "@/features/labels/router";
 import { leadRouter } from "@/features/leads/leadRouter";
 import { notificationsRouter } from "@/features/notifications/router";
@@ -43,6 +44,7 @@ export const appRouter = router({
   documents: documentsRouter,
   automations: automationsRouter,
   forms: formsRouter,
+  insights: insightsRouter,
   scheduling: schedulingRouter,
   webhooks: webhooksRouter,
   customFields: customFieldsRouter,

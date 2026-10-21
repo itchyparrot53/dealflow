@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-21 13:06
+Current: 2.2 · Last updated: 2026-10-21 13:12
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -18,7 +18,7 @@ Current: 2.1 · Last updated: 2026-10-21 13:06
 - [x] 1.2 Activity reports and the funnel
 - [x] 1.3 Currency-correct stats and goals
 - [x] 1.4 Phase 1 QA gate
-- [ ] 2.1 Reports, dashboards, default dashboard, CSV export
+- [x] 2.1 Reports, dashboards, default dashboard, CSV export
 - [ ] 2.2 Explain, score data and bulk scoring
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Insights home and report builder
@@ -77,6 +77,13 @@ Current: 2.1 · Last updated: 2026-10-21 13:06
 - 1.3: a count column counts the deals in an excluded currency (they exist); only the money total leaves them out, and the note says how many. Activity goals and the funnel are unaffected.
 - 1.3: one `ExcludedNote` component renders "{n} excluded: no exchange rate" under each money total: the four deal counters, the average-deal tile, lost reasons, stage sums, the won trend and each value goal.
 - 1.3: `docs/dealflow/UPSTREAM.md` gained the Part 7 section listing every upstream stats, goals, UI and constant file touched here.
+
+- 2.1: reads are tRPC (`insights.listReports`, `getReport`, `run`, `listDashboards`, `getDashboard`) and mutations are server actions behind `guardCsrf`; every owner-or-admin rule lives in the service and returns `E_INSIGHT_005`. An unshared report of someone else reads as `E_INSIGHT_001`, never as a permission error, so existence does not leak.
+- 2.1: `run` accepts either a saved `reportId` (whose stored definition is re-read through `getReport`, so visibility applies) or an unsaved `definition` for the builder preview, and both go through the same engine.
+- 2.1: `ensureDefaultDashboard` takes a transaction-scoped advisory lock, then checks for an existing default; the partial unique index is the backstop. It creates "Sales overview" (shared, owned by the first active admin) with six shared reports: five when the install has no pipeline, because the funnel report needs one.
+- 2.1: a dashboard read omits a report widget the viewer cannot read and a widget whose goal is soft-deleted; adding a widget validates that the report is readable or the goal exists. Duplicating a report makes a private "(copy)" owned by the duplicator; moving a widget swaps positions in a transaction.
+- 2.1: the CSV route requires a session, re-reads the report through the service (404 when unreadable), maps a timeout to 504, and names the file `{slug}-{YYYY-MM-DD}.csv`; the formula guard is the one in `toCsv`.
+- 2.1: the route integration test mocks only the `@/db/client` binding and `createContext` so the handler runs against the per-test Postgres and actor; tables and SQL are real.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

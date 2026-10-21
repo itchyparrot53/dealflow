@@ -1,10 +1,16 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { eq, sql } from "drizzle-orm";
+import { NextRequest } from "next/server";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { GET as exportCsv } from "@/app/(app)/insights/reports/[id]/export.csv/route";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
   activityTypes,
+  dashboards,
+  dashboardWidgets,
   deals,
   dealTerms,
+  reports,
   stageProbabilities,
   userPreferences,
 } from "@/db/schema";
@@ -14,12 +20,30 @@ import type { PermSetUser } from "@/features/permissions/effective";
 import { EVERYONE } from "@/features/stats/ownerIds";
 import { stageConversion } from "@/features/stats/stageConversion";
 import { makeTestDb, type TestDb } from "@/test/db";
+import { addWidget, createDashboard, getDashboard } from "./dashboards";
+import { ensureDefaultDashboard } from "./defaultDashboard";
 import type {
   ActivityReportDefinition,
   DealReportDefinition,
   ReportDefinition,
 } from "./definition";
+import { createReport, deleteReport, getReport, listReports, updateReport } from "./reports";
 import { runReport } from "./run";
+
+// The export route binds the app pool and the request context when imported, so the tests point
+// both at their own database and actor. Nothing about the database itself is mocked.
+let currentActor: PermSetUser | null = null;
+vi.mock("@/server/trpc/context", () => ({
+  createContext: () => Promise.resolve({ actor: currentActor, session: { id: "test-session" } }),
+}));
+vi.mock("@/db/client", () => ({
+  get db() {
+    return h.db;
+  },
+  get pool() {
+    return h.pool;
+  },
+}));
 
 let h: TestDb;
 let admin: PermSetUser;
@@ -75,6 +99,9 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  await h.db.delete(dashboardWidgets);
+  await h.db.delete(dashboards);
+  await h.db.delete(reports);
   await h.db.delete(activities);
   await h.db.delete(dealTerms);
   await h.db.delete(deals);
@@ -501,5 +528,171 @@ describe("deal reports", () => {
     expect(result.funnel?.map((stage) => [stage.stageId, stage.reached, stage.conversion])).toEqual(
       direct.map((stage) => [stage.stageId, stage.reached, stage.conversion]),
     );
+  });
+
+  describe("reports and dashboards services", () => {
+    function otherActor(): PermSetUser {
+      return {
+        id: otherOwnerId,
+        type: "regular",
+        isActive: true,
+        groupIds: new Set(),
+        flags: new Set(),
+      };
+    }
+
+    it("lets only the owner or an admin edit or delete a report", async () => {
+      const created = await createReport(
+        h.db,
+        viewer,
+        { name: "Vic report", definition: def() },
+        sig(),
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+
+      const denied = await updateReport(
+        h.db,
+        otherActor(),
+        created.value.id,
+        { name: "Hijack" },
+        sig(),
+      );
+      expect(denied.ok).toBe(false);
+      if (!denied.ok) expect(denied.error.id).toBe(ERROR_IDS.INSIGHT_FORBIDDEN);
+
+      const deleted = await deleteReport(h.db, otherActor(), created.value.id, sig());
+      expect(deleted.ok).toBe(false);
+      if (!deleted.ok) expect(deleted.error.id).toBe(ERROR_IDS.INSIGHT_FORBIDDEN);
+
+      const hidden = await getReport(h.db, otherActor(), created.value.id, sig());
+      expect(hidden.ok).toBe(false);
+      if (!hidden.ok) expect(hidden.error.id).toBe(ERROR_IDS.INSIGHT_NOT_FOUND);
+
+      const byAdmin = await updateReport(h.db, admin, created.value.id, { name: "Renamed" }, sig());
+      expect(byAdmin.ok).toBe(true);
+      if (byAdmin.ok) expect(byAdmin.value.name).toBe("Renamed");
+    });
+
+    it("lists a shared report for another user but not a private one", async () => {
+      const shared = await createReport(
+        h.db,
+        viewer,
+        { name: "Shared report", definition: def(), shared: true },
+        sig(),
+      );
+      const priv = await createReport(
+        h.db,
+        viewer,
+        { name: "Private report", definition: def() },
+        sig(),
+      );
+      expect(shared.ok && priv.ok).toBe(true);
+
+      const names = (await listReports(h.db, otherActor(), sig())).map((report) => report.name);
+      expect(names).toContain("Shared report");
+      expect(names).not.toContain("Private report");
+    });
+
+    it("omits a dashboard widget whose report the viewer cannot read", async () => {
+      const report = await createReport(
+        h.db,
+        viewer,
+        { name: "Vic private", definition: def() },
+        sig(),
+      );
+      const dashboard = await createDashboard(
+        h.db,
+        viewer,
+        { name: "Vic board", shared: true },
+        sig(),
+      );
+      expect(report.ok && dashboard.ok).toBe(true);
+      if (!report.ok || !dashboard.ok) return;
+
+      const added = await addWidget(
+        h.db,
+        viewer,
+        dashboard.value.id,
+        { kind: "report", reportId: report.value.id },
+        sig(),
+      );
+      expect(added.ok).toBe(true);
+
+      const asOther = await getDashboard(h.db, otherActor(), dashboard.value.id, sig());
+      expect(asOther.ok).toBe(true);
+      if (asOther.ok) expect(asOther.value.widgets).toHaveLength(0);
+
+      const asOwner = await getDashboard(h.db, viewer, dashboard.value.id, sig());
+      expect(asOwner.ok).toBe(true);
+      if (asOwner.ok) expect(asOwner.value.widgets).toHaveLength(1);
+
+      const denied = await addWidget(
+        h.db,
+        otherActor(),
+        dashboard.value.id,
+        { kind: "report", reportId: report.value.id },
+        sig(),
+      );
+      expect(denied.ok).toBe(false);
+      if (!denied.ok) expect(denied.error.id).toBe(ERROR_IDS.INSIGHT_FORBIDDEN);
+    });
+
+    it("creates the default dashboard once under two concurrent calls", async () => {
+      await h.db.execute(sql`select 1`);
+      const [first, second] = await Promise.all([
+        ensureDefaultDashboard(h.db, sig()),
+        ensureDefaultDashboard(h.db, sig()),
+      ]);
+      expect(first.ok && second.ok).toBe(true);
+      if (!first.ok || !second.ok) return;
+      expect(first.value.id).toBe(second.value.id);
+
+      const defaults = await h.db.select().from(dashboards).where(eq(dashboards.isDefault, true));
+      expect(defaults).toHaveLength(1);
+      expect(defaults[0]?.name).toBe("Sales overview");
+      expect(defaults[0]?.shared).toBe(true);
+
+      const widgets = await h.db
+        .select()
+        .from(dashboardWidgets)
+        .where(eq(dashboardWidgets.dashboardId, first.value.id));
+      expect(widgets).toHaveLength(6);
+      const reportRows = await h.db.select().from(reports);
+      expect(reportRows).toHaveLength(6);
+      expect(reportRows.every((row) => row.shared)).toBe(true);
+    });
+
+    it("exports CSV from the saved report route with the formula guard applied", async () => {
+      const pipeline = await seedPipelineWithStages(h.db, ["=SUM(A1)", "Won"]);
+      await addDeal({
+        title: "Guarded",
+        pipelineId: pipeline.pipeline.id,
+        stageId: pipeline.stages[0]?.id ?? "",
+      });
+      const created = await createReport(
+        h.db,
+        admin,
+        { name: "Stage, export", definition: def({ groupBy: { field: "stage" } }) },
+        sig(),
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+
+      currentActor = admin;
+      const response = await exportCsv(
+        new NextRequest(`http://localhost/insights/reports/${created.value.id}/export.csv`),
+        { params: Promise.resolve({ id: created.value.id }) },
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("text/csv");
+      expect(response.headers.get("content-disposition")).toContain("stage-export-");
+
+      const body = await response.text();
+      const lines = body.split("\r\n");
+      expect(lines[0]).toBe('"Group","Segment","Count","Value"');
+      expect(body).toContain('"\'=SUM(A1)"');
+      currentActor = null;
+    });
   });
 });
