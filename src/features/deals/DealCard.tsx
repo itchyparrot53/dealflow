@@ -1,5 +1,6 @@
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
+import { DealScoreBadge } from "@/features/ai/ui/DealScoreBadge";
 import { avatarColorClass, initials } from "@/lib/avatar";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { cn } from "@/lib/utils";
@@ -109,6 +110,7 @@ export function DealCard(props: DealCardProps): React.ReactNode {
     >
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1 truncate text-sm font-medium leading-tight">{primary}</div>
+        {typeof card.score === "number" && <DealScoreBadge score={card.score} />}
         <DealStatusBadge status={card.status} />
       </div>
 

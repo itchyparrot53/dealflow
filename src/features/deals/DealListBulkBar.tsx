@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { AI_STRINGS } from "@/constants/aiStrings";
 import { BULK_ARCHIVE_DESCRIPTION, bulkArchiveTitle } from "./bulkArchiveCopy";
 import { BULK_MOVE_DESCRIPTION, bulkMoveTitle } from "./bulkMoveCopy";
 
@@ -17,13 +18,17 @@ interface DealListBulkBarProps {
   stages: BulkBarStage[];
   onConfirmStage: (toStageId: string) => Promise<void>;
   onConfirmArchive?: () => Promise<void>;
+  onConfirmScore?: () => Promise<void>;
 }
 
 export function DealListBulkBar(props: DealListBulkBarProps): React.ReactNode {
-  const { count, stages, onConfirmStage, onConfirmArchive } = props;
+  const { count, stages, onConfirmStage, onConfirmArchive, onConfirmScore } = props;
   const [pendingStageId, setPendingStageId] = useState<string | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [scorePending, setScorePending] = useState(false);
+  const [scoring, setScoring] = useState(false);
+  const [scoreStarted, setScoreStarted] = useState(false);
   const stageName = (id: string): string => stages.find((s) => s.id === id)?.name ?? "";
 
   return (
@@ -53,6 +58,17 @@ export function DealListBulkBar(props: DealListBulkBarProps): React.ReactNode {
             Archive
           </Button>
         ) : null}
+        {onConfirmScore ? (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="bulk-score"
+            disabled={scoring}
+            onClick={() => setScorePending(true)}
+          >
+            {AI_STRINGS.bulkScore}
+          </Button>
+        ) : null}
       </div>
 
       {pendingStageId !== null && (
@@ -71,6 +87,33 @@ export function DealListBulkBar(props: DealListBulkBarProps): React.ReactNode {
           }}
         />
       )}
+
+      {scorePending && onConfirmScore ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setScorePending(false);
+          }}
+          title={AI_STRINGS.bulkScoreTitle(count)}
+          description={AI_STRINGS.bulkScoreDescription}
+          confirmLabel={AI_STRINGS.bulkScore}
+          onConfirm={() => {
+            setScorePending(false);
+            setScoring(true);
+            setScoreStarted(true);
+            void onConfirmScore().finally(() => setScoring(false));
+          }}
+        />
+      ) : null}
+
+      {scoreStarted ? (
+        <p
+          data-testid="bulk-score-note"
+          className="bg-accent px-4 pb-2 text-sm text-accent-foreground"
+        >
+          {AI_STRINGS.bulkScoreStarted}
+        </p>
+      ) : null}
 
       {archivePending && onConfirmArchive ? (
         <ConfirmDialog

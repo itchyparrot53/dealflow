@@ -23,4 +23,8 @@ export const AI_STRINGS = {
   companyLimitInvalid: "Enter a whole number of tokens, zero or more.",
   userLimitInvalid: "Enter a whole number of tokens, one or more, or leave it empty.",
   adminOnly: "Only admins can manage AI settings.",
+  bulkScore: "Score with AI",
+  bulkScoreTitle: (n: number) => `Score ${n} deals with AI?`,
+  bulkScoreDescription: "This uses your AI allowance.",
+  bulkScoreStarted: "Scoring started. You'll get a notification when it's done.",
 } as const;

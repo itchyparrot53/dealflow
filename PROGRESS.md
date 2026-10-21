@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-21 14:10
+Current: 3.4 · Last updated: 2026-10-21 14:16
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -24,7 +24,7 @@ Current: 3.3 · Last updated: 2026-10-21 14:10
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Insights home and report builder
 - [x] 3.2 Dashboards
-- [ ] 3.3 Score badge and bulk scoring UI
+- [x] 3.3 Score badge and bulk scoring UI
 - [ ] 3.4 Demo seed and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E insights spec and screenshots
@@ -103,6 +103,10 @@ Current: 3.3 · Last updated: 2026-10-21 14:10
 - 3.2: each report widget owns its `insights.run({ reportId })` query, so widgets load and fail independently; the dashboard itself uses `getDashboard` with server `initialData` and invalidates it after every widget action. The grid is two columns on desktop (`md:grid-cols-2`) and one below, with `full` widgets spanning both columns.
 - 3.2: goal widgets reuse the stats `GoalRow` (exported for this), so a goal on a dashboard looks and behaves exactly like the one in the performance widget; `AddWidgetDialog` offers the viewer's reports and goals with `goalLabel`, and the service re-checks readability/existence on add.
 - 3.2: rename and the shared Switch go through `updateDashboardAction` and render only for the owner or an admin; the widget DropdownMenu offers Open report, Move up/down, Make full/half and Remove.
+
+- 3.3: the board card shows `DealScoreBadge` only when the card row carries a numeric score. The badge uses three token bands (muted under 40, attention 40 to 69, success 70 and above) and always prints the number, so colour is never the only signal; its tooltip uses the sanctioned Tip primitive (no native title).
+- 3.3: "Score with AI" (`bulk-score`) sits in the deals bulk bar, confirms through the existing ConfirmDialog with "Score {n} deals with AI? This uses your AI allowance.", then calls `bulkScoreDealsAction` with the selected ids and shows the inline note "Scoring started. You'll get a notification when it's done." The selection stays, because scoring changes no rows.
+- 3.3: the action returns after enqueueing, so the note is truthful even before the job runs; failures still surface through the app-wide action error reporter.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

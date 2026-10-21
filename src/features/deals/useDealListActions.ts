@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { bulkScoreDealsAction } from "@/features/ai/actions/dealActions";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { archiveDealAction, archiveDealsAction } from "./archiveActions";
 import { bulkStageAction } from "./bulkStageAction";
@@ -13,6 +14,7 @@ import { DEAL_LIST_QUERY_ROOT } from "./dealListQueryKey";
 export interface DealListActions {
   bulkStage: (dealIds: string[], toStageId: string) => Promise<boolean>;
   bulkArchive: (dealIds: string[]) => Promise<boolean>;
+  bulkScore: (dealIds: string[]) => Promise<boolean>;
   unarchive: (dealId: string) => void;
 }
 
@@ -53,6 +55,18 @@ export function useDealListActions(): DealListActions {
     [router, reportError, queryClient],
   );
 
+  const bulkScore = useCallback(
+    async (dealIds: string[]): Promise<boolean> => {
+      const r = await bulkScoreDealsAction({ dealIds }, readCsrfToken());
+      if (!r.ok) {
+        reportError(r.error.id);
+        return false;
+      }
+      return true;
+    },
+    [reportError],
+  );
+
   const unarchive = useCallback(
     (dealId: string): void => {
       void archiveDealAction({ dealId, archived: false }, readCsrfToken()).then((r) => {
@@ -63,5 +77,5 @@ export function useDealListActions(): DealListActions {
     [router, reportError],
   );
 
-  return { bulkStage, bulkArchive, unarchive };
+  return { bulkStage, bulkArchive, bulkScore, unarchive };
 }

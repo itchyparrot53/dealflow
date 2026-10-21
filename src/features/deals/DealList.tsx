@@ -26,6 +26,7 @@ export interface DealListProps {
   // success (the selection vanishing was read as "it worked" even when the server rejected it).
   onBulkStage: (dealIds: string[], toStageId: string) => Promise<boolean>;
   onBulkArchive?: (dealIds: string[]) => Promise<boolean>;
+  onBulkScore?: (dealIds: string[]) => Promise<boolean>;
   // Ordered visible columns (from useColumns/DEAL_LIST_COLUMNS). Title is always first (pinned).
   visibleColumns: readonly ColumnDef[];
   // The Customize-columns cog, rendered by the stateful client above the table.
@@ -47,7 +48,7 @@ export interface DealListProps {
 
 export function DealList(props: DealListProps) {
   const { pipelineId, rows, total, totalValue, stages, currency } = props;
-  const { onBulkStage, onBulkArchive, onUnarchive } = props;
+  const { onBulkStage, onBulkArchive, onBulkScore, onUnarchive } = props;
   const { visibleColumns, columnsMenu, empty, filtered = false, excluded = [] } = props;
   const { editCell } = useInlineEdit(pipelineId);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -124,6 +125,13 @@ export function DealList(props: DealListProps) {
           stages={stages}
           onConfirmStage={confirmBulkStage}
           onConfirmArchive={onBulkArchive === undefined ? undefined : confirmBulkArchive}
+          onConfirmScore={
+            onBulkScore === undefined
+              ? undefined
+              : async () => {
+                  await onBulkScore(selectedIds);
+                }
+          }
         />
       ) : null}
 

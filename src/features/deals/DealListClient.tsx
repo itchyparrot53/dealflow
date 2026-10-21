@@ -297,6 +297,7 @@ export function DealListClient({
           excluded={footer.excluded}
           onBulkStage={actions.bulkStage}
           onBulkArchive={variant === "archived" ? undefined : actions.bulkArchive}
+          onBulkScore={variant === "archived" ? undefined : actions.bulkScore}
           onUnarchive={variant === "archived" ? actions.unarchive : undefined}
           filtered={emptiedByFilter}
           empty={
