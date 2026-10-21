@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-21 04:52
+Current: 3.1 · Last updated: 2026-10-21 04:58
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
 - Phase 1: ceae046
 - Phase 2: 8691903
+- Phase 3: a819c73
 
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
@@ -18,7 +19,7 @@ Current: 2.3 · Last updated: 2026-10-21 04:52
 - [x] 1.3 Phase 1 QA gate
 - [x] 2.1 Booking pages service and busy time
 - [x] 2.2 Slots, booking and cancel (test-first)
-- [ ] 2.3 Phase 2 QA gate
+- [x] 2.3 Phase 2 QA gate
 - [ ] 3.1 Forms admin screens
 - [ ] 3.2 Public form page
 - [ ] 3.3 Booking admin screens
@@ -35,6 +36,7 @@ Current: 2.3 · Last updated: 2026-10-21 04:52
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5124/5124
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5191/5191 · pure core (zonedTime/slots/fields/spamToken/ics) 67/67
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/events/automations/leads integration SKIPPED (Docker daemon unresponsive; Testcontainers global setup hung for 15+ minutes and was killed, per section 10)
+- Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · scheduling/activities/events integration SKIPPED (Docker still unresponsive, per section 10)
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p5-v1` with `STATUS: COMPLETE`, and HEAD was `935685bd476eb7d5c75d51b3439a8ffe7711aa4c`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
