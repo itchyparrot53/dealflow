@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-21 02:03
+Current: 4.1 · Last updated: 2026-10-21 02:07
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
 - Phase 1: 1673688
 - Phase 2: 682fb2d
 - Phase 3: 1b46554
+- Phase 4: 4fc94b8
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
@@ -25,7 +26,7 @@ Current: 3.3 · Last updated: 2026-10-21 02:03
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Safe delivery (test-first)
 - [x] 3.2 Subscriptions service, test send and redeliver
-- [ ] 3.3 Phase 3 QA gate
+- [x] 3.3 Phase 3 QA gate
 - [ ] 4.1 Automations list and editor
 - [ ] 4.2 Run log
 - [ ] 4.3 Describe it and the template gallery
@@ -40,6 +41,7 @@ Current: 3.3 · Last updated: 2026-10-21 02:03
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
+- Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · webhooks/events 30/30
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · automations/events/ai/notifications 106/106
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · events/documents/deals/collaboration 219/219
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · documents 45/45
@@ -121,6 +123,9 @@ Current: 3.3 · Last updated: 2026-10-21 02:03
 - 3.2: the six new cases pass first time after the service was written, 16/16 in the file; create returns the plaintext secret exactly once and every read selects only `SAFE_COLUMNS`, so no API can return the sealed value.
 - 3.2: `rotateSecret` replaces the sealed value and returns the new plaintext once, `setEnabled(true)` resets `consecutive_failures` and `disabled_reason`, `redeliver` copies the payload and event type into a new pending row, and `sendTest` inserts a real synthetic `ping` delivery and runs it synchronously so the result appears in the delivery log.
 - 3.2: reads live in a tRPC `webhooks` router (list, get, deliveries, all admin-gated inside the service), while mutations are server actions that own CSRF and the session exactly as the documents actions do.
+
+- 3.3: the gate fixes were the formatter, one unnecessary type assertion in the DNS error path, and a complexity split of `deliverWebhook` into attempt, success, 410, and retryable-failure recorders; after `3.3: fixes round 1` the gate passed with the baseline's 14 warnings.
+- 3.3: no `qa` review at this gate (fast profile, rule 9.4). Phase 4 base is the commit before the gate.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
