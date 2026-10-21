@@ -8,3 +8,7 @@ export interface EntityRef {
 }
 
 export type EntityType = (typeof ENTITY_TYPES)[number];
+
+// The change log can also record an activity or project restore (Part 8 recycle bin), which are
+// not commentable timeline entities yet.
+export type ChangeLogEntityType = EntityType | "activity" | "project";

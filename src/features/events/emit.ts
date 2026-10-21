@@ -42,7 +42,10 @@ export async function emitDomainEvent(
 // or organization updates. Activity completion is emitted by the activity service (Task 1.2).
 function dealEventTypes(field: string, newValue: unknown): DomainEventType[] {
   if (field === "stageId") return ["deal.stage_changed", "deal.updated"];
-  if (field === "deleted" || field === "deletedAt") return ["deal.deleted"];
+  // Restoring (newValue false) is an update, not a deletion.
+  if (field === "deleted" || field === "deletedAt") {
+    return newValue === true ? ["deal.deleted"] : ["deal.updated"];
+  }
   if (field === "status") {
     if (newValue === "won") return ["deal.won", "deal.updated"];
     if (newValue === "lost") return ["deal.lost", "deal.updated"];
@@ -67,6 +70,10 @@ export function eventTypesForChange(
       if ((field === "done" || field === "completed") && newValue === true) {
         return ["activity.completed"];
       }
+      return [];
+    case "project":
+      if (field === "deleted") return newValue === true ? ["project.deleted"] : [];
+      if (field === "status") return ["project.status_changed"];
       return [];
     default:
       return [];

@@ -3,7 +3,7 @@ import type { Db } from "@/db/client";
 import { changeLogs, users } from "@/db/schema";
 import { emitDomainEvent, eventTypesForChange } from "@/features/events/emit";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
-import type { EntityType } from "@/types/entityRef";
+import type { ChangeLogEntityType } from "@/types/entityRef";
 
 export type ChangeLogEntry = {
   id: string;
@@ -18,7 +18,7 @@ export type ChangeLogEntry = {
 };
 
 export type RecordChangeArgs = {
-  entityType: EntityType;
+  entityType: ChangeLogEntityType;
   entityId: string;
   field: string;
   oldValue: unknown;
@@ -91,7 +91,7 @@ function parseJsonbText(text: string | null): unknown {
 // parent before exposing the log.
 export async function listChangeLog(
   db: Db,
-  entityType: EntityType,
+  entityType: ChangeLogEntityType,
   entityId: string,
   signal: AbortSignal,
 ): Promise<ChangeLogEntry[]> {

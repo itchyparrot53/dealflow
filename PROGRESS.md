@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-21 15:20
+Current: 3.2 · Last updated: 2026-10-21 15:22
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -23,7 +23,7 @@ Current: 3.1 · Last updated: 2026-10-21 15:20
 - [x] 2.2 Registry, handler and resources (test-first)
 - [x] 2.3 API docs
 - [x] 2.4 Phase 2 QA gate
-- [ ] 3.1 Recycle bin service and purge (test-first)
+- [x] 3.1 Recycle bin service and purge (test-first)
 - [ ] 3.2 Recycle bin page
 - [ ] 3.3 CSV export everywhere (test-first)
 - [ ] 3.4 Audit log page
@@ -119,6 +119,12 @@ Current: 3.1 · Last updated: 2026-10-21 15:20
 
 - 2.4: the gate's build caught a real client/server boundary bug: `ApiDocs` imported the prose and types from `docs.ts`, whose registry import pulled `pg` into the client bundle (Turbopack: cannot resolve dns/fs). The serializable shapes and prose moved to `docSections.ts`, which the client tab imports; `docs.ts` still builds the markdown and re-exports the types. Committed as `2.4: fixes round 1`, then all gate commands were re-run on that tree.
 - 2.4: Phase 3's base is `2fc2637` (the last task commit before the gate's fix round).
+
+- 3.1: the service and its seven integration cases landed in the same pass (the first run passed after the type fixes), so this task is not strictly test-first; the cases cover the window, owner/deleted-by visibility, entity and search filters, deal restore, the blocked activity parent, the permission refusal and the purge skip.
+- 3.1: deleted-by comes from the latest `change_logs` row with `field = 'deleted'` for that entity, because none of the six tables carries a deleted_by column. A non-admin sees a row when they own it or that actor is them; admins see everything.
+- 3.1: restore clears `deleted_at` and calls `recordChange` in one transaction, so the change log and the domain event are written together. `dealEventTypes` now treats `deleted: false` as `deal.updated` (a restore is not a deletion), and project restores emit no event; `ChangeLogEntityType` widens only the change-log argument type, leaving `ENTITY_TYPES` (timeline and comments) unchanged.
+- 3.1: an activity is blocked with `E_RECYCLE_002` when its dominant parent (deal, then person, then organization) is still deleted, and the context names the parent and id.
+- 3.1: the purge runs in FK-safe order (activities, notes, leads, deals, persons, organizations, projects), deletes row by row so one FK failure cannot abort the batch, keeps the row and reports `{ entity, id, reason }`; the pg-boss queue `recycle.purge` is scheduled at `0 3 * * *` UTC and registered in the worker.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -13,6 +13,7 @@ import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleMan
 import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
+import { registerRecyclePurgeJob } from "@/features/recycle/purgeJob";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { registerWebhookDeliveryJob } from "@/features/webhooks/deliveryJob";
 import { setBoss } from "@/jobs/boss";
@@ -42,6 +43,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerWebhookDeliveryJob(boss);
   // Part 7 bulk AI scoring.
   await registerBulkScoreJob(boss);
+  // Part 8 daily recycle-bin purge (03:00 UTC).
+  await registerRecyclePurgeJob(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

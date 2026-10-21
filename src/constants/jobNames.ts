@@ -49,6 +49,10 @@ export const PGBOSS_QUEUE_WEBHOOK_DELIVER = "webhooks.deliver";
 export const PGBOSS_QUEUE_DEAL_ROTTING = "deals.rotting";
 export const PGBOSS_QUEUE_EVENT_RETENTION = "events.retention";
 
+// Part 8: the daily recycle-bin purge. No payload.
+export const PGBOSS_QUEUE_RECYCLE_PURGE = "recycle.purge";
+export const RECYCLE_PURGE_CRON = "0 3 * * *";
+
 // Part 7: the bulk AI scoring job (payload { requesterId, dealIds }). One job per request.
 export const PGBOSS_QUEUE_AI_BULK_SCORE = "ai.bulk-score";
 
