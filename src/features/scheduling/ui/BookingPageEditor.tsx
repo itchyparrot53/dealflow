@@ -188,6 +188,7 @@ export function BookingPageEditor({
             onChange={setNotice}
             options={NOTICE_OPTIONS}
             ariaLabel={S.editor.notice}
+            testId="booking-notice-select"
           />
         </div>
         <div className="space-y-1 text-sm">

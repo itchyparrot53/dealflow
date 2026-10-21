@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-21 05:44
+Current: 4.2 · Last updated: 2026-10-21 05:52
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -27,7 +27,7 @@ Current: 4.1 · Last updated: 2026-10-21 05:44
 - [x] 3.4 Public booking and cancel pages
 - [x] 3.5 Triggers in the editors, demo seed and docs
 - [x] 3.6 Phase 3 QA gate
-- [ ] 4.1 E2E forms and booking spec and screenshots
+- [x] 4.1 E2E forms and booking spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
@@ -120,6 +120,9 @@ Current: 4.1 · Last updated: 2026-10-21 05:44
 - 3.5: the webhook dialog groups events by a prefix list instead of one prefix, so "Forms and booking" holds both `form.*` and `booking.*` in one section.
 - 3.5: the demo seed adds `scripts/seed-demo-forms.ts` with one active "Contact us" form (four fields, two submissions with their persons and leads) and one active "Intro call" page (30 minutes, default week, `Europe/London`) with a future booking and its activity; it is called from `seed-demo.ts` and prints its own counts. It could not be executed because Docker is still down, so `pnpm db:seed:demo` is an owner action.
 - 3.5: `docs/dealflow/FORMS.md` and `SCHEDULING.md` are new; `AUTOMATIONS.md` and `WEBHOOKS.md` list the three events, the form filter and the person condition target; `UPSTREAM.md` has the Part 6 upstream list and the README a "Forms and booking pages" section.
+
+- 4.1: `e2e/10-forms-booking.spec.ts` is written against the 6.3 hooks: the admin builds "Website enquiry" with a phone field, submits it as a session-less visitor after the 2.5 s fill floor, checks the lead and the notification, builds an all-week "Discovery call" page with no notice period, books the first slot as a visitor, checks the activity, reads the cancel link from the captured mail, and cancels.
+- 4.1: the run itself is SKIPPED because Docker never recovered: `docker ps` times out, so Playwright's server and its Postgres cannot start and no screenshot can be produced. The 7 `p6-*` screenshots are therefore absent; this is the section 10 safe default and the rerun commands are an owner action. The task is ticked only to record that the deliverable was written and the run was attempted, not that e2e passed; the checklist records the SKIP.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
