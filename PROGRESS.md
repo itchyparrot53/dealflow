@@ -1,17 +1,18 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-21 01:24
+Current: 1.1 · Last updated: 2026-10-21 01:28
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
+- Phase 1: 1673688
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
 - [x] 0.2 Trusted client IP (test-first)
 - [x] 0.3 Automations schema and migration
 - [x] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
-- [ ] 0.5 Phase 0 QA gate
+- [x] 0.5 Phase 0 QA gate
 - [ ] 1.1 Emit from recordChange (test-first)
 - [ ] 1.2 Create and document events
 - [ ] 1.3 Dispatcher, snapshot and retention (test-first)
@@ -37,6 +38,7 @@ Current: 0.4 · Last updated: 2026-10-21 01:24
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
+- Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · documents 45/45
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p4-v1` with `STATUS: COMPLETE`, and HEAD was `ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
@@ -66,6 +68,9 @@ Current: 0.4 · Last updated: 2026-10-21 01:24
 - 0.4: `deal.updated` with `fields: []` matches any change, because the editor leaves the field list unset by default and an empty list means the same thing; `matchesTrigger` still requires one of the listed fields when the list has entries.
 - 0.4: the signature test pins the HMAC vector `38877139021993b830af32feea6e18a8da83eb2f6e49ee50bd9e4cf4ca4d3789` computed once with `node:crypto` for secret `whsec_test`, timestamp `1700000000`, body `{"a":1}`, so a change to the signing input fails instead of agreeing with itself.
 - 0.4: 6.7 types the condition as the deal `FilterDefinition`, so the schema validates deal fields only; Task 2.1 will decide how a person/organization condition target evaluates a stored condition and log it then.
+
+- 0.5: the first gate `pnpm lint` run failed on formatter output and two type-aware rules (`no-unnecessary-condition` on an `Object.values` check, `switch-exhaustiveness-check` on `conditionTarget`); fixed in `0.5: fixes round 1` by running the repository formatter over the new files, checking each `update_deal` field explicitly, and listing every event type in the switch, then the gate passed with the baseline's 14 warnings.
+- 0.5: no `qa` review at this gate (fast profile, rule 9.4). Phase 1 base is the commit before the gate, matching Part 4's recorded base.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
