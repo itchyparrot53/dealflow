@@ -19,6 +19,8 @@ export const INSIGHTS_STRINGS = {
     weightedValue: "Weighted pipeline value",
     activityTime: "Activity time",
   },
+  other: "Other",
+  none: "None",
   describe: {
     funnel: "Win/loss funnel",
     unknownPipeline: "pipeline",
