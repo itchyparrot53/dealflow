@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 4.6 · Last updated: 2026-10-21 02:31
+Current: 5.1 · Last updated: 2026-10-21 02:33
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -9,6 +9,7 @@ Current: 4.6 · Last updated: 2026-10-21 02:31
 - Phase 2: 682fb2d
 - Phase 3: 1b46554
 - Phase 4: 4fc94b8
+- Phase 5: 7d9cd58
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
@@ -32,7 +33,7 @@ Current: 4.6 · Last updated: 2026-10-21 02:31
 - [x] 4.3 Describe it and the template gallery
 - [x] 4.4 Webhooks settings and delivery log
 - [x] 4.5 Demo seed and docs
-- [ ] 4.6 Phase 4 QA gate
+- [x] 4.6 Phase 4 QA gate
 - [ ] 5.1 E2E automations spec and screenshots
 - [ ] 5.2 Integration suite and smoke
 - [ ] 5.3 Independent review and hardening
@@ -41,6 +42,7 @@ Current: 4.6 · Last updated: 2026-10-21 02:31
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
+- Phase 4 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · automations/webhooks 35/35
 - Phase 3 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · webhooks/events 30/30
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · automations/events/ai/notifications 106/106
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · events/documents/deals/collaboration 219/219
@@ -146,6 +148,9 @@ Current: 4.6 · Last updated: 2026-10-21 02:31
 - 4.5: the seed adds `scripts/seed-demo-automations.ts` (template 1 and template 3 as disabled "Demo: " automations, and one disabled `https://example.invalid/hooks/dealflow` subscription with reason "Demo"), runs from `seed-demo.ts`, and a real `pnpm db:seed:demo` printed `demo_automations=2 demo_webhooks=1`.
 - 4.5: the first re-seed failed on a pre-existing gap: `wipeDemo` deleted demo deals while Part 4 documents still referenced them with ON DELETE RESTRICT. It now deletes the demo deals' documents first; this was required to run the seed at all and is logged as a pre-existing upstream fix.
 - 4.5: `docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md` cover events, triggers, conditions, actions, the loop guard, AI actions, describe it, templates, run log, retention, the payload and signature example, retries, auto-disable and the blocked ranges; `UPSTREAM.md` has the Part 5 demo/docs section and the README gained "Automations and webhooks"; the e2e env sets `WEBHOOK_ALLOW_PRIVATE=true`.
+
+- 4.6: the gate needed no fix round; it passed on the tree committed by 4.5 with the baseline's 14 warnings, 5124 unit tests and 35 automations/webhooks integration tests.
+- 4.6: no `qa` review at this gate (fast profile, rule 9.4). Phase 5 base is the commit before the gate.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
