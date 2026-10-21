@@ -163,6 +163,11 @@ test("automations and webhooks: describe, template, run log and a signed deliver
       }
     }
     expect(rowVisible).toBe(true);
+    await expect(page.getByTestId("webhook-deliveries")).toBeVisible();
+    await expect(
+      page.getByTestId("webhook-deliveries").getByText("Delivery log", { exact: true }),
+    ).toBeVisible();
+    await page.waitForTimeout(300);
     await shot(page, "p5-webhook-deliveries");
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));

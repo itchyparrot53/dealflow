@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Textarea } from "@/components/ui/Textarea";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { ERROR_IDS } from "@/constants/errorIds";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { updateAutomationAction } from "../actions";
 import { type AutomationDefinition, automationDefinitionSchema } from "../definition";
@@ -62,7 +63,7 @@ export function AutomationEditor({
     setSaving(false);
     if (!result.ok) {
       setError(
-        result.error.id === "E_AUTOMATION_INPUT_INVALID" ? S.editor.invalid : result.error.id,
+        result.error.id === ERROR_IDS.AUTOMATION_INPUT_INVALID ? S.editor.invalid : result.error.id,
       );
       return;
     }
