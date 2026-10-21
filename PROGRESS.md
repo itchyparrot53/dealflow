@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p8-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-21 17:10
+STATUS: COMPLETE WITH OPEN ISSUES
+Current: COMPLETE · Last updated: 2026-10-21 17:12
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
@@ -30,11 +30,12 @@ Current: 4.5 · Last updated: 2026-10-21 17:10
 - [x] 3.4 Audit log page
 - [x] 3.5 Backups (test-first)
 - [x] 3.6 Backups page, demo seed and docs
+- [x] 3.7 Phase 3 QA gate
 - [x] 4.1 E2E projects and data spec and screenshots
 - [x] 4.2 Integration suite and smoke with the backup round trip
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5237/5237 in 813 files
@@ -42,6 +43,7 @@ Current: 4.5 · Last updated: 2026-10-21 17:10
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5265/5265 in 819 files · projects/automations/events/notifications integration 94/94 (14 files)
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5267/5267 in 820 files · api/projects/events integration 37/37 (3 files)
 - Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5267/5267 in 820 files · recycle/export/backups/audit/api integration 31/31 (4 files)
+- Independent review: subagent (fresh context) rounds 1 and 2, QA RESULT FAIL both times; round 1 2 blockers/8 majors/7 minors, round 2 1 blocker/3 majors/4 minors; all code items fixed (8 after round 2), round 3 not run because the only remaining major is the Docker-blocked evidence
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p7-v1` with `STATUS: COMPLETE`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -170,6 +172,7 @@ Current: 4.5 · Last updated: 2026-10-21 17:10
 - 4.4: `FINAL-CHECKLIST.md` records all 18 items with evidence. Item 10 (smoke) is FAIL because the Docker VM has no disk; items 6 and 8 pass on the pre-review tree (2046 integration tests, 22 e2e tests) but cannot be re-run on the final tree for the same reason. The remaining 15 items pass.
 
 ## Owner actions
+- TODO(owner): once Docker has disk, re-run `pnpm test:integration` and `pnpm e2e` on the final tree (the last green runs predate the review fixes) and run `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke`.
 - TODO(owner): the Docker VM has no free disk space, so the smoke stack cannot initialise Postgres. Give Docker Desktop more disk (Settings > Resources), then run `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke`. Never prune the shared images; the smoke project itself was removed.
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
 - TODO(owner): rebuild the dev stack so it reads migrations 0089 and 0090 once they are applied: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
@@ -189,4 +192,27 @@ Current: 4.5 · Last updated: 2026-10-21 17:10
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+Part 8 is built and the code gates are green: typecheck, lint (15 pre-existing warnings), build and
+unit tests (821 files, 5269 tests). Projects (services, board, deal section, from-a-won-deal and the
+automation action), the token-authenticated REST API with in-app and generated docs, the recycle bin
+with its daily purge, CSV export on the six lists, the admin audit log, and daily backups with a
+CLI restore are all in place, with 0089/0090 applied and the demo seed extended.
+
+Two verification steps are open, both caused by the Docker VM running out of disk:
+
+- The smoke stack cannot initialise Postgres (`initdb: No space left on device`), so DoD 10 and the
+  backup round trip are unproven. The smoke script contains the round trip and the project was
+  removed cleanly.
+- The final tree's full integration (last green at 2046/2046 on `2fc2637`) and e2e (22/22, also before
+  the review fixes) could not be re-run after the round-1/round-2 fixes. Targeted unit tests for the
+  changed modules pass.
+
+The independent review ran two rounds. Round 1 found 2 blockers and 8 majors (all fixed); round 2
+found 1 blocker and 3 majors (the blocker, the restore secret leak and the export carry-through are
+fixed; the fourth is the Docker-blocked evidence above) plus 4 minors (all fixed). Round 3 was not
+run because the remaining item is environmental.
+
+Owner actions: give Docker Desktop more disk and run the smoke; then re-run `pnpm test:integration`
+and `pnpm e2e` on the final tree. The earlier `TODO(owner)` items (Google OAuth config, dev-stack
+rebuild, currency rates) are unchanged.
