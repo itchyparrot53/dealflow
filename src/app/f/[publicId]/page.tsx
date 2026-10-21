@@ -4,26 +4,19 @@ import { db } from "@/db/client";
 import type { FormField } from "@/features/forms/fields";
 import { issueFormToken } from "@/features/forms/spamToken";
 import { loadPublicForm } from "@/features/forms/submit";
+import { PublicForm } from "@/features/forms/ui/PublicForm";
+import { PoweredBy } from "@/features/public/PoweredBy";
 
-// The public form page. Minimal markup in this task; Task 3.2 replaces it with the styled
-// PublicForm component and the PoweredBy footer. It works without JavaScript: the form posts to
-// the route, which answers 303 back here with ?done=1.
+// The public form page. It is rendered outside the app shell, works without JavaScript (the form
+// posts to the route, which answers 303 back here with ?done=1), and may be framed on any site.
 
 export const dynamic = "force-dynamic";
 
-// The compiler treats Date.now() inside a component as an impure render; this server page needs
-// the real clock (a fresh token per request), so the read is isolated in a module function.
+// React treats Date.now() in a component as impure; this server page needs a fresh token per
+// request, so the clock read is isolated in a module function.
 function issuedAt(): number {
   return Date.now();
 }
-
-const INPUT_TYPES: Record<string, string> = {
-  email: "email",
-  phone: "tel",
-  name: "text",
-  organization: "text",
-  job_title: "text",
-};
 
 export async function generateMetadata({
   params,
@@ -47,81 +40,19 @@ export default async function PublicFormPage({
   const publicForm = await loadPublicForm(db, publicId, AbortSignal.timeout(5000));
   if (publicForm === null) notFound();
   const form = publicForm.form;
-  const fields = form.fields as FormField[];
-  const token = issueFormToken(publicId, issuedAt());
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 bg-background px-6 py-12 text-foreground">
-      <header className="space-y-2">
-        <h1 className="text-display font-semibold">{form.title}</h1>
-        {form.description !== null && form.description.trim() !== "" ? (
-          <p className="text-sm text-muted-foreground">{form.description}</p>
-        ) : null}
-      </header>
-
-      {done === "1" ? (
-        <p className="rounded-md bg-muted px-4 py-3 text-sm" data-testid="public-form-success">
-          {form.successMessage}
-        </p>
-      ) : (
-        <form
-          method="post"
-          action={`/api/public/forms/${publicId}/submit`}
-          className="space-y-4"
-          data-testid="public-form"
-        >
-          {fields.map((field) => (
-            <label
-              key={field.key}
-              htmlFor={`field-${field.key}`}
-              className="block space-y-1"
-              data-testid="public-form-field"
-              data-key={field.key}
-            >
-              <span className="text-sm font-medium">
-                {field.label}
-                {field.required ? <span className="text-red-600"> *</span> : null}
-              </span>
-              {field.key === "message" ? (
-                <textarea
-                  id={`field-${field.key}`}
-                  name={field.key}
-                  required={field.required}
-                  placeholder={field.placeholder ?? undefined}
-                  rows={4}
-                  maxLength={2000}
-                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
-                />
-              ) : (
-                <input
-                  id={`field-${field.key}`}
-                  name={field.key}
-                  type={INPUT_TYPES[field.key] ?? "text"}
-                  required={field.required}
-                  placeholder={field.placeholder ?? undefined}
-                  maxLength={field.key === "email" ? 320 : 2000}
-                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
-                />
-              )}
-            </label>
-          ))}
-
-          <div aria-hidden="true" className="hidden">
-            <label>
-              Website
-              <input name="website" tabIndex={-1} autoComplete="off" />
-            </label>
-          </div>
-          <input type="hidden" name="token" value={token} />
-          <button
-            type="submit"
-            data-testid="public-form-submit"
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
-            Submit
-          </button>
-        </form>
-      )}
-    </main>
+    <div className="flex min-h-screen flex-col bg-background">
+      <PublicForm
+        publicId={publicId}
+        title={form.title}
+        description={form.description}
+        fields={form.fields as FormField[]}
+        successMessage={form.successMessage}
+        token={issueFormToken(publicId, issuedAt())}
+        initiallyDone={done === "1"}
+      />
+      <PoweredBy />
+    </div>
   );
 }
