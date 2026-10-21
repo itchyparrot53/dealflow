@@ -278,6 +278,14 @@ export const ERROR_IDS = {
   BOOKING_CANCEL_INVALID: "E_BOOKING_005", // cancel link invalid or already used
   BOOKING_INPUT_INVALID: "E_BOOKING_006", // action input failed Zod
 
+  // INSIGHT (reports, dashboards, CSV, explain and bulk scoring)
+  INSIGHT_NOT_FOUND: "E_INSIGHT_001", // report or dashboard missing, or not readable by the actor
+  INSIGHT_DEFINITION_INVALID: "E_INSIGHT_002", // invalid report definition (context: issues)
+  INSIGHT_QUERY_TIMEOUT: "E_INSIGHT_003", // one report query exceeded REPORT_QUERY_TIMEOUT_MS
+  INSIGHT_EXPLAIN_UNAVAILABLE: "E_INSIGHT_004", // AI insight failed (context: cause id)
+  INSIGHT_FORBIDDEN: "E_INSIGHT_005", // edit or delete by someone other than the owner or an admin
+  INSIGHT_INPUT_INVALID: "E_INSIGHT_006", // action input failed Zod
+
   // UI
   UI_CHART_CONTEXT_MISSING: "E_UI_001", // a chart part rendered outside its ChartContainer
   UI_STALE_BUILD: "E_UI_002", // server action posted from a page loaded before the running deploy
