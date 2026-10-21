@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-21 14:30
+Current: 0.3 · Last updated: 2026-10-21 14:32
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
 
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
-- [ ] 0.2 Schema, migrations, env and image
+- [x] 0.2 Schema, migrations, env and image
 - [ ] 0.3 Pure core (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Projects services, events and notifications (test-first)
@@ -46,6 +46,14 @@ Current: 0.2 · Last updated: 2026-10-21 14:30
 - 0.1: MCP tools in `src/features/mcp/tools/` call domain services (`writes.ts`, `writes-deals.ts`, `writes-contacts.ts`, `writes-activities.ts`, `reads.ts`), so the API resources reuse the same service layer.
 - 0.1: `Dockerfile` runtime stage is `base` = `node:22-alpine`, matching `docker-compose.yml`'s `postgres:16-alpine`, so Task 0.2 installs `postgresql16-client`.
 - 0.1: `/tmp/dealflow-tools` still holds pnpm 9.15.9 and `/tmp/dealflow-pnpm-store` exists, so no reinstall is needed. The `subagent` tool is available for Task 4.3.
+
+- 0.2: `drizzle-kit generate` wrote `0089_dealflow_projects_api.sql` with exactly the five tables from 6.4 (`projects`, `project_phases`, `project_tasks`, `api_tokens`, `backup_runs`); no unrelated table changed. It is applied to the dev database and the tables plus `project_task_assigned` were verified with `psql` there.
+- 0.2: the notification kind is added by `0090_dealflow_projects_notifications.sql` (generated with `--custom`) and `drizzle/meta/0090_snapshot.json` was patched by hand to list all 19 enum values, so the next `db:generate` does not try to add a label that already exists (same fix as Part 7's 0088).
+- 0.2: `trigger` on `backup_runs` is a reserved word in Postgres. Drizzle quotes every identifier, so the column is created and compared as `"trigger"`; no renaming was needed.
+- 0.2: the runtime image installs `postgresql16-client` with `apk` to match `docker-compose.yml`'s `postgres:16-alpine` (the section 4 row).
+- 0.2: the new `backups` volume is mounted read-write on `worker` and read-only on `app`; `docker compose config --quiet` passes for the base file and the local override.
+- 0.2: `scripts/dealflow/smoke.mjs` now also removes `${PROJECT}_backups` in its cleanup, so the smoke project leaves no volume behind; the backup round trip itself lands in Task 4.2.
+- 0.2: adding the enum value made two exhaustive `Record<NotificationType, ...>` maps fail typecheck, so `deepLink.ts` (fallback `/projects`) and `NotificationItem.tsx` (label from `taskTitle` or `projectName`) gained the type, with the feed and preference strings.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -61,6 +61,9 @@ RUN NODE_ENV=production \
 
 # --- runtime: minimal, non-root ---
 FROM base AS runtime
+# pg_dump and pg_restore for the daily backup and the owner-run restore. Match the Postgres server
+# major from docker-compose.yml (postgres:16-alpine), not the Alpine base's default client.
+RUN apk add --no-cache postgresql16-client
 ENV NODE_ENV=production
 # Optional version stamp for the update-check banner (e.g. a release tag). When unset, the app
 # falls back to the bundled package.json version, then "dev" (banner disabled). Not compile-time

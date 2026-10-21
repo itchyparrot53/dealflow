@@ -23,6 +23,8 @@ export const NOTIFICATION_TYPES = [
   "booking_cancelled",
   // Part 7: the bulk AI scoring job finished.
   "ai_bulk_score",
+  // Part 8: someone was assigned a project task.
+  "project_task_assigned",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

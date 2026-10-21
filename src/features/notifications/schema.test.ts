@@ -18,7 +18,7 @@ describe("phase 5 schema", () => {
     });
   });
 
-  it("declares notification_type enum with all 18 values", async () => {
+  it("declares notification_type enum with all 19 values", async () => {
     await withTestDb(async (db) => {
       const rows = await db.execute(sql`
         select enumlabel from pg_enum e
@@ -45,6 +45,7 @@ describe("phase 5 schema", () => {
           "email_open",
           "form_submission",
           "mention",
+          "project_task_assigned",
         ].sort(),
       );
     });

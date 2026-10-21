@@ -26,6 +26,7 @@ const FALLBACK: Record<NotificationType, string> = {
   booking_cancelled: "/settings/booking",
   // The score now shows on the cards and the list; the deals list is where it happened.
   ai_bulk_score: "/deals",
+  project_task_assigned: "/projects",
 };
 
 // Email notifications point at a thread, which the row carries in its payload rather than as an

@@ -89,6 +89,8 @@ services:
     restart: unless-stopped
     command: ["node_modules/.bin/next", "start"]
     env_file: ${DEALFLOW_ENV_FILE:-.env}
+    # Read-only: the app only streams a finished archive to an admin, it never writes one.
+    volumes: [backups:/var/lib/dealflow/backups:ro]
     # Published on loopback by default: the proxy on this box connects from 127.0.0.1. Set
     # APP_BIND=0.0.0.0 (or a LAN address) only when the proxy runs on another machine, and firewall
     # this port in that case: the rate limiter trusts the proxy's X-Forwarded-For.
@@ -131,6 +133,8 @@ services:
     restart: unless-stopped
     command: ["node", "dist/worker.mjs"]
     env_file: ${DEALFLOW_ENV_FILE:-.env}
+    # Read-write: the backup job writes archives here and prunes old ones.
+    volumes: [backups:/var/lib/dealflow/backups]
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -138,3 +142,4 @@ services:
 volumes:
   pgdata:
   miniodata:
+  backups:

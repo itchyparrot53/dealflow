@@ -122,6 +122,15 @@ const base = z.object({
   // Off by default: a webhook target must be a public address. Only tests and local receivers
   // should turn this on, because it removes the SSRF protection.
   WEBHOOK_ALLOW_PRIVATE: boolFromString.default(false),
+  // Backups: a daily pg_dump custom-format archive plus the storage files. The archive names and
+  // sizes are recorded; the files themselves live under BACKUP_DIR and are pruned to BACKUP_KEEP.
+  // BACKUP_ENABLED=false turns the job and "Back up now" off without hiding the settings page.
+  BACKUP_DIR: z.string().min(1).default("/var/lib/dealflow/backups"),
+  BACKUP_KEEP: z.coerce.number().int().min(1).max(90).default(7),
+  BACKUP_ENABLED: boolFromString.default(true),
+  // Client binaries from the runtime image (postgresql16-client, matching the server major).
+  PG_DUMP_PATH: z.string().min(1).default("pg_dump"),
+  PG_RESTORE_PATH: z.string().min(1).default("pg_restore"),
 });
 
 // Production guardrails for the first-run bootstrap (ops spec E6).

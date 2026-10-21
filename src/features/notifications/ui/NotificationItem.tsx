@@ -35,6 +35,8 @@ const LABEL: Record<NotificationType, (p: Record<string, unknown>) => string> = 
   booking_created: (p) => `${toStr(p.name)} booked ${toStr(p.pageTitle)}`,
   booking_cancelled: (p) => `${toStr(p.name)} cancelled ${toStr(p.pageTitle)}`,
   ai_bulk_score: (p) => `${L.ai_bulk_score}: ${toStr(p.message)}`,
+  project_task_assigned: (p) =>
+    `${L.project_task_assigned}: ${toStr(p.taskTitle) || toStr(p.projectName)}`,
 };
 
 export function NotificationItem({
