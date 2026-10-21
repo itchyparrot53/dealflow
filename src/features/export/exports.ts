@@ -45,13 +45,16 @@ function field(row: Record<string, unknown>, key: string): CsvCell {
   const value = row[key];
   if (value === null || value === undefined) return null;
   if (typeof value === "string" || typeof value === "number") return value;
-  return String(value);
+  return JSON.stringify(value);
 }
 
 function isoOrEmpty(row: Record<string, unknown>, key: string): CsvCell {
   const value = row[key];
   if (value === null || value === undefined) return null;
-  const date = value instanceof Date ? value : new Date(String(value));
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(typeof value === "string" || typeof value === "number" ? value : "");
   return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
 }
 
@@ -194,6 +197,9 @@ async function apiRows(
   signal: AbortSignal,
 ): Promise<Record<string, unknown>[]> {
   switch (entity) {
+    case "deals":
+      // Handled by dealRows before this function; listed so the switch stays exhaustive.
+      return [];
     case "persons": {
       const result = await listPeople(
         db,
@@ -202,7 +208,7 @@ async function apiRows(
         signal,
       );
       if (result.total > cap) throw tooLarge();
-      return result.rows as unknown as Record<string, unknown>[];
+      return result.rows;
     }
     case "organizations": {
       const result = await listOrgs(
@@ -233,7 +239,7 @@ async function apiRows(
     case "products": {
       const result = await listProducts(db, { includeInactive: true }, signal);
       if (result.length > cap) throw tooLarge();
-      return result as unknown as Record<string, unknown>[];
+      return result;
     }
     case "invoices": {
       const visibility = dealVisibilityClause({
@@ -279,7 +285,7 @@ async function apiRows(
             eq(pipelines.isArchived, false),
             visibility,
           ),
-        ) as unknown as Record<string, unknown>[];
+        );
     }
     default:
       return [];

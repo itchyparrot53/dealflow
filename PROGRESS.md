@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p8-v1
 
 STATUS: IN PROGRESS
-Current: 3.7 · Last updated: 2026-10-21 15:56
+Current: 4.1 · Last updated: 2026-10-21 16:05
 
 ## Phase base commits
 - Phase 0: 908ed5b4df85ad41aa63f197171a74f0a87463df
 - Phase 1: 51fad6304187d6be0b3acdb00376b735c4bb020b
 - Phase 2: 06cbab182446003d05378bdb00ced999e9d06bb8
 - Phase 3: 2fc2637a17976dad3989aadb3dcb7b8ed617fad1
+- Phase 4: 5501c2abcc8dea197aa5bc9c9180718adc0bab0f
 
 ## Tasks
 - [x] 0.1 Start Part 8: progress files, kit and baseline
@@ -40,6 +41,7 @@ Current: 3.7 · Last updated: 2026-10-21 15:56
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5261/5261 in 818 files · no named integration files in this gate · image client check: pg_dump 16.15 installs on node:22-alpine
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5265/5265 in 819 files · projects/automations/events/notifications integration 94/94 (14 files)
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5267/5267 in 820 files · api/projects/events integration 37/37 (3 files)
+- Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5267/5267 in 820 files · recycle/export/backups/audit/api integration 31/31 (4 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p7-v1` with `STATUS: COMPLETE`, so section 0 rule 1 starts this run fresh at Task 0.1.
@@ -146,6 +148,9 @@ Current: 3.7 · Last updated: 2026-10-21 15:56
 - 3.6: the Backups page is a server component (admin gate, status line, last 50 runs) with one client component for "Back up now"; the action runs the same `runBackup`, so a manual run and the schedule share every step, lock and cleanup path. The download link points at the guarded route. The restore panel shows the exact Compose commands (stop app/worker/ws, `docker compose run` the restore script, start them again).
 - 3.6: the demo seed gained `scripts/seed-demo-projects.ts`: the "Website relaunch" project linked to the first won demo deal with three phases and six tasks (two done), an unlinked "Internal: website refresh", and one read "Demo token" whose plain value is never printed. It reuses rows by name so a re-run never duplicates. `pnpm db:seed:demo` printed `demo_projects=2 demo_project_tasks=6 demo_api_tokens=1` on the dev database.
 - 3.6: docs added: `docs/dealflow/PROJECTS.md`, `docs/dealflow/BACKUPS.md` (contents, schedule, retention, download, exact restore commands, and the warning to copy archives off the machine), the Part 8 sections in AUTOMATIONS.md and WEBHOOKS.md, the Part 8 upstream file list, and a README section linking docs/API.md.
+
+- 3.7: the gate's lint pass fixed the Phase 3 code's own findings: process.env access moved behind the existing env boundary (a new `childProcessEnv` helper for the spawn environment), the backup run split its file mirroring into a helper to stay under the complexity cap, raw `throw new Error` in the download route became a 404 response, the export route's async generator without an await became an explicit iterator, and unused imports/assertions were removed.
+- 3.7: Phase 4's base is the commit before this gate commit (`git rev-parse HEAD` at the time).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

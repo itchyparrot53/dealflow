@@ -67,12 +67,11 @@ export async function listAuditEvents(
     const decoded = decodeCursor(cursor);
     if (decoded.ok) {
       const at = new Date(decoded.value.updatedAt);
-      clauses.push(
-        or(
-          lt(auditEvents.createdAt, at),
-          and(eq(auditEvents.createdAt, at), lt(auditEvents.id, decoded.value.id)),
-        )!,
+      const seek = or(
+        lt(auditEvents.createdAt, at),
+        and(eq(auditEvents.createdAt, at), lt(auditEvents.id, decoded.value.id)),
       );
+      if (seek !== undefined) clauses.push(seek);
     }
   }
   const rows = await db

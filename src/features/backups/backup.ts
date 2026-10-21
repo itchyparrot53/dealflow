@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdir, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
-import { env } from "@/config/env";
+import { childProcessEnv, env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { type Db, pool } from "@/db/client";
 import { backupRuns, users } from "@/db/schema";
@@ -54,7 +54,7 @@ function runCommand(
 ): Promise<{ exitCode: number }> {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
-      env: { ...process.env, ...extraEnv },
+      env: childProcessEnv(extraEnv),
       signal,
     });
     child.on("error", () => resolve({ exitCode: 127 }));
@@ -115,6 +115,28 @@ async function notifyFailure(db: Db, detail: string, signal: AbortSignal): Promi
   }
 }
 
+async function mirrorFiles(
+  storage: BackupDeps["storage"],
+  workDir: string,
+  signal: AbortSignal,
+): Promise<{ key: string; size: number }[]> {
+  if (storage === undefined || storage.listObjects === undefined) {
+    throw errWith("files", "storage client cannot list objects");
+  }
+  const listed = await storage.listObjects(signal);
+  if (!listed.ok) throw errWith("files", listed.error.id);
+  const manifestFiles: { key: string; size: number }[] = [];
+  for (const object of listed.value) {
+    const bytes = await storage.getObjectBytes(object.key, signal);
+    if (!bytes.ok) throw errWith("files", bytes.error.id);
+    const target = join(workDir, "files", object.key);
+    await mkdir(join(target, ".."), { recursive: true });
+    await writeFile(target, bytes.value);
+    manifestFiles.push({ key: object.key, size: bytes.value.length });
+  }
+  return manifestFiles;
+}
+
 async function executeRun(
   db: Db,
   options: { trigger: "schedule" | "manual"; startedBy: string | null },
@@ -151,26 +173,12 @@ async function executeRun(
     const dbStat = await stat(dumpFile);
 
     step = "files";
-    const storage = deps.storage;
-    if (storage?.listObjects === undefined || storage.getObjectBytes === undefined) {
-      throw errWith("files", "storage client cannot list objects");
-    }
-    const listed = await storage.listObjects(signal);
-    if (!listed.ok) throw errWith("files", listed.error.id);
-    const manifestFiles: { key: string; size: number }[] = [];
-    for (const object of listed.value) {
-      const bytes = await storage.getObjectBytes(object.key, signal);
-      if (!bytes.ok) throw errWith("files", bytes.error.id);
-      const target = join(workDir, "files", object.key);
-      await mkdir(join(target, ".."), { recursive: true });
-      await writeFile(target, bytes.value);
-      manifestFiles.push({ key: object.key, size: bytes.value.length });
-    }
+    const manifestFiles = await mirrorFiles(deps.storage, workDir, signal);
 
     step = "manifest";
     const manifest = buildManifest({
       createdAt: now,
-      appVersion: deps.appVersion ?? process.env.APP_VERSION ?? "dev",
+      appVersion: deps.appVersion ?? (env.APP_VERSION === "" ? "dev" : env.APP_VERSION),
       dbBytes: dbStat.size,
       files: manifestFiles,
       schemaMigration: await latestMigration(),
@@ -208,7 +216,11 @@ async function executeRun(
       error instanceof AppError
         ? error
         : errWith(step, error instanceof Error ? error.message : String(error));
-    const detail = String(appError.context?.detail ?? appError.message).slice(0, 500);
+    const rawDetail = appError.context?.detail ?? appError.message;
+    const detail = (typeof rawDetail === "string" ? rawDetail : JSON.stringify(rawDetail)).slice(
+      0,
+      500,
+    );
     await db
       .update(backupRuns)
       .set({

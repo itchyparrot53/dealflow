@@ -72,9 +72,9 @@ beforeAll(async () => {
   dir = await mkdtemp(join(tmpdir(), "dealflow-backup-"));
   setSystemMailerForTest({
     mode: "capture",
-    send: async (mail) => {
+    send: (mail) => {
       sent.push(mail.subject);
-      return ok({ messageId: "fake" });
+      return Promise.resolve(ok({ messageId: "fake" }));
     },
   });
 }, 60_000);
@@ -114,10 +114,8 @@ describe("runBackup", () => {
   it("marks the run failed, removes the partial archive and emails admins when pg_dump fails", async () => {
     sent.length = 0;
     const failing: BackupRunners = {
-      dump: async () => ({ exitCode: 2 }),
-      archive: async () => {
-        throw new Error("archive must not run");
-      },
+      dump: () => Promise.resolve({ exitCode: 2 }),
+      archive: () => Promise.reject(new Error("archive must not run")),
     };
     const result = await runBackup(h.db, { trigger: "schedule" }, sig(), {
       dir,
@@ -133,7 +131,7 @@ describe("runBackup", () => {
     const [row] = await h.db.select().from(backupRuns).orderBy(backupRuns.startedAt).limit(5);
     const failed = await h.db.select().from(backupRuns).where(eq(backupRuns.status, "failed"));
     expect(failed.length).toBeGreaterThanOrEqual(1);
-    expect(failed.some((run) => run.errorDetail?.includes("pg_dump"))).toBe(true);
+    expect(failed.some((run) => run.errorDetail?.includes("pg_dump") === true)).toBe(true);
     expect(row).toBeDefined();
     expect(sent.length).toBeGreaterThanOrEqual(1);
   });

@@ -247,7 +247,10 @@ export function DealListClient({
         canManagePipelines={initial.canManagePipelines}
         exportSlot={
           initial.canExport === true ? (
-            <ExportButton entity="deals" columns={columns.visibleColumns.map((column) => column.key)} />
+            <ExportButton
+              entity="deals"
+              columns={columns.visibleColumns.map((column) => column.key)}
+            />
           ) : undefined
         }
         createSlot={addDeal}

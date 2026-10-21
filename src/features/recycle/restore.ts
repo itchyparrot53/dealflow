@@ -13,6 +13,7 @@ import {
 } from "@/db/schema";
 import { recordChange } from "@/features/collaboration/changeLog";
 import type { PermSetUser } from "@/features/permissions/effective";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { type RecycleEntity, recycleCutoff, recycleEntitySchema } from "./recycle";
 
@@ -160,11 +161,7 @@ const TABLE_NAME: Record<RecycleEntity, string> = {
   project: "projects",
 };
 
-async function clearDeletedAt(
-  db: import("@/server/realtime/channelVersions").DbOrTx,
-  entity: RecycleEntity,
-  id: string,
-): Promise<void> {
+async function clearDeletedAt(db: DbOrTx, entity: RecycleEntity, id: string): Promise<void> {
   // A raw UPDATE because Drizzle's builder does not type-resolve over the Db | Tx union; the
   // table name comes from the constant map above, never from input.
   await db.execute(

@@ -189,6 +189,12 @@ export const envSchema = schema;
 
 export type Env = z.infer<typeof base>;
 
+// The one place a child process may inherit the raw environment (pg_dump needs PATH and the
+// caller's locale). Extra values, such as PGPASSWORD, never touch argv.
+export function childProcessEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
+  return { ...process.env, ...extra };
+}
+
 // Pure, testable: validates a given source map without touching the global env.
 export function parseEnv(raw: NodeJS.ProcessEnv): Result<Env, string> {
   const resolved = resolveFileVars(raw);

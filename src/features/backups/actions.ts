@@ -25,14 +25,7 @@ export async function backUpNowAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   if (g.value.type !== "admin") {
-    return toClientResult(
-      err(
-        new (await import("@/constants/errorIds")).AppError(
-          ERROR_IDS.PERM_DENIED,
-          "admin required",
-        ),
-      ),
-    );
+    return toClientResult(err(new AppError(ERROR_IDS.PERM_DENIED, "admin required")));
   }
   return toClientResult(await runBackup(db, { trigger: "manual", startedBy: g.value.id }, SIG()));
 }

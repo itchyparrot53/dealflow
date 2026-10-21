@@ -10,10 +10,22 @@ import { createContext } from "@/server/trpc/context";
 
 export const dynamic = "force-dynamic";
 
-async function* rowsIterable(
+function rowsIterable(
   rows: (string | number | null)[][],
 ): AsyncIterable<(string | number | null)[]> {
-  for (const row of rows) yield row;
+  let index = 0;
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        next(): Promise<IteratorResult<(string | number | null)[]>> {
+          const row = rows[index];
+          index += 1;
+          if (row === undefined) return Promise.resolve({ done: true, value: undefined });
+          return Promise.resolve({ done: false, value: row });
+        },
+      };
+    },
+  };
 }
 
 export async function GET(

@@ -21,16 +21,6 @@ export interface ApiDocSection {
   routes: ApiDocRoute[];
 }
 
-const RESOURCE_TITLES: Record<string, string> = {
-  deals: "Deals",
-  persons: "People",
-  organizations: "Organizations",
-  activities: "Activities",
-  notes: "Notes",
-  products: "Products",
-  projects: "Projects",
-};
-
 export const API_DOC_PROSE = {
   intro:
     "Dealflow's REST API lets a script act as one of your users. Every call runs as the token's user through the same services the interface uses, so visibility, permissions, automations and the change log all apply.",

@@ -1,7 +1,7 @@
 import { ERROR_IDS } from "@/constants/errorIds";
-import { API_DOC_PROSE, type ApiDocRoute, type ApiDocSection } from "./docSections";
+import { API_DOC_PROSE, type ApiDocSection } from "./docSections";
 import { API_ROUTES } from "./registry";
-import type { ApiExample, ApiRoute } from "./types";
+import type { ApiRoute } from "./types";
 
 // One registry, two renderings: the in-app Documentation tab and docs/API.md (via `pnpm api:docs`)
 // are both built from these serializable sections, so neither can drift from the routes.

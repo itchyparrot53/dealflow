@@ -34,7 +34,12 @@ export async function GET(
   const path = join(env.BACKUP_DIR, file);
   try {
     const info = await stat(path);
-    if (!info.isFile()) throw new Error("not a file");
+    if (!info.isFile()) {
+      return Response.json(
+        { error: { id: "E_BACKUP_002", message: "backup not found" } },
+        { status: 404 },
+      );
+    }
     const stream = Readable.toWeb(createReadStream(path)) as unknown as ReadableStream<Uint8Array>;
     return new Response(stream, {
       headers: {
