@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 5.3 · Last updated: 2026-10-21 02:47
+Current: 5.4 · Last updated: 2026-10-21 03:19
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -36,7 +36,7 @@ Current: 5.3 · Last updated: 2026-10-21 02:47
 - [x] 4.6 Phase 4 QA gate
 - [x] 5.1 E2E automations spec and screenshots
 - [x] 5.2 Integration suite and smoke
-- [ ] 5.3 Independent review and hardening
+- [x] 5.3 Independent review and hardening
 - [ ] 5.4 Final checklist
 - [ ] 5.5 Final report and completion
 
@@ -47,6 +47,9 @@ Current: 5.3 · Last updated: 2026-10-21 02:47
 - Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · automations/events/ai/notifications 106/106
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · events/documents/deals/collaboration 219/219
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · documents 45/45
+
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/4 majors/3 minors · fixed 8
+- Independent review: subagent (fresh context) round 2: QA RESULT FAIL · 0 blockers/0 majors/1 minor · fixed 1
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p4-v1` with `STATUS: COMPLETE`, and HEAD was `ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
@@ -158,6 +161,10 @@ Current: 5.3 · Last updated: 2026-10-21 02:47
 
 - 5.2: the full `pnpm test:integration` passed 1951/1951 in 397 files (78.8 s) on the final tree, so there are no `PRE-EXISTING:` entries.
 - 5.2: `DOCKER_BUILDKIT=0 pnpm smoke` printed SMOKE PASS, then removed the `dealflow-smoke` compose project and its volumes; verified afterwards that no container and no volume with that name remain. No prune was run.
+
+- 5.3: round 1 (one blocker, four majors, three minors) found that "New automation" was called without a CSRF token (the blocker), that `redeliver` never enqueued its delivery, that the automation and webhook reads were not admin-gated, that the AI actions and Describe it bypassed Part 1's per-user rate limit, three formatter errors, the activity snapshot field name (`type`, not just `typeId`), a loopback test that refused at the URL check rather than the DNS lookup, and the delivery job registration living in `deliver.ts`. All eight were fixed in `5.3: QA fixes round 1`.
+- 5.3: round 2 (one minor) found the editor comparing the save error against the retired literal instead of `ERROR_IDS.AUTOMATION_INPUT_INVALID` (`E_AUTOMATION_006`), so the inline Zod copy never displayed; fixed in `5.3: QA fixes round 2`, which also waits for the delivery dialog before its screenshot so `p5-webhook-deliveries` shows the log rather than the row menu.
+- 5.3: after both fix rounds the Task 4.6 gate was re-run green (typecheck, lint 14 warnings, build, unit 5124/5124, automations/webhooks 35/35), the focused events/automations/webhooks suite passed 49/49, and the full e2e passed 19/19 again.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
