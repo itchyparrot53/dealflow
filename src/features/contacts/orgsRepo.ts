@@ -4,6 +4,7 @@ import type { Db } from "@/db/client";
 import type { Organization } from "@/db/schema";
 import { organizations, users } from "@/db/schema";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { emitDomainEvent } from "@/features/events/emit";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
@@ -93,22 +94,30 @@ export async function createOrg(
   const { level, visibilityGroupId } = visResult.value;
   signal.throwIfAborted();
 
-  const [row] = await db
-    .insert(organizations)
-    .values({
-      name: input.name,
-      address: input.address,
-      ownerId: actor.id,
-      visibilityLevel: level,
-      visibilityGroupId,
-      customFields: cfResult.value,
-    })
-    .returning();
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(organizations)
+      .values({
+        name: input.name,
+        address: input.address,
+        ownerId: actor.id,
+        visibilityLevel: level,
+        visibilityGroupId,
+        customFields: cfResult.value,
+      })
+      .returning();
 
-  if (row === undefined) {
-    return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}));
-  }
-  return ok(row);
+    if (row === undefined) {
+      return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}));
+    }
+    // Created inside the transaction so a rolled-back insert leaves no event.
+    await emitDomainEvent(
+      tx,
+      { type: "organization.created", entityType: "organization", entityId: row.id, actorId: actor.id },
+      signal,
+    );
+    return ok(row);
+  });
 }
 
 export async function updateOrg(

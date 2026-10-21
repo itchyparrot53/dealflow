@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { documentCounters, documents } from "@/db/schema";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import { emitDomainEvent } from "@/features/events/emit";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, type Result } from "@/types/result";
@@ -92,6 +93,12 @@ export async function issueDocument(
     if (updated === undefined) {
       throw new AppError(ERROR_IDS.DB_WRITE_FAILED, "issueDocument: update returned no rows");
     }
+    // Both "issue" and "markSent" land here, so a document is announced exactly once.
+    await emitDomainEvent(
+      tx,
+      { type: "document.sent", entityType: "document", entityId: id, actorId: actor.id },
+      signal,
+    );
     signal.throwIfAborted();
     return getDocument(tx, actor, id, signal);
   });
@@ -122,6 +129,11 @@ export async function voidInvoice(
     if (updated === undefined) {
       throw new AppError(ERROR_IDS.DB_WRITE_FAILED, "voidInvoice: update returned no rows");
     }
+    await emitDomainEvent(
+      tx,
+      { type: "invoice.voided", entityType: "invoice", entityId: id, actorId: actor.id },
+      signal,
+    );
     signal.throwIfAborted();
     return getDocument(tx, actor, id, signal);
   });

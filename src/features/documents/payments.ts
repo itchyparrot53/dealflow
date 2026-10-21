@@ -6,6 +6,7 @@ import { documentPayments, documents } from "@/db/schema";
 import { formatCents, parseCents } from "@/features/currency/money";
 import { moneyString } from "@/features/currency/schemas";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
+import { emitDomainEvent } from "@/features/events/emit";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, type Result } from "@/types/result";
@@ -101,6 +102,11 @@ export async function recordPayment(
         .update(documents)
         .set({ status: "paid", paidAt: new Date(), updatedAt: new Date() })
         .where(eq(documents.id, row.id));
+      await emitDomainEvent(
+        tx,
+        { type: "invoice.paid", entityType: "invoice", entityId: row.id, actorId: actor.id },
+        signal,
+      );
     }
     signal.throwIfAborted();
     return getDocument(tx, actor, row.id, signal);

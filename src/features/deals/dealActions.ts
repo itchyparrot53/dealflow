@@ -9,6 +9,7 @@ import { deals } from "@/db/schema/deals";
 import { pipelines } from "@/db/schema/pipelines";
 import { stages } from "@/db/schema/stages";
 import { settings } from "@/db/schema/system";
+import { emitDomainEvent } from "@/features/events/emit";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import {
   type EntityCreateSession,
@@ -209,6 +210,11 @@ export async function createDeal(
     }
 
     await syncEntityLabelNames(tx, "deal", row.id, row.labels, signal);
+    await emitDomainEvent(
+      tx,
+      { type: "deal.created", entityType: "deal", entityId: row.id, actorId: session.userId },
+      signal,
+    );
 
     await publishBoardEvent(
       tx,

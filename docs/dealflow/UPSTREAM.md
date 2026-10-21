@@ -201,3 +201,26 @@ here by hand):
   unlinks activities owned by non-demo users from demo deals, people and organizations before deleting
   them, so a re-seed is not blocked by foreign keys. New `scripts/seed-demo-documents.ts`.
 - `README.md`: the "Quotes and invoices" section.
+
+## Part 5 (automations and webhooks) base
+
+Part 5 builds on the Part 4 result at commit `ebbf7d2` (PROGRESS-P4.md). New work lives in
+`src/features/events/`, `src/features/automations/`, `src/features/webhooks/`,
+`src/features/net/`, `src/db/schema/automations.ts`, migration `0083_dealflow_automations` and
+the settings routes. Upstream files edited for the part (port future upstream fixes here by hand):
+
+- `src/db/schema/index.ts`: exports the automations schema.
+- `src/config/env.ts`, `.env.example`: `TRUSTED_PROXY_HOPS` and `WEBHOOK_ALLOW_PRIVATE`.
+- `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the AUTOMATION and WEBHOOK IDs
+  and their domains.
+- `src/features/collaboration/changeLog.ts`: `recordChange` writes domain events in the same
+  transaction.
+- Creates that emit their own event: `src/features/deals/dealActions.ts`,
+  `src/features/contacts/personsRepo.ts`, `src/features/contacts/orgsRepo.ts` (now transactional),
+  `src/features/activities/repo.ts` (create and completion).
+- Document status events: `src/features/documents/issue.ts`, `payments.ts`, `publicDocuments.ts`,
+  `overdueJob.ts`.
+- `src/features/enrichment/prospectApplyItem.ts`, `prospectApply.ts`: the enrichment path writes
+  its change log directly, so it emits and now takes an `AbortSignal`.
+- `src/app/d/[publicId]/page.tsx`, `src/app/api/public/documents/[publicId]/{accept,decline}/route.ts`:
+  use the shared `clientIp`.

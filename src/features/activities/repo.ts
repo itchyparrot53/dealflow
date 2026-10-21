@@ -11,6 +11,7 @@ import {
 import { listDefs } from "@/features/custom-fields/defsRepo";
 import { buildCustomFieldsSchema } from "@/features/custom-fields/validate";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
+import { emitDomainEvent } from "@/features/events/emit";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -183,6 +184,11 @@ export async function createActivity(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity insert returned no rows", {}));
     }
+    await emitDomainEvent(
+      tx,
+      { type: "activity.created", entityType: "activity", entityId: row.id, actorId: actor.id },
+      signal,
+    );
 
     if (input.guestPersonIds.length > 0) {
       await tx
@@ -246,6 +252,13 @@ export async function completeActivity(
 
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity update returned no rows", {}));
+    }
+    if (done && !current.done) {
+      await emitDomainEvent(
+        tx,
+        { type: "activity.completed", entityType: "activity", entityId: row.id, actorId: actor.id },
+        signal,
+      );
     }
 
     if (row.dealId !== null) {

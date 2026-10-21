@@ -4,6 +4,7 @@ import type { Db } from "@/db/client";
 import type { Person } from "@/db/schema";
 import { persons, users } from "@/db/schema";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { emitDomainEvent } from "@/features/events/emit";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -108,6 +109,11 @@ export async function createPerson(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}));
     }
+    await emitDomainEvent(
+      tx,
+      { type: "person.created", entityType: "person", entityId: row.id, actorId: actor.id },
+      signal,
+    );
     return ok(row);
   });
 }

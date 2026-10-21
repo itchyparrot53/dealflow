@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { deals, documentPayments, documents, users } from "@/db/schema";
 import { formatCents, parseCents } from "@/features/currency/money";
+import { emitDomainEvent } from "@/features/events/emit";
 import { createNotification } from "@/features/notifications/produce";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
@@ -153,24 +154,36 @@ interface RecordedView {
 async function recordView(db: Db, row: DocumentRow, signal: AbortSignal): Promise<RecordedView> {
   signal.throwIfAborted();
   const firstView = row.viewedAt === null;
-  if (row.kind === "quote" && row.status === "sent") {
-    const [updated] = await db
-      .update(documents)
-      .set({ status: "viewed", viewedAt: row.viewedAt ?? new Date(), updatedAt: new Date() })
-      .where(eq(documents.id, row.id))
-      .returning();
+  if (!firstView) return { row, firstView };
+
+  // The update and its event share one transaction, so a failed write announces nothing.
+  return db.transaction(async (tx) => {
+    let updated: DocumentRow | undefined;
+    if (row.kind === "quote" && row.status === "sent") {
+      [updated] = await tx
+        .update(documents)
+        .set({ status: "viewed", viewedAt: new Date(), updatedAt: new Date() })
+        .where(eq(documents.id, row.id))
+        .returning();
+    } else if (row.kind === "invoice") {
+      // An invoice keeps its status; only the first view is recorded.
+      [updated] = await tx
+        .update(documents)
+        .set({ viewedAt: new Date(), updatedAt: new Date() })
+        .where(eq(documents.id, row.id))
+        .returning();
+    } else {
+      return { row, firstView };
+    }
+    if (updated !== undefined) {
+      await emitDomainEvent(
+        tx,
+        { type: "document.viewed", entityType: "document", entityId: updated.id, actorId: null },
+        signal,
+      );
+    }
     return { row: updated ?? row, firstView };
-  }
-  if (row.kind === "invoice" && firstView) {
-    // An invoice keeps its status; only the first view is recorded.
-    const [updated] = await db
-      .update(documents)
-      .set({ viewedAt: new Date(), updatedAt: new Date() })
-      .where(eq(documents.id, row.id))
-      .returning();
-    return { row: updated ?? row, firstView };
-  }
-  return { row, firstView };
+  });
 }
 
 async function outstandingFor(db: DbOrTx, row: DocumentRow): Promise<string> {
@@ -326,17 +339,27 @@ export async function acceptQuote(
   }
 
   // Conditional on the status we read: two accepts cannot both win.
-  const [updated] = await db
-    .update(documents)
-    .set({
-      status: "accepted",
-      acceptedName: parsed.data.name,
-      acceptedAt: new Date(),
-      acceptedIp: parsed.data.ip,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(documents.id, row.id), eq(documents.status, row.status)))
-    .returning();
+  const [updated] = await db.transaction(async (tx) => {
+    const [rowUpdated] = await tx
+      .update(documents)
+      .set({
+        status: "accepted",
+        acceptedName: parsed.data.name,
+        acceptedAt: new Date(),
+        acceptedIp: parsed.data.ip,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(documents.id, row.id), eq(documents.status, row.status)))
+      .returning();
+    if (rowUpdated !== undefined) {
+      await emitDomainEvent(
+        tx,
+        { type: "document.accepted", entityType: "document", entityId: rowUpdated.id, actorId: null },
+        signal,
+      );
+    }
+    return [rowUpdated];
+  });
   if (updated === undefined) return err(transitionNotAllowed(row.status));
   signal.throwIfAborted();
   await notifyOwner(
@@ -369,16 +392,31 @@ export async function declineQuote(
     return err(transitionNotAllowed(row.status));
   }
 
-  const [updated] = await db
-    .update(documents)
-    .set({
-      status: "declined",
-      declinedAt: new Date(),
-      declineReason: parsed.data.reason,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(documents.id, row.id), eq(documents.status, row.status)))
-    .returning();
+  const [updated] = await db.transaction(async (tx) => {
+    const [rowUpdated] = await tx
+      .update(documents)
+      .set({
+        status: "declined",
+        declinedAt: new Date(),
+        declineReason: parsed.data.reason,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(documents.id, row.id), eq(documents.status, row.status)))
+      .returning();
+    if (rowUpdated !== undefined) {
+      await emitDomainEvent(
+        tx,
+        {
+          type: "document.declined",
+          entityType: "document",
+          entityId: rowUpdated.id,
+          actorId: null,
+        },
+        signal,
+      );
+    }
+    return [rowUpdated];
+  });
   if (updated === undefined) return err(transitionNotAllowed(row.status));
   signal.throwIfAborted();
   await notifyOwner(db, updated, visible.value.deal, "document_declined", {}, signal);

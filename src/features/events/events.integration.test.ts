@@ -2,10 +2,13 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { domainEvents, deals } from "@/db/schema";
+import { domainEvents, deals, documents } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { recordChange } from "@/features/collaboration/changeLog";
+import { createDeal } from "@/features/deals/dealActions";
 import { changeStage } from "@/features/deal-workspace/changeStage";
+import { acceptQuote } from "@/features/documents/publicDocuments";
+import { runOverdueInvoices } from "@/features/documents/overdueJob";
 import { markWon } from "@/features/deal-workspace/wonLost";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
@@ -117,6 +120,97 @@ describe("recordChange emits domain events", () => {
     ).rejects.toThrow("rollback");
 
     expect(await eventsFor(deal.id)).toHaveLength(0);
+  });
+
+  it("writes deal.created when a deal is created through the service", async () => {
+    const created = await createDeal(
+      h.db,
+      {
+        userId: admin.id,
+        isAdmin: true,
+        isActive: true,
+        sessionLive: true,
+        visibilityGroupIds: [],
+        primaryVisibilityGroupId: null,
+        flags: {},
+      },
+      { title: "Created deal", pipelineId, stageId: firstStageId },
+      sig(),
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const rows = await eventsFor(created.value.id);
+    expect(rows.map((row) => row.type)).toEqual(["deal.created"]);
+    expect(rows[0]?.depth).toBe(0);
+  });
+
+  it("writes document.accepted when a public quote is accepted", async () => {
+    const deal = await seedDeal();
+    const [quote] = await h.db
+      .insert(documents)
+      .values({
+        kind: "quote",
+        dealId: deal.id,
+        publicId: `pub-${randomUUID()}`,
+        title: "Quote",
+        body: "Body",
+        currency: "USD",
+        subtotal: "100.00",
+        tax: "0.00",
+        total: "100.00",
+        status: "sent",
+        createdBy: admin.id,
+        issueDate: "2026-01-01",
+        validUntil: "2099-01-01",
+      })
+      .returning();
+    if (quote === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "quote seed failed");
+
+    const accepted = await acceptQuote(
+      h.db,
+      quote.publicId,
+      { name: "Customer", agree: true, ip: "203.0.113.9" },
+      sig(),
+    );
+    expect(accepted.ok).toBe(true);
+
+    const rows = await eventsFor(quote.id);
+    expect(rows.map((row) => row.type)).toContain("document.accepted");
+  });
+
+  it("writes one invoice.overdue event per swept invoice", async () => {
+    const deal = await seedDeal();
+    const base = {
+      kind: "invoice",
+      dealId: deal.id,
+      title: "Invoice",
+      body: "Body",
+      currency: "USD",
+      subtotal: "100.00",
+      tax: "0.00",
+      total: "100.00",
+      issueDate: "2026-01-01",
+      status: "sent",
+      createdBy: admin.id,
+    };
+    const past = await h.db
+      .insert(documents)
+      .values([
+        { ...base, publicId: `pub-${randomUUID()}`, dueDate: "2026-01-02" },
+        { ...base, publicId: `pub-${randomUUID()}`, dueDate: "2026-01-03" },
+        { ...base, publicId: `pub-${randomUUID()}`, dueDate: "2099-01-01" },
+      ])
+      .returning();
+
+    const swept = await runOverdueInvoices(h.db, sig());
+    expect(swept).toBe(2);
+    const firstEvents = await eventsFor(past[0]?.id ?? "");
+    const secondEvents = await eventsFor(past[1]?.id ?? "");
+    const futureEvents = await eventsFor(past[2]?.id ?? "");
+    expect(firstEvents.map((row) => row.type)).toEqual(["invoice.overdue"]);
+    expect(secondEvents.map((row) => row.type)).toEqual(["invoice.overdue"]);
+    expect(futureEvents).toHaveLength(0);
   });
 
   it("inherits the chain id, depth and automation id from runInChain", async () => {

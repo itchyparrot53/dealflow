@@ -144,6 +144,7 @@ async function applyItem(
         personId,
         { row, selections: item.selections },
         applied.value,
+        signal,
       );
       await markRevealApplied(tx, row.id, personId, now, signal);
       return { ok: true as const, personId, appliedFields: applied.value.appliedFields };

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-21 01:34
+Current: 1.3 · Last updated: 2026-10-21 01:37
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -14,7 +14,7 @@ Current: 1.2 · Last updated: 2026-10-21 01:34
 - [x] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
 - [x] 0.5 Phase 0 QA gate
 - [x] 1.1 Emit from recordChange (test-first)
-- [ ] 1.2 Create and document events
+- [x] 1.2 Create and document events
 - [ ] 1.3 Dispatcher, snapshot and retention (test-first)
 - [ ] 1.4 Phase 1 QA gate
 - [ ] 2.1 Runner, conditions and the capability (test-first)
@@ -75,6 +75,11 @@ Current: 1.2 · Last updated: 2026-10-21 01:34
 - 1.1: the four integration cases were written first and run red (the stage case needed the CAS `expectedUpdatedAt` the existing input schema requires), then all four passed; the deal field names `recordChange` receives are `stageId`, `status`, `deleted`/`deletedAt` and the activity completion field is emitted by the activity service in Task 1.2.
 - 1.1: `emitDomainEvent` inserts in the caller's `DbOrTx` and then `NOTIFY dealflow_domain_events`, which Postgres delivers on commit; a failed NOTIFY only logs, because the dispatcher also polls, and a rolled-back transaction leaves no event and no notification.
 - 1.1: the chain travels in an `AsyncLocalStorage` context (`chainContext.ts`) so the runner can open a chain without changing any service signature; `eventTypesForChange` treats `deletedAt` like `deleted` because the deal workspace path uses the former and the deals path the latter.
+
+- 1.2: the create services now emit `deal.created`, `person.created`, `organization.created` and `activity.created` inside their own transaction; `createOrg` was not transactional before, so its insert and event were wrapped in one, and `completeActivity` emits `activity.completed` only on a false-to-true turn.
+- 1.2: document events are `document.sent` (both issue and markSent path through `issueDocument`), `document.viewed` (first view only, quote and invoice), `document.accepted`/`declined`, `invoice.overdue` (one per `RETURNING id` row), `invoice.paid` (when the summed payments reach the total) and `invoice.voided`; the public view/accept/decline writes were moved into transactions so update and event commit together.
+- 1.2: the one audited path that bypassed `recordChange` is `enrichment/prospectApplyItem.ts`'s `writeChangeLogs`; it now emits `person.updated` per field in the caller's transaction and takes the caller's `AbortSignal`, and `UPSTREAM.md` gained a Part 5 section.
+- 1.2: the three new cases pass (7/7 in the events file) and the documents plus activities integration files still pass (151/151).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

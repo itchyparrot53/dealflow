@@ -3,6 +3,7 @@ import type { Db } from "@/db/client";
 import { changeLogs } from "@/db/schema";
 import type { ProspectRevealRow } from "@/db/schema/prospects";
 import { type ContactActor, createPerson } from "@/features/contacts/personsRepo";
+import { emitDomainEvent } from "@/features/events/emit";
 import { can } from "@/features/permissions/can";
 import { lockAndAuthorize, validateSelections } from "./applyGuards";
 import type { Outcome } from "./applyWrites";
@@ -93,20 +94,36 @@ export async function writeChangeLogs(
   personId: string,
   source: { row: ProspectRevealRow; selections: readonly Selection[] },
   applied: Outcome,
+  signal: AbortSignal,
 ): Promise<void> {
   for (const field of applied.appliedFields) {
     const selection = source.selections.find((s) => s.canonicalKey === field);
     if (selection === undefined) continue;
+    const oldValue = applied.appended.includes(field) ? null : (applied.previous[field] ?? null);
+    const newValue = {
+      value: applied.written[field] ?? selection.value,
+      providers: providersBehind(source.row.outcomes, selection),
+    };
     await tx.insert(changeLogs).values({
       entityType: "person",
       entityId: personId,
       field,
-      oldValue: applied.appended.includes(field) ? null : (applied.previous[field] ?? null),
-      newValue: {
-        value: applied.written[field] ?? selection.value,
-        providers: providersBehind(source.row.outcomes, selection),
-      },
+      oldValue,
+      newValue,
       actorId: actor.id,
     });
+    // This path writes the audit row directly instead of going through recordChange, so it
+    // emits its own event in the caller's transaction (section 4 names it explicitly).
+    await emitDomainEvent(
+      tx,
+      {
+        type: "person.updated",
+        entityType: "person",
+        entityId: personId,
+        actorId: actor.id,
+        changes: [{ field, old: oldValue, new: newValue }],
+      },
+      signal,
+    );
   }
 }
