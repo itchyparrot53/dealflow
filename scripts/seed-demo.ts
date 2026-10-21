@@ -48,6 +48,7 @@ import {
 import { seedFormsBooking } from "./seed-demo-forms";
 import { seedContactFollowers, seedInvitedUser, seedOrgRelations } from "./seed-demo-graph";
 import { seedInsights } from "./seed-demo-insights";
+import { seedProductivity } from "./seed-demo-productivity";
 import { seedProjects } from "./seed-demo-projects";
 import { insertDeals, insertLeads, insertOrgs, insertPeople, wipeDemo } from "./seed-demo-records";
 import { seedSales } from "./seed-demo-sales";
@@ -144,6 +145,12 @@ async function main(): Promise<void> {
   // Part 7: the default dashboard, a private activities report and a shared "Team activity" board.
   const insights = await seedInsights({ ownerId: at(userIds, 0), pool });
   const projectsSeed = await seedProjects({ ownerId: at(userIds, 0), pool });
+  // Part 9: recurring activities, logged calls and duplicate pairs for the productivity screens.
+  const productivity = await seedProductivity({
+    ownerId: at(userIds, 0),
+    orgIds,
+    pool,
+  });
 
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
@@ -258,6 +265,9 @@ async function main(): Promise<void> {
   );
   console.warn(
     `demo_projects=${projectsSeed.projects} demo_project_tasks=${projectsSeed.tasks} demo_api_tokens=${projectsSeed.tokens}`,
+  );
+  console.warn(
+    `demo_recurring=${productivity.recurring} demo_calls=${productivity.calls} demo_duplicate_pairs=${productivity.duplicatePairs}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

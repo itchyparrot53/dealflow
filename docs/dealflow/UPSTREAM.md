@@ -340,3 +340,40 @@ settings navigation, `src/server/worker.ts`, `src/constants/jobNames.ts`, `src/c
 `.env.example`, `Dockerfile` and `docker-compose.yml` (backups volume and the Postgres client),
 `src/db/schema/index.ts`, `src/features/collaboration/changeLog.ts`, `src/types/entityRef.ts`,
 `src/features/files/storage.ts` and `storageFake.ts`, and the demo seed.
+
+
+## Part 9
+
+New modules live in `src/features/activities/recurrence/`, `src/features/activities/calls/`,
+`src/features/activities/list/`, `src/features/duplicates/`, `src/features/contacts/bulk/`,
+`src/features/feedback/`, `src/features/palette/` and `src/features/shortcuts/`, plus
+`src/components/ui/toaster.tsx`. Upstream files changed:
+
+- `src/db/schema/index.ts` (exports `activityExtras`), `src/features/identity/audit.ts` and
+  `src/features/audit/auditLog.ts` (shared redaction).
+- Activities: `repo.ts` (call row in the create transaction, recurrence hook and conditional
+  completion update), `actions.ts` (`setRecurrenceAction`), `calendar.ts` and `forEntity.ts`
+  (call/recurrence projections), `activityRows.ts`, `ActivityRow.tsx`, `ActivitiesTable.tsx`,
+  `ActivitiesTableHead.tsx`, `AddActivityModal.tsx`, `ActivityEditModal.tsx`,
+  `activityEditPatch.ts`, `toEditableActivity.ts`, `getForEdit.ts`, `useActivityListFilter.ts`
+  (URL state) and `useActivityBulkActions.ts` (one bulk action).
+- `src/app/(app)/activities/list/page.tsx` (initial columns), the week/month calendar files
+  (`WeekAgendaGrid`, `MonthView`, `AgendaDayColumn`) and the new `calendarDrag.tsx`.
+- `src/features/deal-workspace/history/ActivityCard.tsx` (chips and delete undo),
+  `header/DealActionsMenu.tsx` (delete undo), `src/features/compose/SharedComposeBar.tsx`
+  ("Log call"), `src/features/deals/useDealMove.ts` and `Board.tsx` (stage undo).
+- Contacts: `PeopleList.tsx`, `OrgsList.tsx` (bulk owner, AI input, delete undo),
+  `orgRelations.ts` (loop guard), `src/app/(app)/contacts/ContactActionsMenu.tsx` and the people,
+  organizations and duplicates pages.
+- `src/features/ai/fakeProvider.ts` (per-target fake filter), `src/features/ai/ui/AiFilterBox.tsx`
+  (`ai-filter-input`), `src/features/search/ui/CommandPalette.tsx` (command groups) and
+  `src/app/(app)/layout.tsx` (Toaster and the palette's actor).
+- `src/features/forecast/ui/ForecastBoard.tsx` and `src/features/projects/ui/ProjectBoard.tsx`
+  (error toasts), `src/features/identity/preferencesSchema.ts` (`activitiesView`),
+  `src/features/export/exports.ts` (activities URL filters and the accumulated `by()` fix).
+- `src/constants/errorIds.ts` and its allow-list test, `src/constants/productivity.ts` and
+  `src/constants/productivityStrings.ts` (new), `src/constants/permissionFlags` unchanged.
+- `scripts/seed-demo.ts` plus the new `scripts/seed-demo-productivity.ts`, and this file,
+  `docs/API.md` unchanged, `docs/dealflow/PRODUCTIVITY.md` (new) and `README.md`.
+- Tests updated for the new wiring: the activities table/filter/bulk suites, the activity dialogs,
+  the people and organizations lists, the calendar columns and client, the palette and shortcuts.

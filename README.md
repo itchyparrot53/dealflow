@@ -228,3 +228,14 @@ Projects group phases and tasks and can be started from a won deal. The REST API
 in-app at Settings > API and in [docs/API.md](docs/API.md); tokens are personal, hashed at rest and
 scoped read or read-write. Settings also gained a recycle bin (restore for 30 days), an admin audit
 log, and daily backups whose restore is documented in [docs/dealflow/BACKUPS.md](docs/dealflow/BACKUPS.md).
+
+## Productivity (Part 9)
+
+Activities can repeat (daily, weekly, monthly or yearly) and completing one creates the next
+occurrence once; calls are logged with an outcome chip; the week and month calendars drag to
+reschedule; the activities list keeps its filters in the URL with a column picker and bulk actions;
+and a duplicate finder for people and organizations feeds the existing merge. People and
+organizations gained bulk owner changes and AI filters, an organization cannot become its own
+ancestor, and undo toasts cover stage moves and deletes. The command palette has Create, Go to and
+Actions commands, and `g`/`n` sequences plus `?` open the shortcut help. See
+`docs/dealflow/PRODUCTIVITY.md`.

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-21 18:58
+Current: 3.5 · Last updated: 2026-10-21 18:59
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -28,7 +28,7 @@ Current: 3.4 · Last updated: 2026-10-21 18:58
 - [x] 3.1 Toaster and undo
 - [x] 3.2 Palette commands
 - [x] 3.3 Shortcut sequences and the help sheet
-- [ ] 3.4 Demo seed and docs
+- [x] 3.4 Demo seed and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E productivity spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -57,6 +57,7 @@ Current: 3.4 · Last updated: 2026-10-21 18:58
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 - 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
+- 3.4: `scripts/seed-demo-productivity.ts` adds a weekly series (Mon and Thu) due next Monday, a monthly series anchored on the 31st, three logged calls (Connected, No answer, Left voicemail), a same-email-different-case person pair, a same-name-same-organization pair and the "Acme Ltd"/"ACME Limited" organization pair; a re-run reuses rows by subject or name. `pnpm db:seed:demo` against the dev database printed `demo_recurring=2 demo_calls=3 demo_duplicate_pairs=3`. `docs/dealflow/PRODUCTIVITY.md` documents recurrence, calls, the calendar, the activities list, duplicates, bulk actions, AI filters, undo, the palette and every shortcut; `UPSTREAM.md` gained the Part 9 file list and `README.md` the productivity section.
 - 3.3: one registry (`shortcuts/registry.ts`) feeds both the matcher and `ShortcutHelp`; the g/n sequences use `createSequenceMatcher` (1200 ms, modifiers reset), the number-row nav is unchanged, and `?` (or the palette's "Keyboard shortcuts" action) opens a Dialog grouped Navigation, Create, Lists and Palette. Sequences and `?` are ignored inside text inputs and while an overlay is open, and the help sheet is generated from the same registry so a shortcut cannot be undocumented.
 - 3.2: the registry in `commandRegistry.ts` has Create, Go to and Actions commands; `visibleCommands` filters them by the actor's flags (admin commands hidden from a regular user), and `CommandPalette` renders the groups above record search with `palette-command`/`data-command-id`, taking the actor from the app layout. The existing palette is a custom dialog rather than cmdk (code is the source of truth), so the groups render in that list; they are click-driven so Enter keeps selecting records. Create commands navigate to the page that owns the dialog, and there is no theme-toggle event to wire, so "Toggle theme" is omitted.
 - 3.1: the toaster is one region mounted in the app layout; toasts pause on hover/focus, dismiss on Escape or the X, and an error tone announces assertively. `pushStageUndo` reverses a board move through `moveDealAction` with the updatedAt the forward move returned (a stale one shows "Couldn't undo: the deal changed since"); `pushDeleteUndo` restores through `restoreItemAction` for deal, person, organization and activity, including the activity and contact bulk deletes. The forecast and project-board inline alerts became error toasts; the remaining in-dialog field alerts in the projects dialogs stay as inline validation copy (checklist item 13 explains them). Two real-Postgres cases prove the move-back and the stale-CAS refusal, and the toast store keeps the tone. The board pushes the toast from `useDealMove` with the stage name from `Board`.
