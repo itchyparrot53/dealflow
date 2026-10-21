@@ -14,6 +14,7 @@ vi.mock("@/lib/trpc-client", () => ({
       savedFilters: { listByTarget: { invalidate: vi.fn() } },
     }),
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     labels: {
       listByTarget: { useQuery: () => ({ data: [] }) },
       appliedNames: { useQuery: () => ({ data: [] }) },

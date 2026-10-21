@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-21 18:47
+Current: 2.4 · Last updated: 2026-10-21 18:50
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -21,7 +21,7 @@ Current: 2.3 · Last updated: 2026-10-21 18:47
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Duplicate finder (test-first)
 - [x] 2.2 People and organizations bulk actions
-- [ ] 2.3 AI filters on people, organizations and leads
+- [x] 2.3 AI filters on people, organizations and leads
 - [ ] 2.4 Organization parent-loop guard
 - [ ] 2.5 Phase 2 QA gate
 - [ ] 3.1 Toaster and undo
@@ -55,6 +55,7 @@ Current: 2.3 · Last updated: 2026-10-21 18:47
 - 0.2: the full integration suite (405 files, 2046 tests) and e2e (22/22, specs 00 to 12) were green on the current tree with no code change; the dev database was up to date (`pnpm db:migrate:dev` printed "migrations applied", 91 migration rows).
 - 0.2: the first real smoke run caught a Part 8 restore bug the disk block hid: `restoreBackup` called `pg_restore` without `--dbname`, so pg_restore wrote SQL to stdout instead of connecting (`PGDATABASE` only supplies connection defaults). It now passes `--dbname` with the database name (never the URL) so the password stays in the child env, and the smoke's `run()` appends captured stdout/stderr when a captured step fails, which is how the failure was diagnosed. The round trip compares 0 deals because the smoke seed creates only an admin.
 - 0.3: `drizzle/0091_dealflow_activity_extras.sql` creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals` (no other table changed) and is applied to the dev database (92 migration rows). Redaction moved to `src/features/audit/redact.ts`: `recordAudit` runs `redactRecord` before insert and `listAuditEvents` still runs `redact`, so both the writer and rows from older writers are covered; the new integration case stores `password` and a nested `apiKey` as `[redacted]`.
+- 2.3: Part 1's filter flow was already target-generic (`aiFilterInputSchema` takes deal, person, organization and lead and validates with that target's saved-filter schema), so this task covered the fake and the inputs. `fakeProvider` now returns a valid definition per target (people by name, organizations by name, leads by title, deals by value), and the people and organizations lists mount `AiFilterBox`, which parses the returned definition with `savedFilterDefinitionSchema` before applying it as the list filter. Unit tests prove every target's fake passes its schema and that a person definition using the deal-only `value` field is rejected with `E_AI_005`. The leads list exposes only an inbox/archived toggle (no condition surface), so no input was mounted there; the lead target still works through `describeFilterAction` and is logged under Open issues.
 - 2.2: People and organizations gained bulk change owner alongside the existing bulk delete. Both lists call one `bulkContactAction` that loops `updatePerson`/`updateOrg` or `deletePerson`/`deleteOrg`, so every row keeps its own permission check, and a partial batch returns `E_BULK_002` with the failed ids and the applied count; more than `BULK_MAX` ids is `E_BULK_001` before any write. The three real-Postgres cases pass (owner partial with two applied, delete then restore through `restoreItem`, over-limit). The per-row delete buttons were left as they were.
 - 2.1: the finder fetches at most 5000 non-deleted candidates per entity, applies `canSee` in memory, and groups them by normalised keys: people by primary email, phone key and name plus orgId (name_org), organizations by normalised name and domain. Dismissals are stored with sorted ids and filtered before paging (`DUPLICATE_PAGE_SIZE`), pairs sort by reason strength then name, and the page has People/Organizations tabs, side-by-side cards, reason badges, Merge through `BulkMergeDialog` and "Not duplicates". The page is linked from both list headers. The eight real-Postgres cases pass.
 - 1.4: the activities filters now live in the URL (`ownerId`, `done`, `from`, `to`, `typeKey`) while the hook keeps an in-memory copy so the toolbar re-renders at once; a bare URL is normalised once to the visible defaults so the export link carries them. Bulk mark done, reschedule, change owner and delete go through one `bulkActivityAction` that loops the existing services, returns `E_BULK_002` with the failed ids on a partial batch and `E_BULK_001` above `BULK_MAX`; the bar exposes the four contract testids (the delete undo toast waits for the toaster in 3.1). The column picker reuses the deals `useColumns` model and the new `activitiesView` user preference, and the row/head render from the visible order. Adding the export case exposed a Part 8 bug: the `by()` helper in exports.ts returned the original rows for an absent param, so each later filter discarded the earlier ones; it now accumulates, and the activities export understands the list's URL keys.

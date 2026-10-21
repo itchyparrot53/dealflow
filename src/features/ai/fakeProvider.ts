@@ -51,6 +51,41 @@ const FILTER = JSON.stringify({
   explanation: "FAKE: deals worth more than 1,000",
 });
 
+// The filter prompt names the target ("a filter for people/organizations/leads/deals"), so the
+// fake can answer with a definition valid for that target's allow-list instead of a deal-only
+// condition that the validator would reject. Person/organization and lead both expose a name or
+// title text field.
+function fakeFilter(system: string): string {
+  if (system.includes("for people")) {
+    return JSON.stringify({
+      definition: {
+        combinator: "and",
+        conditions: [{ field: "name", op: "contains", value: "Jane" }],
+      },
+      explanation: "FAKE: people named Jane",
+    });
+  }
+  if (system.includes("for organizations")) {
+    return JSON.stringify({
+      definition: {
+        combinator: "and",
+        conditions: [{ field: "name", op: "contains", value: "Acme" }],
+      },
+      explanation: "FAKE: organizations named Acme",
+    });
+  }
+  if (system.includes("for leads")) {
+    return JSON.stringify({
+      definition: {
+        combinator: "and",
+        conditions: [{ field: "title", op: "contains", value: "Acme" }],
+      },
+      explanation: "FAKE: leads mentioning Acme",
+    });
+  }
+  return FILTER;
+}
+
 function emailDraft(req: AiChatRequest): string {
   const instruction = parseJson(lastUserContent(req))?.instruction;
   const text = typeof instruction === "string" ? instruction : "";
@@ -124,7 +159,7 @@ export function fakeProvider(): AiProvider {
       } else if (system.includes("Dealflow automation builder")) {
         content = automationDraft(req);
       } else if (system.includes("CRM filter builder")) {
-        content = FILTER;
+        content = fakeFilter(system);
       } else if (system.includes("Dealflow Assistant")) {
         // The /fake-tool branch only fires while the user message is the last one; once the tool
         // result comes back this falls through to a text answer and the loop ends.

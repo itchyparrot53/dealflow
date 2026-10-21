@@ -49,6 +49,7 @@ export function AiFilterBox({ entity, onDefinition }: Props): React.ReactNode {
         <Label htmlFor="ai-filter-text">Describe a filter</Label>
         <Input
           id="ai-filter-text"
+          data-testid="ai-filter-input"
           value={text}
           maxLength={500}
           placeholder="Open deals over 10,000 closing this month"

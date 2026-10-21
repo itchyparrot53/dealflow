@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { PRODUCTIVITY_STRINGS } from "@/constants/productivityStrings";
 import { STRINGS } from "@/constants/strings";
+import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
@@ -19,6 +20,7 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
+import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -194,6 +196,13 @@ export function PeopleList({
               // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
               setSavedViewId(null);
               setFilter(def);
+            }}
+          />
+          <AiFilterBox
+            entity="person"
+            onDefinition={(definition) => {
+              const parsed = savedFilterDefinitionSchema("person").safeParse(definition);
+              if (parsed.success) setFilter(parsed.data as ContactFilterDefinition);
             }}
           />
         </div>

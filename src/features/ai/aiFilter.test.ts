@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
 import type { Db } from "@/db/client";
+import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { ok } from "@/types/result";
-import { describeFilter, type FilterReference, fieldCatalogue } from "./aiFilter";
+import { describeFilter, type FilterReference, fieldCatalogue, filterPrompt } from "./aiFilter";
 import type { ChatJsonDeps } from "./chatJson";
+import { fakeProvider } from "./fakeProvider";
 import { ScriptedAiProvider } from "./scriptedProvider";
 
 const db = {} as Db;
@@ -129,5 +131,47 @@ describe("describeFilter", () => {
     expect(system).toContain("value");
     expect(system).toContain("expectedCloseDate");
     expect(system).toContain("today");
+  });
+});
+
+describe("AI_FAKE filters per target", () => {
+  for (const entity of ["deal", "person", "organization", "lead"] as const) {
+    it(`returns a ${entity} definition that passes that target's schema`, async () => {
+      const provider = fakeProvider();
+      const reference = { ...REFERENCE, fields: fieldCatalogue(entity) };
+      const result = await provider.chat(
+        {
+          messages: [
+            { role: "system", content: filterPrompt(entity, reference, actor.id) },
+            { role: "user", content: "anything" },
+          ],
+        },
+        signal(),
+      );
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      const parsed = JSON.parse(result.value.content ?? "{}") as { definition: unknown };
+      expect(savedFilterDefinitionSchema(entity).safeParse(parsed.definition).success).toBe(true);
+    });
+  }
+
+  it("rejects a person field outside the person allow-list", async () => {
+    const invalid = JSON.stringify({
+      definition: { combinator: "and", conditions: [{ field: "value", op: "gt", value: 1 }] },
+      explanation: "bad",
+    });
+    const provider = new ScriptedAiProvider({ content: invalid }, { content: invalid });
+    const result = await describeFilter(
+      db,
+      actor,
+      { entity: "person", text: "someone" },
+      signal(),
+      {
+        reference: { ...REFERENCE, fields: fieldCatalogue("person") },
+        ...deps(provider),
+      },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.AI_BAD_OUTPUT);
   });
 });
