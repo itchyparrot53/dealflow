@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-21 13:12
+Current: 2.3 · Last updated: 2026-10-21 13:24
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -19,7 +19,7 @@ Current: 2.2 · Last updated: 2026-10-21 13:12
 - [x] 1.3 Currency-correct stats and goals
 - [x] 1.4 Phase 1 QA gate
 - [x] 2.1 Reports, dashboards, default dashboard, CSV export
-- [ ] 2.2 Explain, score data and bulk scoring
+- [x] 2.2 Explain, score data and bulk scoring
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Insights home and report builder
 - [ ] 3.2 Dashboards
@@ -84,6 +84,13 @@ Current: 2.2 · Last updated: 2026-10-21 13:12
 - 2.1: a dashboard read omits a report widget the viewer cannot read and a widget whose goal is soft-deleted; adding a widget validates that the report is readable or the goal exists. Duplicating a report makes a private "(copy)" owned by the duplicator; moving a widget swaps positions in a transaction.
 - 2.1: the CSV route requires a session, re-reads the report through the service (404 when unreadable), maps a timeout to 504, and names the file `{slug}-{YYYY-MM-DD}.csv`; the formula guard is the one in `toCsv`.
 - 2.1: the route integration test mocks only the `@/db/client` binding and `createContext` so the handler runs against the per-test Postgres and actor; tables and SQL are real.
+
+- 2.2: explain returns deterministic insights when the effective provider is the fake one (`AI_FAKE`), building them from the largest group, the smallest group and the total, exactly as section 6.7 step 4 says; the real path goes through `chatJson` with `insight_explain`, so caps, usage logging and the per-minute limiter all apply. The prompt carries the definition summary, base currency, total, excluded list and at most 60 rows of labels/values/counts; the privacy test asserts no deal title or email appears.
+- 2.2: AI failures map to `E_INSIGHT_004` with the AI error id in `context.cause`; a report's own error (timeout, not found) passes through unchanged.
+- 2.2: `bulkScoreDeals` narrows ids through the deals visibility predicate and then `can(actor, "deal.edit", ...)`, silently dropping the rest (and returning `queued: 0` when none survive); it enqueues one `ai.bulk-score` job and returns `E_JOBS_001` when no job queue is running rather than dropping the promise silently.
+- 2.2: the job hydrates the requester, scores one deal at a time, and stops at the first cap, disabled-AI or rate-limit refusal; any other per-deal failure is skipped so the batch continues. It always creates one `ai_bulk_score` notification: "Scored {n} of {m} deals" plus " (AI limit reached)" when it stopped early.
+- 2.2: the board and deals-list reads LEFT JOIN `deal_ai_insights` and return `score`, so the card badge (Task 3.3) reads it from the same rows; the aggregate money query stays lean and does not select it.
+- 2.2: `AI_FEATURES` gained `insight_explain` so usage rows record the feature; the fake provider needs no new branch because the fake path is resolved in `explain.ts`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

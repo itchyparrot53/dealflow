@@ -1,24 +1,37 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
+import type { PgBoss } from "pg-boss";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as exportCsv } from "@/app/(app)/insights/reports/[id]/export.csv/route";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import {
   activities,
   activityTypes,
+  aiSettings,
+  aiUsage,
   dashboards,
   dashboardWidgets,
+  dealAiInsights,
   deals,
   dealTerms,
+  notifications,
   reports,
   stageProbabilities,
   userPreferences,
 } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
+import { updateAiSettings } from "@/features/ai/aiSettings";
+import { bulkScoreDeals } from "@/features/ai/bulkScore";
+import { runBulkScoreJob } from "@/features/ai/bulkScoreJob";
+import { fakeProvider } from "@/features/ai/fakeProvider";
+import { setAiProviderForTest } from "@/features/ai/provider";
+import { ScriptedAiProvider } from "@/features/ai/scriptedProvider";
 import { saveRate } from "@/features/currency/rates";
+import { getBoardColumns } from "@/features/deals/dealRepo";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { EVERYONE } from "@/features/stats/ownerIds";
 import { stageConversion } from "@/features/stats/stageConversion";
+import { setBoss } from "@/jobs/boss";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { addWidget, createDashboard, getDashboard } from "./dashboards";
 import { ensureDefaultDashboard } from "./defaultDashboard";
@@ -27,6 +40,7 @@ import type {
   DealReportDefinition,
   ReportDefinition,
 } from "./definition";
+import { explainReport } from "./explain";
 import { createReport, deleteReport, getReport, listReports, updateReport } from "./reports";
 import { runReport } from "./run";
 
@@ -99,6 +113,9 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  await h.db.delete(notifications);
+  await h.db.delete(aiUsage);
+  await h.db.delete(aiSettings);
   await h.db.delete(dashboardWidgets);
   await h.db.delete(dashboards);
   await h.db.delete(reports);
@@ -693,6 +710,179 @@ describe("deal reports", () => {
       expect(lines[0]).toBe('"Group","Segment","Count","Value"');
       expect(body).toContain('"\'=SUM(A1)"');
       currentActor = null;
+    });
+  });
+
+  describe("explain and bulk scoring", () => {
+    const scoreReply = { content: JSON.stringify({ score: 72, reasons: ["engaged", "soon"] }) };
+
+    function sessionFor(actor: PermSetUser) {
+      return {
+        userId: actor.id,
+        isAdmin: actor.type === "admin",
+        isActive: actor.isActive,
+        sessionLive: true,
+        visibilityGroupIds: Array.from(actor.groupIds),
+        managedUserIds: Array.from(actor.managedUserIds ?? []),
+      };
+    }
+
+    function fakeBoss(): { boss: PgBoss; sends: { name: string; data: unknown }[] } {
+      const sends: { name: string; data: unknown }[] = [];
+      const boss = {
+        send(name: string, data: unknown) {
+          sends.push({ name, data });
+          return Promise.resolve();
+        },
+      } as unknown as PgBoss;
+      return { boss, sends };
+    }
+
+    it("returns three deterministic insights with the fake provider", async () => {
+      await addDeal({
+        title: "Won one",
+        status: "won",
+        value: "100.00",
+        wonTime: new Date("2026-02-01T10:00:00Z"),
+      });
+      const report = await createReport(
+        h.db,
+        admin,
+        { name: "Explain me", definition: def({ measure: { kind: "sum_value" } }) },
+        sig(),
+      );
+      expect(report.ok).toBe(true);
+      if (!report.ok) return;
+
+      setAiProviderForTest(fakeProvider());
+      const out = await explainReport(h.db, admin, { reportId: report.value.id }, sig());
+      expect(out.ok).toBe(true);
+      if (out.ok) {
+        expect(out.value.insights).toHaveLength(3);
+        expect(out.value.insights.join(" ")).toContain("Total:");
+      }
+    });
+
+    it("sends only aggregated rows to the model", async () => {
+      await addDeal({ title: "Secret deal title", value: "500.00" });
+      const scripted = new ScriptedAiProvider({
+        content: JSON.stringify({ insights: ["first", "second", "third"] }),
+      });
+      setAiProviderForTest(scripted);
+
+      const out = await explainReport(
+        h.db,
+        admin,
+        { definition: def({ measure: { kind: "sum_value" }, groupBy: { field: "stage" } }) },
+        sig(),
+      );
+      expect(out.ok).toBe(true);
+      const messages = scripted.calls[0]?.messages ?? [];
+      const prompt = messages.map((message) => String(message.content)).join("\n");
+      expect(prompt).toContain('"group"');
+      expect(prompt).not.toContain("Secret deal title");
+      expect(prompt).not.toContain("@example.com");
+    });
+
+    it("maps an AI cap error to E_INSIGHT_004", async () => {
+      setAiProviderForTest(new ScriptedAiProvider({ content: "{}" }));
+      await updateAiSettings(
+        h.db,
+        { enabled: true, companyMonthlyTokenLimit: 0, userMonthlyTokenLimit: null },
+        sig(),
+      );
+      const out = await explainReport(h.db, admin, { definition: def() }, sig());
+      expect(out.ok).toBe(false);
+      if (!out.ok) {
+        expect(out.error.id).toBe(ERROR_IDS.INSIGHT_EXPLAIN_UNAVAILABLE);
+        expect(out.error.context?.cause).toBe(ERROR_IDS.AI_COMPANY_LIMIT);
+      }
+    });
+
+    it("scores three deals and notifies the requester once", async () => {
+      await updateAiSettings(
+        h.db,
+        { enabled: true, companyMonthlyTokenLimit: 1_000_000, userMonthlyTokenLimit: null },
+        sig(),
+      );
+      setAiProviderForTest(
+        new ScriptedAiProvider({ ...scoreReply }, { ...scoreReply }, { ...scoreReply }),
+      );
+      const ids = [
+        await addDeal({ title: "One", value: "10.00" }),
+        await addDeal({ title: "Two", value: "20.00" }),
+        await addDeal({ title: "Three", value: "30.00" }),
+      ];
+
+      const outcome = await runBulkScoreJob(h.db, { requesterId: admin.id, dealIds: ids }, sig());
+      expect(outcome.ok).toBe(true);
+      if (outcome.ok) expect(outcome.value.scored).toBe(3);
+
+      const scores = await h.db
+        .select({ dealId: dealAiInsights.dealId, score: dealAiInsights.score })
+        .from(dealAiInsights)
+        .where(inArray(dealAiInsights.dealId, ids));
+      expect(scores).toHaveLength(3);
+      expect(scores.every((row) => row.score === 72)).toBe(true);
+
+      const notes = await h.db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.type, "ai_bulk_score"));
+      expect(notes).toHaveLength(1);
+      expect(notes[0]?.payload.message).toBe("Scored 3 of 3 deals");
+
+      const board = await getBoardColumns(h.db, sessionFor(admin), pipelineId, sig());
+      expect(board.cards.find((card) => card.id === ids[0])?.score).toBe(72);
+    });
+
+    it("stops at the AI cap and says so in the notification", async () => {
+      await updateAiSettings(
+        h.db,
+        { enabled: true, companyMonthlyTokenLimit: 150, userMonthlyTokenLimit: null },
+        sig(),
+      );
+      setAiProviderForTest(new ScriptedAiProvider({ ...scoreReply }));
+      const ids = [
+        await addDeal({ title: "One", value: "10.00" }),
+        await addDeal({ title: "Two", value: "20.00" }),
+        await addDeal({ title: "Three", value: "30.00" }),
+      ];
+
+      const outcome = await runBulkScoreJob(h.db, { requesterId: admin.id, dealIds: ids }, sig());
+      expect(outcome.ok).toBe(true);
+      if (outcome.ok) {
+        expect(outcome.value.scored).toBe(1);
+        expect(outcome.value.stopped).toBe(true);
+      }
+      const notes = await h.db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.type, "ai_bulk_score"));
+      expect(notes[0]?.payload.message).toBe("Scored 1 of 3 deals (AI limit reached)");
+    });
+
+    it("drops deals the actor cannot edit before enqueuing", async () => {
+      const { boss, sends } = fakeBoss();
+      setBoss(boss);
+      const mine = await addDeal({ title: "Mine", ownerId: viewerId });
+      const theirs = await addDeal({
+        title: "Theirs",
+        ownerId: otherOwnerId,
+        visibilityLevel: "owner",
+      });
+
+      const viewerEditor: PermSetUser = {
+        ...viewer,
+        flags: new Set(["deal.edit_own"]),
+      };
+      const queued = await bulkScoreDeals(h.db, viewerEditor, { dealIds: [mine, theirs] }, sig());
+      expect(queued.ok).toBe(true);
+      if (queued.ok) expect(queued.value.queued).toBe(1);
+      expect(sends).toHaveLength(1);
+      const data = sends[0]?.data as { requesterId: string; dealIds: string[] };
+      expect(data.requesterId).toBe(viewerId);
+      expect(data.dealIds).toEqual([mine]);
     });
   });
 });

@@ -7,6 +7,7 @@ import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 import { type ActionResult, toClientResult } from "@/types/actionResult";
+import { type BulkScoreQueued, bulkScoreDeals } from "../bulkScore";
 import { type DealAiInsightView, scoreDeal, summarizeDeal } from "../dealInsights";
 import { type NoteProposals, proposeActivitiesFromNote } from "../notesToActivities";
 import { checkAiRateLimit } from "../rateLimit";
@@ -50,6 +51,17 @@ export async function scoreDealAction(
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.AI_INPUT_INVALID } };
   return toClientResult(
     await scoreDeal(db, c.actor, parsed.data, AbortSignal.timeout(AI_ACTION_TIMEOUT_MS)),
+  );
+}
+
+export async function bulkScoreDealsAction(
+  input: { dealIds: string[] },
+  csrfToken: string | null,
+): Promise<ActionResult<BulkScoreQueued>> {
+  const c = await context(csrfToken);
+  if (!c.ok) return c;
+  return toClientResult(
+    await bulkScoreDeals(db, c.actor, input, AbortSignal.timeout(AI_ACTION_TIMEOUT_MS)),
   );
 }
 

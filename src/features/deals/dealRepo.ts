@@ -82,6 +82,9 @@ export interface BoardCard {
   // client-side from the loaded cards. Optional for hand-built fixtures.
   currency?: string;
   probability?: number;
+  // The latest AI score (0..100) from deal_ai_insights, or null when the deal was never scored.
+  // Optional so hand-built fixtures need not set it; the card only shows a badge when present.
+  score?: number | null;
 }
 
 export type DealListCard = BoardCard & { customFields: Record<string, unknown> };
@@ -124,7 +127,8 @@ export async function getBoardColumns(
       d.stage_entered_at   AS "stageEnteredAt",
       d.updated_at         AS "updatedAt",
       coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true), 'USD') AS currency,
-      coalesce(dt.probability, sp.probability, 100)::int AS probability
+      coalesce(dt.probability, sp.probability, 100)::int AS probability,
+      ai.score AS score
     FROM deals d
     JOIN pipelines p ON p.id = d.pipeline_id
     LEFT JOIN stages s ON s.id = d.stage_id
@@ -133,6 +137,7 @@ export async function getBoardColumns(
     LEFT JOIN organizations o ON o.id = d.org_id
     LEFT JOIN deal_terms dt ON dt.deal_id = d.id
     LEFT JOIN stage_probabilities sp ON sp.stage_id = d.stage_id
+    LEFT JOIN deal_ai_insights ai ON ai.deal_id = d.id
     -- Soonest OPEN, DATED activity's subject: the same predicate recomputeNextActivity uses, so the
     -- title always pairs with next_activity_at. LATERAL keeps it one row per deal (no fan-out).
     LEFT JOIN LATERAL (
@@ -235,6 +240,7 @@ export async function listDeals(
     LEFT JOIN organizations o ON o.id = d.org_id
     LEFT JOIN deal_terms dt ON dt.deal_id = d.id
     LEFT JOIN stage_probabilities sp ON sp.stage_id = d.stage_id
+    LEFT JOIN deal_ai_insights ai ON ai.deal_id = d.id
     WHERE d.deleted_at IS NULL
       ${statusGate}
       AND ${archiveGate}
@@ -272,7 +278,8 @@ export async function listDeals(
         d.updated_at         AS "updatedAt",
         d.custom_fields       AS "customFields",
         coalesce(dt.currency, (SELECT base_currency FROM settings WHERE id = true), 'USD') AS currency,
-        coalesce(dt.probability, sp.probability, 100)::int AS probability
+        coalesce(dt.probability, sp.probability, 100)::int AS probability,
+        ai.score AS score
       ${base}
       ORDER BY d.updated_at DESC
       LIMIT ${opts.limit} OFFSET ${opts.offset}

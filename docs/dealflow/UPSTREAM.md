@@ -303,6 +303,11 @@ Upstream files edited for the part (port future upstream fixes here by hand):
   `Breakdowns.tsx`, `TrendWidget.tsx`, `GoalsWidget.tsx`: the note under each money total.
 - `src/constants/strings.ts`: `excludedExchangeRate`.
 - `src/features/stats/routerTrend.test.ts`: the trend point now also carries `excluded`.
+- `src/features/deals/dealRepo.ts`: the board and list reads join `deal_ai_insights` and return
+  `score`; `src/features/deals/dealRepo.ts`'s aggregate query is unchanged in shape.
+- `src/features/ai/types.ts`, `src/features/ai/actions/dealActions.ts`, `src/server/worker.ts`,
+  `src/constants/jobNames.ts`: the `insight_explain` feature, the bulk score action, its queue and
+  worker registration.
 - `src/db/schema/index.ts`: exports the insights schema.
 - `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the INSIGHT IDs and their domain.
 - `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,

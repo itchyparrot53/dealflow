@@ -53,5 +53,7 @@ export const AI_FEATURES = [
   "notes_to_activities",
   "ai_filter",
   "automation_describe",
+  // Part 7: "Explain this report" over aggregated report rows.
+  "insight_explain",
 ] as const;
 export type AiFeature = (typeof AI_FEATURES)[number];

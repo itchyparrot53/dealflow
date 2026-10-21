@@ -49,6 +49,9 @@ export const PGBOSS_QUEUE_WEBHOOK_DELIVER = "webhooks.deliver";
 export const PGBOSS_QUEUE_DEAL_ROTTING = "deals.rotting";
 export const PGBOSS_QUEUE_EVENT_RETENTION = "events.retention";
 
+// Part 7: the bulk AI scoring job (payload { requesterId, dealIds }). One job per request.
+export const PGBOSS_QUEUE_AI_BULK_SCORE = "ai.bulk-score";
+
 // Daily schedules, UTC: rotting after the overnight sync work, retention after that.
 export const DEAL_ROTTING_CRON = "0 5 * * *";
 export const EVENT_RETENTION_CRON = "30 4 * * *";
