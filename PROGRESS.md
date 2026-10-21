@@ -179,7 +179,9 @@ Current: COMPLETE · Last updated: 2026-10-21 17:12
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 
 ## Open issues
-- None
+- Smoke (and the backup round trip in it) is unproven: the Docker VM is out of disk, so the smoke Postgres cannot start. Owner action logged; the smoke script contains the round trip and no smoke resources remain.
+- The final tree's full integration and e2e suites could not be re-run after the review fixes for the same reason. Last green evidence: 2046/2046 integration on `2fc2637` and 22/22 e2e before the fixes; the changed modules have green unit tests.
+- The audit log reads defensively redacted before/after JSON; the writer itself does not redact, so any future caller that passes a secret would rely on this reader-side filter.
 
 ## Environment
 - `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH npm_config_store_dir=/tmp/dealflow-pnpm-store` (pnpm 9.15.9 lives in `/tmp/dealflow-tools`; the global pnpm here is 8.9.2). Recreate it with `npm install --prefix /tmp/dealflow-tools --cache /tmp/npm-cache pnpm@9.15.9` if `/tmp` was cleared.
