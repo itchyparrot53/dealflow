@@ -6,6 +6,7 @@ import { currencyRouter } from "@/features/currency/router";
 import { customFieldsRouter } from "@/features/custom-fields/router";
 import { dealRouter } from "@/features/deals/dealRouter";
 import { documentsRouter } from "@/features/documents/router";
+import { webhooksRouter } from "@/features/webhooks/router";
 import { mailLabelsRouter } from "@/features/email/mailLabelsRouter";
 import { emailRouter } from "@/features/email/router";
 import { enrichmentRouter } from "@/features/enrichment/router";
@@ -37,6 +38,7 @@ export const appRouter = router({
   contacts: contactsRouter,
   currency: currencyRouter,
   documents: documentsRouter,
+  webhooks: webhooksRouter,
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,
   activities: activitiesRouter,

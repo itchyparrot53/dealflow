@@ -9,23 +9,40 @@ import { seedUser } from "@/db/testing/factories";
 import { encryptToken } from "@/features/email/crypto";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
 import type { SystemMail } from "@/features/mailer/types";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { ok } from "@/types/result";
 import { deliverWebhook } from "./deliver";
-import { verifySignature } from "./signature";
+import { createSubscription, redeliver, rotateSecret, setEnabled } from "./service";
+import { signatureHeader, verifySignature } from "./signature";
 
 const SECRET = "whsec_test_secret";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
-let adminId: string;
+let admin: PermSetUser;
+let regular: PermSetUser;
 const servers: Server[] = [];
 
 const sig = (): AbortSignal => AbortSignal.timeout(15_000);
 
 beforeAll(async () => {
   h = await makeTestDb();
-  const admin = await seedUser(h.db, { isAdmin: true, name: "Webhook Admin" });
-  adminId = admin.id;
+  const adminRow = await seedUser(h.db, { isAdmin: true, name: "Webhook Admin" });
+  admin = {
+    id: adminRow.id,
+    type: "admin",
+    isActive: true,
+    groupIds: new Set(),
+    flags: new Set(),
+  };
+  const regularRow = await seedUser(h.db, { name: "Webhook Regular" });
+  regular = {
+    id: regularRow.id,
+    type: "regular",
+    isActive: true,
+    groupIds: new Set(),
+    flags: new Set(),
+  };
 }, 60_000);
 
 afterAll(async () => {
@@ -85,7 +102,7 @@ async function seedSubscription(
       url,
       events: ["deal.won"],
       secretEnc: encryptToken(SECRET),
-      createdBy: adminId,
+      createdBy: admin.id,
       ...overrides,
     })
     .returning({ id: webhookSubscriptions.id });
@@ -276,5 +293,100 @@ describe("deliverWebhook", () => {
     const outcome = await deliverWebhook(h.db, randomUUID(), sig(), { allowPrivate: true });
     expect(outcome.status).toBe("failed");
     expect(outcome.errorId).toBe(ERROR_IDS.WEBHOOK_NOT_FOUND);
+  });
+});
+
+describe("webhook subscriptions", () => {
+  const input = {
+    name: "Public hook",
+    url: "https://example.com/hooks/dealflow",
+    events: ["deal.won", "invoice.paid"],
+  };
+
+  it("returns the secret once and stores it encrypted", async () => {
+    const created = await createSubscription(h.db, admin, input, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    expect(created.value.secret.startsWith("whsec_")).toBe(true);
+
+    const [row] = await h.db
+      .select()
+      .from(webhookSubscriptions)
+      .where(eq(webhookSubscriptions.id, created.value.subscription.id));
+    expect(row?.secretEnc.toString("utf8")).not.toBe(created.value.secret);
+    expect(row?.secretEnc.toString("utf8")).not.toContain("whsec_");
+    // No read view carries the sealed value.
+    expect("secretEnc" in created.value.subscription).toBe(false);
+  });
+
+  it("rotates the secret so old signatures stop verifying", async () => {
+    const created = await createSubscription(h.db, admin, input, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const oldSecret = created.value.secret;
+    const rotated = await rotateSecret(h.db, admin, created.value.subscription.id, sig());
+    expect(rotated.ok).toBe(true);
+    if (!rotated.ok) return;
+    expect(rotated.value).not.toBe(oldSecret);
+
+    const body = '{"a":1}';
+    const now = Math.floor(Date.now() / 1000);
+    const oldHeader = signatureHeader(oldSecret, now, body);
+    const newHeader = signatureHeader(rotated.value, now, body);
+    expect(verifySignature(oldSecret, newHeader, body, now)).toBe(false);
+    expect(verifySignature(rotated.value, oldHeader, body, now)).toBe(false);
+    expect(verifySignature(rotated.value, newHeader, body, now)).toBe(true);
+  });
+
+  it("resets consecutive failures when re-enabled", async () => {
+    const created = await createSubscription(h.db, admin, input, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const id = created.value.subscription.id;
+    await h.db
+      .update(webhookSubscriptions)
+      .set({ enabled: false, consecutiveFailures: 9, disabledReason: "Disabled after 10 failed deliveries" })
+      .where(eq(webhookSubscriptions.id, id));
+
+    const enabled = await setEnabled(h.db, admin, id, true, sig());
+    expect(enabled.ok).toBe(true);
+    if (!enabled.ok) return;
+    expect(enabled.value.consecutiveFailures).toBe(0);
+    expect(enabled.value.disabledReason).toBeNull();
+  });
+
+  it("creates a new delivery for a redelivery", async () => {
+    const created = await createSubscription(h.db, admin, input, sig());
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const deliveryId = await seedDelivery(created.value.subscription.id);
+
+    const result = await redeliver(h.db, admin, deliveryId, sig());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.deliveryId).not.toBe(deliveryId);
+    const [copy] = await h.db
+      .select()
+      .from(webhookDeliveries)
+      .where(eq(webhookDeliveries.id, result.value.deliveryId));
+    expect(copy?.eventType).toBe("deal.won");
+    expect(copy?.status).toBe("pending");
+  });
+
+  it("refuses a non-admin", async () => {
+    const result = await createSubscription(h.db, regular, input, sig());
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.PERM_DENIED);
+  });
+
+  it("refuses a private URL when private targets are off", async () => {
+    const result = await createSubscription(
+      h.db,
+      admin,
+      { ...input, url: "https://127.0.0.1/hook" },
+      sig(),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.WEBHOOK_URL_REFUSED);
   });
 });

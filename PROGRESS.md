@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-21 02:02
+Current: 3.3 · Last updated: 2026-10-21 02:03
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -24,7 +24,7 @@ Current: 3.2 · Last updated: 2026-10-21 02:02
 - [x] 2.3 Email and AI actions
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Safe delivery (test-first)
-- [ ] 3.2 Subscriptions service, test send and redeliver
+- [x] 3.2 Subscriptions service, test send and redeliver
 - [ ] 3.3 Phase 3 QA gate
 - [ ] 4.1 Automations list and editor
 - [ ] 4.2 Run log
@@ -117,6 +117,10 @@ Current: 3.2 · Last updated: 2026-10-21 02:02
 - 3.1: delivery uses `http(s).request` with a `lookup` that resolves every address and refuses the request inside the lookup when any address is blocked, so there is no check-then-connect gap; redirects are never followed, the response read is capped at `WEBHOOK_MAX_RESPONSE_BYTES`, and the timeout is `AbortSignal.timeout`.
 - 3.1: a 2xx resets `consecutive_failures` and sets `last_delivery_at`; 410 disables with "Receiver returned 410 Gone"; other failures increment both counters, retry up to five attempts with the 6.10 backoff and then fail; ten consecutive failures disable the subscription and send one system email to the creator (with both text and HTML parts).
 - 3.1: a disabled subscription marks the delivery failed with `E_WEBHOOK_004`, a missing delivery or subscription returns `E_WEBHOOK_001`, and an undecryptable secret fails the delivery without touching the receiver.
+
+- 3.2: the six new cases pass first time after the service was written, 16/16 in the file; create returns the plaintext secret exactly once and every read selects only `SAFE_COLUMNS`, so no API can return the sealed value.
+- 3.2: `rotateSecret` replaces the sealed value and returns the new plaintext once, `setEnabled(true)` resets `consecutive_failures` and `disabled_reason`, `redeliver` copies the payload and event type into a new pending row, and `sendTest` inserts a real synthetic `ping` delivery and runs it synchronously so the result appears in the delivery log.
+- 3.2: reads live in a tRPC `webhooks` router (list, get, deliveries, all admin-gated inside the service), while mutations are server actions that own CSRF and the session exactly as the documents actions do.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
