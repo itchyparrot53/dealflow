@@ -2,11 +2,7 @@ import { sql } from "drizzle-orm";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { buildUuidArray } from "@/features/permissions/sql";
 import { activityVisibilityPredicate } from "@/features/stats/activityVisibilitySql";
-import {
-  type ActivityReportDefinition,
-  type Interval,
-  isActivityDateField,
-} from "../definition";
+import { type ActivityReportDefinition, type Interval, isActivityDateField } from "../definition";
 import { type CompileOptions, dateRangeClause, timestampGroupExpr } from "./shared";
 
 // One grouped query per activity report. Activities carry no money, so the currency column is a

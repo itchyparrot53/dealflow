@@ -1,6 +1,6 @@
 "use server";
 
-import { ERROR_IDS } from "@/constants/errorIds";
+import { AppError, ERROR_IDS, ERROR_IDS as ERROR_IDS_FOR_EXPLAIN } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -17,6 +17,7 @@ import {
   resizeWidget,
   updateDashboard,
 } from "./dashboards";
+import { type ExplainResult, explainReport, explainTargetSchema } from "./explain";
 import {
   createReport,
   deleteReport,
@@ -37,6 +38,25 @@ async function guard(csrfToken: string | null): Promise<Result<PermSetUser, { id
   const { actor } = await createContext();
   if (actor === null) return err({ id: ERROR_IDS.AUTH_SESSION_DEAD });
   return ok(actor);
+}
+
+export async function explainReportAction(
+  input: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<ExplainResult>> {
+  const g = await guard(csrfToken);
+  if (!g.ok) return g;
+  const parsed = explainTargetSchema.safeParse(input);
+  if (!parsed.success) {
+    return toClientResult(
+      err(
+        new AppError(ERROR_IDS_FOR_EXPLAIN.INSIGHT_INPUT_INVALID, "invalid explain input", {
+          issues: parsed.error.issues,
+        }),
+      ),
+    );
+  }
+  return toClientResult(await explainReport(db, g.value, parsed.data, AbortSignal.timeout(60_000)));
 }
 
 export async function createReportAction(

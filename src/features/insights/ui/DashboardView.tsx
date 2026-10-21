@@ -12,6 +12,7 @@ import { updateDashboardAction } from "../actions";
 import type { DashboardView as DashboardData } from "../dashboards";
 import { AddWidgetDialog } from "./AddWidgetDialog";
 import { type DashboardReport, DashboardWidget } from "./DashboardWidget";
+import { insightErrorMessage } from "./errorCopy";
 
 const S = INSIGHTS_STRINGS;
 
@@ -85,7 +86,7 @@ export function DashboardView({
         )}
         {error !== null && (
           <span role="alert" className="text-sm text-destructive">
-            {error}
+            {insightErrorMessage(error)}
           </span>
         )}
       </header>

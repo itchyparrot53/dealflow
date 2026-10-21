@@ -11,6 +11,7 @@ import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createDashboardAction, createReportAction } from "../actions";
 import { defaultDefinition } from "./builderState";
+import { insightErrorMessage } from "./errorCopy";
 
 const S = INSIGHTS_STRINGS;
 
@@ -79,7 +80,7 @@ export function InsightsHome({
     <div data-testid="insights-home" className="space-y-4">
       {errorId !== null && (
         <p role="alert" className="text-sm text-destructive">
-          {errorId}
+          {insightErrorMessage(errorId)}
         </p>
       )}
       <Tabs defaultValue="dashboards" className="space-y-4">

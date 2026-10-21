@@ -5,13 +5,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
-import { trpc } from "@/lib/trpc-client";
+import { readCsrfToken } from "@/utils/csrfCookie";
+import { explainReportAction } from "../actions";
 import type { ReportDefinition } from "../definition";
 
 const S = INSIGHTS_STRINGS;
 
 // "Explain this report": a Sheet with a loading state, 3 to 5 insights, the note that they came
-// from the aggregated numbers, and the error copy. The server sends only aggregates to the model.
+// from the aggregated numbers, and the error copy. The server sends only aggregates to the model,
+// and the call is a CSRF-guarded server action like every other mutation.
 
 export function ExplainPanel({
   definition,
@@ -21,11 +23,22 @@ export function ExplainPanel({
   disabled: boolean;
 }): React.ReactNode {
   const [open, setOpen] = useState(false);
-  const explain = trpc.insights.explain.useMutation();
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [insights, setInsights] = useState<string[]>([]);
 
-  function launch(): void {
+  async function launch(): Promise<void> {
     setOpen(true);
-    explain.mutate({ definition });
+    setLoading(true);
+    setFailed(false);
+    setInsights([]);
+    const response = await explainReportAction({ definition }, readCsrfToken());
+    setLoading(false);
+    if (!response.ok) {
+      setFailed(true);
+      return;
+    }
+    setInsights(response.value.insights);
   }
 
   return (
@@ -36,23 +49,23 @@ export function ExplainPanel({
         size="sm"
         data-testid="report-explain"
         disabled={disabled}
-        onClick={launch}
+        onClick={() => void launch()}
       >
         {S.ui.explain}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="w-full max-w-md p-6">
           <SheetTitle className="mb-4 text-lg font-medium">{S.ui.explain}</SheetTitle>
-          {explain.isPending && <p className="text-sm text-muted-foreground">{S.ui.explaining}</p>}
-          {explain.isError && (
+          {loading && <p className="text-sm text-muted-foreground">{S.ui.explaining}</p>}
+          {failed && (
             <p role="alert" className="text-sm text-destructive">
               {S.errors.explainUnavailable}
             </p>
           )}
-          {explain.data !== undefined && (
+          {insights.length > 0 && (
             <>
               <ul data-testid="explain-insights" className="space-y-2">
-                {explain.data.insights.map((insight) => (
+                {insights.map((insight) => (
                   <li
                     key={insight}
                     data-testid="explain-item"

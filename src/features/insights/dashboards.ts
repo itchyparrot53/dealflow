@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
@@ -135,7 +135,7 @@ export async function listDashboards(
         ? undefined
         : or(eq(dashboards.ownerId, actor.id), eq(dashboards.shared, true)),
     )
-    .orderBy(asc(dashboards.isDefault), asc(dashboards.name));
+    .orderBy(desc(dashboards.isDefault), asc(dashboards.name));
   signal.throwIfAborted();
   return Promise.all(
     rows.map(async (row) =>

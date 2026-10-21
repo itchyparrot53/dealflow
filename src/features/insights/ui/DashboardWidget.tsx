@@ -20,6 +20,7 @@ import { moveWidgetAction, removeWidgetAction, resizeWidgetAction } from "../act
 import type { DashboardWidgetView } from "../dashboards";
 import type { ReportDefinition } from "../definition";
 import type { ReportResult } from "../result";
+import { insightErrorMessage } from "./errorCopy";
 import { ReportChart } from "./ReportChart";
 
 const S = INSIGHTS_STRINGS;
@@ -100,7 +101,15 @@ function ReportBody({
       </p>
     );
   }
-  return <ReportChart result={result} definition={report.definition} description={report.name} />;
+  const chart = (
+    <ReportChart result={result} definition={report.definition} description={report.name} />
+  );
+  if (report.definition.chart === "table") return chart;
+  return (
+    <div role="img" aria-label={report.name}>
+      {chart}
+    </div>
+  );
 }
 
 function GoalBody({
@@ -147,7 +156,7 @@ export function DashboardWidget({
     setError(null);
     const result = await action;
     if (!result.ok) {
-      setError(result.error?.id ?? S.ui.error);
+      setError(result.error?.id ?? null);
       return;
     }
     await utils.insights.getDashboard.invalidate({ id: dashboardId });
@@ -185,7 +194,7 @@ export function DashboardWidget({
 
       {error !== null && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {insightErrorMessage(error)}
         </p>
       )}
 

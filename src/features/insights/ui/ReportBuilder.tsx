@@ -12,6 +12,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { duplicateReportAction, updateReportAction } from "../actions";
 import { describeDefinition, type ReportDefinition } from "../definition";
 import { ExplainPanel } from "./ExplainPanel";
+import { insightErrorMessage } from "./errorCopy";
 import { formatReportValue } from "./format";
 import { ReportChart } from "./ReportChart";
 import { ReportConfigPanel } from "./ReportConfigPanel";
@@ -136,7 +137,9 @@ export function ReportBuilder({ reportId, initial, canEdit, pipelines }: Props):
         </a>
         <ExplainPanel definition={preview} disabled={result === undefined} />
         {saved && <span className="text-sm text-muted-foreground">{S.ui.saved}</span>}
-        {errorId !== null && <span className="text-sm text-destructive">{errorId}</span>}
+        {errorId !== null && (
+          <span className="text-sm text-destructive">{insightErrorMessage(errorId)}</span>
+        )}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
@@ -148,7 +151,7 @@ export function ReportBuilder({ reportId, initial, canEdit, pipelines }: Props):
           {run.isLoading && <p className="text-sm text-muted-foreground">{S.ui.loading}</p>}
           {run.isError && (
             <p role="alert" className="text-sm text-destructive">
-              {S.ui.error}
+              {insightErrorMessage(run.error.message)}
             </p>
           )}
           {result !== undefined && (

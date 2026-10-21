@@ -8,7 +8,7 @@ import { checkAiRateLimit } from "@/features/ai/rateLimit";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import type { ReportDefinition } from "./definition";
-import { describeDefinition } from "./definition";
+import { describeDefinition, reportDefinitionSchema } from "./definition";
 import { getReport } from "./reports";
 import type { ReportResult } from "./result";
 import { runReport } from "./run";
@@ -37,7 +37,12 @@ export interface ExplainResult {
   insights: string[];
 }
 
-export type ExplainTarget = { reportId: string } | { definition: ReportDefinition };
+export const explainTargetSchema = z.union([
+  z.object({ reportId: z.uuid() }),
+  z.object({ definition: reportDefinitionSchema }),
+]);
+
+export type ExplainTarget = z.infer<typeof explainTargetSchema>;
 
 function shorten(text: string): string {
   return text.length <= INSIGHT_MAX_CHARS ? text : `${text.slice(0, INSIGHT_MAX_CHARS - 3)}...`;

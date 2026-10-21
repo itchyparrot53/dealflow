@@ -21,6 +21,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
+import { formatMoney } from "@/features/currency/money";
 import type { ReportDefinition } from "../definition";
 import type { ReportResult } from "../result";
 import { FunnelChart } from "./FunnelChart";
@@ -103,10 +104,23 @@ function pieData(result: ReportResult): {
   return { data, config };
 }
 
-function formatTooltip(value: string | number | undefined): string {
+// Money is shown the way the table shows it: formatMoney in the report's base currency. Counts
+// and minutes stay plain numbers.
+function chartValue(
+  value: string | number | undefined,
+  definition: ReportDefinition,
+  baseCurrency: string,
+): string {
   const number = typeof value === "number" ? value : Number(value ?? 0);
   if (!Number.isFinite(number)) return "0";
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(number);
+  const kind = definition.measure.kind;
+  if (kind === "count") {
+    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(number);
+  }
+  if (kind === "sum_duration") {
+    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(number)} min`;
+  }
+  return formatMoney(BigInt(Math.round(number * 100)), baseCurrency);
 }
 
 export function ReportChart({
@@ -135,9 +149,18 @@ export function ReportChart({
     <>
       <CartesianGrid vertical={false} />
       <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={8} />
-      <YAxis width={72} tickLine={false} axisLine={false} />
+      <YAxis
+        width={96}
+        tickLine={false}
+        axisLine={false}
+        tickFormatter={(value: number) => chartValue(value, definition, result.baseCurrency)}
+      />
       <ChartTooltip
-        content={<ChartTooltipContent formatValue={(value) => formatTooltip(value)} />}
+        content={
+          <ChartTooltipContent
+            formatValue={(value) => chartValue(value, definition, result.baseCurrency)}
+          />
+        }
       />
     </>
   );
@@ -148,7 +171,11 @@ export function ReportChart({
       <ChartContainer config={pie.config} className="h-72">
         <PieChart>
           <ChartTooltip
-            content={<ChartTooltipContent formatValue={(value) => formatTooltip(value)} />}
+            content={
+              <ChartTooltipContent
+                formatValue={(value) => chartValue(value, definition, result.baseCurrency)}
+              />
+            }
           />
           <Pie data={pie.data} dataKey="value" nameKey="label" outerRadius={100}>
             {pie.data.map((entry, index) => (

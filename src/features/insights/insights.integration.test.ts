@@ -422,7 +422,6 @@ describe("deal reports", () => {
     if (!result.ok) expect(result.error.id).toBe(ERROR_IDS.INSIGHT_QUERY_TIMEOUT);
   });
 
-
   it("leaves deals without the grouped date out instead of rolling them into Other", async () => {
     await addDeal({ title: "Still open" });
     await addDeal({
@@ -506,7 +505,6 @@ describe("deal reports", () => {
     const everything = await run(admin, activityDef());
     expect(everything.total.count).toBe(2);
   });
-
 
   it("leaves activities without the grouped date out", async () => {
     await addActivity({ done: true, doneAt: new Date("2026-02-10T10:00:00Z") });
