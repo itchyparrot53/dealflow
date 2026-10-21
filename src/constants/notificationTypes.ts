@@ -21,6 +21,8 @@ export const NOTIFICATION_TYPES = [
   "form_submission",
   "booking_created",
   "booking_cancelled",
+  // Part 7: the bulk AI scoring job finished.
+  "ai_bulk_score",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

@@ -26,6 +26,7 @@ const EXPECTED_EMAIL_DEFAULT: Record<NotificationType, boolean> = {
   form_submission: false,
   booking_created: true,
   booking_cancelled: true,
+  ai_bulk_score: false,
 };
 
 describe("notification preferences", () => {

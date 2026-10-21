@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-21 12:11
+Current: 0.4 · Last updated: 2026-10-21 12:18
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-21 12:11
 ## Tasks
 - [x] 0.1 Start Part 7: progress files, kit and baseline
 - [x] 0.2 Prove Part 6
-- [ ] 0.3 Insights schema and migrations
+- [x] 0.3 Insights schema and migrations
 - [ ] 0.4 Definition, date ranges, buckets, CSV (test-first)
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Deal reports (test-first)
@@ -48,6 +48,10 @@ Current: 0.3 · Last updated: 2026-10-21 12:11
 - 0.2: the e2e spec builds "Website enquiry" by adding a phone field and then expects organization and message inputs on the public page, but a new form draft carried only name and email. The draft now starts with name, email, organization and message (the same four fields as the demo seed's contact form), so the spec passes unedited and a new form is usable out of the box.
 - 0.2: the dev stack was down after Part 6, so I ran `pnpm dev:up` (Postgres on 5433, MinIO on 9000/9001) and applied every migration with `DATABASE_URL=$DEV_DB_URL pnpm db:migrate:dev`; the owner's compose project was started, never stopped, removed or recreated.
 - 0.2: `DOCKER_BUILDKIT=0 pnpm smoke` failed once at `build-and-up` with exit 137: compose v2 builds the four app services in parallel, three concurrent Turbopack builds exhausted the Docker VM and one was OOM-killed. Rerunning with `COMPOSE_PARALLEL_LIMIT=1` built them one at a time and printed SMOKE PASS; the project removed its containers and volumes, so no `dealflow-smoke` resource remains.
+
+- 0.3: `drizzle-kit generate` also emitted the three Part 6 `notification_type` values, because `0086` was a `--custom` migration whose snapshot still lists 14 values. I removed those three lines from `0087` (they are already in `0086` and in the dev database) so `0087` creates exactly the three tables; its snapshot now records all 17 values, and I added `ai_bulk_score` to `0088`'s snapshot by hand so the next `db:generate` does not try to add a label that already exists.
+- 0.3: `ai_bulk_score` defaults to in-app only (email off), like `automation`: it reports a job the requester started and can watch in the app, so it should not interrupt by email.
+- 0.3: the three tables carry the 6.4 columns plus database guards for the rules the services enforce: name length 1 to 120 on both tables, description at most 500, `kind`/`size` value lists, and the `kind` to `report_id`/`goal_id` pairing check. `dashboards_default_uq` is the partial unique index from 6.4, so two first visits cannot create two defaults.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

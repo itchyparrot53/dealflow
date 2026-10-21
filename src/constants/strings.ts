@@ -121,6 +121,7 @@ export const STRINGS = {
       form_submission: "New form submission",
       booking_created: "New booking",
       booking_cancelled: "Booking cancelled",
+      ai_bulk_score: "AI scoring finished",
       fallback: "Notification",
     },
     preferences: {
@@ -147,6 +148,7 @@ export const STRINGS = {
         form_submission: "Form submissions",
         booking_created: "Bookings",
         booking_cancelled: "Booking cancellations",
+        ai_bulk_score: "AI bulk scoring",
       },
     },
   },

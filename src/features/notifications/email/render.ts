@@ -167,6 +167,12 @@ export function renderNotificationEmail(
       line = copy.line;
       break;
     }
+    case "ai_bulk_score": {
+      const message = typeof row.payload.message === "string" ? row.payload.message : null;
+      subject = "AI scoring finished";
+      line = message ?? `${recipientName}, your AI deal scoring finished.`;
+      break;
+    }
     default: {
       // Unknown future type: render a generic fallback. Never throw (pg-boss resilience).
       subject = "Dealflow notification";

@@ -25,6 +25,8 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
   form_submission: false,
   booking_created: true,
   booking_cancelled: true,
+  // A job the user started and can watch in the app; in-app delivery is the acknowledgement.
+  ai_bulk_score: false,
 };
 
 export const DEFAULT_IN_APP = true;

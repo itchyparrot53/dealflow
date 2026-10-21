@@ -26,6 +26,7 @@ export * from "./hiddenBuiltinFields";
 export * from "./identity";
 export * from "./importBatches";
 export * from "./importRows";
+export * from "./insights";
 export * from "./labels";
 export * from "./leads";
 export * from "./lostReasons";
