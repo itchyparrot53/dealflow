@@ -32,6 +32,7 @@ type GlobalAction =
   | "products.manage"
   | "documents.manage"
   | "automations.manage"
+  | "forms.manage"
   | "permissions.manage";
 
 export type OwnershipAction = (typeof OWNERSHIP_ACTIONS)[number];

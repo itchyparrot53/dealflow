@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-21 03:49
+Current: 1.2 · Last updated: 2026-10-21 03:55
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -12,7 +12,7 @@ Current: 1.1 · Last updated: 2026-10-21 03:49
 - [x] 0.2 Forms and booking schema and migrations
 - [x] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
 - [x] 0.4 Phase 0 QA gate
-- [ ] 1.1 Forms service and the capability
+- [x] 1.1 Forms service and the capability
 - [ ] 1.2 Public submit and events (test-first)
 - [ ] 1.3 Phase 1 QA gate
 - [ ] 2.1 Booking pages service and busy time
@@ -58,6 +58,13 @@ Current: 1.1 · Last updated: 2026-10-21 03:49
 - 0.3: the eleven FORM and BOOKING error IDs from 6.2 landed here rather than in Task 1.1, because `zonedTime.ts` needs a registry ID for an impossible internal date; Task 1.1 consumes them for the services.
 - 0.3: `buildIcs` takes an optional `now` for DTSTAMP so the exact-string test is deterministic; this is additive to 6.8's argument list, and an omitted `now` uses the current time.
 - 0.3: `availabilitySchema` and `DEFAULT_AVAILABILITY` live in `slots.ts` (at most three ranges a day, `from < to`, no overlaps, HH:MM); `FORM_*`, `BOOKING_*` and `SLOT_RANGE_MAX_DAYS` live in `src/constants/formsBooking.ts`, and the section 6.2 copy in `src/constants/formsBookingStrings.ts`.
+
+- 1.1: `forms.manage` joined `GLOBAL_FLAGS`, `HIGH_RISK_FLAGS` and the `GlobalAction` union; no migration is needed because the flag registry is code-defined, exactly as `automations.manage` was.
+- 1.1: the service splits failures: a Zod failure of the whole input is `E_FORM_005` (inline issues), while definition semantics (ineligible custom field id, inactive owner, non-https redirect, stage outside the pipeline) are `E_FORM_002` with context issues.
+- 1.1: `forms.update` merges the patch over the stored row before the cross-field checks, so a partial patch can never leave a deal form without a stage; `setFormActive` is an update of just that flag.
+- 1.1: the forms router has an `options` query returning pipelines, stages, active users and the eligible custom fields in one read, so the editor does not fan out; every router procedure is admin-gated inside the procedure as well as at the page.
+- 1.1: eligible custom fields are the active definitions on person, lead and deal limited to the five type names of 6.7; `ALLOWED_CUSTOM_FIELD_TYPES` is exported from `fields.ts` so the save-time check and the submit-time check share one set.
+- 1.1: `public_id` is `randomBytes(12).toString("base64url")` (16 characters) generated in the service, and `redirect_url` is also guarded by the `web_forms_redirect_url_ck` check from 0.2.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

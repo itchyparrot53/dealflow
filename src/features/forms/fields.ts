@@ -28,7 +28,7 @@ export interface FormField {
 }
 
 // Only these custom field types fit a public form: the rest need a picker or a structured editor.
-const ALLOWED_CUSTOM_TYPES: ReadonlySet<CustomFieldType> = new Set<CustomFieldType>([
+export const ALLOWED_CUSTOM_FIELD_TYPES: ReadonlySet<CustomFieldType> = new Set<CustomFieldType>([
   "text",
   "large_text",
   "numeric",
@@ -100,7 +100,7 @@ interface CustomFieldResult {
 
 function validateCustomField(def: CustomFieldDef | undefined, text: string): CustomFieldResult {
   if (def === undefined || def.archivedAt !== null) return { error: FIELD_ERRORS.unavailable };
-  if (!ALLOWED_CUSTOM_TYPES.has(def.type)) return { error: FIELD_ERRORS.unavailable };
+  if (!ALLOWED_CUSTOM_FIELD_TYPES.has(def.type)) return { error: FIELD_ERRORS.unavailable };
   switch (def.type) {
     case "text":
     case "large_text":

@@ -12,6 +12,7 @@ import { emailRouter } from "@/features/email/router";
 import { enrichmentRouter } from "@/features/enrichment/router";
 import { filesRouter } from "@/features/files/router";
 import { forecastRouter } from "@/features/forecast/router";
+import { formsRouter } from "@/features/forms/router";
 import { goalsRouter } from "@/features/goals/router";
 import { importRouter } from "@/features/import/router";
 import { labelsRouter } from "@/features/labels/router";
@@ -40,6 +41,7 @@ export const appRouter = router({
   currency: currencyRouter,
   documents: documentsRouter,
   automations: automationsRouter,
+  forms: formsRouter,
   webhooks: webhooksRouter,
   customFields: customFieldsRouter,
   collaboration: collaborationRouter,

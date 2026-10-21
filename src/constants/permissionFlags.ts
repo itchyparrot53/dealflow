@@ -14,6 +14,7 @@ export const GLOBAL_FLAGS = [
   "products.manage",
   "documents.manage",
   "automations.manage",
+  "forms.manage",
   "permissions.manage",
   // Team-manager visibility: the set holder can SEE records owned by members of any team they
   // manage (teams.managerId), across entities. Inert unless the holder actually manages a team.
@@ -72,6 +73,7 @@ export const HIGH_RISK_FLAGS = [
   "products.manage",
   "documents.manage",
   "automations.manage",
+  "forms.manage",
   "data.export",
   "data.import",
   "record.share_any",
