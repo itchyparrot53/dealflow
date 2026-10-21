@@ -31,17 +31,25 @@ export async function emitDomainEvent(
   signal.throwIfAborted();
 
   // Delivered on commit. A failed NOTIFY must not fail the mutation: the dispatcher also polls.
-  await db
-    .execute(sql`NOTIFY ${sql.raw(DOMAIN_EVENTS_CHANNEL)}`)
-    .catch((error: unknown) => {
-      console.error("domain event notify failed", error);
-    });
+  await db.execute(sql`NOTIFY ${sql.raw(DOMAIN_EVENTS_CHANNEL)}`).catch((error: unknown) => {
+    console.error("domain event notify failed", error);
+  });
 }
 
 // Maps an audited field change to the domain events it means. The field names are the ones
 // recordChange actually receives: deal "stageId" (changeStage, dealMove), deal "status"
 // (markWon, markLost, reopenDeal), deal "deleted"/"deletedAt" (both delete paths), and person
 // or organization updates. Activity completion is emitted by the activity service (Task 1.2).
+function dealEventTypes(field: string, newValue: unknown): DomainEventType[] {
+  if (field === "stageId") return ["deal.stage_changed", "deal.updated"];
+  if (field === "deleted" || field === "deletedAt") return ["deal.deleted"];
+  if (field === "status") {
+    if (newValue === "won") return ["deal.won", "deal.updated"];
+    if (newValue === "lost") return ["deal.lost", "deal.updated"];
+  }
+  return ["deal.updated"];
+}
+
 export function eventTypesForChange(
   entityType: string,
   field: string,
@@ -49,16 +57,8 @@ export function eventTypesForChange(
   newValue: unknown,
 ): DomainEventType[] {
   switch (entityType) {
-    case "deal": {
-      if (field === "stageId") return ["deal.stage_changed", "deal.updated"];
-      if (field === "status") {
-        if (newValue === "won") return ["deal.won", "deal.updated"];
-        if (newValue === "lost") return ["deal.lost", "deal.updated"];
-        return ["deal.updated"];
-      }
-      if (field === "deleted" || field === "deletedAt") return ["deal.deleted"];
-      return ["deal.updated"];
-    }
+    case "deal":
+      return dealEventTypes(field, newValue);
     case "person":
       return ["person.updated"];
     case "organization":

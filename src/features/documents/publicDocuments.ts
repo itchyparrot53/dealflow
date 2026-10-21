@@ -354,7 +354,12 @@ export async function acceptQuote(
     if (rowUpdated !== undefined) {
       await emitDomainEvent(
         tx,
-        { type: "document.accepted", entityType: "document", entityId: rowUpdated.id, actorId: null },
+        {
+          type: "document.accepted",
+          entityType: "document",
+          entityId: rowUpdated.id,
+          actorId: null,
+        },
         signal,
       );
     }

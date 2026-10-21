@@ -3,7 +3,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { AUTOMATION_MAX_DEPTH, DISPATCH_BATCH } from "@/constants/automations";
 import { PGBOSS_QUEUE_AUTOMATION_RUN, PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
-import * as schema from "@/db/schema";
+import type * as schema from "@/db/schema";
 import {
   automationRuns,
   automations,
@@ -100,7 +100,9 @@ async function createRuns(
   for (const [automationId, definition] of definitionFor) {
     const parsed = automationDefinitionSchema.safeParse(definition);
     if (!parsed.success) continue;
-    if (!matchesTrigger(parsed.data.trigger, { type: event.type, changes: event.changes, ...target })) {
+    if (
+      !matchesTrigger(parsed.data.trigger, { type: event.type, changes: event.changes, ...target })
+    ) {
       continue;
     }
 

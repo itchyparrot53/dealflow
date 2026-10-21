@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
 import { env } from "@/config/env";
-import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { Db } from "@/db/client";
 import {
   activities,
@@ -13,6 +12,7 @@ import {
   stages,
   users,
 } from "@/db/schema";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import type { DomainEventType, EventChange } from "./types";
 
 // Payload snapshots are built when the worker dispatches, not when the change happened. That is
@@ -119,7 +119,8 @@ async function personData(db: DbOrTx, entityId: string): Promise<Record<string, 
     firstName: row.firstName,
     lastName: row.lastName,
     primaryEmail: row.primaryEmail,
-    primaryPhone: row.phones.find((phone) => phone.primary)?.value ?? row.phones[0]?.value ?? null,
+    primaryPhone:
+      row.phones.find((phone) => phone.primary === true)?.value ?? row.phones[0]?.value ?? null,
     owner,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -181,7 +182,11 @@ export async function loadEventTarget(
       .select({ pipelineId: deals.pipelineId, stageId: deals.stageId })
       .from(deals)
       .where(eq(deals.id, event.entityId));
-    return { pipelineId: row?.pipelineId ?? null, stageId: row?.stageId ?? null, documentKind: null };
+    return {
+      pipelineId: row?.pipelineId ?? null,
+      stageId: row?.stageId ?? null,
+      documentKind: null,
+    };
   }
   if (event.entityType === "document" || event.entityType === "invoice") {
     const [row] = await db

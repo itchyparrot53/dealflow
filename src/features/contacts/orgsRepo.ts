@@ -3,8 +3,8 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { Organization } from "@/db/schema";
 import { organizations, users } from "@/db/schema";
-import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { emitDomainEvent } from "@/features/events/emit";
+import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
@@ -113,7 +113,12 @@ export async function createOrg(
     // Created inside the transaction so a rolled-back insert leaves no event.
     await emitDomainEvent(
       tx,
-      { type: "organization.created", entityType: "organization", entityId: row.id, actorId: actor.id },
+      {
+        type: "organization.created",
+        entityType: "organization",
+        entityId: row.id,
+        actorId: actor.id,
+      },
       signal,
     );
     return ok(row);

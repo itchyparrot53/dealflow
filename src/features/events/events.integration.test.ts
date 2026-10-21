@@ -14,18 +14,18 @@ import {
 } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { recordChange } from "@/features/collaboration/changeLog";
-import { createDeal } from "@/features/deals/dealActions";
-import { dispatchEvents } from "./dispatcher";
-import { runRetention } from "./retentionJob";
-import { runRottingDeals } from "./rottingJob";
 import { changeStage } from "@/features/deal-workspace/changeStage";
-import { acceptQuote } from "@/features/documents/publicDocuments";
-import { runOverdueInvoices } from "@/features/documents/overdueJob";
 import { markWon } from "@/features/deal-workspace/wonLost";
+import { createDeal } from "@/features/deals/dealActions";
+import { runOverdueInvoices } from "@/features/documents/overdueJob";
+import { acceptQuote } from "@/features/documents/publicDocuments";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb } from "@/test/db";
 import { runInChain } from "./chainContext";
+import { dispatchEvents } from "./dispatcher";
 import { emitDomainEvent } from "./emit";
+import { runRetention } from "./retentionJob";
+import { runRottingDeals } from "./rottingJob";
 
 let h: Awaited<ReturnType<typeof makeTestDb>>;
 let admin: PermSetUser;
@@ -96,9 +96,7 @@ describe("recordChange emits domain events", () => {
 
     const rows = await eventsFor(deal.id);
     expect(rows.map((row) => row.type)).toEqual(["deal.stage_changed", "deal.updated"]);
-    expect(rows[0]?.changes).toEqual([
-      { field: "stageId", old: firstStageId, new: secondStageId },
-    ]);
+    expect(rows[0]?.changes).toEqual([{ field: "stageId", old: firstStageId, new: secondStageId }]);
   });
 
   it("writes deal.won when a deal is marked won", async () => {
@@ -292,11 +290,7 @@ async function emitInChain(
   depth: number,
 ): Promise<void> {
   await runInChain({ chainId, depth, automationId: null }, async () => {
-    await emitDomainEvent(
-      h.db,
-      { type, entityType: "deal", entityId, actorId: admin.id },
-      sig(),
-    );
+    await emitDomainEvent(h.db, { type, entityType: "deal", entityId, actorId: admin.id }, sig());
   });
 }
 
@@ -433,10 +427,7 @@ describe("rotting job", () => {
   it("emits once per stage entry for a deal past its rotting days", async () => {
     const seeded = await seedPipelineWithStages(h.db, ["Stale"]);
     const stageId = seeded.stages[0]?.id ?? "";
-    await h.db
-      .update(stages)
-      .set({ rottingDays: 1 })
-      .where(eq(stages.id, stageId));
+    await h.db.update(stages).set({ rottingDays: 1 }).where(eq(stages.id, stageId));
     const [deal] = await h.db
       .insert(deals)
       .values({
