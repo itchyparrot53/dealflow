@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/Input";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { DOMAIN_EVENT_TYPES } from "@/features/events/types";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { createSubscriptionAction, updateSubscriptionAction } from "../actions";
 
 const S = WEBHOOKS_STRINGS;
@@ -62,7 +63,7 @@ export function WebhookDialog({
     setBusy(true);
     setError(null);
     if (subscription === null) {
-      const created = await createSubscriptionAction({ name, url, events });
+      const created = await createSubscriptionAction({ name, url, events }, readCsrfToken());
       setBusy(false);
       if (!created.ok) {
         setError(created.error.id === "E_WEBHOOK_002" ? S.dialog.invalidUrl : created.error.id);
@@ -72,7 +73,7 @@ export function WebhookDialog({
       onCreated(created.value.secret);
       return;
     }
-    const updated = await updateSubscriptionAction(subscription.id, { name, url, events });
+    const updated = await updateSubscriptionAction(subscription.id, { name, url, events }, readCsrfToken());
     setBusy(false);
     if (!updated.ok) {
       setError(updated.error.id === "E_WEBHOOK_002" ? S.dialog.invalidUrl : updated.error.id);

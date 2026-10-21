@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Textarea } from "@/components/ui/Textarea";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { updateAutomationAction } from "../actions";
 import { type AutomationDefinition, automationDefinitionSchema } from "../definition";
 import type { Automation } from "../service";
@@ -48,12 +49,16 @@ export function AutomationEditor({
     setSaving(true);
     setError(null);
     setSaved(false);
-    const result = await updateAutomationAction(automation.id, {
-      name,
-      description: description === "" ? null : description,
-      enabled,
-      definition,
-    });
+    const result = await updateAutomationAction(
+      automation.id,
+      {
+        name,
+        description: description === "" ? null : description,
+        enabled,
+        definition,
+      },
+      readCsrfToken(),
+    );
     setSaving(false);
     if (!result.ok) {
       setError(

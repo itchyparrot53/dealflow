@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/Switch";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   createAutomationAction,
   deleteAutomationAction,
@@ -74,17 +75,17 @@ export function AutomationsList({
   }
 
   async function toggle(row: AutomationRowView, enabled: boolean): Promise<void> {
-    await setAutomationEnabledAction(row.id, enabled);
+    await setAutomationEnabledAction(row.id, enabled, readCsrfToken());
     router.refresh();
   }
 
   async function duplicate(row: AutomationRowView): Promise<void> {
-    const result = await duplicateAutomationAction(row.id);
+    const result = await duplicateAutomationAction(row.id, readCsrfToken());
     if (result.ok) router.push(`/settings/automations/${result.value.id}`);
   }
 
   async function remove(row: AutomationRowView): Promise<void> {
-    await deleteAutomationAction(row.id);
+    await deleteAutomationAction(row.id, readCsrfToken());
     setPendingDelete(null);
     router.refresh();
   }

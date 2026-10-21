@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 5.1 · Last updated: 2026-10-21 02:33
+Current: 5.2 · Last updated: 2026-10-21 02:42
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -34,7 +34,7 @@ Current: 5.1 · Last updated: 2026-10-21 02:33
 - [x] 4.4 Webhooks settings and delivery log
 - [x] 4.5 Demo seed and docs
 - [x] 4.6 Phase 4 QA gate
-- [ ] 5.1 E2E automations spec and screenshots
+- [x] 5.1 E2E automations spec and screenshots
 - [ ] 5.2 Integration suite and smoke
 - [ ] 5.3 Independent review and hardening
 - [ ] 5.4 Final checklist
@@ -151,6 +151,10 @@ Current: 5.1 · Last updated: 2026-10-21 02:33
 
 - 4.6: the gate needed no fix round; it passed on the tree committed by 4.5 with the baseline's 14 warnings, 5124 unit tests and 35 automations/webhooks integration tests.
 - 4.6: no `qa` review at this gate (fast profile, rule 9.4). Phase 5 base is the commit before the gate.
+
+- 5.1: the spec covers the list, a described draft (left unsaved), template 1 enabled and saved, a deal won through the UI, the succeeded run polled up to 30 s, the created activity on the deal, a real loopback receiver with a verified signature, and the delivery log; the full `pnpm e2e` passed 19/19 in 1.2 min and the six `p5-*` screenshots exist alongside the Part 1 to 4 sets (23/8/6/7).
+- 5.1: the first e2e run exposed a real gap: every new client action was called without a CSRF token, so the screens returned `E_AUTH_CSRF` in the browser even though the services were correct. All automations and webhooks actions now pass `readCsrfToken()`, matching the documents screens.
+- 5.1: the run-log poll waits for the tRPC query to resolve inside each reload instead of sampling once (the first version reloaded before the row appeared), and the spec reopens a deal if an earlier spec closed it, so it also passes standalone.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { createAutomationFromTemplateAction } from "../actions";
 
 const S = AUTOMATIONS_STRINGS;
@@ -35,7 +36,7 @@ export function TemplateGallery({
 
   async function pick(key: string): Promise<void> {
     setBusyKey(key);
-    const result = await createAutomationFromTemplateAction(key);
+    const result = await createAutomationFromTemplateAction(key, readCsrfToken());
     setBusyKey(null);
     if (!result.ok) return;
     onOpenChange(false);

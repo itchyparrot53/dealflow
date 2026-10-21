@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/Input";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   deleteSubscriptionAction,
   rotateSecretAction,
@@ -70,17 +71,17 @@ export function WebhooksSettings({ rows }: { rows: WebhookRowView[] }): React.Re
   }
 
   async function rotate(row: WebhookRowView): Promise<void> {
-    const result = await rotateSecretAction(row.id);
+    const result = await rotateSecretAction(row.id, readCsrfToken());
     if (result.ok) setSecret(result.value);
   }
 
   async function toggle(row: WebhookRowView): Promise<void> {
-    await setSubscriptionEnabledAction(row.id, !row.enabled);
+    await setSubscriptionEnabledAction(row.id, !row.enabled, readCsrfToken());
     router.refresh();
   }
 
   async function sendTest(row: WebhookRowView): Promise<void> {
-    const result = await sendTestAction(row.id);
+    const result = await sendTestAction(row.id, readCsrfToken());
     if (!result.ok) {
       setTestResult(result.error.id);
       return;
@@ -94,7 +95,7 @@ export function WebhooksSettings({ rows }: { rows: WebhookRowView[] }): React.Re
   }
 
   async function remove(row: WebhookRowView): Promise<void> {
-    await deleteSubscriptionAction(row.id);
+    await deleteSubscriptionAction(row.id, readCsrfToken());
     setDeleting(null);
     router.refresh();
   }

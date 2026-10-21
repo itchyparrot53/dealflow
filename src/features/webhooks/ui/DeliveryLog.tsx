@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { trpc } from "@/lib/trpc-client";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { redeliverAction } from "../actions";
 
 const S = WEBHOOKS_STRINGS.deliveryLog;
@@ -49,7 +50,7 @@ export function DeliveryLog({
 
   async function redeliver(id: string): Promise<void> {
     setBusy(id);
-    await redeliverAction(id);
+    await redeliverAction(id, readCsrfToken());
     setBusy(null);
     await utils.webhooks.deliveries.invalidate({ subscriptionId });
   }

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/Textarea";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { aiErrorMessage } from "@/features/ai/aiErrors";
 import { createAutomationAction, draftAutomationAction } from "../actions";
 
@@ -32,7 +33,7 @@ export function DescribeDialog({
   async function draft(): Promise<void> {
     setBusy(true);
     setError(null);
-    const drafted = await draftAutomationAction(text);
+    const drafted = await draftAutomationAction(text, readCsrfToken());
     if (!drafted.ok) {
       setBusy(false);
       setError(
@@ -43,11 +44,14 @@ export function DescribeDialog({
       return;
     }
     // The draft is created disabled so it cannot run before an admin reviews it.
-    const created = await createAutomationAction({
-      name: "Drafted automation",
-      definition: drafted.value,
-      enabled: false,
-    });
+    const created = await createAutomationAction(
+      {
+        name: "Drafted automation",
+        definition: drafted.value,
+        enabled: false,
+      },
+      readCsrfToken(),
+    );
     setBusy(false);
     if (!created.ok) {
       setError(created.error.id);
