@@ -15,7 +15,13 @@ function paceTone(pace: number | null): string {
   return pace >= 1 ? "text-emerald-600" : "text-destructive";
 }
 
-function GoalRow({ row, currency }: { row: GoalWithProgress; currency: string }): React.ReactNode {
+export function GoalRow({
+  row,
+  currency,
+}: {
+  row: GoalWithProgress;
+  currency: string;
+}): React.ReactNode {
   const { goal, progress, series } = row;
   const label = goalLabel(goal);
   const isValue = goal.metric === "value";

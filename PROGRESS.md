@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-21 14:02
+Current: 3.3 · Last updated: 2026-10-21 14:10
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -23,7 +23,7 @@ Current: 3.2 · Last updated: 2026-10-21 14:02
 - [x] 2.2 Explain, score data and bulk scoring
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Insights home and report builder
-- [ ] 3.2 Dashboards
+- [x] 3.2 Dashboards
 - [ ] 3.3 Score badge and bulk scoring UI
 - [ ] 3.4 Demo seed and docs
 - [ ] 3.5 Phase 3 QA gate
@@ -99,6 +99,10 @@ Current: 3.2 · Last updated: 2026-10-21 14:02
 - 3.1: the deal filter reuses `ConditionRowsBuilder` with `dealFilterFields`/`OP_LABELS`, so the report filter offers exactly the deals-list field and operator allow-list; activity filters are the three allowed Selects (owner, type, done).
 - 3.1: chart series colours come from the token palette (`hsl(var(--primary))`, ring, muted-foreground, destructive, accent-foreground), never hex. Every chart carries an aria-label and a view-as-table toggle; a table chart drops the image role so the table stays in the accessibility tree.
 - 3.1: main navigation gained "Insights" after Documents. `InsightsHome` lists dashboards first (default first) and reports with their `describeDefinition` line; "New" creates through the server action and opens the new row.
+
+- 3.2: each report widget owns its `insights.run({ reportId })` query, so widgets load and fail independently; the dashboard itself uses `getDashboard` with server `initialData` and invalidates it after every widget action. The grid is two columns on desktop (`md:grid-cols-2`) and one below, with `full` widgets spanning both columns.
+- 3.2: goal widgets reuse the stats `GoalRow` (exported for this), so a goal on a dashboard looks and behaves exactly like the one in the performance widget; `AddWidgetDialog` offers the viewer's reports and goals with `goalLabel`, and the service re-checks readability/existence on add.
+- 3.2: rename and the shared Switch go through `updateDashboardAction` and render only for the owner or an admin; the widget DropdownMenu offers Open report, Move up/down, Make full/half and Remove.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

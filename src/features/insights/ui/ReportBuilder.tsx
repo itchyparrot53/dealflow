@@ -177,8 +177,9 @@ export function ReportBuilder({ reportId, initial, canEdit, pipelines }: Props):
                 <ReportTable result={result} definition={definition} />
               ) : (
                 <div
-                  role={showTable || isTable ? undefined : "img"}
-                  aria-label={showTable || isTable ? undefined : description}
+                  {...(showTable || isTable
+                    ? {}
+                    : { role: "img" as const, "aria-label": description })}
                   data-testid="report-chart"
                   data-chart={definition.chart}
                 >
