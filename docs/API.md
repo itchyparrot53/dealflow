@@ -677,6 +677,32 @@ curl -s -X GET "{BASE_URL}/api/v1/notes" \
   -H "Authorization: Bearer dfk_..."
 ```
 
+### GET /notes/:id
+
+Scope: `read`. Read one visible note.
+
+Example request:
+
+```json
+"GET /api/v1/notes/{id}"
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "id": "…",
+    "body": "Called back"
+  }
+}
+```
+
+```bash
+curl -s -X GET "{BASE_URL}/api/v1/notes/{id}" \
+  -H "Authorization: Bearer dfk_..."
+```
+
 ### POST /notes
 
 Scope: `write`. Add a note to one visible record.
@@ -830,7 +856,7 @@ curl -s -X GET "{BASE_URL}/api/v1/products/{id}" \
 
 Scope: `write`. Create a product (products.manage required).
 
-Body: `name`, `code`, `unit`, `price`, `currency`, `taxPercent`
+Body: `name`, `active`, `code`, `unit`, `price`, `currency`, `taxPercent`
 
 Example request:
 
@@ -864,7 +890,7 @@ curl -s -X POST "{BASE_URL}/api/v1/products" \
 
 Scope: `write`. Update a product (products.manage required).
 
-Body: `name`, `code`, `unit`, `price`, `currency`, `taxPercent`
+Body: `name`, `active`, `code`, `unit`, `price`, `currency`, `taxPercent`
 
 Example request:
 
