@@ -1,6 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
@@ -69,7 +69,10 @@ interface Receiver {
 }
 
 async function startReceiver(
-  handler: (request: { headers: Record<string, string | string[] | undefined>; body: string }, respond: (status: number, headers?: Record<string, string>) => void) => void,
+  handler: (
+    request: { headers: Record<string, string | string[] | undefined>; body: string },
+    respond: (status: number, headers?: Record<string, string>) => void,
+  ) => void,
 ): Promise<Receiver> {
   const requests: Receiver["requests"] = [];
   const server = createServer((request, response) => {
@@ -134,7 +137,10 @@ async function loadDelivery(id: string) {
 }
 
 async function loadSubscription(id: string) {
-  const [row] = await h.db.select().from(webhookSubscriptions).where(eq(webhookSubscriptions.id, id));
+  const [row] = await h.db
+    .select()
+    .from(webhookSubscriptions)
+    .where(eq(webhookSubscriptions.id, id));
   return row;
 }
 
@@ -345,7 +351,11 @@ describe("webhook subscriptions", () => {
     const id = created.value.subscription.id;
     await h.db
       .update(webhookSubscriptions)
-      .set({ enabled: false, consecutiveFailures: 9, disabledReason: "Disabled after 10 failed deliveries" })
+      .set({
+        enabled: false,
+        consecutiveFailures: 9,
+        disabledReason: "Disabled after 10 failed deliveries",
+      })
       .where(eq(webhookSubscriptions.id, id));
 
     const enabled = await setEnabled(h.db, admin, id, true, sig());

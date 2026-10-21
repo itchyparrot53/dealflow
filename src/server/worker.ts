@@ -3,7 +3,6 @@ import { PgBoss } from "pg-boss";
 import { env } from "@/config/env";
 import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerAutomationRunner } from "@/features/automations/runner";
-import { registerWebhookDeliveryJob } from "@/features/webhooks/deliver";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerEventJobs } from "@/features/events/dispatcherJob";
@@ -14,6 +13,7 @@ import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import { registerReleaseCheckJob } from "@/features/release/job";
+import { registerWebhookDeliveryJob } from "@/features/webhooks/deliver";
 import { setBoss } from "@/jobs/boss";
 
 // Register all job handlers and schedules. Called after boss.start() and

@@ -4,6 +4,7 @@ import https from "node:https";
 import type { LookupFunction } from "node:net";
 import { eq } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
+import { env } from "@/config/env";
 import {
   WEBHOOK_DISABLE_AFTER,
   WEBHOOK_MAX_RESPONSE_BYTES,
@@ -12,7 +13,6 @@ import {
 } from "@/constants/automations";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
-import { env } from "@/config/env";
 import { type Db, db as defaultDb } from "@/db/client";
 import { users, webhookDeliveries, webhookSubscriptions } from "@/db/schema";
 import { decryptToken } from "@/features/email/crypto";
@@ -48,7 +48,10 @@ function pinnedLookup(allowPrivate: boolean): LookupFunction {
       .then((addresses) => {
         const first = addresses[0];
         if (first === undefined) {
-          callback(new AppError(ERROR_IDS.WEBHOOK_URL_REFUSED, "host has no address", { hostname }), "");
+          callback(
+            new AppError(ERROR_IDS.WEBHOOK_URL_REFUSED, "host has no address", { hostname }),
+            "",
+          );
           return;
         }
         if (!allowPrivate) {
@@ -66,7 +69,7 @@ function pinnedLookup(allowPrivate: boolean): LookupFunction {
         callback(null, first.address, first.family === 6 ? 6 : 4);
       })
       .catch((error: unknown) => {
-        callback(error instanceof Error ? (error as NodeJS.ErrnoException) : new Error("dns failed"), "");
+        callback(error instanceof Error ? error : new Error("dns failed"), "");
       });
   };
 }
@@ -191,6 +194,142 @@ async function enqueueRetry(db: Db, deliveryId: string): Promise<void> {
   await boss.send(PGBOSS_QUEUE_WEBHOOK_DELIVER, { deliveryId }, { startAfter: seconds });
 }
 
+interface Attempt {
+  statusCode: number | null;
+  failure: { errorId: string; message: string } | null;
+}
+
+async function attemptDelivery(
+  url: URL,
+  body: string,
+  headers: Record<string, string>,
+  allowPrivate: boolean,
+  timeoutMs: number,
+): Promise<Attempt> {
+  try {
+    const response = await postOnce(url, body, headers, allowPrivate, timeoutMs);
+    const statusCode = response.statusCode;
+    if (statusCode >= 200 && statusCode < 300) return { statusCode, failure: null };
+    return {
+      statusCode,
+      failure: {
+        errorId: ERROR_IDS.WEBHOOK_DELIVERY_FAILED,
+        message: statusCode >= 300 && statusCode < 400 ? "redirect not followed" : "non-2xx",
+      },
+    };
+  } catch (error) {
+    return {
+      statusCode: null,
+      failure: { errorId: errorIdOf(error), message: errorMessageOf(error) },
+    };
+  }
+}
+
+async function recordSuccess(
+  db: Db,
+  deliveryId: string,
+  subscriptionId: string,
+  statusCode: number | null,
+  durationMs: number,
+): Promise<void> {
+  await db
+    .update(webhookDeliveries)
+    .set({
+      status: "succeeded",
+      lastStatusCode: statusCode,
+      lastError: null,
+      nextAttemptAt: null,
+      durationMs,
+      updatedAt: new Date(),
+    })
+    .where(eq(webhookDeliveries.id, deliveryId));
+  await db
+    .update(webhookSubscriptions)
+    .set({ consecutiveFailures: 0, lastDeliveryAt: new Date(), updatedAt: new Date() })
+    .where(eq(webhookSubscriptions.id, subscriptionId));
+}
+
+async function recordGone(
+  db: Db,
+  delivery: typeof webhookDeliveries.$inferSelect,
+  subscription: typeof webhookSubscriptions.$inferSelect,
+  durationMs: number,
+  signal: AbortSignal,
+): Promise<void> {
+  await db
+    .update(webhookDeliveries)
+    .set({
+      status: "failed",
+      attempts: delivery.attempts + 1,
+      lastStatusCode: 410,
+      lastError: truncate("receiver returned 410 Gone"),
+      durationMs,
+      updatedAt: new Date(),
+    })
+    .where(eq(webhookDeliveries.id, delivery.id));
+  await disableSubscription(
+    db,
+    subscription.id,
+    "Receiver returned 410 Gone",
+    subscription.createdBy,
+    signal,
+  );
+}
+
+async function recordFailure(
+  db: Db,
+  delivery: typeof webhookDeliveries.$inferSelect,
+  subscription: typeof webhookSubscriptions.$inferSelect,
+  attempt: Attempt,
+  durationMs: number,
+  now: number,
+  signal: AbortSignal,
+): Promise<DeliveryOutcome["status"]> {
+  const attempts = delivery.attempts + 1;
+  const consecutiveFailures = subscription.consecutiveFailures + 1;
+  const retrySeconds =
+    attempts <= WEBHOOK_RETRY_SECONDS.length ? WEBHOOK_RETRY_SECONDS[attempts - 1] : undefined;
+  const status = retrySeconds === undefined ? "failed" : "retrying";
+  const nextAttemptAt = retrySeconds === undefined ? null : new Date(now + retrySeconds * 1000);
+
+  await db
+    .update(webhookDeliveries)
+    .set({
+      status,
+      attempts,
+      nextAttemptAt,
+      lastStatusCode: attempt.statusCode,
+      lastError: truncate(attempt.failure?.message ?? "delivery failed"),
+      durationMs,
+      updatedAt: new Date(),
+    })
+    .where(eq(webhookDeliveries.id, delivery.id));
+  await db
+    .update(webhookSubscriptions)
+    .set({ consecutiveFailures, updatedAt: new Date() })
+    .where(eq(webhookSubscriptions.id, subscription.id));
+
+  if (consecutiveFailures >= WEBHOOK_DISABLE_AFTER) {
+    await disableSubscription(
+      db,
+      subscription.id,
+      `Disabled after ${WEBHOOK_DISABLE_AFTER} failed deliveries`,
+      subscription.createdBy,
+      signal,
+    );
+  } else if (status === "retrying") {
+    await enqueueRetry(db, delivery.id);
+  }
+  return status;
+}
+
+async function markDeliveryFailed(db: Db, deliveryId: string, errorId: string): Promise<void> {
+  await db
+    .update(webhookDeliveries)
+    .set({ status: "failed", lastError: errorId, updatedAt: new Date() })
+    .where(eq(webhookDeliveries.id, deliveryId));
+}
+
 export async function deliverWebhook(
   db: Db,
   deliveryId: string,
@@ -214,15 +353,17 @@ export async function deliverWebhook(
           .from(webhookSubscriptions)
           .where(eq(webhookSubscriptions.id, delivery.subscriptionId));
   if (delivery === undefined || subscription === undefined) {
-    return { status: "failed", statusCode: null, errorId: ERROR_IDS.WEBHOOK_NOT_FOUND, durationMs: 0 };
+    return {
+      status: "failed",
+      statusCode: null,
+      errorId: ERROR_IDS.WEBHOOK_NOT_FOUND,
+      durationMs: 0,
+    };
   }
 
   // A disabled subscription never receives anything again; record it and stop.
   if (!subscription.enabled) {
-    await db
-      .update(webhookDeliveries)
-      .set({ status: "failed", lastError: "subscription disabled", updatedAt: new Date() })
-      .where(eq(webhookDeliveries.id, delivery.id));
+    await markDeliveryFailed(db, delivery.id, ERROR_IDS.WEBHOOK_DISABLED);
     return {
       status: "failed",
       statusCode: null,
@@ -233,14 +374,10 @@ export async function deliverWebhook(
 
   const sealed = decryptToken(subscription.secretEnc);
   if (!sealed.ok) {
-    await db
-      .update(webhookDeliveries)
-      .set({ status: "failed", lastError: sealed.error.id, updatedAt: new Date() })
-      .where(eq(webhookDeliveries.id, delivery.id));
+    await markDeliveryFailed(db, delivery.id, sealed.error.id);
     return { status: "failed", statusCode: null, errorId: sealed.error.id, durationMs: 0 };
   }
 
-  const secret = sealed.value;
   const body = JSON.stringify(delivery.payload);
   const timestamp = Math.floor(now() / 1000);
   const headers: Record<string, string> = {
@@ -248,125 +385,42 @@ export async function deliverWebhook(
     "user-agent": USER_AGENT,
     "x-dealflow-event": delivery.eventType,
     "x-dealflow-delivery": delivery.id,
-    "x-dealflow-signature": signatureHeader(secret, timestamp, body),
+    "x-dealflow-signature": signatureHeader(sealed.value, timestamp, body),
   };
 
   const started = now();
-  let statusCode: number | null = null;
-  let failure: { errorId: string; message: string } | null = null;
-
   const url = checkWebhookUrl(subscription.url, allowPrivate);
-  if (!url.ok) {
-    failure = { errorId: url.error.id, message: "URL refused" };
-  } else {
-    try {
-      const response = await postOnce(url.value, body, headers, allowPrivate, timeoutMs);
-      statusCode = response.statusCode;
-      if (statusCode < 200 || statusCode >= 300) {
-        failure = {
-          errorId: ERROR_IDS.WEBHOOK_DELIVERY_FAILED,
-          message: statusCode >= 300 && statusCode < 400 ? "redirect not followed" : "non-2xx",
-        };
-      }
-    } catch (error) {
-      failure = { errorId: errorIdOf(error), message: errorMessageOf(error) };
-    }
-  }
-
+  const attempt: Attempt = url.ok
+    ? await attemptDelivery(url.value, body, headers, allowPrivate, timeoutMs)
+    : { statusCode: null, failure: { errorId: url.error.id, message: "URL refused" } };
   const durationMs = Math.max(0, now() - started);
   signal.throwIfAborted();
 
-  if (failure === null) {
-    await db
-      .update(webhookDeliveries)
-      .set({
-        status: "succeeded",
-        lastStatusCode: statusCode,
-        lastError: null,
-        nextAttemptAt: null,
-        durationMs,
-        updatedAt: new Date(),
-      })
-      .where(eq(webhookDeliveries.id, delivery.id));
-    await db
-      .update(webhookSubscriptions)
-      .set({ consecutiveFailures: 0, lastDeliveryAt: new Date(), updatedAt: new Date() })
-      .where(eq(webhookSubscriptions.id, subscription.id));
-    return { status: "succeeded", statusCode, errorId: null, durationMs };
+  if (attempt.failure === null) {
+    await recordSuccess(db, delivery.id, subscription.id, attempt.statusCode, durationMs);
+    return { status: "succeeded", statusCode: attempt.statusCode, errorId: null, durationMs };
   }
 
-  // 410 Gone means the endpoint is deliberately retired: disable now, no retries.
-  if (statusCode === 410) {
-    await db
-      .update(webhookDeliveries)
-      .set({
-        status: "failed",
-        attempts: delivery.attempts + 1,
-        lastStatusCode: 410,
-        lastError: truncate("receiver returned 410 Gone"),
-        durationMs,
-        updatedAt: new Date(),
-      })
-      .where(eq(webhookDeliveries.id, delivery.id));
-    await disableSubscription(
-      db,
-      subscription.id,
-      "Receiver returned 410 Gone",
-      subscription.createdBy,
-      signal,
-    );
+  if (attempt.statusCode === 410) {
+    await recordGone(db, delivery, subscription, durationMs, signal);
     return {
       status: "failed",
-      statusCode,
+      statusCode: 410,
       errorId: ERROR_IDS.WEBHOOK_DELIVERY_FAILED,
       durationMs,
     };
   }
 
-  const attempts = delivery.attempts + 1;
-  const consecutiveFailures = subscription.consecutiveFailures + 1;
-  const retrySeconds = attempts <= WEBHOOK_RETRY_SECONDS.length
-    ? WEBHOOK_RETRY_SECONDS[attempts - 1]
-    : undefined;
-  const finalStatus = retrySeconds === undefined ? "failed" : "retrying";
-  const nextAttemptAt =
-    retrySeconds === undefined ? null : new Date(now() + retrySeconds * 1000);
-
-  await db
-    .update(webhookDeliveries)
-    .set({
-      status: finalStatus,
-      attempts,
-      nextAttemptAt,
-      lastStatusCode: statusCode,
-      lastError: truncate(failure.message),
-      durationMs,
-      updatedAt: new Date(),
-    })
-    .where(eq(webhookDeliveries.id, delivery.id));
-  await db
-    .update(webhookSubscriptions)
-    .set({ consecutiveFailures, updatedAt: new Date() })
-    .where(eq(webhookSubscriptions.id, subscription.id));
-
-  if (consecutiveFailures >= WEBHOOK_DISABLE_AFTER) {
-    await disableSubscription(
-      db,
-      subscription.id,
-      `Disabled after ${WEBHOOK_DISABLE_AFTER} failed deliveries`,
-      subscription.createdBy,
-      signal,
-    );
-  } else if (finalStatus === "retrying") {
-    await enqueueRetry(db, delivery.id);
-  }
-
-  return {
-    status: finalStatus,
-    statusCode,
-    errorId: failure.errorId,
+  const status = await recordFailure(
+    db,
+    delivery,
+    subscription,
+    attempt,
     durationMs,
-  };
+    now(),
+    signal,
+  );
+  return { status, statusCode: attempt.statusCode, errorId: attempt.failure.errorId, durationMs };
 }
 
 export async function registerWebhookDeliveryJob(boss: PgBoss): Promise<void> {

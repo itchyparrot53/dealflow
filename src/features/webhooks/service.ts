@@ -4,9 +4,9 @@ import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import {
-  webhookDeliveries,
   type WebhookDeliveryRow,
   type WebhookSubscriptionRow,
+  webhookDeliveries,
   webhookSubscriptions,
 } from "@/db/schema";
 import { encryptToken } from "@/features/email/crypto";
@@ -69,7 +69,9 @@ function invalid(issues: unknown): AppError {
 }
 
 function notFound(id: string): AppError {
-  return new AppError(ERROR_IDS.WEBHOOK_NOT_FOUND, "Subscription not found", { subscriptionId: id });
+  return new AppError(ERROR_IDS.WEBHOOK_NOT_FOUND, "Subscription not found", {
+    subscriptionId: id,
+  });
 }
 
 function validateUrl(raw: string): Result<string, AppError> {
@@ -77,12 +79,12 @@ function validateUrl(raw: string): Result<string, AppError> {
   return parsed.ok ? ok(parsed.value.toString()) : err(parsed.error);
 }
 
-export async function listSubscriptions(
-  db: Db,
-  signal: AbortSignal,
-): Promise<SubscriptionView[]> {
+export async function listSubscriptions(db: Db, signal: AbortSignal): Promise<SubscriptionView[]> {
   signal.throwIfAborted();
-  return db.select(SAFE_COLUMNS).from(webhookSubscriptions).orderBy(desc(webhookSubscriptions.createdAt));
+  return db
+    .select(SAFE_COLUMNS)
+    .from(webhookSubscriptions)
+    .orderBy(desc(webhookSubscriptions.createdAt));
 }
 
 export async function getSubscription(
@@ -309,4 +311,3 @@ export async function sendTest(
     durationMs: outcome.durationMs,
   });
 }
-
