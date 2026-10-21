@@ -92,6 +92,32 @@ const REASON_RANK: Record<DuplicateReason, number> = {
   name: 2,
 };
 
+function addPair(
+  pairs: Map<string, DuplicatePair>,
+  a: DuplicateRecord,
+  b: DuplicateRecord,
+  reason: DuplicateReason,
+): void {
+  const key = pairKey(a.id, b.id);
+  const existing = pairs.get(key);
+  if (existing === undefined) pairs.set(key, { a, b, reasons: [reason] });
+  else if (!existing.reasons.includes(reason)) existing.reasons.push(reason);
+}
+
+function addGroupPairs(
+  bucket: readonly DuplicateRecord[],
+  reason: DuplicateReason,
+  pairs: Map<string, DuplicatePair>,
+): void {
+  for (let i = 0; i < bucket.length; i += 1) {
+    for (let j = i + 1; j < bucket.length; j += 1) {
+      const a = bucket[i];
+      const b = bucket[j];
+      if (a !== undefined && b !== undefined) addPair(pairs, a, b, reason);
+    }
+  }
+}
+
 // Groups entries by one key and records a pair (with its reason) for every two rows in a group.
 function groupPairs<T extends { record: DuplicateRecord }>(
   entries: readonly T[],
@@ -107,19 +133,107 @@ function groupPairs<T extends { record: DuplicateRecord }>(
     bucket.push(entry.record);
     groups.set(key, bucket);
   }
-  for (const bucket of groups.values()) {
-    for (let i = 0; i < bucket.length; i += 1) {
-      for (let j = i + 1; j < bucket.length; j += 1) {
-        const a = bucket[i];
-        const b = bucket[j];
-        if (a === undefined || b === undefined) continue;
-        const key = pairKey(a.id, b.id);
-        const existing = pairs.get(key);
-        if (existing === undefined) pairs.set(key, { a, b, reasons: [reason] });
-        else if (!existing.reasons.includes(reason)) existing.reasons.push(reason);
-      }
-    }
+  for (const bucket of groups.values()) addGroupPairs(bucket, reason, pairs);
+}
+
+async function personPairs(
+  db: Db,
+  actor: PermSetUser,
+  signal: AbortSignal,
+): Promise<{ pairs: Map<string, DuplicatePair>; rowCount: number }> {
+  const rows: PersonRow[] = await db
+    .select({
+      id: persons.id,
+      name: persons.name,
+      primaryEmail: persons.primaryEmail,
+      emails: persons.emails,
+      phones: persons.phones,
+      orgId: persons.orgId,
+      orgName: organizations.name,
+      ownerId: persons.ownerId,
+      visibilityLevel: persons.visibilityLevel,
+      visibilityGroupId: persons.visibilityGroupId,
+      visibleToUserIds: persons.visibleToUserIds,
+    })
+    .from(persons)
+    .leftJoin(
+      organizations,
+      and(eq(organizations.id, persons.orgId), isNull(organizations.deletedAt)),
+    )
+    .where(isNull(persons.deletedAt))
+    .limit(DUPLICATE_CANDIDATE_CAP);
+  signal.throwIfAborted();
+
+  const entries: PersonEntry[] = [];
+  for (const row of rows) {
+    const visible = canSee(actor, {
+      kind: "person",
+      ownerId: row.ownerId,
+      visibilityLevel: row.visibilityLevel,
+      visibilityGroupId: row.visibilityGroupId,
+      visibleToUserIds: row.visibleToUserIds,
+    });
+    if (!visible) continue;
+    entries.push({
+      record: personRecord(row),
+      emailKey: row.primaryEmail === null ? null : normalizeEmail(row.primaryEmail),
+      phoneKey: row.phones[0] === undefined ? null : phoneKey(row.phones[0].value),
+      nameOrgKey: row.orgId === null ? null : `${normalizePersonName(row.name)}|${row.orgId}`,
+    });
   }
+
+  const pairs = new Map<string, DuplicatePair>();
+  groupPairs(entries, (entry) => entry.emailKey, "email", pairs);
+  groupPairs(entries, (entry) => entry.phoneKey, "phone", pairs);
+  groupPairs(entries, (entry) => entry.nameOrgKey, "name_org", pairs);
+  return { pairs, rowCount: rows.length };
+}
+
+async function orgPairs(
+  db: Db,
+  actor: PermSetUser,
+  signal: AbortSignal,
+): Promise<{ pairs: Map<string, DuplicatePair>; rowCount: number }> {
+  const rows: OrgRow[] = await db
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      domain: organizations.domain,
+      ownerId: organizations.ownerId,
+      visibilityLevel: organizations.visibilityLevel,
+      visibilityGroupId: organizations.visibilityGroupId,
+      visibleToUserIds: organizations.visibleToUserIds,
+    })
+    .from(organizations)
+    .where(isNull(organizations.deletedAt))
+    .limit(DUPLICATE_CANDIDATE_CAP);
+  signal.throwIfAborted();
+
+  const entries: OrgEntry[] = [];
+  for (const row of rows) {
+    const visible = canSee(actor, {
+      kind: "organization",
+      ownerId: row.ownerId,
+      visibilityLevel: row.visibilityLevel,
+      visibilityGroupId: row.visibilityGroupId,
+      visibleToUserIds: row.visibleToUserIds,
+    });
+    if (!visible) continue;
+    entries.push({
+      record: orgRecord(row),
+      nameKey: normalizeOrgName(row.name),
+      domainKey: row.domain === null ? null : domainOf(row.domain),
+    });
+  }
+
+  const pairs = new Map<string, DuplicatePair>();
+  groupPairs(entries, (entry) => entry.nameKey, "name", pairs);
+  groupPairs(entries, (entry) => entry.domainKey, "domain", pairs);
+  return { pairs, rowCount: rows.length };
+}
+
+function rankPair(pair: DuplicatePair): number {
+  return Math.min(...pair.reasons.map((reason) => REASON_RANK[reason]));
 }
 
 export interface DuplicateResult {
@@ -135,90 +249,8 @@ export async function findDuplicatePairs(
   signal: AbortSignal,
 ): Promise<DuplicateResult> {
   signal.throwIfAborted();
-  const pairs = new Map<string, DuplicatePair>();
-  let rowCount = 0;
-
-  if (entity === "person") {
-    const rows: PersonRow[] = await db
-      .select({
-        id: persons.id,
-        name: persons.name,
-        primaryEmail: persons.primaryEmail,
-        emails: persons.emails,
-        phones: persons.phones,
-        orgId: persons.orgId,
-        orgName: organizations.name,
-        ownerId: persons.ownerId,
-        visibilityLevel: persons.visibilityLevel,
-        visibilityGroupId: persons.visibilityGroupId,
-        visibleToUserIds: persons.visibleToUserIds,
-      })
-      .from(persons)
-      .leftJoin(
-        organizations,
-        and(eq(organizations.id, persons.orgId), isNull(organizations.deletedAt)),
-      )
-      .where(isNull(persons.deletedAt))
-      .limit(DUPLICATE_CANDIDATE_CAP);
-    signal.throwIfAborted();
-    rowCount = rows.length;
-
-    const entries: PersonEntry[] = [];
-    for (const row of rows) {
-      const visible = canSee(actor, {
-        kind: "person",
-        ownerId: row.ownerId,
-        visibilityLevel: row.visibilityLevel,
-        visibilityGroupId: row.visibilityGroupId,
-        visibleToUserIds: row.visibleToUserIds,
-      });
-      if (!visible) continue;
-      entries.push({
-        record: personRecord(row),
-        emailKey: row.primaryEmail === null ? null : normalizeEmail(row.primaryEmail),
-        phoneKey: row.phones[0] === undefined ? null : phoneKey(row.phones[0].value),
-        nameOrgKey: row.orgId === null ? null : `${normalizePersonName(row.name)}|${row.orgId}`,
-      });
-    }
-    groupPairs(entries, (entry) => entry.emailKey, "email", pairs);
-    groupPairs(entries, (entry) => entry.phoneKey, "phone", pairs);
-    groupPairs(entries, (entry) => entry.nameOrgKey, "name_org", pairs);
-  } else {
-    const rows: OrgRow[] = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        domain: organizations.domain,
-        ownerId: organizations.ownerId,
-        visibilityLevel: organizations.visibilityLevel,
-        visibilityGroupId: organizations.visibilityGroupId,
-        visibleToUserIds: organizations.visibleToUserIds,
-      })
-      .from(organizations)
-      .where(isNull(organizations.deletedAt))
-      .limit(DUPLICATE_CANDIDATE_CAP);
-    signal.throwIfAborted();
-    rowCount = rows.length;
-
-    const entries: OrgEntry[] = [];
-    for (const row of rows) {
-      const visible = canSee(actor, {
-        kind: "organization",
-        ownerId: row.ownerId,
-        visibilityLevel: row.visibilityLevel,
-        visibilityGroupId: row.visibilityGroupId,
-        visibleToUserIds: row.visibleToUserIds,
-      });
-      if (!visible) continue;
-      entries.push({
-        record: orgRecord(row),
-        nameKey: normalizeOrgName(row.name),
-        domainKey: row.domain === null ? null : domainOf(row.domain),
-      });
-    }
-    groupPairs(entries, (entry) => entry.nameKey, "name", pairs);
-    groupPairs(entries, (entry) => entry.domainKey, "domain", pairs);
-  }
+  const found =
+    entity === "person" ? await personPairs(db, actor, signal) : await orgPairs(db, actor, signal);
 
   const dismissals = await db
     .select({ aId: duplicateDismissals.aId, bId: duplicateDismissals.bId })
@@ -227,18 +259,16 @@ export async function findDuplicatePairs(
   signal.throwIfAborted();
   const dismissed = new Set(dismissals.map((row) => `${row.aId}:${row.bId}`));
 
-  const list = [...pairs.entries()]
+  const list = [...found.pairs.entries()]
     .filter(([key]) => !dismissed.has(key))
     .map(([, pair]) => pair)
     .sort((a, b) => {
-      const byRank =
-        Math.min(...a.reasons.map((reason) => REASON_RANK[reason])) -
-        Math.min(...b.reasons.map((reason) => REASON_RANK[reason]));
+      const byRank = rankPair(a) - rankPair(b);
       return byRank !== 0 ? byRank : a.a.name.localeCompare(b.a.name);
     });
 
   return {
     pairs: list.slice(0, DUPLICATE_PAGE_SIZE),
-    capped: rowCount >= DUPLICATE_CANDIDATE_CAP || list.length > DUPLICATE_PAGE_SIZE,
+    capped: found.rowCount >= DUPLICATE_CANDIDATE_CAP || list.length > DUPLICATE_PAGE_SIZE,
   };
 }

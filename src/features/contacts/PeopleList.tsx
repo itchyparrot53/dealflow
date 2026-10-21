@@ -202,7 +202,7 @@ export function PeopleList({
             entity="person"
             onDefinition={(definition) => {
               const parsed = savedFilterDefinitionSchema("person").safeParse(definition);
-              if (parsed.success) setFilter(parsed.data as ContactFilterDefinition);
+              if (parsed.success) setFilter(parsed.data);
             }}
           />
         </div>

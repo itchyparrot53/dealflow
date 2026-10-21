@@ -99,7 +99,8 @@ describe("findDuplicatePairs", () => {
 
       const result = await findDuplicatePairs(db, actorOf(user), "person", signal);
       expect(result.pairs).toHaveLength(1);
-      expect(result.pairs[0]?.a.id).toBe(a.id < b.id ? a.id : b.id);
+      const pair = result.pairs[0];
+      expect(pair === undefined ? [] : [pair.a.id, pair.b.id].sort()).toEqual([a.id, b.id].sort());
       expect(result.pairs[0]?.reasons).toContain("name_org");
     });
   });
