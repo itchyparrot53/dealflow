@@ -23,6 +23,9 @@ const EXPECTED_EMAIL_DEFAULT: Record<NotificationType, boolean> = {
   document_accepted: true,
   document_declined: true,
   automation: false,
+  form_submission: false,
+  booking_created: true,
+  booking_cancelled: true,
 };
 
 describe("notification preferences", () => {

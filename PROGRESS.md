@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-21 03:41
+Current: 0.3 · Last updated: 2026-10-21 03:45
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
 
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
-- [ ] 0.2 Forms and booking schema and migrations
+- [x] 0.2 Forms and booking schema and migrations
 - [ ] 0.3 Pure core: time zones, slots, fields, spam token, ICS (test-first)
 - [ ] 0.4 Phase 0 QA gate
 - [ ] 1.1 Forms service and the capability
@@ -42,6 +42,11 @@ Current: 0.2 · Last updated: 2026-10-21 03:41
 - 0.1: security headers are set by `next.config.ts` `headers()` (this project has no middleware by design), so 6.8's framing exception becomes a path-scoped entry for `/f/:path*` and `/book/:path*` carved out of the strict `frame-ancestors 'none'` entry, pinned by `next.config.test.ts`.
 - 0.1: `SystemMail` (`src/features/mailer/types.ts`) is `{ to, subject, text, html }` with no attachments, so the booking confirmation carries the time, location and cancel link in the body only, and the `.ics` is offered solely as the confirmation page's "Add to calendar" data-URL download, per section 10.
 - 0.1: pnpm 9.15.9 (from `/tmp/dealflow-tools`), Node 24.16.0 and Docker 24.0.5 are available, and the `subagent` tool is available, so the Task 4.3 review can use it.
+
+- 0.2: `drizzle-kit generate --name dealflow_forms_booking` produced `0085_dealflow_forms_booking.sql` creating exactly the four tables of 6.4 (`web_forms`, `web_form_submissions`, `booking_pages`, `bookings`) with every named index and constraint; `drizzle-kit generate --custom --name dealflow_forms_booking_notifications` produced `0086`, filled with three `ALTER TYPE notification_type ADD VALUE` statements. `pnpm db:migrate:dev` applied both to the host dev database, and a query confirmed the four tables and the three new enum labels.
+- 0.2: `fields`, `availability` and submission `values` are untyped `jsonb` columns (Part 5's `automations.definition` precedent), because the feature schemas own those shapes and importing feature types into `src/db/schema` would invert the dependency.
+- 0.2: two constraints beyond the 6.4 column list are declarative guards for rules 6.8 already states: `web_forms_redirect_url_ck` requires an `https://` prefix, and `bookings_span_ck` requires `end_at > start_at`. Neither changes the planned shape; both keep a bad row out of the database even if a future caller skips the service.
+- 0.2: adding the three notification kinds to `NOTIFICATION_TYPES` made the per-type exhaustive maps incomplete, so `deepLink.ts`, `NotificationItem.tsx`, `strings.ts` (feed and preference labels) and the notification email renderer gained entries now; otherwise a new-kind row would hit a missing key at runtime. Email defaults are off for `form_submission` and on for both booking kinds, per 6.8.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

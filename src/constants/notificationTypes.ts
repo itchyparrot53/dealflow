@@ -17,6 +17,10 @@ export const NOTIFICATION_TYPES = [
   "document_declined",
   // Part 5: an automation's notify_user action.
   "automation",
+  // Part 6: public web forms and booking pages.
+  "form_submission",
+  "booking_created",
+  "booking_cancelled",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

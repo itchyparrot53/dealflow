@@ -20,6 +20,7 @@ export * from "./emailDrafts";
 export * from "./emailReads";
 export * from "./enrichment";
 export * from "./files";
+export * from "./forms";
 export * from "./goals";
 export * from "./hiddenBuiltinFields";
 export * from "./identity";

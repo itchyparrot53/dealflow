@@ -21,6 +21,10 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
   document_declined: true,
   // A per-run ping; keep it out of email unless the recipient opts in.
   automation: false,
+  // A submission is already in the inbox as a lead or deal; booking changes are the outcome.
+  form_submission: false,
+  booking_created: true,
+  booking_cancelled: true,
 };
 
 export const DEFAULT_IN_APP = true;

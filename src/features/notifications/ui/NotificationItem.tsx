@@ -31,6 +31,9 @@ const LABEL: Record<NotificationType, (p: Record<string, unknown>) => string> = 
   document_accepted: (p) => `${toStr(p.name)} accepted ${toStr(p.title)}`,
   document_declined: (p) => `${toStr(p.title)} was declined`,
   automation: (p) => `${L.automation}: ${toStr(p.message)}`,
+  form_submission: (p) => `${L.form_submission}: ${toStr(p.formName) || toStr(p.name)}`,
+  booking_created: (p) => `${toStr(p.name)} booked ${toStr(p.pageTitle)}`,
+  booking_cancelled: (p) => `${toStr(p.name)} cancelled ${toStr(p.pageTitle)}`,
 };
 
 export function NotificationItem({

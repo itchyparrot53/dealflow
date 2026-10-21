@@ -120,6 +120,28 @@ export function renderNotificationEmail(
       line = message ?? `${recipientName}, an automation ran on a deal you own.`;
       break;
     }
+    case "form_submission": {
+      const formName = typeof row.payload.formName === "string" ? row.payload.formName : "a form";
+      subject = `New submission on ${formName}`;
+      line = `${recipientName}, someone submitted ${formName}.`;
+      break;
+    }
+    case "booking_created": {
+      const pageTitle =
+        typeof row.payload.pageTitle === "string" ? row.payload.pageTitle : "a booking page";
+      subject = `Booked: ${pageTitle}`;
+      const visitor = typeof row.payload.name === "string" ? row.payload.name : "A visitor";
+      line = `${recipientName}, ${visitor} booked ${pageTitle}.`;
+      break;
+    }
+    case "booking_cancelled": {
+      const pageTitle =
+        typeof row.payload.pageTitle === "string" ? row.payload.pageTitle : "a booking page";
+      subject = `Cancelled: ${pageTitle}`;
+      const visitor = typeof row.payload.name === "string" ? row.payload.name : "A visitor";
+      line = `${recipientName}, ${visitor} cancelled ${pageTitle}.`;
+      break;
+    }
     case "document_viewed":
     case "document_accepted":
     case "document_declined": {
