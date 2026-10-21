@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-21 01:51
+Current: 3.1 · Last updated: 2026-10-21 01:57
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
 - Phase 1: 1673688
 - Phase 2: 682fb2d
+- Phase 3: 1b46554
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
@@ -21,7 +22,7 @@ Current: 2.4 · Last updated: 2026-10-21 01:51
 - [x] 2.1 Runner, conditions and the capability (test-first)
 - [x] 2.2 Core actions
 - [x] 2.3 Email and AI actions
-- [ ] 2.4 Phase 2 QA gate
+- [x] 2.4 Phase 2 QA gate
 - [ ] 3.1 Safe delivery (test-first)
 - [ ] 3.2 Subscriptions service, test send and redeliver
 - [ ] 3.3 Phase 3 QA gate
@@ -39,6 +40,7 @@ Current: 2.4 · Last updated: 2026-10-21 01:51
 
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5063/5063
+- Phase 2 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · automations/events/ai/notifications 106/106
 - Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · events/documents/deals/collaboration 219/219
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5124/5124 · documents 45/45
 
@@ -107,6 +109,9 @@ Current: 2.4 · Last updated: 2026-10-21 01:51
 - 2.3: the email action reuses the documents send shape (`getActorMailboxStatus`, `resolveMailProvider`, `sendEmail`, `linkDealId`/`linkPersonId`) and renders the saved `email_templates` row; `send_email` skips with `E_AUTOMATION_005` when there is no person, no address, no mailbox, an unowned template, or an `email:<personId>` step in this automation's last 24 hours.
 - 2.3: the AI actions call `summarizeDeal`, `scoreDeal` and `draftEmail` as the hydrated creator, so provider selection, company and user caps, the rate limit and usage rows are Part 1's own; the summary is written as a note (summary, risks, next steps) and the draft is saved with `saveDraft`, never sent.
 - 2.3: tests install the fake IMAP transport through `setSendEmailActionDepsForTest` (the same injection pattern as Part 4's send) and the deterministic provider through `setAiProviderForTest(fakeProvider())`; the cap case sets the company limit to zero and expects `E_AI_COMPANY_LIMIT` on the step.
+
+- 2.4: the gate fixes were formatter output, a complexity split in `update_deal` (per-field step helpers) and in the runner (condition check and step execution extracted), the two test executors that were `async` without an `await`, and the missing `automation` case in the notification email renderer; after `2.4: fixes round 1` the gate passed with the baseline's 14 warnings.
+- 2.4: no `qa` review at this gate (fast profile, rule 9.4). Phase 3 base is the commit before the gate.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
