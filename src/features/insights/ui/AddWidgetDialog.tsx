@@ -17,6 +17,7 @@ import { goalLabel } from "@/features/goals/goalLabel";
 import type { GoalWithProgress } from "@/features/goals/router";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { addWidgetAction } from "../actions";
+import { insightErrorMessage } from "./errorCopy";
 
 const S = INSIGHTS_STRINGS;
 
@@ -96,7 +97,7 @@ export function AddWidgetDialog({
           />
           {error !== null && (
             <p role="alert" className="text-sm text-destructive">
-              {error}
+              {insightErrorMessage(error)}
             </p>
           )}
         </div>

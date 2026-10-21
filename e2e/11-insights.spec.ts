@@ -59,6 +59,8 @@ test("insights: dashboards, report builder, explain, CSV and bulk AI scoring", a
   await page.getByTestId("report-explain").click();
   await expect(page.getByTestId("explain-insights")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("explain-item")).toHaveCount(3, { timeout: 30_000 });
+  // Let the Sheet finish sliding in before the screenshot.
+  await page.waitForTimeout(600);
   await shot(page, "p7-explain");
   await page.keyboard.press("Escape");
 
