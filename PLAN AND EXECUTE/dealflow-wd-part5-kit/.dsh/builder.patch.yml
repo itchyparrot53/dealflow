@@ -1,0 +1,32 @@
+# Dealflow builder overlay for DeepSeek Harness: dsh --profile dealflow --patch .dsh/builder.patch.yml
+# A patch row replaces that row's whole config, so each row restates every field it keeps.
+
+# Model for every agent this run creates. DSH_MODEL / DSH_PROVIDER override the defaults.
+# The official DeepSeek provider reads DEEPSEEK_API_KEY from the shell or ~/.dsh/.env.
+- id: agent-default-model
+  config:
+    provider: !!js process.env.DSH_PROVIDER || 'deepseek-official'
+    model: !!js process.env.DSH_MODEL || 'deepseek-flash'
+
+# Keep the code and the plan out of request metadata: no session-log upload.
+- id: session-log-deepseek
+  config:
+    enabled: false
+
+# Shell commands run with the unconfined local executor: pnpm's store, Docker and Playwright write outside
+# this folder, and headless dsh has nobody to approve sandbox escalations. File tools stay confined to the
+# folder by fs-sandbox (DSH_PERMISSION_MODE=workspace-write), and .dsh/guard.bash vets every command.
+- id: bash-sandbox
+  disabled: true
+
+# Permission presets bundle a sandbox mode and refuse an unconfined executor. Without them the session uses
+# DSH_PERMISSION_MODE for file tools and the default approval policy (ask, which fails closed headless).
+- id: permission
+  disabled: true
+
+- insert:
+    - id: bash-local
+      name: '@deepseek-ai/dsh-bash-local'
+      config:
+        timeoutMs: 900000
+        maxTimeoutMs: 1800000
