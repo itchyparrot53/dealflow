@@ -197,3 +197,17 @@ Webhooks deliver the same events as signed JSON POSTs. Each delivery is retried 
 address-checked inside the DNS lookup, and auto-disabled after ten consecutive failures; the delivery
 log keeps the last 100 attempts per subscription with redeliver and test send. See
 `docs/dealflow/AUTOMATIONS.md` and `docs/dealflow/WEBHOOKS.md`.
+
+## Forms and booking pages
+
+Public forms live at `/f/{publicId}` and can be embedded on any site. A submission finds or creates
+the person and organization, creates a lead or a deal through the same services a signed-in user
+uses, writes the message as a note, notifies the form owner and emits `form.submitted`. A honeypot,
+a signed start token, a two-second minimum fill time and a rate limit hold spam off; the form works
+without JavaScript.
+
+Booking pages live at `/book/{publicId}`. Free slots come from the host's weekly availability, the
+minimum notice, the days-ahead window, buffers and the host's existing timed activities, shown in the
+visitor's own time zone. A booking re-checks the slot under a per-host lock, creates the activity,
+notifies the host and emails the visitor a cancel link. See `docs/dealflow/FORMS.md` and
+`docs/dealflow/SCHEDULING.md`.

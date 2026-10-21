@@ -16,19 +16,23 @@ Event types: `deal.created`, `deal.updated`, `deal.stage_changed`, `deal.won`, `
 `deal.deleted`, `deal.rotting`, `person.created`, `person.updated`, `organization.created`,
 `organization.updated`, `activity.created`, `activity.completed`, `document.sent`,
 `document.viewed`, `document.accepted`, `document.declined`, `invoice.overdue`, `invoice.paid`,
-`invoice.voided`.
+`invoice.voided`, `form.submitted`, `booking.created`, `booking.cancelled`.
 
 ## Triggers
 
 A trigger is one event type plus optional filters: `pipelineId` on deal triggers, `stageId` (the
-stage entered) on `deal.stage_changed`, `fields` on `deal.updated`, and `kind` (`quote` or
-`invoice`) on document and invoice triggers. `activity.completed` fires when an activity turns done.
+stage entered) on `deal.stage_changed`, `fields` on `deal.updated`, `kind` (`quote` or `invoice`)
+on document and invoice triggers, and `formId` on `form.submitted` (an absent filter means any
+form). `booking.created` and `booking.cancelled` take no filter. `activity.completed` fires when an
+activity turns done.
 
 ## Conditions
 
 A condition is a saved-filter definition evaluated against the record's current state. Deal events
 (including activity and document events) evaluate on the related deal; a record with no deal skips
-as `condition_false`. `person.created` and `organization.created` evaluate on the contact.
+as `condition_false`. `person.created` and `organization.created` evaluate on the contact. The three
+Part 6 events evaluate on the visitor's person: the lead's or deal's person for a form submission,
+and the booking's person for a booking.
 
 ## Actions
 

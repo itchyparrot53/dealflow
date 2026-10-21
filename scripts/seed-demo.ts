@@ -45,6 +45,7 @@ import {
   convertLeads,
   seedParticipantsFollowers,
 } from "./seed-demo-enrich";
+import { seedFormsBooking } from "./seed-demo-forms";
 import { seedContactFollowers, seedInvitedUser, seedOrgRelations } from "./seed-demo-graph";
 import { insertDeals, insertLeads, insertOrgs, insertPeople, wipeDemo } from "./seed-demo-records";
 import { seedSales } from "./seed-demo-sales";
@@ -134,6 +135,9 @@ async function main(): Promise<void> {
 
   // Part 5: two disabled automations and one disabled example webhook.
   const automations = await seedAutomations(db, { pipelineId, ownerId: at(userIds, 0) });
+
+  // Part 6: one active form with two submissions, and one active booking page with a future booking.
+  const formsBooking = await seedFormsBooking(db, { ownerId: at(userIds, 0) });
 
   // Activities (per-deal + standalone + participants/guests).
   const dealRefs = dealSeeds.map((d, i) => ({
@@ -239,6 +243,9 @@ async function main(): Promise<void> {
   );
   console.warn(
     `demo_products=${sales.products} demo_lines=${sales.lines} demo_overdue=${sales.overdue} demo_undated=${sales.undated} demo_documents=${documents.documents} demo_templates=${documents.templates} demo_automations=${automations.automations} demo_webhooks=${automations.webhooks}`,
+  );
+  console.warn(
+    `demo_forms=${formsBooking.forms} demo_form_submissions=${formsBooking.submissions} demo_booking_pages=${formsBooking.pages} demo_bookings=${formsBooking.bookings}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

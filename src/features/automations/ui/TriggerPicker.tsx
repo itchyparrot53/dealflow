@@ -82,6 +82,20 @@ export function TriggerPicker({
           </div>
         ) : null}
 
+        {value.type === "form.submitted" ? (
+          <div>
+            <span className="mb-1.5 block text-sm font-medium">Form</span>
+            <Select
+              value={value.formId ?? ""}
+              onChange={(next) =>
+                onChange({ type: "form.submitted", formId: next === "" ? undefined : next })
+              }
+              options={[{ value: "", label: S.fields.anyPipeline }, ...optionList(lookups.forms)]}
+              ariaLabel="Form"
+            />
+          </div>
+        ) : null}
+
         {"kind" in value ? (
           <div>
             <span className="mb-1.5 block text-sm font-medium">Document</span>

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
-import { activityTypes, emailTemplates, pipelines, stages, users } from "@/db/schema";
+import { activityTypes, emailTemplates, pipelines, stages, users, webForms } from "@/db/schema";
 import { getAutomation } from "@/features/automations/service";
 import { AutomationEditor } from "@/features/automations/ui/AutomationEditor";
 import { can } from "@/features/permissions/can";
@@ -35,7 +35,7 @@ export default async function AutomationEditorPage({
   const automation = await getAutomation(db, id, signal);
   if (automation === null) notFound();
 
-  const [pipelineRows, stageRows, userRows, typeRows, templateRows] = await Promise.all([
+  const [pipelineRows, stageRows, userRows, typeRows, templateRows, formRows] = await Promise.all([
     db.select({ id: pipelines.id, name: pipelines.name }).from(pipelines),
     db
       .select({ id: stages.id, name: stages.name, pipelineId: stages.pipelineId })
@@ -50,6 +50,7 @@ export default async function AutomationEditorPage({
       .select({ id: emailTemplates.id, name: emailTemplates.name })
       .from(emailTemplates)
       .where(or(eq(emailTemplates.ownerId, actor.id), eq(emailTemplates.isShared, true))),
+    db.select({ id: webForms.id, name: webForms.name }).from(webForms),
   ]);
 
   return (
@@ -68,6 +69,7 @@ export default async function AutomationEditorPage({
           users: userRows,
           activityTypes: typeRows,
           emailTemplates: templateRows,
+          forms: formRows,
         }}
       />
     </SettingsPage>

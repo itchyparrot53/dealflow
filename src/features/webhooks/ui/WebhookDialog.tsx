@@ -18,13 +18,15 @@ import { createSubscriptionAction, updateSubscriptionAction } from "../actions";
 
 const S = WEBHOOKS_STRINGS;
 
-const GROUPS: { title: string; prefix: string }[] = [
-  { title: "Deals", prefix: "deal." },
-  { title: "People", prefix: "person." },
-  { title: "Organizations", prefix: "organization." },
-  { title: "Activities", prefix: "activity." },
-  { title: "Documents", prefix: "document." },
-  { title: "Invoices", prefix: "invoice." },
+const GROUPS: { title: string; prefixes: string[] }[] = [
+  { title: "Deals", prefixes: ["deal."] },
+  { title: "People", prefixes: ["person."] },
+  { title: "Organizations", prefixes: ["organization."] },
+  { title: "Activities", prefixes: ["activity."] },
+  { title: "Documents", prefixes: ["document."] },
+  { title: "Invoices", prefixes: ["invoice."] },
+  // Part 6: one group for the two public surfaces.
+  { title: "Forms and booking", prefixes: ["form.", "booking."] },
 ];
 
 export interface EditableSubscription {
@@ -117,10 +119,10 @@ export function WebhookDialog({
             <div className="space-y-2">
               {GROUPS.map((group) => {
                 const groupEvents = DOMAIN_EVENT_TYPES.filter((type) =>
-                  type.startsWith(group.prefix),
+                  group.prefixes.some((prefix) => type.startsWith(prefix)),
                 );
                 return (
-                  <div key={group.prefix}>
+                  <div key={group.title}>
                     <p className="text-xs font-semibold uppercase text-muted-foreground">
                       {group.title}
                     </p>

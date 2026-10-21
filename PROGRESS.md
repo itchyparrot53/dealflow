@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-21 05:26
+Current: 3.6 · Last updated: 2026-10-21 05:36
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
@@ -24,7 +24,7 @@ Current: 3.5 · Last updated: 2026-10-21 05:26
 - [x] 3.2 Public form page
 - [x] 3.3 Booking admin screens
 - [x] 3.4 Public booking and cancel pages
-- [ ] 3.5 Triggers in the editors, demo seed and docs
+- [x] 3.5 Triggers in the editors, demo seed and docs
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 E2E forms and booking spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -113,6 +113,11 @@ Current: 3.5 · Last updated: 2026-10-21 05:26
 - 3.4: a 409 from the book route shows 6.2's "no longer available" copy and refetches the day, so the visitor sees the slot disappear instead of a dead form; 429 and 404 show their own copy.
 - 3.4: the confirmation renders `BookingConfirmed`, which states the booked time in the visitor's zone and offers "Add to calendar" as the `.ics` data URL returned by the book route (the same bytes the email would have carried).
 - 3.4: the React rule against setState synchronously in an effect is respected by moving the clock read and the slot fetch into timer callbacks and by deriving the 14-day strip with `useMemo` from a `today` state, so there are no cascading renders.
+
+- 3.5: the automation trigger picker offers all three new events and, for `form.submitted`, an "Any form" / named-form `Select` backed by a new `forms` entry in `EditorLookups` (the editor page passes the form list); booking triggers take no filter.
+- 3.5: the webhook dialog groups events by a prefix list instead of one prefix, so "Forms and booking" holds both `form.*` and `booking.*` in one section.
+- 3.5: the demo seed adds `scripts/seed-demo-forms.ts` with one active "Contact us" form (four fields, two submissions with their persons and leads) and one active "Intro call" page (30 minutes, default week, `Europe/London`) with a future booking and its activity; it is called from `seed-demo.ts` and prints its own counts. It could not be executed because Docker is still down, so `pnpm db:seed:demo` is an owner action.
+- 3.5: `docs/dealflow/FORMS.md` and `SCHEDULING.md` are new; `AUTOMATIONS.md` and `WEBHOOKS.md` list the three events, the form filter and the person condition target; `UPSTREAM.md` has the Part 6 upstream list and the README a "Forms and booking pages" section.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

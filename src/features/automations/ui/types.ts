@@ -5,6 +5,8 @@ export interface EditorLookups {
   users: { id: string; name: string }[];
   activityTypes: { id: string; name: string }[];
   emailTemplates: { id: string; name: string }[];
+  // Part 6: the optional form filter on a form.submitted trigger.
+  forms: { id: string; name: string }[];
 }
 
 export type TriggerType = Trigger["type"];

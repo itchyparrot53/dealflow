@@ -242,3 +242,46 @@ the settings routes. Upstream files edited for the part (port future upstream fi
   one disabled example webhook.
 - `scripts/e2e/e2e-env.mjs`: `WEBHOOK_ALLOW_PRIVATE=true` for the local receiver.
 - `README.md`: the "Automations and webhooks" section.
+
+## Part 6 (web forms and scheduler) base
+
+Part 6 builds on the Part 5 result at commit `935685b` (PROGRESS-P5.md). New work lives in
+`src/features/forms/`, `src/features/scheduling/`, `src/features/public/PoweredBy.tsx`,
+`src/db/schema/forms.ts`, migrations `0085_dealflow_forms_booking` and
+`0086_dealflow_forms_booking_notifications`, the `src/app/f/` and `src/app/book/` routes and their
+public API routes, and the settings screens. Upstream files edited for the part (port future
+upstream fixes here by hand):
+
+- `src/db/schema/index.ts`: exports the forms schema.
+- `next.config.ts`, `next.config.test.ts`: the `/f/*` and `/book/*` framing carve-out
+  (`frame-ancestors *`, no `X-Frame-Options`).
+- `src/constants/errorIds.ts`, `src/constants/errorIds.test.ts`: the FORM and BOOKING IDs and their
+  domains.
+- `src/constants/permissionFlags.ts`, `src/features/permissions/actions-meta.ts`: `forms.manage`
+  (global, high risk).
+- `src/constants/notificationTypes.ts`, `notificationDefaults.ts`, `strings.ts`,
+  `src/features/notifications/ui/deepLink.ts`, `ui/NotificationItem.tsx`,
+  `src/features/notifications/email/render.ts`: the `form_submission`, `booking_created` and
+  `booking_cancelled` kinds and their copy.
+- `src/features/notifications/preferences.test.ts`, `schema.test.ts`: the three new defaults and
+  the 17-value enum.
+- `src/features/permissions/types.ts`: a `lead` variant of `VisibleRecord`.
+- `src/features/files/fileAuthz.ts`: a lead visibility parent, so a submission notification on a
+  lead is delivered instead of suppressed.
+- `src/features/events/types.ts`, `snapshot.ts`: the three event types and their payloads.
+- `src/features/automations/definition.ts` and its test, `runner.ts`, `ui/types.ts`,
+  `ui/TriggerPicker.tsx`: the three triggers, the form filter and the person condition target.
+- `src/constants/automationsStrings.ts`: trigger summaries for the new events.
+- `src/features/webhooks/ui/WebhookDialog.tsx`: the "Forms and booking" event group.
+- `src/app/(app)/settings/SettingsNav.tsx`: Forms (admin) and Booking pages (every user).
+- `src/server/trpc/root.ts`: the forms and scheduling routers.
+- `src/app/(app)/settings/automations/[id]/page.tsx`: passes the form list to the trigger picker.
+- `scripts/seed-demo.ts`: calls the new demo seed.
+
+### Part 6 demo and docs
+
+- `scripts/seed-demo-forms.ts`: one active form with two submissions, and one active booking page
+  with a future booking and its activity.
+- `docs/dealflow/FORMS.md`, `docs/dealflow/SCHEDULING.md`: new; `AUTOMATIONS.md` and
+  `WEBHOOKS.md` gained the new events.
+- `README.md`: the "Forms and booking pages" section.

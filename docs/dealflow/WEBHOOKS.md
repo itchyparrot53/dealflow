@@ -7,7 +7,10 @@ subscription, with redeliver.
 ## Events
 
 Any of the domain event types listed in [AUTOMATIONS.md](./AUTOMATIONS.md#events), plus the
-synthetic `ping` used by "Send test".
+synthetic `ping` used by "Send test". The dialog groups them, with forms and booking under "Forms
+and booking". `form.submitted` carries the form, its values, the created lead or deal and the
+visitor; the two booking events carry the booking, the page title, the host and the visitor (see
+[FORMS.md](./FORMS.md) and [SCHEDULING.md](./SCHEDULING.md)).
 
 ## Payload
 
