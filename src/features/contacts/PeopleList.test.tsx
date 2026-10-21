@@ -33,6 +33,10 @@ vi.mock("./actions", () => ({
   mergePersonsAction: (...a: unknown[]) => mergePersonsAction(...a),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
+const bulkContactAction = vi.fn();
+vi.mock("./bulk/actions", () => ({
+  bulkContactAction: (...a: unknown[]) => bulkContactAction(...a),
+}));
 vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
 
 import { PeopleList } from "./PeopleList";
@@ -40,7 +44,7 @@ import { PeopleList } from "./PeopleList";
 afterEach(() => {
   cleanup();
   listPeopleQuery.mockReset();
-  deletePersonAction.mockReset();
+  bulkContactAction.mockReset();
   mergePersonsAction.mockReset();
   savedViews.mockReturnValue([]);
 });
@@ -197,7 +201,7 @@ describe("PeopleList", () => {
   });
 
   it("bulk-deletes the selected people and clears the selection", async () => {
-    deletePersonAction.mockResolvedValue({ ok: true, value: { id: "p1" } });
+    bulkContactAction.mockResolvedValue({ ok: true, value: { applied: 1 } });
     listPeopleQuery.mockResolvedValue({ total: 1, rows: [] });
     render(<PeopleList rows={rows} total={2} />);
 
@@ -205,18 +209,20 @@ describe("PeopleList", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete people" }));
 
-    await vi.waitFor(() => expect(deletePersonAction).toHaveBeenCalledWith({ id: "p1" }, "csrf"));
+    await vi.waitFor(() =>
+      expect(bulkContactAction).toHaveBeenCalledWith(
+        { entity: "person", kind: "delete", ids: ["p1"] },
+        "csrf",
+      ),
+    );
     await vi.waitFor(() => expect(screen.queryByText(/selected/)).not.toBeInTheDocument());
   });
 
   it("keeps the failed row selected and surfaces an error on a partial bulk-delete failure", async () => {
-    deletePersonAction.mockImplementation((input: { id: string }) =>
-      Promise.resolve(
-        input.id === "p1"
-          ? { ok: true, value: { id: "p1" } }
-          : { ok: false, error: { id: "E_PERM_001" } },
-      ),
-    );
+    bulkContactAction.mockResolvedValue({
+      ok: false,
+      error: { id: "E_BULK_002", failed: [{ id: "p2", errorId: "E_PERM_001" }] },
+    });
     // p1's delete succeeded so it's gone from the reloaded list; p2's failed so it's still there.
     listPeopleQuery.mockResolvedValue({
       total: 1,
@@ -229,7 +235,7 @@ describe("PeopleList", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete people" }));
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/couldn't delete|could not delete|failed/i);
+    expect(alert).toHaveTextContent(/could not be changed|failed/i);
     await vi.waitFor(() => expect(screen.getByText("1 selected")).toBeInTheDocument());
     expect(screen.getByRole("checkbox", { name: "Select John Doe" })).toBeChecked();
   });

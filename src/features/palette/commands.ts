@@ -7,7 +7,7 @@ export const COMMAND_GROUPS = ["Create", "Go to", "Actions"] as const;
 export type CommandGroup = (typeof COMMAND_GROUPS)[number];
 
 export interface CommandContext {
-  router: { push: (href: string) => void };
+  router: { push: (href: string) => void; refresh?: () => void };
   openDialog: (id: string) => void;
 }
 

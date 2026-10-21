@@ -31,6 +31,7 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     lead: { list: { useQuery: (...a: unknown[]) => listQuery(...a) } },
     // Ungated: every user gets the full active-user list so owner filtering runs server-side.
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },

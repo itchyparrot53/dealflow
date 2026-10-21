@@ -1,7 +1,9 @@
 "use client";
 import type React from "react";
+import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { SavedView } from "@/features/saved-filters/savedView";
+import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
 import { type ContactFilterDefinition, ORG_FILTER_CONFIG } from "./contactFilterConfig";
 import { ORG_FILTER_LABELS } from "./contactFilterRows";
@@ -34,6 +36,13 @@ export function OrgsListToolbar({
         activeCount={filter?.conditions.length ?? 0}
         appliedDefinition={filter}
         onApply={onApplyFilter}
+      />
+      <AiFilterBox
+        entity="organization"
+        onDefinition={(definition) => {
+          const parsed = savedFilterDefinitionSchema("organization").safeParse(definition);
+          if (parsed.success) onApplyFilter(parsed.data);
+        }}
       />
     </div>
   );

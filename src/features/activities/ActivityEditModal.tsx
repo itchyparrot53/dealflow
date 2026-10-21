@@ -63,41 +63,50 @@ export function ActivityEditModal({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  function ruleKey(rule: RecurrenceRule | null): string {
+    if (rule === null) return "none";
+    return JSON.stringify({
+      freq: rule.freq,
+      interval: rule.interval,
+      byWeekday: rule.byWeekday === undefined ? [] : [...rule.byWeekday].sort(),
+      end: rule.end,
+    });
+  }
+
   async function save(): Promise<void> {
     if (subject.trim() === "") {
       setError("Subject is required");
       return;
     }
     const patch = buildActivityPatch(activity, { subject, typeId, priority, date, time, location });
-    if (patch === null) {
+    const initialRecurrence = recurrenceRuleSchema.safeParse(activity.recurrence);
+    const initialRule = initialRecurrence.success ? initialRecurrence.data : null;
+    const recurrenceChanged = ruleKey(initialRule) !== ruleKey(recurrence);
+    if (patch === null && !recurrenceChanged) {
       onClose();
       return;
     }
     setPending(true);
     setError(null);
-    const r = await editActivityAction(patch, readCsrfToken());
-    if (!r.ok) {
-      setPending(false);
-      setError(`Could not save activity (${r.error.id})`);
-      return;
+    if (patch !== null) {
+      const r = await editActivityAction(patch, readCsrfToken());
+      if (!r.ok) {
+        setPending(false);
+        setError(`Could not save activity (${r.error.id})`);
+        return;
+      }
     }
-    const ruleResult = await setRecurrenceAction(
-      { activityId: activity.id, rule: recurrence },
-      readCsrfToken(),
-    );
-    if (!ruleResult.ok) {
-      setPending(false);
-      setError(`Could not save the repeat rule (${ruleResult.error.id})`);
-      return;
+    if (recurrenceChanged) {
+      const ruleResult = await setRecurrenceAction(
+        { activityId: activity.id, rule: recurrence },
+        readCsrfToken(),
+      );
+      if (!ruleResult.ok) {
+        setPending(false);
+        setError(`Could not save the repeat rule (${ruleResult.error.id})`);
+        return;
+      }
     }
-    pushDeleteUndo({
-      entity: "activity",
-      ids: [activity.id],
-      noun: "activity",
-      onRestored: () => {
-        void invalidateActivityLists();
-      },
-    });
     await invalidateActivityLists();
     setPending(false);
     onSaved?.();
@@ -113,6 +122,14 @@ export function ActivityEditModal({
       setError(`Could not delete activity (${r.error.id})`);
       return;
     }
+    pushDeleteUndo({
+      entity: "activity",
+      ids: [activity.id],
+      noun: "activity",
+      onRestored: () => {
+        void invalidateActivityLists();
+      },
+    });
     await invalidateActivityLists();
     setPending(false);
     onSaved?.();

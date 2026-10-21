@@ -1,7 +1,9 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
+import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
+import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import type { LeadConditionInput } from "../schemas";
 import { LeadFilterBuilder } from "./LeadFilterBuilder";
 
@@ -41,6 +43,16 @@ export function LeadsFilterControls({
           // An ad-hoc edit is no longer the saved view, so the picker stops claiming it is.
           setSavedViewId(null);
           onCondition(next);
+        }}
+      />
+      <AiFilterBox
+        entity="lead"
+        onDefinition={(definition) => {
+          const parsed = savedFilterDefinitionSchema("lead").safeParse(definition);
+          if (parsed.success) {
+            setSavedViewId(null);
+            onCondition(parsed.data);
+          }
         }}
       />
     </>

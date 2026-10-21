@@ -7,7 +7,10 @@ import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
 
 // LabelField (in the modal) queries the label catalog via tRPC.
 vi.mock("@/lib/trpc-client", () => ({
-  trpc: { labels: { listByTarget: { useQuery: () => ({ data: [] }) } } },
+  trpc: {
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
+    labels: { listByTarget: { useQuery: () => ({ data: [] }) } },
+  },
 }));
 
 import { AddLeadLeftColumn } from "./AddLeadLeftColumn";

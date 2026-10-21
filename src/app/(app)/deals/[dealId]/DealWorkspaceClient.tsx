@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type DealSidebarSectionPreference,
   normalizeDealSidebarSections,
@@ -13,6 +13,7 @@ import { DealHeader } from "@/features/deal-workspace/header/DealHeader";
 import { useBlockVisibility } from "@/features/deal-workspace/header/useBlockVisibility";
 import type { DealWorkspace } from "@/features/deal-workspace/summaryRepo";
 import type { DraftSummary } from "@/features/email/draftRepo";
+import { usePaletteDeal } from "@/features/palette/dealContext";
 import type { ProjectListItem } from "@/features/projects/types";
 import { trpc } from "@/lib/trpc-client";
 import { WorkspaceTabs } from "./tabs";
@@ -73,6 +74,14 @@ export function DealWorkspaceClient({
   projects = [],
 }: DealWorkspaceClientProps) {
   const { deal, person, org } = workspace;
+  const setPaletteDeal = usePaletteDeal((state) => state.setDeal);
+
+  // Register the deal for the palette's deal-context Actions while this page is open.
+  useEffect(() => {
+    setPaletteDeal({ id: deal.id, status: deal.status });
+    return () => setPaletteDeal(null);
+  }, [deal.id, deal.status, setPaletteDeal]);
+
   const [tab, setTab] = useState<Tab>("all");
   const [now] = useState(() => new Date());
   const [sidebarSections, setSidebarSections] = useState(() =>

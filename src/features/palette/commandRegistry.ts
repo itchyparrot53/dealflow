@@ -1,4 +1,8 @@
+import { markLostAction, markWonAction } from "@/features/deal-workspace/actions";
+import { useToastStore } from "@/features/feedback/toastStore";
+import { readCsrfToken } from "@/utils/csrfCookie";
 import { COMMAND_GROUPS, type Command, type CommandGroup } from "./commands";
+import type { PaletteDeal } from "./dealContext";
 
 // Palette command registry (6.8). Commands navigate to the surface that owns the action: the
 // dialogs live on the list pages, so "New project" opens the projects page rather than
@@ -160,7 +164,7 @@ const GO_TO: Command[] = [
     label: "Audit log",
     keywords: ["audit", "log", "admin"],
     requires: "admin",
-    run: ({ router }) => router.push("/settings/audit"),
+    run: ({ router }) => router.push("/settings/audit-log"),
   },
 ];
 
@@ -180,6 +184,74 @@ const ACTIONS: Command[] = [
     run: () => window.dispatchEvent(new CustomEvent("warpdrive:open-shortcuts")),
   },
 ];
+
+// Deal-page commands (6.8): shown only while the workspace has registered a deal. Won/lost call the
+// existing close actions; log call opens the composer's dialog through its event; quote/project
+// navigate to the pages that own those dialogs. "Create project" only exists on a won deal.
+export function dealCommands(deal: PaletteDeal): Command[] {
+  const commands: Command[] = [
+    {
+      id: "deal.mark-won",
+      group: "Actions",
+      label: "Mark won",
+      keywords: ["won", "close", "deal"],
+      run: ({ router }) => {
+        void (async () => {
+          const result = await markWonAction({ dealId: deal.id }, readCsrfToken());
+          if (!result.ok) {
+            useToastStore
+              .getState()
+              .push({ message: "Could not mark the deal won", tone: "error" });
+            return;
+          }
+          router.refresh?.();
+        })();
+      },
+    },
+    {
+      id: "deal.mark-lost",
+      group: "Actions",
+      label: "Mark lost",
+      keywords: ["lost", "close", "deal"],
+      run: ({ router }) => {
+        void (async () => {
+          const result = await markLostAction({ dealId: deal.id }, readCsrfToken());
+          if (!result.ok) {
+            useToastStore
+              .getState()
+              .push({ message: "Could not mark the deal lost", tone: "error" });
+            return;
+          }
+          router.refresh?.();
+        })();
+      },
+    },
+    {
+      id: "deal.log-call",
+      group: "Actions",
+      label: "Log call",
+      keywords: ["call", "log", "deal"],
+      run: () => window.dispatchEvent(new CustomEvent("warpdrive:open-log-call")),
+    },
+    {
+      id: "deal.create-quote",
+      group: "Actions",
+      label: "Create quote",
+      keywords: ["quote", "document", "deal"],
+      run: ({ router }) => router.push("/documents"),
+    },
+  ];
+  if (deal.status === "won") {
+    commands.push({
+      id: "deal.create-project",
+      group: "Actions",
+      label: "Create project",
+      keywords: ["project", "deal"],
+      run: ({ router }) => router.push("/projects"),
+    });
+  }
+  return commands;
+}
 
 export const COMMANDS: Command[] = [...CREATE, ...GO_TO, ...ACTIONS];
 

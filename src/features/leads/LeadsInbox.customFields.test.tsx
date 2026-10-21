@@ -30,6 +30,7 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     lead: { list: { useQuery: (...a: unknown[]) => listQuery(...a) } },
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
     customFields: { listDefs: { useQuery: () => ({ data: [], isLoading: false }) } },

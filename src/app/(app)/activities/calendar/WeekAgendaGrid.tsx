@@ -139,7 +139,7 @@ export function WeekAgendaGrid({
     setCreateSlot(slotDateTime(iso, hour));
   }, []);
 
-  const { reschedule, error: dragError } = useRescheduleActivity();
+  const { reschedule } = useRescheduleActivity();
 
   return (
     <CalendarDrag
@@ -148,11 +148,6 @@ export function WeekAgendaGrid({
       }}
     >
       <div>
-        {dragError !== null && (
-          <p role="alert" className="mb-2 text-sm text-destructive">
-            {dragError}
-          </p>
-        )}
         <div className="overflow-hidden rounded-md border border-border bg-card">
           {/* Headers, all-day lane and hour grid share ONE scroll box. Split across two, the scrolling
             half loses the scrollbar's width wherever scrollbars are not overlays, and the same

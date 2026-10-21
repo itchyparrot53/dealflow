@@ -23,7 +23,6 @@ import { pushDeleteUndo } from "@/features/feedback/undo";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { deleteOrgAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
 import { bulkContactAction } from "./bulk/actions";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
@@ -36,7 +35,6 @@ const PAGE_SIZE = 50;
 const LOAD_MORE = "Load more";
 const LOAD_MORE_ERROR = "Couldn't load more organizations. Please try again.";
 const RELOAD_ERROR = "Couldn't load organizations. Please try again.";
-const BULK_DELETE_ERROR = "Couldn't delete some organizations. Please try again.";
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
 // reference when the sort state itself changes (not on every OrgsList re-render).
 const DEFAULT_SORT: ColumnSort<OrgSortField> = { field: "name", dir: "asc" };
@@ -192,11 +190,26 @@ export function OrgsList({
   async function bulkDelete(): Promise<void> {
     const ids = [...selection.selected];
     if (ids.length === 0) return;
-    const outcomes = await Promise.all(
-      ids.map(async (id) => ({ id, result: await deleteOrgAction({ id }, readCsrfToken()) })),
+    const result = await bulkContactAction(
+      { entity: "organization", kind: "delete", ids },
+      readCsrfToken(),
     );
-    const failedIds = outcomes.filter((o) => o.result.ok === false).map((o) => o.id);
-    const deletedIds = outcomes.filter((o) => o.result.ok === true).map((o) => o.id);
+    if (result.ok) {
+      pushDeleteUndo({
+        entity: "organization",
+        ids,
+        noun: "organization",
+        onRestored: () => {
+          void reload();
+        },
+      });
+      selection.clear();
+      await reload();
+      setError(null);
+      return;
+    }
+    const failedIds = result.error.failed.map((failure) => failure.id);
+    const deletedIds = ids.filter((id) => !failedIds.includes(id));
     if (deletedIds.length > 0) {
       pushDeleteUndo({
         entity: "organization",
@@ -208,13 +221,15 @@ export function OrgsList({
       });
     }
     // Don't silently drop failures: clear only the ids that actually deleted, keep the
-    // failed ones selected (so the user sees exactly what still needs attention).
+    // failed ones selected so the user sees exactly what still needs attention.
     selection.clear();
     for (const id of failedIds) selection.toggle(id);
-    // reload() manages `error` itself (clears it, then sets RELOAD_ERROR on its own
-    // failure), so set the bulk-delete error AFTER it settles or reload would wipe it out.
     await reload();
-    if (failedIds.length > 0) setError(BULK_DELETE_ERROR);
+    setError(
+      result.error.id === "E_BULK_001"
+        ? PRODUCTIVITY_STRINGS.bulkTooMany
+        : PRODUCTIVITY_STRINGS.bulkPartial,
+    );
   }
 
   // Only the truly-empty list (no filter) shows the bare empty state; with a filter active the

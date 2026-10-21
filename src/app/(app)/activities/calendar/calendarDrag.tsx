@@ -16,6 +16,7 @@ import type React from "react";
 import { useCallback, useState } from "react";
 import { editActivityAction } from "@/features/activities/actions";
 import type { CalendarActivity } from "@/features/activities/calendar";
+import { useToastStore } from "@/features/feedback/toastStore";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -121,10 +122,8 @@ export function useCalendarDrop(target: CalendarDropTarget): {
 // refetch happens after the write succeeds, so a refused write never leaves a moved chip.
 export function useRescheduleActivity(): {
   reschedule: (activity: CalendarActivity, target: CalendarDropTarget) => Promise<void>;
-  error: string | null;
 } {
   const utils = trpc.useUtils();
-  const [error, setError] = useState<string | null>(null);
 
   const reschedule = useCallback(
     async (activity: CalendarActivity, target: CalendarDropTarget) => {
@@ -135,10 +134,12 @@ export function useRescheduleActivity(): {
         readCsrfToken(),
       );
       if (!result.ok) {
-        setError(`Could not reschedule the activity (${result.error.id})`);
+        useToastStore.getState().push({
+          message: `Could not reschedule the activity (${result.error.id})`,
+          tone: "error",
+        });
         return;
       }
-      setError(null);
       await Promise.all([
         utils.activities.calendarRange.invalidate(),
         utils.activities.listForEntity.invalidate(),
@@ -148,5 +149,5 @@ export function useRescheduleActivity(): {
     [utils],
   );
 
-  return { reschedule, error };
+  return { reschedule };
 }

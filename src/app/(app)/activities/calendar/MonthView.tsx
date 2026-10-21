@@ -88,7 +88,7 @@ export function MonthView({
   const anchor = anchorDate(anchorIso);
   const days = dayIsos.map((iso) => new Date(`${iso}T00:00:00.000Z`));
   const grouped = groupMonthActivities(activities, days);
-  const { reschedule, error } = useRescheduleActivity();
+  const { reschedule } = useRescheduleActivity();
 
   return (
     <CalendarDrag
@@ -96,11 +96,6 @@ export function MonthView({
         void reschedule(activity, target);
       }}
     >
-      {error !== null && (
-        <p role="alert" className="mb-2 text-sm text-destructive">
-          {error}
-        </p>
-      )}
       {/* biome-ignore lint/a11y/useSemanticElements: static calendar grid, not a data <table> */}
       <div role="grid" aria-label="Month" className="flex flex-col gap-1">
         {/* biome-ignore lint/a11y/useSemanticElements: header row of the calendar grid */}

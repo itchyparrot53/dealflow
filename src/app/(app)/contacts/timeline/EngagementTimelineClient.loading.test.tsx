@@ -22,6 +22,7 @@ vi.mock("@/lib/trpc-client", () => ({
     contacts: { engagementTimeline: { useQuery: () => timelineQuery() } },
     activities: { listTypes: { useQuery: () => ({ data: [] }) } },
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
   },
 }));
 

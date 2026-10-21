@@ -14,6 +14,7 @@ vi.mock("@/lib/trpc-client", () => ({
       savedFilters: { listByTarget: { invalidate: vi.fn() } },
     }),
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     // The filter builder's Label condition reads the label catalog.
     labels: {
       listByTarget: { useQuery: () => ({ data: [] }) },
@@ -30,6 +31,10 @@ vi.mock("./actions", () => ({
   mergeOrgsAction: (...a: unknown[]) => mergeOrgsAction(...a),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
+const bulkContactAction = vi.fn();
+vi.mock("./bulk/actions", () => ({
+  bulkContactAction: (...a: unknown[]) => bulkContactAction(...a),
+}));
 vi.mock("@/features/identity/preferencesActions", () => ({ setColumnViewAction: vi.fn() }));
 
 import { OrgsList } from "./OrgsList";
@@ -40,7 +45,7 @@ const EMPTY_REF_LABELS = { user: {}, person: {}, org: {} };
 afterEach(() => {
   cleanup();
   listOrgsQuery.mockReset();
-  deleteOrgAction.mockReset();
+  bulkContactAction.mockReset();
   mergeOrgsAction.mockReset();
   savedViews.mockReturnValue([]);
 });
@@ -210,7 +215,7 @@ describe("OrgsList", () => {
   });
 
   it("bulk-deletes the selected orgs and clears the selection", async () => {
-    deleteOrgAction.mockResolvedValue({ ok: true, value: { id: "o1" } });
+    bulkContactAction.mockResolvedValue({ ok: true, value: { applied: 1 } });
     listOrgsQuery.mockResolvedValue({ total: 0, rows: [], refLabels: EMPTY_REF_LABELS });
     render(<OrgsList rows={[orgRow("o1", "Acme Inc")]} total={1} />);
 
@@ -218,18 +223,20 @@ describe("OrgsList", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete organizations" }));
 
-    await vi.waitFor(() => expect(deleteOrgAction).toHaveBeenCalledWith({ id: "o1" }, "csrf"));
+    await vi.waitFor(() =>
+      expect(bulkContactAction).toHaveBeenCalledWith(
+        { entity: "organization", kind: "delete", ids: ["o1"] },
+        "csrf",
+      ),
+    );
     await vi.waitFor(() => expect(screen.queryByText(/selected/)).not.toBeInTheDocument());
   });
 
   it("keeps the failed row selected and surfaces an error on a partial bulk-delete failure", async () => {
-    deleteOrgAction.mockImplementation((input: { id: string }) =>
-      Promise.resolve(
-        input.id === "o1"
-          ? { ok: true, value: { id: "o1" } }
-          : { ok: false, error: { id: "E_PERM_001" } },
-      ),
-    );
+    bulkContactAction.mockResolvedValue({
+      ok: false,
+      error: { id: "E_BULK_002", failed: [{ id: "o2", errorId: "E_PERM_001" }] },
+    });
     // o1's delete succeeded so it's gone from the reloaded list; o2's failed so it's still there.
     listOrgsQuery.mockResolvedValue({
       total: 1,
@@ -253,7 +260,7 @@ describe("OrgsList", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete organizations" }));
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/couldn't delete|could not delete|failed/i);
+    expect(alert).toHaveTextContent(/could not be changed|failed/i);
     await vi.waitFor(() => expect(screen.getByText("1 selected")).toBeInTheDocument());
     expect(screen.getByRole("checkbox", { name: "Select Globex" })).toBeChecked();
   });

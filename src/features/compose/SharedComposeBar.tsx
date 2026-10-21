@@ -2,7 +2,7 @@
 import { Phone } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogCallForm, type LogCallTarget } from "@/features/activities/calls/ui/LogCallForm";
@@ -150,6 +150,15 @@ export function SharedComposeBar({
   const [expanded, setExpanded] = useState(false);
   const [logCallOpen, setLogCallOpen] = useState(false);
   const logCall = callTargetOf(scope);
+
+  // The palette's "Log call" command opens this bar's dialog (6.8) instead of duplicating it.
+  useEffect(() => {
+    const open = (): void => {
+      if (callTargetOf(scope) !== null) setLogCallOpen(true);
+    };
+    window.addEventListener("warpdrive:open-log-call", open);
+    return () => window.removeEventListener("warpdrive:open-log-call", open);
+  }, [scope]);
   const tabs = tabsForScope(scope);
   // Default to the first enabled tab for this scope (Activity for deal/person/org, Notes for leads).
   // Activity is enabled for every scope, so tabs is never empty; the ?? keeps the type checker happy.

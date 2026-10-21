@@ -4,8 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { STRINGS } from "@/constants/strings";
-import { COMMAND_GROUP_ORDER, COMMANDS, filterCommands } from "@/features/palette/commandRegistry";
+import {
+  COMMAND_GROUP_ORDER,
+  COMMANDS,
+  dealCommands,
+  filterCommands,
+} from "@/features/palette/commandRegistry";
 import { type Command, type CommandActor, visibleCommands } from "@/features/palette/commands";
+import { usePaletteDeal } from "@/features/palette/dealContext";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
 import { OPEN_SEARCH_EVENT } from "./events";
@@ -210,7 +216,9 @@ export function CommandPalette({
   const failed = error != null;
   const pending = typed && !failed && (data === undefined || q.trim() !== debounced.trim());
 
-  const commands = filterCommands(visibleCommands(COMMANDS, actor), typed ? q : "");
+  const deal = usePaletteDeal((state) => state.deal);
+  const allCommands = deal === null ? COMMANDS : [...COMMANDS, ...dealCommands(deal)];
+  const commands = filterCommands(visibleCommands(allCommands, actor), typed ? q : "");
   const results = data ?? EMPTY_RESULTS;
   const { flat, active, moveDown, moveUp } = useActiveIndex(results);
   const activeId = flat[active]?.r.id;

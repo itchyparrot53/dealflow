@@ -21,6 +21,7 @@ const { customFieldDefs } = vi.hoisted(() => ({
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     contacts: {
       personOptions: { useQuery: () => ({ data: [{ id: "pe1", name: "Jane Roe" }] }) },
       orgOptions: { useQuery: () => ({ data: [{ id: "or1", name: "Acme Inc" }] }) },

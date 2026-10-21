@@ -247,6 +247,7 @@ export async function findDuplicatePairs(
   actor: PermSetUser,
   entity: DuplicateEntity,
   signal: AbortSignal,
+  page = 1,
 ): Promise<DuplicateResult> {
   signal.throwIfAborted();
   const found =
@@ -267,8 +268,9 @@ export async function findDuplicatePairs(
       return byRank !== 0 ? byRank : a.a.name.localeCompare(b.a.name);
     });
 
+  const offset = (Math.max(1, page) - 1) * DUPLICATE_PAGE_SIZE;
   return {
-    pairs: list.slice(0, DUPLICATE_PAGE_SIZE),
-    capped: found.rowCount >= DUPLICATE_CANDIDATE_CAP || list.length > DUPLICATE_PAGE_SIZE,
+    pairs: list.slice(offset, offset + DUPLICATE_PAGE_SIZE),
+    capped: found.rowCount >= DUPLICATE_CANDIDATE_CAP || list.length > offset + DUPLICATE_PAGE_SIZE,
   };
 }

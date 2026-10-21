@@ -84,6 +84,7 @@ vi.mock("@/lib/trpc-client", () => ({
     },
     labels: { listByTarget: { useQuery: () => ({ data: [] }) } },
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
+    ai: { status: { useQuery: () => ({ data: undefined }) } },
     email: { listMessagesForContact: { useQuery: () => ({ data: [], isError: false }) } },
     files: { listForEntity: { useQuery: () => ({ data: [] }) } },
     useUtils: () => ({

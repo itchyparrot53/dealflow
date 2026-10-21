@@ -25,7 +25,6 @@ import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { deletePersonAction } from "./actions";
 import { BulkMergeDialog } from "./BulkMergeDialog";
 import { bulkContactAction } from "./bulk/actions";
 import { ContactFilterBuilder } from "./ContactFilterBuilder";
@@ -38,7 +37,6 @@ import type { PersonSortField } from "./schemas";
 import { usePeopleListPaging } from "./usePeopleListPaging";
 
 const LOAD_MORE = "Load more";
-const BULK_DELETE_ERROR = "Couldn't delete some people. Please try again.";
 // Stable module reference: passed as useColumnSort's fallback, so `effective` only changes
 // reference when the sort state itself changes (not on every PeopleList re-render).
 const DEFAULT_SORT: ColumnSort<PersonSortField> = { field: "name", dir: "asc" };
@@ -139,11 +137,26 @@ export function PeopleList({
   async function bulkDelete(): Promise<void> {
     const ids = [...selection.selected];
     if (ids.length === 0) return;
-    const outcomes = await Promise.all(
-      ids.map(async (id) => ({ id, result: await deletePersonAction({ id }, readCsrfToken()) })),
+    const result = await bulkContactAction(
+      { entity: "person", kind: "delete", ids },
+      readCsrfToken(),
     );
-    const failedIds = outcomes.filter((o) => o.result.ok === false).map((o) => o.id);
-    const deletedIds = outcomes.filter((o) => o.result.ok === true).map((o) => o.id);
+    if (result.ok) {
+      pushDeleteUndo({
+        entity: "person",
+        ids,
+        noun: "person",
+        onRestored: () => {
+          void reload();
+        },
+      });
+      selection.clear();
+      await reload();
+      setError(null);
+      return;
+    }
+    const failedIds = result.error.failed.map((failure) => failure.id);
+    const deletedIds = ids.filter((id) => !failedIds.includes(id));
     if (deletedIds.length > 0) {
       pushDeleteUndo({
         entity: "person",
@@ -155,13 +168,15 @@ export function PeopleList({
       });
     }
     // Don't silently drop failures: clear only the ids that actually deleted, keep the
-    // failed ones selected (so the user sees exactly what still needs attention).
+    // failed ones selected so the user sees exactly what still needs attention.
     selection.clear();
     for (const id of failedIds) selection.toggle(id);
-    // reload() manages `error` itself (clears it, then sets RELOAD_ERROR on its own
-    // failure), so set the bulk-delete error AFTER it settles or reload would wipe it out.
     await reload();
-    if (failedIds.length > 0) setError(BULK_DELETE_ERROR);
+    setError(
+      result.error.id === "E_BULK_001"
+        ? PRODUCTIVITY_STRINGS.bulkTooMany
+        : PRODUCTIVITY_STRINGS.bulkPartial,
+    );
   }
 
   // Only the truly-empty list (no filter) shows the bare empty state. With a filter active, keep the

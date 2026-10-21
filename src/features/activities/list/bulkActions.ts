@@ -6,6 +6,7 @@ import { ERROR_IDS } from "@/constants/errorIds";
 import { BULK_MAX } from "@/constants/productivity";
 import { db } from "@/db/client";
 import { activities } from "@/db/schema";
+import { timezoneForUser } from "@/features/activities/recurrence/series";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
 import { createContext } from "@/server/trpc/context";
@@ -98,11 +99,16 @@ async function runOne(
   }
   if (date === undefined) return { ok: false, errorId: ERROR_IDS.BULK_TOO_MANY };
   const [row] = await db
-    .select({ dueAt: activities.dueAt, allDay: activities.allDay })
+    .select({
+      dueAt: activities.dueAt,
+      allDay: activities.allDay,
+      assigneeId: activities.assigneeId,
+    })
     .from(activities)
     .where(eq(activities.id, id));
   if (row === undefined) return { ok: false, errorId: ERROR_IDS.ACTIVITY_NOT_FOUND };
-  const dueAt = rescheduledIso(row.dueAt?.toISOString() ?? null, date, row.allDay);
+  const tz = await timezoneForUser(db, row.assigneeId, SIG());
+  const dueAt = rescheduledIso(row.dueAt?.toISOString() ?? null, date, row.allDay, tz);
   const result = await updateActivity(db, actor, { id, dueAt, allDay: row.allDay }, SIG());
   return result.ok ? { ok: true } : { ok: false, errorId: result.error.id };
 }

@@ -83,12 +83,12 @@ async function parentLoopExists(
       SELECT r.target_org_id AS id, 1 AS depth
       FROM organization_relations r
       WHERE r.source_org_id = ${parentId}::uuid
-        AND lower(trim(r.relation_type)) = 'parent'
+        AND lower(trim(r.relation_type)) in ('parent', 'parents')
       UNION ALL
       SELECT r.target_org_id, a.depth + 1
       FROM organization_relations r
       JOIN ancestors a ON r.source_org_id = a.id
-      WHERE lower(trim(r.relation_type)) = 'parent' AND a.depth < 50
+      WHERE lower(trim(r.relation_type)) in ('parent', 'parents') AND a.depth < 50
     )
     SELECT id FROM ancestors WHERE id = ${childId}::uuid LIMIT 1
   `);

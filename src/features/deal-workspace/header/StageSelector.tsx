@@ -6,6 +6,7 @@ import { Tip } from "@/components/ui/tooltip";
 import { changeStageAction } from "@/features/deal-workspace/actions";
 import { useDealActionError } from "@/features/deal-workspace/DealActionErrorProvider";
 import { stageSegmentStyle } from "@/features/deals/boardStageHeader";
+import { pushStageUndo } from "@/features/feedback/undo";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 // One stage segment as rendered here. Mirrors StageChip (stageProgress.ts) but stays a local shape
@@ -63,8 +64,21 @@ export function StageSelector({
     setPending(false);
     // Never swallow the failure: a non-owner (E_PERM_001) or a stale CAS gets a modal explaining
     // why the stage did not move, instead of a click that silently does nothing.
-    if (r.ok) router.refresh();
-    else reportError(r.error.id);
+    if (r.ok) {
+      const from = chips.find((entry) => entry.current);
+      if (from !== undefined) {
+        pushStageUndo({
+          dealId,
+          fromStageId: from.id,
+          toStageName: chip.name,
+          updatedAt: r.deal.updatedAt,
+          onUndone: () => router.refresh(),
+        });
+      }
+      router.refresh();
+    } else {
+      reportError(r.error.id);
+    }
   }
 
   return (
