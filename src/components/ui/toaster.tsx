@@ -15,7 +15,7 @@ export function Toaster(): React.ReactNode {
   const runAction = useToastStore((state) => state.runAction);
 
   return (
-    <div
+    <section
       aria-live="polite"
       aria-label="Notifications"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex flex-col-reverse items-center gap-2 p-4 sm:inset-x-auto sm:right-4 sm:items-end"
@@ -26,7 +26,6 @@ export function Toaster(): React.ReactNode {
           data-testid="toast"
           role="status"
           aria-live={toast.tone === "error" ? "assertive" : "polite"}
-          tabIndex={0}
           onMouseEnter={() => pause(toast.id)}
           onMouseLeave={() => resume(toast.id)}
           onFocus={() => pause(toast.id)}
@@ -66,6 +65,6 @@ export function Toaster(): React.ReactNode {
           </button>
         </div>
       ))}
-    </div>
+    </section>
   );
 }
