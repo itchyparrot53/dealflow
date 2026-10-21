@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p7-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-21 16:02
+STATUS: COMPLETE
+Current: COMPLETE · Last updated: 2026-10-21 16:10
 
 ## Phase base commits
 - Phase 0: 8957a53e58b608f1d30dd9e46d05080439bd4b98
@@ -32,7 +32,7 @@ Current: 4.5 · Last updated: 2026-10-21 16:02
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 in 810 files
@@ -149,6 +149,45 @@ Current: 4.5 · Last updated: 2026-10-21 16:02
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
+
+### Definition of done
+
+1. PASS - Part 6 is proven: the six named integration directories pass (249/249 at Task 0.2), e2e specs `00` to `10` pass with the 7 `p6-*` screenshots, smoke printed SMOKE PASS, and the two fixes are committed (0.2).
+2. PASS - `0087_dealflow_insights` adds exactly `reports`, `dashboards` and `dashboard_widgets` from 6.4, and `0088` adds only the `ai_bulk_score` notification kind.
+3. PASS - `definition.ts` (with `describe.ts` and `rangeRules.ts`), `dateRange.ts` and `csv.ts` are pure and unit-tested, 40 cases covering every chart rule, every preset in two zones, ISO weeks, month boundaries, bucket counts and CSV quoting/CRLF/formula guards.
+4. PASS - the engine compiles one grouped SQL query per run with the deals or activities visibility clause, converts each currency with `toBase` (rate-less currencies listed, never added), caps at 50 groups / 12 segments / 500 rows, and buckets in the viewer's time zone.
+5. PASS - the funnel reuses the stats stage conversion and the integration case compares the report's stages with `stageConversion` called directly; they match.
+6. PASS - `dealPerformance`, `lostReasonBreakdown`, `stageSums`, `wonTrend`, `wonDealStats`, `goalActual` and `goalSeries` group by currency, convert, and report `excluded` with a visible note; six mixed-currency cases prove it.
+7. PASS - users create private or shared reports and dashboards; a shared report reads only what the viewer may see; CSV exports with the formula guard; the first visit creates the shared "Sales overview" dashboard with six widgets.
+8. PASS - "Explain this report" sends only the definition summary and at most 60 aggregated rows, applies the AI caps, the per-minute limiter and usage logging, returns three deterministic insights with `AI_FAKE`, and maps AI failures to `E_INSIGHT_004`.
+9. PASS - board cards show the AI score badge (no badge when unscored); "Score with AI" takes up to 200 editable deals, runs as one job, stops at the first cap or rate refusal, and notifies "Scored n of m deals" with the limit suffix when it stops early.
+10. PASS - typecheck, lint, build, unit (5237) and the full integration suite (2004) pass; e2e specs `00` to `11` pass with the 6 `p7-*` screenshots; smoke passes; one independent review ran and returned QA RESULT PASS in round 3.
+
+### Owner actions
+
+1. Rebuild the dev stack so its containers use the Part 6 to 7 schema and migrations: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`). Migrations `0085` to `0088` are already applied to the dev database.
+2. Fix the partial Google configuration in `.env` (client id and secret set, workspace domain empty) or blank all three.
+3. Add exchange rates in Settings > Currencies for every currency you report on. The live database base is GBP and has no stored EUR or USD rate, so those deals will show as excluded until rates exist.
+4. Keep the worker tier running: it processes `ai.bulk-score` (and the dispatcher, automations, webhooks and retention jobs).
+5. Docker Desktop's daemon stopped once during this run; if the dev stack is down after a reboot, run `open -a Docker`, wait for `docker info`, then `pnpm dev:up`.
+
+### Decisions worth reviewing
+
+- No `CONTRACT CHANGE:` lines in Part 7. Every change is additive: `excluded` on money results, `score` on board cards, `funnel` on a funnel result, and new tables.
+- Changed tests: `stats/routerTrend.test.ts` (the trend point gained `excluded: []`), `notifications/schema.test.ts` (the enum is now 18 values), `notifications/preferences.test.ts` (the `ai_bulk_score` default), `stats/ui/GoalsWidget.test.tsx` (the goal fixture gained `excluded: []`). No assertion was weakened or removed.
+
+### Open issues
+
+- None for Part 7. The pre-existing note from Part 5 still stands: `src/server/rateLimit.ts` reads `x-forwarded-for` directly for the signed-in limiter.
+
+### Notes for Part 8
+
+- New routes: `/insights`, `/insights/reports/[id]`, `/insights/dashboards/[id]`, and `GET /insights/reports/[id]/export.csv`.
+- New screenshots: `p7-insights-home`, `p7-report-builder`, `p7-report-segmented`, `p7-dashboard`, `p7-explain`, `p7-board-scores`.
+- Report engine entry points: `src/features/insights/run.ts` (`runReport`), `compile/deals.ts` and `compile/activities.ts`, `convert.ts`, `dateRange.ts`, `definition.ts`, `csv.ts`, `explain.ts`, `defaultDashboard.ts`, and the services `reports.ts` / `dashboards.ts` with their actions and router.
+- Bulk scoring: `src/features/ai/bulkScore.ts` (enqueue) and `bulkScoreJob.ts` (queue `ai.bulk-score`); the board and deals-list reads return `score` from `deal_ai_insights`.
+- Upstream files changed are listed in `docs/dealflow/UPSTREAM.md` (Part 7 section and the demo/docs subsection).
+- `docs/dealflow/INSIGHTS.md` documents measures, groupings, ranges, caps, currency rules, visibility, sharing, CSV, explain and scoring.
 
 ### Checklist
 
