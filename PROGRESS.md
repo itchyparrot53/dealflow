@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p9-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-10-21 18:52
+Current: 3.1 · Last updated: 2026-10-21 18:55
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
 - Phase 1: fcd660bfaae40d7206ddafdb3f07b69b5ad078bd
 - Phase 2: 05e0cb6
+- Phase 3: 9d4c5146d5caf213f60698a92a33cde8ec11b19b
 
 ## Tasks
 - [x] 0.1 Start Part 9: progress files, kit and baseline
@@ -23,7 +24,7 @@ Current: 2.5 · Last updated: 2026-10-21 18:52
 - [x] 2.2 People and organizations bulk actions
 - [x] 2.3 AI filters on people, organizations and leads
 - [x] 2.4 Organization parent-loop guard
-- [ ] 2.5 Phase 2 QA gate
+- [x] 2.5 Phase 2 QA gate
 - [ ] 3.1 Toaster and undo
 - [ ] 3.2 Palette commands
 - [ ] 3.3 Shortcut sequences and the help sheet
@@ -40,6 +41,7 @@ Current: 2.5 · Last updated: 2026-10-21 18:52
 - Part 8 proof: integration 2046/2046 (405 files) · e2e 22/22 (specs 00 to 12) · smoke PASS · backup round trip ok (0 deals) · no dealflow-smoke container or volume left
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5308/5308 in 827 files · no named integration files in this gate (DoD 1 to 4)
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5313/5313 in 828 files · activities/export/events integration 140/140 (35 files)
+- Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5318/5318 in 828 files · duplicates/contacts/ai/leads integration 264/264 (51 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: PROGRESS.md said `dealflow-wd-p8-v1` with `STATUS: COMPLETE WITH OPEN ISSUES`, so section 0 rule 1 starts this run fresh at Task 0.1.
