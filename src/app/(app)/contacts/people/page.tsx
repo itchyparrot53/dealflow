@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
+import { buttonVariants } from "@/components/ui/Button";
 import { STRINGS } from "@/constants/strings";
 import { PeopleList } from "@/features/contacts/PeopleList";
 import { QuickAddContact } from "@/features/contacts/QuickAddContact";
@@ -40,6 +42,12 @@ export default async function PeopleListPage(): Promise<React.ReactNode> {
               />
             )}
             <QuickAddContact kind="person" />
+            <Link
+              href="/contacts/duplicates"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Find duplicates
+            </Link>
           </div>
         }
       />
