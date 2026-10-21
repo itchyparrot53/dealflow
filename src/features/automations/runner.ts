@@ -10,6 +10,7 @@ import { activities, automationRuns, automations, documents, users } from "@/db/
 import { runInChain } from "@/features/events/chainContext";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { type Action, type AutomationDefinition, automationDefinitionSchema } from "./definition";
+import "./actions";
 import { getActionHandler } from "./actions/registry";
 import { type ConditionEntity, evaluateCondition } from "./conditions";
 

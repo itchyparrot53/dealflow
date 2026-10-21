@@ -1,10 +1,23 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { eq, isNull } from "drizzle-orm";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { automationRuns, automations, deals, users } from "@/db/schema";
+import {
+  activities,
+  activityTypes,
+  automationRuns,
+  automations,
+  changeLogs,
+  deals,
+  domainEvents,
+  notifications,
+  users,
+} from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { dispatchEvents } from "@/features/events/dispatcher";
+import { changeStage } from "@/features/deal-workspace/changeStage";
+import { markWon } from "@/features/deal-workspace/wonLost";
 import { makeTestDb } from "@/test/db";
 import type { Action, AutomationDefinition, Trigger } from "./definition";
 import { runAutomation } from "./runner";
@@ -48,6 +61,13 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await h.close();
+});
+
+beforeEach(async () => {
+  // Each case starts with no automations and no pending events, so one case's automations cannot
+  // run against the next case's records.
+  await h.db.delete(automations);
+  await h.db.update(domainEvents).set({ processedAt: new Date() }).where(isNull(domainEvents.processedAt));
 });
 
 async function seedDeal(value = "100.00"): Promise<typeof deals.$inferSelect> {
@@ -193,6 +213,164 @@ describe("runAutomation", () => {
 
     expect(outcome.status).toBe("noop");
     expect(calls).toBe(0);
+  });
+});
+
+async function activityTypeId(): Promise<string> {
+  const [row] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "call"));
+  if (row === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "activity type missing");
+  return row.id;
+}
+
+async function dispatchAndRun(): Promise<number> {
+  await dispatchEvents(h.db, sig());
+  const running = await h.db
+    .select({ id: automationRuns.id })
+    .from(automationRuns)
+    .where(eq(automationRuns.status, "running"));
+  for (const run of running) await runAutomation(h.db, run.id, sig());
+  return running.length;
+}
+
+async function runsFor(automationId: string) {
+  return h.db.select().from(automationRuns).where(eq(automationRuns.automationId, automationId));
+}
+
+describe("core actions", () => {
+  it("runs deal won to create activity end to end", async () => {
+    const deal = await seedDeal();
+    const typeId = await activityTypeId();
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [
+        {
+          type: "create_activity",
+          activityTypeId: typeId,
+          subject: "Onboarding call with {{person.name}}",
+          dueInDays: 2,
+          assignee: "deal_owner",
+        },
+      ],
+    });
+
+    const won = await markWon(h.db, admin, deal.id, sig());
+    expect(won.ok).toBe(true);
+    expect(await dispatchAndRun()).toBe(1);
+
+    const [run] = await runsFor(automationId);
+    expect(run?.status).toBe("succeeded");
+    const [activity] = await h.db
+      .select()
+      .from(activities)
+      .where(eq(activities.dealId, deal.id));
+    expect(activity?.subject).toBe("Onboarding call with ");
+    expect(activity?.assigneeId).toBe(admin.id);
+  });
+
+  it("moves a deal to another stage with a change log entry and a depth 1 event", async () => {
+    const seeded = await seedPipelineWithStages(h.db, ["One", "Two"]);
+    const from = seeded.stages[0]?.id ?? "";
+    const to = seeded.stages[1]?.id ?? "";
+    const [deal] = await h.db
+      .insert(deals)
+      .values({
+        title: "Stage deal",
+        pipelineId: seeded.pipeline.id,
+        stageId: from,
+        ownerId: admin.id,
+        visibilityLevel: "all",
+        boardPosition: "0",
+      })
+      .returning();
+    if (deal === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "deal seed failed");
+    const automationId = await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "update_deal", set: { stageId: to } }],
+    });
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+
+    const [run] = await runsFor(automationId);
+    expect(run?.status).toBe("succeeded");
+    const logs = await h.db
+      .select()
+      .from(changeLogs)
+      .where(eq(changeLogs.entityId, deal.id));
+    const log = logs.find((row) => row.field === "stageId");
+    expect(log).toBeDefined();
+    expect(log?.newValue).toBe(to);
+
+    const stageEvents = await h.db
+      .select()
+      .from(domainEvents)
+      .where(eq(domainEvents.entityId, deal.id));
+    const moved = stageEvents.find((event) => event.type === "deal.stage_changed");
+    expect(moved?.chainId).toBe(run?.chainId);
+    expect(moved?.depth).toBe((run?.depth ?? 0) + 1);
+  });
+
+  it("stops two automations that move a deal back and forth after one round", async () => {
+    const seeded = await seedPipelineWithStages(h.db, ["Left", "Right"]);
+    const left = seeded.stages[0]?.id ?? "";
+    const right = seeded.stages[1]?.id ?? "";
+    const [deal] = await h.db
+      .insert(deals)
+      .values({
+        title: "Loop deal",
+        pipelineId: seeded.pipeline.id,
+        stageId: left,
+        ownerId: admin.id,
+        visibilityLevel: "all",
+        boardPosition: "0",
+      })
+      .returning();
+    if (deal === undefined) throw new AppError(ERROR_IDS.DB_INSERT_FAILED, "deal seed failed");
+
+    const rightToLeft = await seedAutomation({
+      trigger: { type: "deal.stage_changed", stageId: right },
+      actions: [{ type: "update_deal", set: { stageId: left } }],
+    });
+    const leftToRight = await seedAutomation({
+      trigger: { type: "deal.stage_changed", stageId: left },
+      actions: [{ type: "update_deal", set: { stageId: right } }],
+    });
+
+    // Starting move into "Right" opens the chain; the two automations chase each other.
+    const moved = await changeStage(
+      h.db,
+      admin,
+      { dealId: deal.id, toStageId: right, expectedUpdatedAt: deal.updatedAt.toISOString() },
+      sig(),
+    );
+    expect(moved.ok).toBe(true);
+    for (let round = 0; round < 4; round += 1) await dispatchAndRun();
+
+    const first = await runsFor(rightToLeft);
+    const second = await runsFor(leftToRight);
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(1);
+    expect(first[0]?.status).toBe("succeeded");
+    expect(second[0]?.status).toBe("succeeded");
+  });
+
+  it("creates an automation notification for the deal owner", async () => {
+    const deal = await seedDeal();
+    await seedAutomation({
+      trigger: { type: "deal.won" },
+      actions: [{ type: "notify_user", to: "deal_owner", message: "Won: {{deal.title}}" }],
+    });
+
+    await markWon(h.db, admin, deal.id, sig());
+    await dispatchAndRun();
+
+    const rows = await h.db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.type, "automation"));
+    const row = rows.find((item) => item.entityId === deal.id);
+    expect(row?.userId).toBe(admin.id);
+    expect(row?.payload).toMatchObject({ message: "Won: Automation deal" });
   });
 });
 

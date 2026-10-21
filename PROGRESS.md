@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-21 01:47
+Current: 2.3 · Last updated: 2026-10-21 01:49
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
@@ -19,7 +19,7 @@ Current: 2.2 · Last updated: 2026-10-21 01:47
 - [x] 1.3 Dispatcher, snapshot and retention (test-first)
 - [x] 1.4 Phase 1 QA gate
 - [x] 2.1 Runner, conditions and the capability (test-first)
-- [ ] 2.2 Core actions
+- [x] 2.2 Core actions
 - [ ] 2.3 Email and AI actions
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Safe delivery (test-first)
@@ -97,6 +97,11 @@ Current: 2.2 · Last updated: 2026-10-21 01:47
 - 2.1: actions go through a handler registry (`actions/registry.ts`); an unregistered action fails its step with `E_AUTOMATION_003`, so the runner is testable with an injected executor before the real actions land in 2.2.
 - 2.1: `automations.manage` is a new global flag, also listed in `HIGH_RISK_FLAGS` and the `GlobalAction` union, admin-only by default; no migration was needed because the flag registry is code-defined, exactly like `documents.manage`.
 - 2.1: the `automation` notification kind needed migration `0084_dealflow_automation_notifications` (`ALTER TYPE`), and the enum and preferences assertions were updated to 14 values and the new `automation: false` email default, without weakening either assertion.
+
+- 2.2: the four new cases were written first and run red (missing action modules and a failing assertion trio), then the file passed 12/12; the case isolation added a `beforeEach` that clears automations and marks pending events processed, because one case's enabled automations otherwise ran against the next case's records.
+- 2.2: `update_deal` calls the deal page's own services (`updateDeal` for the close date, `changeStage`, `changeOwner`, `markWon`, `markLost`) and re-reads the deal before each CAS-based step, so the optimistic timestamp is never stale.
+- 2.2: `create_activity` uses `createActivity`, `add_note` uses `createNote`, and `notify_user` uses `createNotification` with the new `automation` kind and the deal as visibility parent; a notification suppressed by the recipient's visibility is treated as a successful step (nothing to deliver, nothing to fail).
+- 2.2: subject, note body and message render through Part 4's `renderVariables` with a deal context built by `actions/context.ts` (`deal.*`, `person.*`, `organization.name`, `owner.*`).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.
