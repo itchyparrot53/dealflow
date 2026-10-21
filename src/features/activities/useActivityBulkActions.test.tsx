@@ -3,13 +3,8 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RowSelection } from "@/components/data-table/useRowSelection";
 
-type ActionResult = { ok: true } | { ok: false; error: { id: string } };
-
-const { completeActivityAction, deleteActivityAction } = vi.hoisted(() => ({
-  completeActivityAction: vi.fn((): Promise<ActionResult> => Promise.resolve({ ok: true })),
-  deleteActivityAction: vi.fn((): Promise<ActionResult> => Promise.resolve({ ok: true })),
-}));
-vi.mock("./actions", () => ({ completeActivityAction, deleteActivityAction }));
+const { bulkActivityAction } = vi.hoisted(() => ({ bulkActivityAction: vi.fn() }));
+vi.mock("./list/bulkActions", () => ({ bulkActivityAction }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
 const { invalidateDayLoad, invalidateListRows } = vi.hoisted(() => ({
@@ -28,6 +23,9 @@ vi.mock("@/lib/trpc-client", () => ({
 }));
 
 import { useActivityBulkActions } from "./useActivityBulkActions";
+
+// Default for every test that does not override the batch outcome.
+bulkActivityAction.mockResolvedValue({ ok: true, value: { applied: 2, failed: [] } });
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -54,11 +52,11 @@ function renderActions(ids: readonly string[]) {
 }
 
 describe("useActivityBulkActions", () => {
-  it("deletes every selected activity and refreshes the list once", async () => {
+  it("sends one delete batch and refreshes the list once", async () => {
     const { result } = renderActions(["a1", "a2"]);
     await act(() => result.current.bulkDelete());
-    expect(deleteActivityAction).toHaveBeenCalledTimes(2);
-    expect(deleteActivityAction).toHaveBeenCalledWith({ id: "a1" }, "csrf");
+    expect(bulkActivityAction).toHaveBeenCalledTimes(1);
+    expect(bulkActivityAction).toHaveBeenCalledWith({ kind: "delete", ids: ["a1", "a2"] }, "csrf");
     expect(invalidateListRows).toHaveBeenCalledTimes(1);
     expect(result.current.error).toBeNull();
   });
@@ -70,27 +68,42 @@ describe("useActivityBulkActions", () => {
   });
 
   it("leaves the day load alone when every delete is denied", async () => {
-    deleteActivityAction.mockResolvedValue({ ok: false, error: { id: "E_PERM_001" } });
+    bulkActivityAction.mockResolvedValueOnce({
+      ok: false,
+      error: {
+        id: "E_BULK_002",
+        failed: [
+          { id: "a1", errorId: "E_PERM_001" },
+          { id: "a2", errorId: "E_PERM_001" },
+        ],
+      },
+    });
     const { result } = renderActions(["a1", "a2"]);
     await act(() => result.current.bulkDelete());
     expect(result.current.error).not.toBeNull();
     expect(invalidateDayLoad).not.toHaveBeenCalled();
     expect(invalidateListRows).not.toHaveBeenCalled();
-    deleteActivityAction.mockResolvedValue({ ok: true });
+    bulkActivityAction.mockResolvedValue({ ok: true, value: { applied: 2, failed: [] } });
   });
 
   it("still invalidates the day load when only some deletes succeed", async () => {
-    deleteActivityAction.mockResolvedValueOnce({ ok: false, error: { id: "E_PERM_001" } });
+    bulkActivityAction.mockResolvedValueOnce({
+      ok: false,
+      error: { id: "E_BULK_002", failed: [{ id: "a1", errorId: "E_PERM_001" }] },
+    });
     const { result } = renderActions(["a1", "a2"]);
     await act(() => result.current.bulkDelete());
     expect(invalidateDayLoad).toHaveBeenCalledTimes(1);
+    bulkActivityAction.mockResolvedValue({ ok: true, value: { applied: 2, failed: [] } });
   });
 
-  it("marks every selected activity done and refreshes the list once", async () => {
+  it("sends one mark-done batch and refreshes the list once", async () => {
     const { result } = renderActions(["a1", "a2"]);
     await act(() => result.current.bulkMarkDone());
-    expect(completeActivityAction).toHaveBeenCalledWith({ id: "a1", done: true }, "csrf");
-    expect(completeActivityAction).toHaveBeenCalledTimes(2);
+    expect(bulkActivityAction).toHaveBeenCalledWith(
+      { kind: "markDone", ids: ["a1", "a2"] },
+      "csrf",
+    );
     expect(invalidateListRows).toHaveBeenCalledTimes(1);
   });
 
@@ -100,10 +113,28 @@ describe("useActivityBulkActions", () => {
     expect(invalidateDayLoad).toHaveBeenCalledTimes(1);
   });
 
+  it("sends the reschedule date", async () => {
+    const { result } = renderActions(["a1"]);
+    await act(() => result.current.bulkReschedule("2026-07-20"));
+    expect(bulkActivityAction).toHaveBeenCalledWith(
+      { kind: "reschedule", ids: ["a1"], date: "2026-07-20" },
+      "csrf",
+    );
+  });
+
+  it("sends the new owner", async () => {
+    const { result } = renderActions(["a1"]);
+    await act(() => result.current.bulkChangeOwner("u2"));
+    expect(bulkActivityAction).toHaveBeenCalledWith(
+      { kind: "owner", ids: ["a1"], ownerId: "u2" },
+      "csrf",
+    );
+  });
+
   it("does nothing when the selection is empty", async () => {
     const { result } = renderActions([]);
     await act(() => result.current.bulkDelete());
-    expect(deleteActivityAction).not.toHaveBeenCalled();
+    expect(bulkActivityAction).not.toHaveBeenCalled();
     expect(invalidateListRows).not.toHaveBeenCalled();
     expect(invalidateDayLoad).not.toHaveBeenCalled();
   });

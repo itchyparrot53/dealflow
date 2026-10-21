@@ -82,12 +82,13 @@ export const COLUMN_VIEW_KEYS = {
   dealsList: "dealsListView",
   people: "peopleView",
   orgs: "orgsView",
+  activities: "activitiesView",
 } as const;
 export type ColumnViewName = keyof typeof COLUMN_VIEW_KEYS;
 // Boundary schema for the generic column-view action: validates the view name against the allowed
 // set (a client sends this) plus the column-order array.
 export const columnViewInputSchema = z.object({
-  view: z.enum(["dealsList", "people", "orgs"]),
+  view: z.enum(["dealsList", "people", "orgs", "activities"]),
   columns: columnOrderSchema,
 });
 
@@ -105,6 +106,7 @@ export const uiSchema = z.object({
   dealsListView: columnOrderSchema.optional().catch(undefined),
   peopleView: columnOrderSchema.optional().catch(undefined),
   orgsView: columnOrderSchema.optional().catch(undefined),
+  activitiesView: columnOrderSchema.optional().catch(undefined),
   openDetailsAfterCreate: openDetailsAfterCreateSchema.optional().catch(undefined),
   usPhoneFormat: z.boolean().optional().catch(undefined),
   winSound: z.boolean().optional().catch(undefined),

@@ -9,7 +9,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/activities",
-  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
 beforeAll(() => {
@@ -39,6 +40,7 @@ vi.mock("@/lib/trpc-client", () => ({
       },
     }),
     activities: {
+      dayLoad: { useQuery: () => ({ data: undefined }) },
       listRows: { useQuery: (input?: unknown) => useQuery(input) },
       listTypes: { useQuery: () => ({ data: [{ id: "t1", key: "call", name: "Call" }] }) },
     },
@@ -55,6 +57,10 @@ vi.mock("./ActivityEditModal", () => ({
 }));
 
 type ActionResult = { ok: true; value: { id: string } } | { ok: false; error: { id: string } };
+
+const { bulkActivityAction } = vi.hoisted(() => ({ bulkActivityAction: vi.fn() }));
+vi.mock("./list/bulkActions", () => ({ bulkActivityAction }));
+bulkActivityAction.mockResolvedValue({ ok: true, value: { applied: 1, failed: [] } });
 
 const complete = vi.fn<(input: { id: string; done: boolean }) => Promise<ActionResult>>(() =>
   Promise.resolve({ ok: true, value: { id: "a1" } }),
@@ -141,31 +147,32 @@ describe("ActivitiesTable selection and bulk actions", () => {
     expect(screen.getByRole("checkbox", { name: "Select all activities" })).toBeChecked();
   });
 
-  it("bulk Mark done calls completeActivityAction({ id, done: true }) for each selected row", async () => {
+  it("bulk Mark done sends one mark-done batch for the selected rows", async () => {
     useQuery.mockReturnValue({ data: [row({})], refetch });
     render(<ActivitiesTable currentUserId="me" />);
     fireEvent.click(screen.getByRole("checkbox", { name: "Select Call Jane" }));
     fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
-    await vi.waitFor(() => expect(complete).toHaveBeenCalledWith({ id: "a1", done: true }));
+    await vi.waitFor(() =>
+      expect(bulkActivityAction).toHaveBeenCalledWith({ kind: "markDone", ids: ["a1"] }, "tok"),
+    );
   });
 
-  it("bulk Delete calls deleteActivityAction with the selected id, then clears selection", async () => {
+  it("bulk Delete sends one delete batch, then clears the selection", async () => {
     useQuery.mockReturnValue({ data: [row({})], refetch });
     render(<ActivitiesTable currentUserId="me" />);
     fireEvent.click(screen.getByRole("checkbox", { name: "Select Call Jane" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    await vi.waitFor(() => expect(deleteActivity).toHaveBeenCalledWith({ id: "a1" }));
+    await vi.waitFor(() =>
+      expect(bulkActivityAction).toHaveBeenCalledWith({ kind: "delete", ids: ["a1"] }, "tok"),
+    );
     await vi.waitFor(() => expect(screen.queryByText(/selected/)).not.toBeInTheDocument());
   });
 
   it("keeps the failed row selected and surfaces an error on a partial bulk-delete failure", async () => {
-    deleteActivity.mockImplementation((input: { id: string }) =>
-      Promise.resolve(
-        input.id === "a1"
-          ? { ok: true, value: { id: "a1" } }
-          : { ok: false, error: { id: "E_PERM_001" } },
-      ),
-    );
+    bulkActivityAction.mockResolvedValueOnce({
+      ok: false,
+      error: { id: "E_BULK_002", failed: [{ id: "a2", errorId: "E_PERM_001" }] },
+    });
     useQuery.mockReturnValue({
       data: [row({ id: "a1" }), row({ id: "a2", subject: "Call Bob" })],
       refetch,
@@ -175,8 +182,8 @@ describe("ActivitiesTable selection and bulk actions", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: "Select all activities" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/couldn't delete|could not delete|failed/i);
+    const alert = await screen.findByText(/Some records could not be changed/i);
+    expect(alert).toBeInTheDocument();
     await vi.waitFor(() => expect(screen.getByText("1 selected")).toBeInTheDocument());
     expect(screen.getByRole("checkbox", { name: "Select Call Bob" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Select Call Jane" })).not.toBeChecked();

@@ -154,16 +154,61 @@ function text(row: Record<string, unknown>, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+// The Activities list keeps its filters in the URL as ownerId / done / from / to / typeKey.
+// ownerId is the assignee (Pipedrive calls it the owner), not the creating owner column.
+function filterActivities(
+  rows: Record<string, unknown>[],
+  params: Record<string, string>,
+): Record<string, unknown>[] {
+  let filtered = rows;
+  const by = (key: string, param: string): Record<string, unknown>[] => {
+    const wanted = params[param];
+    if (wanted === undefined || wanted === "") return filtered;
+    return filtered.filter((row) => text(row, key) === wanted);
+  };
+  filtered = by("dealId", "dealId");
+  filtered = by("personId", "personId");
+  filtered = by("assigneeId", "ownerId");
+  filtered = by("assigneeId", "assigneeId");
+  const done = params.done;
+  if (done === "open") {
+    filtered = filtered.filter((row) => row.done === false);
+  } else if (done === "done") {
+    filtered = filtered.filter((row) => row.done === true);
+  } else if (done === "true" || done === "false") {
+    // Older links and the API use the boolean spelling.
+    filtered = filtered.filter((row) => row.done === (done === "true"));
+  }
+  filtered = by("typeKey", "typeKey");
+  const from = params.from;
+  const to = params.to;
+  if (from !== undefined && from !== "") {
+    filtered = filtered.filter((row) => {
+      const due = row.dueAtIso;
+      return typeof due === "string" && due.slice(0, 10) >= from;
+    });
+  }
+  if (to !== undefined && to !== "") {
+    filtered = filtered.filter((row) => {
+      const due = row.dueAtIso;
+      return typeof due === "string" && due.slice(0, 10) <= to;
+    });
+  }
+  return filtered;
+}
+
 function filterRows(
   entity: ExportEntity,
   rows: Record<string, unknown>[],
   params: Record<string, string>,
 ): Record<string, unknown>[] {
   const search = params.search?.toLowerCase() ?? "";
+  // Chained filters must accumulate: returning the original `rows` for an absent param would
+  // silently discard every filter applied before it.
   const by = (key: string, param: string): Record<string, unknown>[] => {
     const wanted = params[param];
-    if (wanted === undefined || wanted === "") return rows;
-    return rows.filter((row) => text(row, key) === wanted);
+    if (wanted === undefined || wanted === "") return filtered;
+    return filtered.filter((row) => text(row, key) === wanted);
   };
   let filtered = rows;
   if (search !== "") {
@@ -182,14 +227,7 @@ function filterRows(
   } else if (entity === "persons") {
     filtered = by("orgId", "organizationId");
   } else if (entity === "activities") {
-    filtered = by("dealId", "dealId");
-    filtered = by("personId", "personId");
-    filtered = by("assigneeId", "assigneeId");
-    const done = params.done;
-    if (done !== undefined && done !== "") {
-      filtered = filtered.filter((row) => row.done === (done === "true"));
-    }
-    filtered = by("typeKey", "typeKey");
+    filtered = filterActivities(filtered, params);
   } else if (entity === "products") {
     const active = params.active;
     if (active !== undefined && active !== "") {

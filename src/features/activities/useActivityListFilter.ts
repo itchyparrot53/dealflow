@@ -1,10 +1,24 @@
 "use client";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { type PresetRange, presetRange } from "./activityDatePresets";
 import type { ActivityListFilter } from "./schemas";
 import { useLocalNow } from "./useLocalNow";
 
+// URL-backed activity filters (6.6). The list keeps them in the query string, so a reload, a shared
+// link and the CSV export all see the same filter instead of a fresh in-memory default.
+
 const UNRESOLVED_RANGE: PresetRange = { from: null, to: null };
+const FILTER_KEYS = ["ownerId", "done", "from", "to", "typeKey"] as const;
+const DONE_VALUES = ["all", "open", "done"] as const;
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface ActivityListFilterState {
   filter: ActivityListFilter;
@@ -16,20 +30,84 @@ function defaultFilter(currentUserId: string, range: PresetRange): ActivityListF
   return { ownerId: currentUserId, done: "open", from: range.from, to: range.to, typeKey: null };
 }
 
+function parseFilter(
+  params: URLSearchParams,
+  currentUserId: string,
+  range: PresetRange,
+): ActivityListFilter {
+  const base = defaultFilter(currentUserId, range);
+  const owner = params.get("ownerId");
+  const done = params.get("done");
+  const from = params.get("from");
+  const to = params.get("to");
+  return {
+    // "ownerId=" (empty) means every owner; an absent key keeps the signed-in default.
+    ownerId: params.has("ownerId") ? (owner === "" ? null : owner) : base.ownerId,
+    done: DONE_VALUES.includes(done as (typeof DONE_VALUES)[number])
+      ? (done as ActivityListFilter["done"])
+      : base.done,
+    from: from !== null && DATE.test(from) ? from : base.from,
+    to: to !== null && DATE.test(to) ? to : base.to,
+    typeKey: params.get("typeKey"),
+  };
+}
+
+function hasFilterParams(params: URLSearchParams): boolean {
+  return FILTER_KEYS.some((key) => params.has(key));
+}
+
+function serialize(filter: ActivityListFilter): string {
+  const params = new URLSearchParams();
+  params.set("ownerId", filter.ownerId ?? "");
+  params.set("done", filter.done);
+  if (filter.from !== null) params.set("from", filter.from);
+  if (filter.to !== null) params.set("to", filter.to);
+  if (filter.typeKey !== null) params.set("typeKey", filter.typeKey);
+  return params.toString();
+}
+
 export function useActivityListFilter(currentUserId: string): ActivityListFilterState {
   const localNow = useLocalNow();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const ready = localNow !== null;
+  const range = localNow === null ? UNRESOLVED_RANGE : presetRange("today", localNow);
+  const rangeFrom = range.from;
+  const rangeTo = range.to;
+
+  // In-memory copy for immediate re-renders (and so the toolbar's tests keep their state-driven
+  // behaviour); the URL mirrors it for reloads, shared links and the export. The URL is re-read
+  // only until the first user change, so a navigation that only changes the back-stack does not
+  // fight the visible filter.
   const [chosen, setChosen] = useState<ActivityListFilter | null>(null);
-  if (chosen !== null) return { filter: chosen, setFilter: setChosen, ready: true };
-  if (localNow === null) {
-    return {
-      filter: defaultFilter(currentUserId, UNRESOLVED_RANGE),
-      setFilter: setChosen,
-      ready: false,
-    };
-  }
-  return {
-    filter: defaultFilter(currentUserId, presetRange("today", localNow)),
-    setFilter: setChosen,
-    ready: true,
-  };
+  const fromUrl = useMemo(
+    () =>
+      parseFilter(new URLSearchParams(searchParams.toString()), currentUserId, {
+        from: rangeFrom,
+        to: rangeTo,
+      }),
+    [searchParams, currentUserId, rangeFrom, rangeTo],
+  );
+  const filter = chosen ?? fromUrl;
+
+  // Normalise a bare URL to the visible defaults once, so the export link (which reads the query
+  // string) carries the same filter the table shows instead of exporting everything.
+  useEffect(() => {
+    if (!ready || hasFilterParams(searchParams)) return;
+    const next = defaultFilter(currentUserId, { from: rangeFrom, to: rangeTo });
+    router.replace(`${pathname}?${serialize(next)}`, { scroll: false });
+  }, [ready, searchParams, pathname, router, currentUserId, rangeFrom, rangeTo]);
+
+  const setFilter = useCallback<Dispatch<SetStateAction<ActivityListFilter | null>>>(
+    (updater) => {
+      const next = typeof updater === "function" ? updater(filter) : updater;
+      const resolved = next ?? defaultFilter(currentUserId, { from: rangeFrom, to: rangeTo });
+      setChosen(resolved);
+      router.replace(`${pathname}?${serialize(resolved)}`, { scroll: false });
+    },
+    [filter, currentUserId, rangeFrom, rangeTo, router, pathname],
+  );
+
+  return { filter, setFilter, ready };
 }

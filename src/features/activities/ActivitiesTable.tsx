@@ -4,16 +4,22 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
+import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
+import type { ColumnDef } from "@/components/data-table/columnModel";
 import { type ColumnSort, useColumnSort } from "@/components/data-table/useColumnSort";
+import { useColumns } from "@/components/data-table/useColumns";
+import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import { Select } from "@/components/ui/Select";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import { useRowCursor } from "@/features/shortcuts/useRowCursor";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { ActivitiesFilters } from "./ActivitiesFilters";
 import { ActivitiesTableHead } from "./ActivitiesTableHead";
+import { ActivityDatePicker } from "./ActivityDatePicker";
 import { ActivityEditModal } from "./ActivityEditModal";
 import { ActivityRow } from "./ActivityRow";
 import { ActivityTableBody } from "./ActivityTableBody";
@@ -31,12 +37,29 @@ import { useActivityListFilter } from "./useActivityListFilter";
 // reference when the sort state itself changes (see PeopleList for the same concern).
 const DEFAULT_SORT: ColumnSort<ActivitySortField> = { field: "dueAtIso", dir: "asc" };
 
-// Total <th>/<td> columns in the table (select, Done, Subject, Deal, Priority, Contact, Email,
-// Phone, Organization, Due, Duration, Assignee): drives the empty-state and day-header colSpans
-// so neither has to be kept in sync by hand when a column is added.
-const ACTIVITY_TABLE_COLUMN_COUNT = 12;
+// Column picker catalog (1.4), same model as the deals list. Subject is pinned as the row-link
+// anchor; select and Done stay fixed outside the catalog because hiding them would break bulk
+// selection and completion. Everything here can be hidden or reordered.
+const ACTIVITY_COLUMNS: readonly ColumnDef[] = [
+  { key: "subject", header: "Subject", pinned: true, defaultVisible: true },
+  { key: "deal", header: "Deal", defaultVisible: true },
+  { key: "priority", header: "Priority", defaultVisible: true },
+  { key: "contact", header: "Contact", defaultVisible: true },
+  { key: "email", header: "Email", defaultVisible: true },
+  { key: "phone", header: "Phone", defaultVisible: true },
+  { key: "organization", header: "Organization", defaultVisible: true },
+  { key: "due", header: "Due", defaultVisible: true },
+  { key: "duration", header: "Duration", defaultVisible: true },
+  { key: "assignee", header: "Assignee", defaultVisible: true },
+];
 
-export function ActivitiesTable({ currentUserId }: { currentUserId: string }): React.ReactNode {
+export function ActivitiesTable({
+  currentUserId,
+  initialColumns,
+}: {
+  currentUserId: string;
+  initialColumns?: string[];
+}): React.ReactNode {
   const { filter, setFilter, ready } = useActivityListFilter(currentUserId);
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<ActivityTableRow | null>(null);
@@ -52,7 +75,10 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
   );
   const typesQ = trpc.activities.listTypes.useQuery();
   const ownersQ = trpc.identity.assignableUsers.useQuery();
-  const { error, bulkMarkDone, bulkDelete } = useActivityBulkActions(selection);
+  const { error, bulkMarkDone, bulkReschedule, bulkChangeOwner, bulkDelete } =
+    useActivityBulkActions(selection);
+  const columns = useColumns(ACTIVITY_COLUMNS, initialColumns);
+  usePersistColumns("activities", columns.order);
   const promptAfterDone = useFollowUpAfterDone();
   const rows = useMemo(() => rowsQ.data ?? [], [rowsQ.data]);
   // Cap how many rows are painted; the count header, select-all, and bulk actions all operate
@@ -126,6 +152,7 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
         onToggleDone={(id, currentDone) => void complete(id, currentDone)}
         onRowClick={openRow}
         cursor={r.id === cursorId}
+        visibleColumns={columns.visibleColumns}
       />
     );
   }
@@ -163,6 +190,15 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
         >
           + Activity
         </button>
+        <div data-testid="activities-columns">
+          <ColumnsMenu
+            catalog={[...ACTIVITY_COLUMNS]}
+            order={columns.order}
+            visibleKeys={columns.visibleKeys}
+            onToggle={columns.toggle}
+            onReorder={columns.reorder}
+          />
+        </div>
         {!loadFailed && !loadPending && (
           <span className="text-sm text-muted-foreground tabular-nums">
             {rows.length} {rows.length === 1 ? "activity" : "activities"}
@@ -175,22 +211,47 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
       </div>
 
       {selection.count > 0 && (
-        <BulkActionBar count={selection.count} onClear={selection.clear}>
-          <button
-            type="button"
-            onClick={() => void bulkMarkDone()}
-            className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
-          >
-            Mark done
-          </button>
-          <button
-            type="button"
-            onClick={() => void bulkDelete()}
-            className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
-          >
-            Delete
-          </button>
-        </BulkActionBar>
+        <div data-testid="activities-bulk-bar">
+          <BulkActionBar count={selection.count} onClear={selection.clear}>
+            <button
+              type="button"
+              data-testid="bulk-mark-done"
+              onClick={() => void bulkMarkDone()}
+              className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
+            >
+              Mark done
+            </button>
+            <span data-testid="bulk-reschedule" className="inline-flex">
+              <ActivityDatePicker
+                ariaLabel="Reschedule selected activities"
+                value={null}
+                placeholder="Reschedule"
+                onChange={(date) => {
+                  if (date !== null) void bulkReschedule(date);
+                }}
+              />
+            </span>
+            <span data-testid="bulk-owner" className="inline-flex w-40">
+              <Select
+                ariaLabel="Change owner of selected activities"
+                value=""
+                onChange={(value) => {
+                  if (value !== "") void bulkChangeOwner(value);
+                }}
+                placeholder="Change owner"
+                options={owners}
+              />
+            </span>
+            <button
+              type="button"
+              data-testid="bulk-delete"
+              onClick={() => void bulkDelete()}
+              className="rounded-md border px-3 py-1 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
+            >
+              Delete
+            </button>
+          </BulkActionBar>
+        </div>
       )}
 
       <div className="min-h-0 flex-1 overflow-auto rounded-lg border">
@@ -200,6 +261,7 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
             onSort={cycle}
             allSelected={selection.allSelected(visibleIds)}
             onToggleAll={() => selection.toggleAll(visibleIds)}
+            visibleColumns={columns.visibleColumns}
           />
           <tbody>
             <ActivityTableBody
@@ -208,7 +270,7 @@ export function ActivitiesTable({ currentUserId }: { currentUserId: string }): R
               rowWindow={rowWindow}
               groupByDay={groupByDay}
               renderRow={renderRow}
-              columnCount={ACTIVITY_TABLE_COLUMN_COUNT}
+              columnCount={2 + columns.visibleColumns.length}
               onRetry={() => void rowsQ.refetch()}
             />
           </tbody>

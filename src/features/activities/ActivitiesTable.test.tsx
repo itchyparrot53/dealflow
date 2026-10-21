@@ -6,7 +6,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 const push = vi.fn();
 vi.mock("next/navigation", () => ({
   usePathname: () => "/activities",
-  useRouter: () => ({ push }),
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push, replace: vi.fn() }),
 }));
 
 beforeAll(() => {

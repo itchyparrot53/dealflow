@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import type { ColumnDef } from "@/components/data-table/columnModel";
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ActivitySortableTh } from "./ActivitySortableHeader";
@@ -10,7 +11,15 @@ interface ActivitiesTableHeadProps {
   onSort: (field: ActivitySortField) => void;
   allSelected: boolean;
   onToggleAll: () => void;
+  visibleColumns: ColumnDef[];
 }
+
+const SORTABLE: Partial<Record<string, ActivitySortField>> = {
+  subject: "subject",
+  priority: "priority",
+  due: "dueAtIso",
+  duration: "duration",
+};
 
 // The Activities table's <thead>, extracted from ActivitiesTable to keep it under the
 // project's file-size budget. Column order and labels are Pipedrive parity (Task 8's
@@ -20,6 +29,7 @@ export function ActivitiesTableHead({
   onSort,
   allSelected,
   onToggleAll,
+  visibleColumns,
 }: ActivitiesTableHeadProps): React.ReactNode {
   return (
     <thead className="sticky top-0 bg-muted/60 text-left text-xs uppercase text-muted-foreground">
@@ -32,16 +42,22 @@ export function ActivitiesTableHead({
           />
         </th>
         <th className="px-3 py-2 font-semibold">Done</th>
-        <ActivitySortableTh field="subject" label="Subject" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Deal</th>
-        <ActivitySortableTh field="priority" label="Priority" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Contact</th>
-        <th className="px-3 py-2 font-semibold">Email</th>
-        <th className="px-3 py-2 font-semibold">Phone</th>
-        <th className="px-3 py-2 font-semibold">Organization</th>
-        <ActivitySortableTh field="dueAtIso" label="Due" sort={effective} onSort={onSort} />
-        <ActivitySortableTh field="duration" label="Duration" sort={effective} onSort={onSort} />
-        <th className="px-3 py-2 font-semibold">Assignee</th>
+        {visibleColumns.map((column) => {
+          const field = SORTABLE[column.key];
+          return field === undefined ? (
+            <th key={column.key} className="px-3 py-2 font-semibold">
+              {column.header}
+            </th>
+          ) : (
+            <ActivitySortableTh
+              key={column.key}
+              field={field}
+              label={column.header}
+              sort={effective}
+              onSort={onSort}
+            />
+          );
+        })}
       </tr>
     </thead>
   );

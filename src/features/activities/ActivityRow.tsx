@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
+import type { ColumnDef } from "@/components/data-table/columnModel";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ACTIVITY_PRIORITIES, isActivityPriorityKey } from "@/constants/activityPriorities";
 import { RecurrenceBadge } from "@/features/activities/recurrence/ui/RecurrenceBadge";
@@ -34,10 +35,136 @@ export interface ActivityRowProps {
   onRowClick: (row: ActivityTableRow) => void;
   // True for the single row under the j/k keyboard cursor.
   cursor: boolean;
+  // Ordered, visible columns from the picker; the select/done cells are always rendered first.
+  visibleColumns: ColumnDef[];
 }
 
 function fmtDuration(minutes: number | null): string {
   return minutes === null ? "" : `${minutes} min`;
+}
+
+// One optional cell per catalog key. The fixed select/done cells stay outside this map; every other
+// column can be hidden or reordered from the column picker.
+function cellFor(key: string, row: ActivityTableRow): React.ReactNode {
+  return contactCellFor(key, row) ?? scheduleCellFor(key, row);
+}
+
+function textOrDash(value: string | null): React.ReactNode {
+  return value ?? "-";
+}
+
+function entityLink(href: string | null, label: string | null): React.ReactNode {
+  if (href !== null && label !== null) {
+    return (
+      <Link href={href} onClick={(e) => e.stopPropagation()}>
+        {label}
+      </Link>
+    );
+  }
+  return textOrDash(label);
+}
+
+function anchorLink(href: string | null, label: string | null): React.ReactNode {
+  if (href !== null && label !== null) {
+    return (
+      <a href={href} onClick={(e) => e.stopPropagation()}>
+        {label}
+      </a>
+    );
+  }
+  return textOrDash(label);
+}
+
+function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
+  switch (key) {
+    case "subject":
+      return (
+        <td className="px-3 py-2">
+          <span className="flex items-center gap-2">
+            <ActivityTypeIcon typeKey={row.typeKey} />
+            <span className={cn("font-medium", row.done && "text-muted-foreground line-through")}>
+              {row.subject}
+            </span>
+            <RecurrenceBadge rule={row.recurrenceRule} ended={row.recurrenceEnded} />
+          </span>
+        </td>
+      );
+    case "deal":
+      return (
+        <td className="px-3 py-2 text-muted-foreground">
+          {row.dealId === null ? "-" : entityLink(`/deals/${row.dealId}`, row.dealTitle ?? "Deal")}
+        </td>
+      );
+    case "priority":
+      return (
+        <td className="px-3 py-2">
+          {row.priority !== null && isActivityPriorityKey(row.priority) ? (
+            <span style={{ color: ACTIVITY_PRIORITIES[row.priority].color }}>
+              {ACTIVITY_PRIORITIES[row.priority].name}
+            </span>
+          ) : (
+            "-"
+          )}
+        </td>
+      );
+    case "contact":
+      return (
+        <td className="px-3 py-2">
+          {entityLink(
+            row.personId === null ? null : `/contacts/people/${row.personId}`,
+            row.personName,
+          )}
+        </td>
+      );
+    case "email":
+      return (
+        <td className="px-3 py-2 text-muted-foreground">
+          {anchorLink(
+            row.personEmail === null ? null : `mailto:${row.personEmail}`,
+            row.personEmail,
+          )}
+        </td>
+      );
+    case "phone":
+      return (
+        <td className="px-3 py-2 text-muted-foreground">
+          {anchorLink(row.personPhone === null ? null : `tel:${row.personPhone}`, row.personPhone)}
+        </td>
+      );
+    case "organization":
+      return (
+        <td className="px-3 py-2 text-muted-foreground">
+          {entityLink(row.orgId === null ? null : `/contacts/orgs/${row.orgId}`, row.orgName)}
+        </td>
+      );
+    default:
+      return null;
+  }
+}
+
+function scheduleCellFor(key: string, row: ActivityTableRow): React.ReactNode {
+  switch (key) {
+    case "due":
+      return (
+        <td className="px-3 py-2 text-muted-foreground tabular-nums">
+          {fmtDue(row.dueAtIso, row.allDay)}
+        </td>
+      );
+    case "duration":
+      return (
+        <td className="px-3 py-2 text-muted-foreground tabular-nums">
+          {fmtDuration(row.durationMinutes)}
+        </td>
+      );
+    case "assignee":
+      return (
+        <td className="px-3 py-2">
+          <OwnerBadge name={row.assigneeName} />
+        </td>
+      );
+    default:
+      return null;
+  }
 }
 
 export function ActivityRow({
@@ -47,6 +174,7 @@ export function ActivityRow({
   onToggleDone,
   onRowClick,
   cursor,
+  visibleColumns,
 }: ActivityRowProps): React.ReactNode {
   const ref = useRef<HTMLTableRowElement>(null);
 
@@ -94,78 +222,9 @@ export function ActivityRow({
           />
         </span>
       </td>
-      <td className="px-3 py-2">
-        <span className="flex items-center gap-2">
-          <ActivityTypeIcon typeKey={row.typeKey} />
-          <span className={cn("font-medium", row.done && "text-muted-foreground line-through")}>
-            {row.subject}
-          </span>
-          <RecurrenceBadge rule={row.recurrenceRule} ended={row.recurrenceEnded} />
-        </span>
-      </td>
-      <td className="px-3 py-2 text-muted-foreground">
-        {row.dealId !== null ? (
-          <Link href={`/deals/${row.dealId}`} onClick={(e) => e.stopPropagation()}>
-            {row.dealTitle ?? "Deal"}
-          </Link>
-        ) : (
-          "-"
-        )}
-      </td>
-      <td className="px-3 py-2">
-        {row.priority !== null && isActivityPriorityKey(row.priority) ? (
-          <span style={{ color: ACTIVITY_PRIORITIES[row.priority].color }}>
-            {ACTIVITY_PRIORITIES[row.priority].name}
-          </span>
-        ) : (
-          "-"
-        )}
-      </td>
-      <td className="px-3 py-2">
-        {row.personId !== null && row.personName !== null ? (
-          <Link href={`/contacts/people/${row.personId}`} onClick={(e) => e.stopPropagation()}>
-            {row.personName}
-          </Link>
-        ) : (
-          (row.personName ?? "-")
-        )}
-      </td>
-      <td className="px-3 py-2 text-muted-foreground">
-        {row.personEmail !== null ? (
-          <a href={`mailto:${row.personEmail}`} onClick={(e) => e.stopPropagation()}>
-            {row.personEmail}
-          </a>
-        ) : (
-          "-"
-        )}
-      </td>
-      <td className="px-3 py-2 text-muted-foreground">
-        {row.personPhone !== null ? (
-          <a href={`tel:${row.personPhone}`} onClick={(e) => e.stopPropagation()}>
-            {row.personPhone}
-          </a>
-        ) : (
-          "-"
-        )}
-      </td>
-      <td className="px-3 py-2 text-muted-foreground">
-        {row.orgId !== null && row.orgName !== null ? (
-          <Link href={`/contacts/orgs/${row.orgId}`} onClick={(e) => e.stopPropagation()}>
-            {row.orgName}
-          </Link>
-        ) : (
-          (row.orgName ?? "-")
-        )}
-      </td>
-      <td className="px-3 py-2 text-muted-foreground tabular-nums">
-        {fmtDue(row.dueAtIso, row.allDay)}
-      </td>
-      <td className="px-3 py-2 text-muted-foreground tabular-nums">
-        {fmtDuration(row.durationMinutes)}
-      </td>
-      <td className="px-3 py-2">
-        <OwnerBadge name={row.assigneeName} />
-      </td>
+      {visibleColumns.map((column) => (
+        <Fragment key={column.key}>{cellFor(column.key, row)}</Fragment>
+      ))}
     </tr>
   );
 }

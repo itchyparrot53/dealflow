@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { GET as exportRoute } from "@/app/(app)/export/[entity]/route";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { deals } from "@/db/schema";
+import { activities, activityTypes, deals } from "@/db/schema";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -92,6 +93,51 @@ describe("exportTable", () => {
     const exporterTitles = exporterResult.value.rows.map((row) => row[0]);
     expect(exporterTitles).toContain("Visible export");
     expect(exporterTitles).not.toContain("Hidden export");
+  });
+
+  it("narrows the activities export by the list's URL filter", async () => {
+    const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "call"));
+    if (type === undefined) throw new Error("activity type 'call' not found");
+    await h.db.insert(activities).values([
+      {
+        typeId: type.id,
+        subject: "Open admin call",
+        ownerId: admin.id,
+        assigneeId: admin.id,
+        dueAt: new Date("2026-07-10T09:00:00.000Z"),
+        done: false,
+      },
+      {
+        typeId: type.id,
+        subject: "Done admin call",
+        ownerId: admin.id,
+        assigneeId: admin.id,
+        dueAt: new Date("2026-07-11T09:00:00.000Z"),
+        done: true,
+      },
+      {
+        typeId: type.id,
+        subject: "Regular call",
+        ownerId: regular.id,
+        assigneeId: regular.id,
+        dueAt: new Date("2026-07-12T09:00:00.000Z"),
+        done: false,
+      },
+    ]);
+
+    const result = await exportTable(
+      h.db,
+      admin,
+      "activities",
+      { ownerId: admin.id, done: "open", from: "2026-07-01", to: "2026-07-31" },
+      sig(),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const subjects = result.value.rows.map((row) => row[0]);
+    expect(subjects).toContain("Open admin call");
+    expect(subjects).not.toContain("Done admin call");
+    expect(subjects).not.toContain("Regular call");
   });
 
   it("refuses without data.export", async () => {

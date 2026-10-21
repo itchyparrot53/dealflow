@@ -46,7 +46,7 @@ vi.mock("./actions", () => ({
   editActivityAction,
   deleteActivityAction,
   completeActivityAction,
-  setRecurrenceAction: vi.fn(async () => ({ ok: true, value: { id: "a1" } })),
+  setRecurrenceAction: vi.fn(() => Promise.resolve({ ok: true, value: { id: "a1" } })),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 

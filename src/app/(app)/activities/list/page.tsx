@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { STRINGS } from "@/constants/strings";
+import { db } from "@/db/client";
 import { ActivitiesTable } from "@/features/activities/ActivitiesTable";
 import { ExportButton } from "@/features/export/ui/ExportButton";
+import { getPreferences } from "@/features/identity/preferencesRepo";
 import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
 
@@ -16,6 +18,7 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
   if (ctx.actor === null) {
     redirect("/login");
   }
+  const prefs = await getPreferences(db, ctx.actor.id, new AbortController().signal);
   return (
     <main aria-label="Activities" className="h-full">
       <div className="flex justify-end p-2">
@@ -26,7 +29,7 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
           />
         )}
       </div>
-      <ActivitiesTable currentUserId={ctx.actor.id} />
+      <ActivitiesTable currentUserId={ctx.actor.id} initialColumns={prefs.ui.activitiesView} />
     </main>
   );
 }

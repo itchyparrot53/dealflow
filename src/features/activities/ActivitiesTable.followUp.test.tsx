@@ -9,7 +9,8 @@ import {
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/activities",
-  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
 beforeAll(() => {
