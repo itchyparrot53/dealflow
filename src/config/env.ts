@@ -115,6 +115,13 @@ const base = z.object({
   // Off unless a deploy opts in. On by default would mean every worker polls GitHub without the
   // operator asking, so set false to get the upstream release banner.
   DISABLE_UPDATE_CHECK: boolFromString.default(true),
+  // Automations and webhooks
+  // How many reverse proxies append to X-Forwarded-For. The client IP is read that many places
+  // from the right, so 0 means "the app is directly exposed, trust X-Real-IP only".
+  TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
+  // Off by default: a webhook target must be a public address. Only tests and local receivers
+  // should turn this on, because it removes the SSRF protection.
+  WEBHOOK_ALLOW_PRIVATE: boolFromString.default(false),
 });
 
 // Production guardrails for the first-run bootstrap (ops spec E6).

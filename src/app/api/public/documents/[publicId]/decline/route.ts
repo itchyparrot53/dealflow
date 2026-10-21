@@ -2,8 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { isSameOriginPost } from "@/features/auth/originCheck";
-import { clientIp, declineQuote, publicHttpStatus } from "@/features/documents/publicDocuments";
+import { declineQuote, publicHttpStatus } from "@/features/documents/publicDocuments";
 import { checkPublicRateLimit } from "@/features/documents/publicRateLimit";
+import { clientIp } from "@/features/net/clientIp";
 
 // Public quote decline. Same shape as accept: origin check, rate limit, 16 KB
 // body, then the service, which stores an optional reason.

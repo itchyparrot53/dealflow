@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p5-v1
 
 STATUS: IN PROGRESS
-Current: 0.1 · Last updated: 2026-10-21 01:16
+Current: 0.2 · Last updated: 2026-10-21 01:18
 
 ## Phase base commits
 - Phase 0: ebbf7d2e3a2c5f3e42373785db224dc8f5d1bfbf
 
 ## Tasks
 - [x] 0.1 Start Part 5: progress files, kit and baseline
-- [ ] 0.2 Trusted client IP (test-first)
+- [x] 0.2 Trusted client IP (test-first)
 - [ ] 0.3 Automations schema and migration
 - [ ] 0.4 Pure core: definition, trigger matching, IP ranges, signatures (test-first)
 - [ ] 0.5 Phase 0 QA gate
@@ -50,6 +50,11 @@ Current: 0.1 · Last updated: 2026-10-21 01:16
 - 0.1: pg-boss schedules live in `src/server/worker.ts` and queue names in `src/constants/jobNames.ts` (as Part 4 did for `documents.overdue`), so the dispatcher, rotting, retention and webhook jobs register from that worker.
 - 0.1: pnpm 9.15.9 (from `/tmp/dealflow-tools`), Node 24.16.0 and Docker 24.0.5 are available, and the `subagent` tool is available, so the Task 5.3 review can use it.
 - 0.1: baseline green: install `--frozen-lockfile` up to date, typecheck ok, lint ok (14 warnings, 0 errors), build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried), unit suite recorded in the QA log.
+
+- 0.2: the nine `clientIp` cases were written first and run red (missing `./clientIp`) before the implementation; all nine passed after.
+- 0.2: `clientIp` lives in `src/features/net/clientIp.ts` and replaces Part 4's first-entry helper (removed from `publicDocuments.ts`, which now imports it), so the documents page and both public POST routes share one rule: hops are counted from the right, `hops=0` trusts only `x-real-ip`, and a chain shorter than the hop count falls back to the leftmost entry.
+- 0.2: `TRUSTED_PROXY_HOPS` (integer 0..5, default 1) and `WEBHOOK_ALLOW_PRIVATE` (boolean, default false) are appended to the env schema and `.env.example`; `src/constants/automations.ts` now holds every 6.1 constant plus `DOMAIN_EVENTS_CHANNEL`, the LISTEN channel name 6.5's emit needs.
+- 0.2: `src/server/rateLimit.ts` still reads `x-forwarded-for` directly for the signed-in limiter; it already takes the last entry (equivalent to the new default of one hop), sits outside 6.2's named paths, and changing its missing-header `SHARED_BUCKET` fallback would alter behaviour, so it is logged for the checklist instead of rewritten.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; this run passes `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` on every command that loads `.env`.

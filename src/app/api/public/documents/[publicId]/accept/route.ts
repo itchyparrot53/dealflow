@@ -2,8 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { isSameOriginPost } from "@/features/auth/originCheck";
-import { acceptQuote, clientIp, publicHttpStatus } from "@/features/documents/publicDocuments";
+import { acceptQuote, publicHttpStatus } from "@/features/documents/publicDocuments";
 import { checkPublicRateLimit } from "@/features/documents/publicRateLimit";
+import { clientIp } from "@/features/net/clientIp";
 
 // Public quote acceptance. No session: origin check, then rate limit, then a
 // 16 KB body, then the service. The body is only a name, the agreement flag and

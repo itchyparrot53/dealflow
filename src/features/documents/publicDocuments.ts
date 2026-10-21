@@ -102,16 +102,6 @@ function isExpired(row: DocumentRow, today: string): boolean {
   return row.validUntil !== null && row.validUntil < today;
 }
 
-// The first x-forwarded-for entry is the client; Next does not expose the socket,
-// so x-real-ip is the fallback and "unknown" the last resort.
-export function clientIp(headers: Headers): string {
-  const forwarded = headers.get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  if (first !== undefined && first !== "") return first;
-  const real = headers.get("x-real-ip");
-  return real !== null && real !== "" ? real : "unknown";
-}
-
 export function publicHttpStatus(errorId: string): number {
   switch (errorId) {
     case ERROR_IDS.DOC_NOT_FOUND:

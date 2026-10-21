@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
-import { clientIp, getPublicDocument } from "@/features/documents/publicDocuments";
+import { getPublicDocument } from "@/features/documents/publicDocuments";
 import { DocumentView } from "@/features/documents/ui/DocumentView";
 import { PrintButton, PublicActions } from "@/features/documents/ui/PublicActions";
+import { clientIp } from "@/features/net/clientIp";
 
 // Public document page: no session, addressed by publicId only. It lives outside
 // the `(app)` route group on purpose, the same way /t/click is public.
