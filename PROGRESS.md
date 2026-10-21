@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p9-v1
 
-STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-21 20:15
+STATUS: COMPLETE
+Current: 4.5 · Last updated: 2026-10-21 20:20
 
 ## Phase base commits
 - Phase 0: 086de8ab14904cc0daee69b2d1fc4d03d48fd3c6
@@ -34,8 +34,8 @@ Current: 4.4 · Last updated: 2026-10-21 20:15
 - [x] 4.1 E2E productivity spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.4 Final checklist
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5269/5269 in 821 files
@@ -102,6 +102,45 @@ Current: 4.4 · Last updated: 2026-10-21 20:15
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
+
+### Definition of done
+1. PASS - Part 8 proven in 0.2 (integration 2046/2046, e2e 22/22, smoke PASS with backup round trip); the smoke caught and fixed the `pg_restore --dbname` bug.
+2. PASS - migration 0091 creates exactly `activity_recurrence`, `activity_calls` and `duplicate_dismissals`.
+3. PASS - `recordAudit` redacts secret-looking keys before insert and the reader still redacts older rows.
+4. PASS - recurrence rule/next-occurrence, duplicate normalisation, command filter, sequence matcher and toast store are pure and unit-tested.
+5. PASS - daily/weekly(with weekdays)/monthly/yearly with interval and date/count ends; completing creates the next once under concurrent double-complete; edits/ends affect later occurrences.
+6. PASS - Log call on deals, people and organizations records a done call with outcome/direction/duration/notes and the outcome chip on the timeline.
+7. PASS - week/month drag to reschedule; activities column picker, URL-backed filters carried into the CSV export, and bulk mark done/reschedule/change owner/delete.
+8. PASS - duplicate people by email, phone or name plus organization; organizations by name or domain; merge through the existing bulk merge; "Not duplicates" persists.
+9. PASS - bulk owner and delete on both contact lists; AI filters on people, organizations and leads; the organization parent loop is refused.
+10. PASS - stage-move and delete undo toasts (8s, existing services, CAS-aware); the toast region replaced the forecast and project-board inline alerts.
+11. PASS - palette Create/Go to/Actions filtered by permission, plus the five deal commands; g/n sequences and the ? help sheet.
+12. PASS - typecheck, lint, build, unit 5320/5320 and integration 2077/2077 pass; e2e 23/23 (specs 00 to 13) with the 7 p9 screenshots; smoke PASS; one independent review ran (round 1), with all blockers/majors fixed.
+
+### Owner actions
+1. Rebuild the dev stack so its app image reads migrations 0089 to 0091: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+2. Fix the partial Google env in `.env`: set `GOOGLE_WORKSPACE_DOMAIN` or blank all three `GOOGLE_*` values.
+3. Add the currency rates your deals need in Settings > Currencies.
+
+### Decisions worth reviewing
+- The deal filter input keeps the Part 1 shape `aiFilter({entity, text})`; the plan's `target` name was not adopted because the code (and its tests) already used `entity`.
+- `findDuplicatePairs(db, actor, entity, signal, page?)` keeps the positional shape and adds an optional page, rather than the object form in 6.7.
+- Bulk delete on the contact lists moved from per-id client loops to `bulkContactAction`, so E_BULK_002/E_BULK_001 apply; the list tests were rewired to the batch call.
+- The palette's Create and n-shortcut commands navigate to the page that owns the dialog instead of opening a global dialog.
+- Changed tests: the activities table/filter/bulk suites (URL state and one bulk action), the activity dialogs (recurrence field and delete undo), the people/organizations lists (batch delete, AI box), the leads/calendar/palette/shortcuts mocks, and e2e 10 (clears the date filter before looking for a future booking).
+
+### Open issues
+- The activities URL filter covers owner (assignee), done, type, from and to, but not free-text search (the list query has none).
+- The n-sequences and the palette's Create commands navigate to the owning page rather than opening the dialog globally.
+- Four `role="alert"` hits remain in `src/features/projects` dialogs; they are in-dialog field validation, not the board alert.
+- The smoke round trip compares 0 deals because the smoke seed creates only an admin.
+- The Docker VM disk was raised by the owner to 35 GB free; no prune was run.
+
+### Notes for Part 10 (PWA)
+- Routes added or changed: `/contacts/duplicates` (new); `/activities/list` (URL filters, columns, bulk); `/activities/calendar` (drag); the palette and toaster live in the app shell.
+- Key mobile screens: the deal workspace (composer bar with Log call), the activities list and calendar, the duplicates page, and the deal board (stage drag and undo toast).
+- Offline-relevant reads: activities list/calendar, deals board, contacts lists and the duplicates scan; all are tRPC list reads with visibility applied server-side.
+- Upstream files changed are listed in `docs/dealflow/UPSTREAM.md` (Part 9): the app shell layout, the command palette, the shared compose bar, the deal header/BoardColumn, the list pages and the week/month calendar files.
 
 ### Checklist
 1. PASS - `git status --porcelain` was empty after the 4.3 commit.
