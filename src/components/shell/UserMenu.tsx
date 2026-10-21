@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InstallButton } from "@/features/pwa/InstallButton";
 import { AppearanceMenuSection } from "@/features/theme/AppearanceMenuSection";
 import { APPEARANCE_DEFAULT, type Appearance } from "@/features/theme/appearance";
 import { useAppearanceChoice } from "@/features/theme/useAppearanceChoice";
@@ -72,6 +73,7 @@ export function UserMenu({
         <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           My account
         </DropdownMenuLabel>
+        <InstallButton variant="menu" />
         <DropdownMenuItem asChild className="gap-2.5">
           <Link href="/settings/profile">
             <Settings aria-hidden="true" className="h-4 w-4 text-muted-foreground" />

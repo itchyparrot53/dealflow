@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 // react-day-picker base styles must load before globals.css so the token overrides
@@ -28,8 +29,23 @@ const inter = localFont({
 // Child routes set a bare title (e.g. "Pipeline"); the template appends the app
 // name so every tab reads "<where> · Dealflow". Routes with no title fall back
 // to `default`.
-export const metadata = {
+export const metadata: Metadata = {
   title: { default: STRINGS.app.name, template: `%s · ${STRINGS.app.name}` },
+  applicationName: "Dealflow",
+  appleWebApp: { capable: true, title: "Dealflow", statusBarStyle: "default" },
+};
+
+// themeColor lives on the viewport export in this Next version (metadata.themeColor is
+// deprecated). `viewportFit: cover` is what makes env(safe-area-inset-*) non-zero in an installed
+// app, which the mobile bottom navigation relies on.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): ReactNode {

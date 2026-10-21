@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-22 01:50
+Current: 1.2 · Last updated: 2026-10-22 02:05
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -12,7 +12,7 @@ Current: 1.1 · Last updated: 2026-10-22 01:50
 - [x] 0.2 Schema, dependencies, env and scripts
 - [x] 0.3 Pure core (test-first)
 - [x] 0.4 Phase 0 QA gate
-- [ ] 1.1 Manifest, icons, metadata and install
+- [x] 1.1 Manifest, icons, metadata and install
 - [ ] 1.2 Service worker, registration and update prompt
 - [ ] 1.3 Offline records and the offline page
 - [ ] 1.4 Phase 1 QA gate
@@ -51,6 +51,9 @@ Current: 1.1 · Last updated: 2026-10-22 01:50
 - 0.3: snapshot inputs list the fields that must not be stored (`note` on an activity, `notes` on a person) so the tests prove the body text is dropped; `toDealSnapshot` caps recent activities at 5 and all four builders take an injectable `now` for a deterministic `savedAt`.
 - 0.3: `trimToNewest` dedupes by id keeping the newest `savedAt` (ties keep the later copy) and sorts newest first, so a re-saved record replaces its old copy.
 - 0.3: `buildPushPayload` truncates the body to exactly 140 characters ending in "…" and only accepts links that start with `/` and not `//`; absolute, protocol-relative, `javascript:` and bare-relative links all become `/notifications`. The `PUSH` error domain (E_PUSH_001 to 004) is appended to the registry and its test allow-list.
+- 1.1: the manifest colours come from the design tokens (light background #ffffff, primary #0f172a), `themeColor` is exported from the root layout's `viewport` (this Next version deprecates `metadata.themeColor`), and `viewportFit: "cover"` is set so safe-area insets work in an installed app.
+- 1.1: the three icons are generated from `src/app/icon.png` with `sips`; the maskable one pads the 512 icon to 640 on the brand navy and scales back to 512 (20% total padding). No new dependency.
+- 1.1: `installPrompt.ts` captures the single `beforeinstallprompt` event in a module-level store read through `useSyncExternalStore`; the account menu only shows "Install app" when the prompt is actionable (an instruction there would just close the menu), while Settings > Profile always shows an entry (prompt button, iOS Share instructions, or a browser-menu hint) and nothing once installed.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

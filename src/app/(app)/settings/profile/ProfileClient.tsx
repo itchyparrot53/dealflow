@@ -11,6 +11,7 @@ import { STRINGS } from "@/constants/strings";
 import { AvatarUpload } from "@/features/identity/avatar/AvatarUpload";
 import { updateProfilePreferencesAction } from "@/features/identity/preferencesActions";
 import { updateUserProfileAction } from "@/features/identity/profileActions";
+import { InstallButton } from "@/features/pwa/InstallButton";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import {
   SettingsCard,
@@ -90,92 +91,103 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
   }
 
   return (
-    <SettingsCard>
-      <SettingsCardHeader
-        title="Account details"
-        description="Update your photo, display name, timezone, and interface density."
-      />
-      <SettingsCardBody className="space-y-5">
-        <AvatarUpload name={props.name} avatarUrl={props.avatarUrl} />
-        <div>
-          <label htmlFor={nameFieldId} className="mb-1 block text-sm font-medium">
-            {STRINGS.settings.name}
-          </label>
-          <Input
-            id={nameFieldId}
-            value={draftName}
-            onChange={(e) => setDraftName(e.target.value)}
-          />
-          {nameError !== null && (
-            <p role="alert" className="mt-1 text-xs text-destructive">
-              {`Could not save name (${nameError})`}
-            </p>
-          )}
-          <div className="mt-2 flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={nameSaving}
-              onClick={() => void saveName()}
-            >
-              {STRINGS.settings.saveName}
-            </Button>
-            {nameSaved && (
-              <span className="text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
+    <>
+      <SettingsCard>
+        <SettingsCardHeader
+          title="Account details"
+          description="Update your photo, display name, timezone, and interface density."
+        />
+        <SettingsCardBody className="space-y-5">
+          <AvatarUpload name={props.name} avatarUrl={props.avatarUrl} />
+          <div>
+            <label htmlFor={nameFieldId} className="mb-1 block text-sm font-medium">
+              {STRINGS.settings.name}
+            </label>
+            <Input
+              id={nameFieldId}
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+            />
+            {nameError !== null && (
+              <p role="alert" className="mt-1 text-xs text-destructive">
+                {`Could not save name (${nameError})`}
+              </p>
             )}
+            <div className="mt-2 flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={nameSaving}
+                onClick={() => void saveName()}
+              >
+                {STRINGS.settings.saveName}
+              </Button>
+              {nameSaved && (
+                <span className="text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
+              )}
+            </div>
           </div>
-        </div>
-        <div>
-          <span className="mb-1 block text-sm font-medium">{STRINGS.settings.email}</span>
-          <p className="text-sm text-muted-foreground">{props.email || "-"}</p>
-        </div>
+          <div>
+            <span className="mb-1 block text-sm font-medium">{STRINGS.settings.email}</span>
+            <p className="text-sm text-muted-foreground">{props.email || "-"}</p>
+          </div>
 
-        <div className="block">
-          <span className="mb-1 block text-sm font-medium">{STRINGS.settings.timezone}</span>
-          <Select
-            ariaLabel={STRINGS.settings.timezone}
-            value={timezone}
-            onChange={(value) => setTimezone(value === TIMEZONE_NONE_VALUE ? "" : value)}
-            placeholder={STRINGS.settings.timezoneNone}
-            options={TIMEZONE_OPTIONS}
-          />
-        </div>
+          <div className="block">
+            <span className="mb-1 block text-sm font-medium">{STRINGS.settings.timezone}</span>
+            <Select
+              ariaLabel={STRINGS.settings.timezone}
+              value={timezone}
+              onChange={(value) => setTimezone(value === TIMEZONE_NONE_VALUE ? "" : value)}
+              placeholder={STRINGS.settings.timezoneNone}
+              options={TIMEZONE_OPTIONS}
+            />
+          </div>
 
-        <fieldset>
-          <legend className="mb-1 block text-sm font-medium">{STRINGS.settings.density}</legend>
-          <RadioGroup
-            value={density}
-            onValueChange={(v) => setDensity(v as "comfortable" | "compact")}
-            aria-label={STRINGS.settings.density}
-            className="flex gap-4 text-sm"
+          <fieldset>
+            <legend className="mb-1 block text-sm font-medium">{STRINGS.settings.density}</legend>
+            <RadioGroup
+              value={density}
+              onValueChange={(v) => setDensity(v as "comfortable" | "compact")}
+              aria-label={STRINGS.settings.density}
+              className="flex gap-4 text-sm"
+            >
+              {(["comfortable", "compact"] as const).map((d) => (
+                <div key={d} className="flex items-center gap-1.5">
+                  <RadioGroupItem value={d} id={`density-${d}`} />
+                  <label htmlFor={`density-${d}`} className="cursor-pointer">
+                    {d === "comfortable" ? STRINGS.settings.comfortable : STRINGS.settings.compact}
+                  </label>
+                </div>
+              ))}
+            </RadioGroup>
+          </fieldset>
+        </SettingsCardBody>
+        <SettingsCardFooter>
+          {saved ? (
+            <span className="mr-auto text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
+          ) : null}
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="px-3"
+            disabled={pending}
+            onClick={() => void save()}
           >
-            {(["comfortable", "compact"] as const).map((d) => (
-              <div key={d} className="flex items-center gap-1.5">
-                <RadioGroupItem value={d} id={`density-${d}`} />
-                <label htmlFor={`density-${d}`} className="cursor-pointer">
-                  {d === "comfortable" ? STRINGS.settings.comfortable : STRINGS.settings.compact}
-                </label>
-              </div>
-            ))}
-          </RadioGroup>
-        </fieldset>
-      </SettingsCardBody>
-      <SettingsCardFooter>
-        {saved ? (
-          <span className="mr-auto text-sm text-muted-foreground">{STRINGS.settings.saved}</span>
-        ) : null}
-        <Button
-          type="button"
-          variant="default"
-          size="sm"
-          className="px-3"
-          disabled={pending}
-          onClick={() => void save()}
-        >
-          {STRINGS.settings.save}
-        </Button>
-      </SettingsCardFooter>
-    </SettingsCard>
+            {STRINGS.settings.save}
+          </Button>
+        </SettingsCardFooter>
+      </SettingsCard>
+      <SettingsCard>
+        <SettingsCardHeader
+          title="Install app"
+          description="Use Dealflow offline and open it from your home screen or dock."
+        />
+        <SettingsCardBody>
+          <InstallButton />
+        </SettingsCardBody>
+      </SettingsCard>
+    </>
   );
 }
