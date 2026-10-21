@@ -51,16 +51,16 @@ export default async function PublicFormPage({
   const token = issueFormToken(publicId, issuedAt());
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 bg-white px-6 py-12 text-slate-900">
+    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 bg-background px-6 py-12 text-foreground">
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">{form.title}</h1>
+        <h1 className="text-display font-semibold">{form.title}</h1>
         {form.description !== null && form.description.trim() !== "" ? (
-          <p className="text-sm text-slate-600">{form.description}</p>
+          <p className="text-sm text-muted-foreground">{form.description}</p>
         ) : null}
       </header>
 
       {done === "1" ? (
-        <p className="rounded-md bg-slate-100 px-4 py-3 text-sm" data-testid="public-form-success">
+        <p className="rounded-md bg-muted px-4 py-3 text-sm" data-testid="public-form-success">
           {form.successMessage}
         </p>
       ) : (
@@ -90,7 +90,7 @@ export default async function PublicFormPage({
                   placeholder={field.placeholder ?? undefined}
                   rows={4}
                   maxLength={2000}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 />
               ) : (
                 <input
@@ -100,7 +100,7 @@ export default async function PublicFormPage({
                   required={field.required}
                   placeholder={field.placeholder ?? undefined}
                   maxLength={field.key === "email" ? 320 : 2000}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 />
               )}
             </label>
@@ -116,7 +116,7 @@ export default async function PublicFormPage({
           <button
             type="submit"
             data-testid="public-form-submit"
-            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
             Submit
           </button>

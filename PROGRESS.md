@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p6-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-21 04:23
+Current: 2.1 · Last updated: 2026-10-21 04:30
 
 ## Phase base commits
 - Phase 0: 935685bd476eb7d5c75d51b3439a8ffe7711aa4c
 - Phase 1: ceae046
+- Phase 2: 8691903
 
 ## Tasks
 - [x] 0.1 Start Part 6: progress files, kit and baseline
@@ -14,7 +15,7 @@ Current: 1.3 · Last updated: 2026-10-21 04:23
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Forms service and the capability
 - [x] 1.2 Public submit and events (test-first)
-- [ ] 1.3 Phase 1 QA gate
+- [x] 1.3 Phase 1 QA gate
 - [ ] 2.1 Booking pages service and busy time
 - [ ] 2.2 Slots, booking and cancel (test-first)
 - [ ] 2.3 Phase 2 QA gate
@@ -33,6 +34,7 @@ Current: 1.3 · Last updated: 2026-10-21 04:23
 ## QA log
 - Baseline: install ok · typecheck ok · lint ok (14 warnings) · build ok (a first attempt hit the known `ENOTEMPTY` race on `.next`; cleared and retried) · unit 5124/5124
 - Phase 0 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5191/5191 · pure core (zonedTime/slots/fields/spamToken/ics) 67/67
+- Phase 1 gate: commands green · typecheck ok · lint ok (14 warnings) · build ok · unit 5197/5197 · forms/events/automations/leads integration SKIPPED (Docker daemon unresponsive; Testcontainers global setup hung for 15+ minutes and was killed, per section 10)
 
 ## Decisions
 - 0.1: section 4 starting point matches exactly: PROGRESS.md said `dealflow-wd-p5-v1` with `STATUS: COMPLETE`, and HEAD was `935685bd476eb7d5c75d51b3439a8ffe7711aa4c`, so this run starts fresh at Task 0.1 as section 0 rule 1 expects.
@@ -82,7 +84,7 @@ Current: 1.3 · Last updated: 2026-10-21 04:23
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 
 ## Open issues
-- None
+- Docker Desktop became unresponsive during Task 1.2: `docker ps` and `docker images` time out (30 s), the owner's containers stopped, and `pnpm exec vitest run --project integration src/features/forms` hung in Testcontainers global setup for over fifteen minutes before being killed. The Phase 1 named integration command is therefore SKIPPED, not green; the test files are committed and must be re-run once Docker recovers.
 
 ## Environment
 - `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH npm_config_store_dir=/tmp/dealflow-pnpm-store` (pnpm 9.15.9 lives in `/tmp/dealflow-tools`; the global pnpm here is 8.9.2).
