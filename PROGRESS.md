@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 2.6 · Last updated: 2026-10-22 10:45
+Current: 3.1 · Last updated: 2026-10-22 10:55
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
 - Phase 1: 993185503417f6d74fcd36d46c446dd2e006f988
 - Phase 2: fc5eab66f691ad5ca160f8ea710cacb60704997a
+- Phase 3: 255b39848331d71337ce163461315f1689311e2e
 
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
@@ -24,7 +25,7 @@ Current: 2.6 · Last updated: 2026-10-22 10:45
 - [x] 2.3 Documents and the public document page
 - [x] 2.4 Insights and dashboards
 - [x] 2.5 Projects
-- [ ] 2.6 Phase 2 QA gate
+- [x] 2.6 Phase 2 QA gate
 - [ ] 3.1 Settings
 - [ ] 3.2 Auth and public pages
 - [ ] 3.3 Empty, loading and error states
@@ -37,6 +38,7 @@ Current: 2.6 · Last updated: 2026-10-22 10:45
 - [ ] 4.5 Final report and completion
 
 ## QA log
+- Phase 2 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design: 151 violation(s) in 92 file(s); 9 opt-out(s) · design 12/12
 - Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 203 violations in 130 files, 9 opt-outs · design 8/8 · existing e2e 4/4
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5364/5364 in 840 files · check-design 285 violations in 182 files, 0 opt-outs · design login 1/1
@@ -93,6 +95,8 @@ Current: 2.6 · Last updated: 2026-10-22 10:45
 - 2.4: `DESIGN_SCREENS=insights,dashboard,report` passes 3/3 and the insights/stats suites 250/250.
 - 2.5: projects follow 6.8.10: the list uses `tableStyles`; board phases are 248 px canvas-subtle columns without the chevron; task cards follow the deal card (white, 1 px border, radius 4, 14/600 title, 20 px avatar, 13 px due date, done strikethrough) with the drag overlay on `shadow-drag`; the card's dnd attributes are not spread (they add `role=button` around the checkbox and title button, axe nested-interactive), pointer dragging unchanged; both pages publish their top-bar titles.
 - 2.5: `DESIGN_SCREENS=projects,project` passes 2/2 and the project suites 17/17.
+- 2.6 fixes: no failures at this gate. The full unit suite (5346/5346) and all twelve Phase 2 design screens passed on the first run, and `check-design` is down to the number in the QA line; the remaining hits are the settings/auth/public/state work of Phase 3.
+
 
 
 - 2.2 CONTRACT CHANGE: the calendar's overdue chip keeps the red left bar but uses the primary ink on a 10% destructive fill, because #D73C38 on that pale red measures 4.4:1.
