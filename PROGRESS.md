@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-22 08:05
+Current: 4.4 · Last updated: 2026-10-22 09:30
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -39,6 +39,7 @@ Current: 4.3 · Last updated: 2026-10-22 08:05
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5350/5350 in 833 files · no named integration files in this gate (DoD 3 to 5)
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5351/5351 in 833 files · push/notifications integration 67/67 (12 files)
 - Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5351/5351 in 833 files · activities/export/push integration 147/147 (36 files)
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/4 majors/7 minors · fixed the blocker, all 4 majors and minors 7 to 12
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p9-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P9.md` and starts Part 10 at Task 0.1.
@@ -93,6 +94,9 @@ Current: 4.3 · Last updated: 2026-10-22 08:05
 - 4.1: the spec stubs `ServiceWorkerRegistration.pushManager` so no real push service is contacted, and triggers a default-on push by submitting a public form from a visitor context instead of a mention from a second signed-in session; both still exercise the real subscribe action, preference gate and capture writer. Full suite: 24/24 (specs 00 to 14), 8 `p10-*` screenshots.
 - 4.2: the full integration suite is green on the final tree: 2097/2097 tests in 412 files (baseline 2077/410). `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke` printed `SMOKE PASS` and `backup round trip ok (3 deals)`, and left no `dealflow-smoke` container or volume.
 - 4.2: the first smoke run failed at the new seed with `column "probability" of relation "stages" does not exist` (Part 8 moved stage probability to `stage_probabilities`); the seed now inserts only `pipeline_id, name, order`, and the rerun passed with the three deals compared.
+- 4.3: independent review round 1 (fresh-context subagent, `.dsh/qa.md`) returned FAIL: 1 blocker (two files Biome would reformat, so `pnpm lint` exited 1), 4 majors (contacts rail left ~110px and no cards; no mobile agenda; composer not sticky; primary controls under 40px) and 7 minors. The blocker, all 4 majors and minors 7 to 12 are fixed; minor 6 (inbox reply composer as a sheet) is an Open issue.
+- 4.3: contacts below md now hide the contacts rail and render card rows with name, organization or people count, and owner (the owner name is a batched read in `listPeople`/`listOrgs`, optional on the row types so the desktop table is unchanged). The calendar gained a `day` view and shows the agenda below md; the composer is sticky above the bottom nav; a mobile media rule raises every `main` button and test-id link to 40px, and the e2e now measures every control in `main`, not only ones with a test id.
+- 4.3: minor fixes: the search input is capped at 100 characters in the field, capture files include the subscription id, the enqueue-vs-inline push path is logged, the settings rail is hidden below md, and the install and More screenshots wait or scroll before capture. `UPSTREAM.md` lists the extra files the review named.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
@@ -100,7 +104,7 @@ Current: 4.3 · Last updated: 2026-10-22 08:05
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 
 ## Open issues
-- None
+- The inbox thread hides its context sidebar below md but the reply composer stays inline; the plan's "reply composer as a sheet" on mobile is not implemented (independent review round 1, minor 6).
 
 ## Environment
 - `export PATH=/tmp/dealflow-tools/node_modules/.bin:$PATH npm_config_store_dir=/tmp/dealflow-pnpm-store` (pnpm 9.15.9 lives in `/tmp/dealflow-tools`; the global pnpm here is 8.9.2). Recreate it with `npm install --prefix /tmp/dealflow-tools --cache /tmp/npm-cache pnpm@9.15.9` if `/tmp` was cleared.

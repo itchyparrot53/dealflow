@@ -368,3 +368,14 @@
     text-decoration: none !important;
   }
 }
+
+
+/* Part 10: primary controls are at least 40px tall on a phone. The desktop density stays as it
+   was; this only raises the floor where a thumb has to hit the control. */
+@media (max-width: 767px) {
+  main button,
+  main a[data-testid],
+  main a[role="button"] {
+    min-height: 2.5rem;
+  }
+}

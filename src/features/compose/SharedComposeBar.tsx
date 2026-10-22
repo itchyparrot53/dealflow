@@ -200,7 +200,11 @@ export function SharedComposeBar({
   const showPrompt = !resuming && !expanded && prompt !== undefined;
 
   return (
-    <section ref={composeRef} aria-label="compose" className="mb-4 rounded border bg-card">
+    <section
+      ref={composeRef}
+      aria-label="compose"
+      className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 mb-4 rounded border bg-card md:static md:bottom-auto"
+    >
       <Tabs value={activeTab} onValueChange={(v) => openTab(v as ComposeTab)}>
         {/* The strip's divider is an inset shadow, not a border: a border sits below the content
             box, so the active tab's underline needed a -mb-px to cover it and that 1px of vertical

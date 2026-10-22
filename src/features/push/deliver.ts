@@ -74,11 +74,14 @@ function hrefFor(input: DeliverPushInput): string {
 async function writeCapture(
   dir: string,
   notificationId: string,
+  subscriptionId: string,
   endpoint: string,
   payload: string,
 ) {
   await mkdir(dir, { recursive: true });
-  const file = join(dir, `${String(Date.now())}-${notificationId}.json`);
+  // One file per subscription: the subscription id keeps two devices from overwriting each other
+  // when they are delivered in the same millisecond.
+  const file = join(dir, `${String(Date.now())}-${notificationId}-${subscriptionId}.json`);
   await writeFile(file, JSON.stringify({ endpoint, payload }, null, 2), "utf8");
 }
 
@@ -117,6 +120,7 @@ async function deliverToSubscription(
       await writeCapture(
         options.captureDir ?? pushFakeDir(),
         notificationId,
+        subscription.id,
         subscription.endpoint,
         payload,
       );

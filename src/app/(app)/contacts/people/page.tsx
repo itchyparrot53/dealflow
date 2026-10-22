@@ -33,7 +33,7 @@ export default async function PeopleListPage(): Promise<React.ReactNode> {
         ]}
         title={STRINGS.contacts.peopleHeading}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {can(ctx.actor, "data.export") && (
               <ExportButton
                 entity="persons"
@@ -74,6 +74,7 @@ async function PeopleSection({ actorId }: { actorId: string }): Promise<React.Re
       rows={rows.map((r) => ({
         id: r.id,
         name: r.name,
+        ownerName: r.ownerName ?? null,
         primaryEmail: r.primaryEmail,
         phone: r.phones.find((p) => p.primary === true)?.value ?? r.phones[0]?.value ?? null,
         orgId: r.orgId,

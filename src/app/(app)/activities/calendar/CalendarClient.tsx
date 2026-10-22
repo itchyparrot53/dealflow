@@ -3,10 +3,13 @@ import type { CalendarActivity } from "@/features/activities/calendar";
 import {
   type CalendarViewName,
   calendarHref,
+  dayTitle,
   monthTitle,
   stepAnchorIso,
   weekTitle,
 } from "@/features/activities/calendarView";
+import { useIsMobile } from "@/features/navigation/mobile/useIsMobile";
+import { DayAgenda } from "./DayAgenda";
 import { MonthView } from "./MonthView";
 import { WeekAgendaGrid } from "./WeekAgendaGrid";
 
@@ -33,11 +36,19 @@ export function CalendarClient({
   activities,
   empty,
 }: CalendarClientProps): React.ReactNode {
-  const prevIso = stepAnchorIso(view, anchorIso, -1);
-  const nextIso = stepAnchorIso(view, anchorIso, 1);
+  // Below md the week view is shown as a day agenda; an explicit ?view=month stays a month.
+  const isMobile = useIsMobile();
+  const agenda = view === "day" || (isMobile && view === "week");
+  const stepView = agenda ? "day" : view;
+  const prevIso = stepAnchorIso(stepView, anchorIso, -1);
+  const nextIso = stepAnchorIso(stepView, anchorIso, 1);
   const todayIso = new Date().toISOString().slice(0, 10);
   const label =
-    view === "month" ? monthTitle(anchorIso) : `Week of ${weekTitle(dayIsos[0] ?? anchorIso)}`;
+    view === "month"
+      ? monthTitle(anchorIso)
+      : agenda
+        ? dayTitle(anchorIso)
+        : `Week of ${weekTitle(dayIsos[0] ?? anchorIso)}`;
 
   return (
     // Not <main>: the app shell already owns that landmark, and a second one inside it hides the
@@ -45,6 +56,13 @@ export function CalendarClient({
     <section aria-label="Calendar" className="p-4">
       <header className="flex items-center gap-3 mb-4">
         <div className="flex gap-1 rounded-md border border-border p-0.5">
+          <Link
+            aria-current={view === "day" ? "page" : undefined}
+            href={calendarHref("day", anchorIso)}
+            className={tab(view === "day")}
+          >
+            Day
+          </Link>
           <Link
             aria-current={view === "week" ? "page" : undefined}
             href={calendarHref("week", anchorIso)}
@@ -63,7 +81,7 @@ export function CalendarClient({
         <div className="flex items-center gap-1">
           <Link
             aria-label="Previous"
-            href={calendarHref(view, prevIso)}
+            href={calendarHref(stepView, prevIso)}
             className="px-2 py-1 text-sm rounded border border-border hover:bg-accent/60"
           >
             {"<"}
@@ -76,7 +94,7 @@ export function CalendarClient({
           </Link>
           <Link
             aria-label="Next"
-            href={calendarHref(view, nextIso)}
+            href={calendarHref(stepView, nextIso)}
             className="px-2 py-1 text-sm rounded border border-border hover:bg-accent/60"
           >
             {">"}
@@ -96,6 +114,8 @@ export function CalendarClient({
           activities={activities}
           todayIso={todayIso}
         />
+      ) : agenda ? (
+        <DayAgenda dayIso={anchorIso} activities={activities} />
       ) : (
         <WeekAgendaGrid dayIsos={dayIsos} activities={activities} />
       )}

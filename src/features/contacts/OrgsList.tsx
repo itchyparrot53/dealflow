@@ -20,11 +20,13 @@ import {
   mergeRefLabels,
 } from "@/features/custom-fields/refLabelsContext";
 import { pushDeleteUndo } from "@/features/feedback/undo";
+import { useIsMobile } from "@/features/navigation/mobile/useIsMobile";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { BulkMergeDialog } from "./BulkMergeDialog";
 import { bulkContactAction } from "./bulk/actions";
+import { OrgCards } from "./ContactCards";
 import type { ContactFilterDefinition } from "./contactFilterConfig";
 import { OrgsListToolbar } from "./OrgsListToolbar";
 import { type OrgsListRow, OrgsTable } from "./OrgsTable";
@@ -61,6 +63,7 @@ export function OrgsList({
   baseCurrency = DEFAULT_BASE_CURRENCY,
   refLabels: initialRefLabels = EMPTY_REF_LABELS,
 }: OrgsListProps): React.ReactNode {
+  const isMobile = useIsMobile();
   const catalog = useMemo(
     () => [...ORG_COLUMNS, ...customFieldColumns(customFieldDefs)],
     [customFieldDefs],
@@ -313,30 +316,34 @@ export function OrgsList({
           onClose={() => setMerging(false)}
         />
       )}
-      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-        <CustomFieldRefLabelsProvider value={refLabels}>
-          <OrgsTable
-            rows={rows}
-            sort={effective}
-            onSort={cycle}
-            isSelected={selection.isSelected}
-            allSelected={selection.allSelected(visibleIds)}
-            onToggleRow={selection.toggle}
-            onToggleAll={() => selection.toggleAll(visibleIds)}
-            visibleColumns={columns.visibleColumns}
-            currency={baseCurrency}
-            columnsMenu={
-              <ColumnsMenu
-                catalog={catalog}
-                order={columns.order}
-                visibleKeys={columns.visibleKeys}
-                onToggle={columns.toggle}
-                onReorder={columns.reorder}
-              />
-            }
-          />
-        </CustomFieldRefLabelsProvider>
-      </div>
+      {isMobile ? (
+        <OrgCards rows={rows} />
+      ) : (
+        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+          <CustomFieldRefLabelsProvider value={refLabels}>
+            <OrgsTable
+              rows={rows}
+              sort={effective}
+              onSort={cycle}
+              isSelected={selection.isSelected}
+              allSelected={selection.allSelected(visibleIds)}
+              onToggleRow={selection.toggle}
+              onToggleAll={() => selection.toggleAll(visibleIds)}
+              visibleColumns={columns.visibleColumns}
+              currency={baseCurrency}
+              columnsMenu={
+                <ColumnsMenu
+                  catalog={catalog}
+                  order={columns.order}
+                  visibleKeys={columns.visibleKeys}
+                  onToggle={columns.toggle}
+                  onReorder={columns.reorder}
+                />
+              }
+            />
+          </CustomFieldRefLabelsProvider>
+        </div>
+      )}
       {error !== null && (
         <p role="alert" className="self-center text-sm text-red-600">
           {error}

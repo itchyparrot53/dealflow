@@ -33,7 +33,7 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
         ]}
         title={STRINGS.contacts.orgsHeading}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {can(ctx.actor, "data.export") && (
               <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />
             )}
@@ -65,6 +65,7 @@ async function OrgsSection({ actorId }: { actorId: string }): Promise<React.Reac
       rows={rows.map((r) => ({
         id: r.id,
         name: r.name,
+        ownerName: r.ownerName ?? null,
         address: r.address,
         customFields: r.customFields,
         peopleCount: r.peopleCount,

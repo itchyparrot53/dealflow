@@ -1,7 +1,7 @@
-import { and, asc, desc, isNull, type SQL } from "drizzle-orm";
+import { and, asc, desc, inArray, isNull, type SQL } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { Person } from "@/db/schema";
-import { persons } from "@/db/schema";
+import { persons, users } from "@/db/schema";
 import { isCustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldOrderBy, resolveCustomFieldSort } from "@/features/custom-fields/sortSql";
 import { canSee } from "@/features/permissions/canSee";
@@ -16,7 +16,11 @@ import { closedDealCountsForPeople } from "./peopleDealCounts";
 import { type ContactActor, toVisibleRecord } from "./personsRepo";
 import type { PersonBuiltinSortField, PersonSortField } from "./schemas";
 
-type PersonListItem = Person & { closedDeals: number; customFields: Record<string, unknown> };
+type PersonListItem = Person & {
+  closedDeals: number;
+  customFields: Record<string, unknown>;
+  ownerName: string | null;
+};
 
 export interface ListPeopleResult {
   rows: PersonListItem[];
@@ -54,6 +58,23 @@ async function personOrderBy(
 // with listPeopleForOrg, so we fetch non-deleted rows ordered by name, filter to the visible set,
 // and paginate that set. total is the visible count (what the UI pages over), NOT the raw row
 // count, so an actor never learns how many hidden people exist.
+// One batched read for the page's owners, used by the mobile card (the desktop table has no owner
+// column). A missing user (deleted) simply leaves the card anonymous.
+async function ownerNamesForPeople(
+  db: Db,
+  ownerIds: string[],
+  signal: AbortSignal,
+): Promise<Map<string, string>> {
+  const ids = [...new Set(ownerIds)];
+  if (ids.length === 0) return new Map();
+  const rows = await db
+    .select({ id: users.id, name: users.name })
+    .from(users)
+    .where(inArray(users.id, ids));
+  signal.throwIfAborted();
+  return new Map(rows.map((row) => [row.id, row.name]));
+}
+
 export async function listPeople(
   db: Db,
   actor: ContactActor,
@@ -96,12 +117,18 @@ export async function listPeople(
     page.map((p) => p.id),
     signal,
   );
+  const ownerNames = await ownerNamesForPeople(
+    db,
+    page.map((p) => p.ownerId),
+    signal,
+  );
   return {
     total: visible.length,
     rows: page.map((p) => ({
       ...p,
       closedDeals: closedCounts.get(p.id) ?? 0,
       customFields: p.customFields as Record<string, unknown>,
+      ownerName: ownerNames.get(p.ownerId) ?? null,
     })),
   };
 }

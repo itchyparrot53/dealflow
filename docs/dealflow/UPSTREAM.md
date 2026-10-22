@@ -411,5 +411,14 @@ and UI), `src/features/push/**`, `src/features/navigation/mobile/**` (`BottomNav
   `src/features/search/ui/CommandPalette.tsx`.
 - `src/app/(app)/settings/profile/ProfileClient.tsx` (install entry), the deal workspace, person
   and organization detail views (offline snapshots), `scripts/dealflow/smoke.mjs` (three deals).
+- Contacts mobile surface: `src/app/(app)/contacts/layout.tsx`, `PeopleList.tsx`, `OrgsList.tsx`,
+  `PeopleTable.tsx`, `OrgsTable.tsx`, the new `ContactCards.tsx`, `src/features/contacts/listPeople.ts`
+  and `orgsRepo.ts` (owner names for the card), and the people/orgs `page.tsx` mappings.
+- Calendar agenda: `src/app/(app)/activities/calendar/CalendarClient.tsx`, the new `DayAgenda.tsx`,
+  and `src/features/activities/calendarView.ts` (`day` view). Settings shell: `src/app/(app)/settings/layout.tsx`.
+- Compose and export surfaces: `src/features/compose/SharedComposeBar.tsx`,
+  `src/features/export/ui/ExportButton.tsx`, `src/features/documents/ui/DealDocumentsSection.tsx`,
+  `src/features/projects/ui/DealProjectsSection.tsx` and `ActivitiesFilters.tsx` (mobile sizing),
+  plus `src/app/(app)/settings/profile/ProfileClient.tsx` (install card).
 - Tests updated for the changed contracts: the notification preferences form and settings page,
   the activities filter literals, and the new push/offline/search cases.

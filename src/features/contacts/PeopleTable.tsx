@@ -14,6 +14,9 @@ import type { PersonSortField } from "./schemas";
 export interface PeopleListRow {
   id: string;
   name: string;
+  // Owner display name for the mobile card; the desktop table has no owner column, so it stays
+  // optional and older fixtures remain valid.
+  ownerName?: string | null;
   primaryEmail: string | null;
   phone: string | null;
   orgId: string | null;
@@ -27,6 +30,7 @@ export interface PeopleListRow {
 export interface RawPersonRow {
   id: string;
   name: string;
+  ownerName?: string | null;
   primaryEmail: string | null;
   phones: { value: string; primary?: boolean }[];
   orgId: string | null;
@@ -39,6 +43,7 @@ export function toRow(raw: RawPersonRow, orgNames: Record<string, string>): Peop
   return {
     id: raw.id,
     name: raw.name,
+    ownerName: raw.ownerName ?? null,
     primaryEmail: raw.primaryEmail,
     phone,
     orgId: raw.orgId,

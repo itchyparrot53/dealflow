@@ -62,7 +62,9 @@ async function precache(): Promise<void> {
   // offline page.
   await Promise.allSettled(PRECACHE.map((url) => cache.add(url)));
   try {
-    const html = await (await fetch(OFFLINE_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })).text();
+    const html = await (
+      await fetch(OFFLINE_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    ).text();
     const assets = [...new Set([...html.matchAll(STATIC_ASSET)].map((match) => match[0]))];
     await Promise.allSettled(assets.map((url) => cache.add(url)));
   } catch {

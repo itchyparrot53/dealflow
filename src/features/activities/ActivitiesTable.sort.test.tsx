@@ -61,7 +61,14 @@ function localYmd(d: Date): string {
   ).padStart(2, "0")}`;
 }
 const TODAY = localYmd(new Date());
-const DEFAULT_FILTER = { ownerId: "me", done: "open", from: TODAY, to: TODAY, typeKey: null, search: null };
+const DEFAULT_FILTER = {
+  ownerId: "me",
+  done: "open",
+  from: TODAY,
+  to: TODAY,
+  typeKey: null,
+  search: null,
+};
 
 function row(overrides: Record<string, unknown>) {
   return {

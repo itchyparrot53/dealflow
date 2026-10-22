@@ -18,7 +18,10 @@ export default async function SettingsLayout({
   const canImport = actor !== null && can(actor, "data.import");
   return (
     <div className="flex gap-6">
-      <SettingsNav isAdmin={isAdmin} canManageCompany={canManageCompany} canImport={canImport} />
+      {/* The grouped rail is 14rem wide; on a phone the content needs that width. */}
+      <div className="hidden md:block">
+        <SettingsNav isAdmin={isAdmin} canManageCompany={canManageCompany} canImport={canImport} />
+      </div>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

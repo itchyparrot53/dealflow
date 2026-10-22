@@ -1,4 +1,4 @@
-import { and, eq, getTableColumns, isNull } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, isNull } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import type { Organization } from "@/db/schema";
@@ -234,6 +234,7 @@ export async function getOrg(
 // A listOrgs row: the organization record plus visibility-gated counts (Task 19).
 interface OrgListRow extends Organization {
   customFields: Record<string, unknown>;
+  ownerName: string | null;
   peopleCount: number;
   // Pipedrive splits the org list's deal count into Closed (won+lost) and Open columns.
   closedDeals: number;
@@ -296,6 +297,18 @@ export async function listOrgs(
     signal,
   );
 
+  // Owner names for the mobile card (the desktop table has no owner column).
+  const ownerIds = [...new Set(page.map((row) => row.ownerId))];
+  const ownerRows =
+    ownerIds.length === 0
+      ? []
+      : await db
+          .select({ id: users.id, name: users.name })
+          .from(users)
+          .where(inArray(users.id, ownerIds));
+  signal.throwIfAborted();
+  const ownerNames = new Map(ownerRows.map((row) => [row.id, row.name]));
+
   return {
     total: visible.length,
     rows: page.map((row) => ({
@@ -304,6 +317,7 @@ export async function listOrgs(
       peopleCount: peopleCounts.get(row.id) ?? 0,
       closedDeals: closedDealCounts.get(row.id) ?? 0,
       openDeals: openDealCounts.get(row.id) ?? 0,
+      ownerName: ownerNames.get(row.ownerId) ?? null,
     })),
   };
 }

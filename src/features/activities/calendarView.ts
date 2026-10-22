@@ -4,7 +4,7 @@
 import { addDaysUtc, addMonthsUtc, endOfDayUtc, monthGridDays, monthGridRange } from "./monthGrid";
 import { weekDays } from "./weekGrid";
 
-export type CalendarViewName = "week" | "month";
+export type CalendarViewName = "week" | "month" | "day";
 
 const MONTH_NAMES = [
   "January",
@@ -39,7 +39,8 @@ export function parseCalendarParams(
   raw: { view?: string; d?: string },
   today: Date = new Date(),
 ): { view: CalendarViewName; anchorIso: string } {
-  const view: CalendarViewName = raw.view === "month" ? "month" : "week";
+  const view: CalendarViewName =
+    raw.view === "month" ? "month" : raw.view === "day" ? "day" : "week";
   const anchorIso =
     raw.d !== undefined && isValidIsoDate(raw.d) ? raw.d : today.toISOString().slice(0, 10);
   return { view, anchorIso };
@@ -53,6 +54,17 @@ export function selectWindow(
   if (view === "month") {
     return { days: monthGridDays(anchor), range: monthGridRange(anchor) };
   }
+  if (view === "day") {
+    // The agenda list is local-day based like the week grid, so the fetched range keeps the same
+    // one-day slack on each side.
+    return {
+      days: [anchor],
+      range: {
+        from: addDaysUtc(anchor, -1),
+        to: endOfDayUtc(addDaysUtc(anchor, 1)),
+      },
+    };
+  }
   const days = weekDays(anchor);
   const first = days[0] ?? anchor;
   const last = addDaysUtc(first, 6);
@@ -64,7 +76,12 @@ export function selectWindow(
 
 export function stepAnchorIso(view: CalendarViewName, anchorIso: string, dir: 1 | -1): string {
   const anchor = anchorDate(anchorIso);
-  const next = view === "month" ? addMonthsUtc(anchor, dir) : addDaysUtc(anchor, 7 * dir);
+  const next =
+    view === "month"
+      ? addMonthsUtc(anchor, dir)
+      : view === "day"
+        ? addDaysUtc(anchor, dir)
+        : addDaysUtc(anchor, 7 * dir);
   return next.toISOString().slice(0, 10);
 }
 
@@ -76,6 +93,13 @@ export function monthTitle(anchorIso: string): string {
 // Week header title: abbreviated month, day, and year (e.g. "Jun 15, 2026") so paging across
 // a month or year boundary stays oriented (the old label dropped the month and year).
 export function weekTitle(dayIso: string): string {
+  const d = anchorDate(dayIso);
+  const month = (MONTH_NAMES[d.getUTCMonth()] ?? "").slice(0, 3);
+  return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
+// Day title for the agenda view (e.g. "Oct 22, 2026").
+export function dayTitle(dayIso: string): string {
   const d = anchorDate(dayIso);
   const month = (MONTH_NAMES[d.getUTCMonth()] ?? "").slice(0, 3);
   return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;

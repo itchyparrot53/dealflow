@@ -11,6 +11,8 @@ import type { OrgSortField } from "./schemas";
 export interface OrgsListRow {
   id: string;
   name: string;
+  // Owner display name for the mobile card; optional so existing fixtures stay valid.
+  ownerName?: string | null;
   address: Record<string, unknown> | null;
   customFields: Record<string, unknown>;
   peopleCount: number;

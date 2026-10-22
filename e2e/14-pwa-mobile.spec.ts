@@ -107,11 +107,13 @@ async function assertNoHorizontalScroll(page: Page): Promise<void> {
 
 async function assertTapTargets(page: Page): Promise<void> {
   const tooSmall = await page.evaluate(() =>
-    [...document.querySelectorAll("main button[data-testid], main a[data-testid]")]
+    [...document.querySelectorAll('main button, main a[data-testid], main a[role="button"]')]
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return {
-          id: element.getAttribute("data-testid") ?? "",
+          id:
+            element.getAttribute("data-testid") ??
+            `${element.tagName.toLowerCase()}:${(element.textContent ?? "").trim().slice(0, 24)}`,
           height: Math.round(rect.height),
           visible: rect.width > 0 && rect.height > 0,
         };
@@ -145,7 +147,7 @@ async function mobileScreenshots(context: BrowserContext): Promise<{ deal: strin
   await shot(page, "p10-mobile-activities");
 
   await page.goto("/contacts/people");
-  await page.waitForTimeout(500);
+  await expect(page.getByTestId("contact-card").first()).toBeVisible({ timeout: 20_000 });
   await assertNoHorizontalScroll(page);
   await assertTapTargets(page);
   await shot(page, "p10-mobile-contacts");
@@ -178,13 +180,23 @@ async function mobileScreenshots(context: BrowserContext): Promise<{ deal: strin
   await page.goto(boardUrl);
   await page.locator('[data-testid="bottom-nav-item"][data-href="more"]').click();
   await expect(page.getByTestId("more-sheet")).toBeVisible();
+  // The sheet slides in from the right; wait for it to settle so the screenshot is not a slice.
+  await page.waitForTimeout(500);
   await shot(page, "p10-mobile-more");
   await page.keyboard.press("Escape");
 
   // Settings > Profile shows the iOS Home Screen instructions in this context.
   await page.goto("/settings/profile");
   await expect(page.getByTestId("install-app")).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId("install-app").scrollIntoViewIfNeeded();
   await shot(page, "p10-install");
+
+  // The calendar defaults to the day agenda on a phone.
+  await page.goto("/activities/calendar");
+  await expect(
+    page.getByTestId("day-agenda").or(page.getByText("Nothing scheduled for this day.")).first(),
+  ).toBeVisible({ timeout: 20_000 });
+  await assertNoHorizontalScroll(page);
 
   return { deal: `/deals/${dealId}` };
 }
