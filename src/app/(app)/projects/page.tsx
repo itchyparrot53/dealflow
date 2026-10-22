@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { db } from "@/db/client";
 import { listAssignableUsers } from "@/features/identity/users.service";
@@ -47,6 +48,7 @@ export default async function ProjectsPage({
 
   return (
     <main aria-label={S.title} className="space-y-4 p-4">
+      <PageTitle title="Projects" />
       <h1 className="text-title">{S.title}</h1>
       <ProjectsList
         projects={projects}

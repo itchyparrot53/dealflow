@@ -39,15 +39,17 @@ export function PhaseColumn({
       data-phase-id={phase?.id ?? "none"}
       aria-label={phase?.name ?? S.noPhase}
       className={cn(
-        "flex min-h-48 w-72 shrink-0 flex-col gap-2 rounded-lg border bg-muted/30 p-2",
+        "flex min-h-48 w-[248px] shrink-0 flex-col gap-2 rounded-lg bg-canvas-subtle p-2",
         isOver && "ring-2 ring-ring",
       )}
     >
       <header className="flex items-center justify-between gap-2 px-1">
-        <h2 className="truncate text-sm font-medium">{phase?.name ?? S.noPhase}</h2>
-        <span className="text-xs text-muted-foreground">{ordered.length}</span>
+        <h2 className="truncate text-base font-semibold text-foreground">
+          {phase?.name ?? S.noPhase}
+        </h2>
+        <span className="text-meta text-muted-foreground">{ordered.length}</span>
       </header>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         {ordered.map((task) => (
           <TaskCard
             key={task.id}

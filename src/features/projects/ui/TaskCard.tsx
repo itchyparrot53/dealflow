@@ -24,7 +24,7 @@ export function TaskCard({
   onToggleDone: (done: boolean) => void;
   overlay?: boolean;
 }): React.ReactNode {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { phaseId: task.phaseId },
     disabled: !canEdit,
@@ -38,12 +38,14 @@ export function TaskCard({
       data-testid={overlay ? undefined : "task-card"}
       data-task-id={overlay ? undefined : task.id}
       className={cn(
-        "rounded-md border bg-background p-2 shadow-sm",
+        "rounded-md border border-border bg-card p-2 transition-shadow duration-100",
         canEdit && "cursor-grab touch-none",
         isDragging && "opacity-40",
-        overlay && "w-64 rotate-2 shadow-lg",
+        !overlay && "hover:shadow-card-hover",
+        overlay && "w-64 rotate-2 shadow-drag",
       )}
-      {...(canEdit ? attributes : {})}
+      // Listeners only: the dnd attributes add role=button around the checkbox and title button
+      // (axe nested-interactive). Pointer dragging is unchanged.
       {...(canEdit ? listeners : {})}
     >
       <div className="flex items-start gap-2">
@@ -57,17 +59,17 @@ export function TaskCard({
           type="button"
           onClick={onOpen}
           className={cn(
-            "min-w-0 flex-1 text-left text-sm hover:underline",
+            "min-w-0 flex-1 text-left text-sm font-semibold hover:underline",
             task.done && "text-muted-foreground line-through",
           )}
         >
           {task.title}
         </button>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="mt-2 flex items-center justify-between gap-2 text-meta text-muted-foreground">
         {task.assigneeName !== null ? (
           <span className="flex items-center gap-1">
-            <Avatar name={task.assigneeName} className="h-5 w-5 text-[10px]" />
+            <Avatar name={task.assigneeName} className="size-5 text-caption" />
             <span className="truncate">{task.assigneeName}</span>
           </span>
         ) : (

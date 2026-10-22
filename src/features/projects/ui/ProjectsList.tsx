@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Progress } from "@/components/ui/Progress";
 import { Select } from "@/components/ui/Select";
+import { tableStyles } from "@/components/ui/table-styles";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import type { ProjectListItem } from "../types";
 import { NewProjectDialog } from "./NewProjectDialog";
@@ -99,16 +100,16 @@ export function ProjectsList({
       {projects.length === 0 ? (
         <p className="text-sm text-muted-foreground">{S.empty}</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table data-testid="projects-table" className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table data-testid="projects-table" className={tableStyles.table}>
             <thead className="bg-muted/40 text-left">
               <tr>
-                <th className="px-3 py-2 font-medium">{S.name}</th>
-                <th className="px-3 py-2 font-medium">{S.status}</th>
-                <th className="px-3 py-2 font-medium">{S.linkedDeal}</th>
-                <th className="px-3 py-2 font-medium">{S.owner}</th>
-                <th className="px-3 py-2 font-medium">{S.progress}</th>
-                <th className="px-3 py-2 font-medium">{S.dueDate}</th>
+                <th className={tableStyles.th}>{S.name}</th>
+                <th className={tableStyles.th}>{S.status}</th>
+                <th className={tableStyles.th}>{S.linkedDeal}</th>
+                <th className={tableStyles.th}>{S.owner}</th>
+                <th className={tableStyles.th}>{S.progress}</th>
+                <th className={tableStyles.th}>{S.dueDate}</th>
               </tr>
             </thead>
             <tbody>
@@ -119,7 +120,7 @@ export function ProjectsList({
                   data-project-id={project.id}
                   className="border-t hover:bg-accent/40"
                 >
-                  <td className="px-3 py-2">
+                  <td className={tableStyles.td}>
                     <Link
                       className="font-medium underline-offset-2 hover:underline"
                       href={`/projects/${project.id}`}
@@ -127,12 +128,12 @@ export function ProjectsList({
                       {project.name}
                     </Link>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className={tableStyles.td}>
                     <Badge variant={STATUS_VARIANT[project.status]}>
                       {S.statuses[project.status]}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className={tableStyles.td}>
                     {project.dealId === null ? (
                       <span className="text-muted-foreground">{S.noDeal}</span>
                     ) : (
@@ -141,8 +142,8 @@ export function ProjectsList({
                       </Link>
                     )}
                   </td>
-                  <td className="px-3 py-2">{project.ownerName}</td>
-                  <td className="px-3 py-2">
+                  <td className={tableStyles.td}>{project.ownerName}</td>
+                  <td className={tableStyles.td}>
                     <div className="flex items-center gap-2">
                       <Progress
                         value={project.doneCount}
@@ -155,7 +156,7 @@ export function ProjectsList({
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-2">{project.dueDate ?? ""}</td>
+                  <td className={tableStyles.td}>{project.dueDate ?? ""}</td>
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { db } from "@/db/client";
 import { listAssignableUsers } from "@/features/identity/users.service";
 import { getProject } from "@/features/projects/projects";
@@ -38,6 +39,7 @@ export default async function ProjectPage({
 
   return (
     <main aria-label={project.value.name} className="space-y-4 p-4">
+      <PageTitle title="Projects" />
       <ProjectBoard project={project.value} users={users} canEdit={canEdit} />
     </main>
   );
