@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { db } from "@/db/client";
 import { findDuplicatePairs } from "@/features/duplicates/find";
 import { DuplicatesPage } from "@/features/duplicates/ui/DuplicatesPage";
@@ -20,6 +21,7 @@ export default async function DuplicatesRoute(): Promise<React.ReactNode> {
   ]);
   return (
     <main aria-label="Possible duplicates" className="p-4">
+      <PageTitle title="Possible duplicates" />
       <DuplicatesPage
         people={people.pairs}
         organizations={organizations.pairs}

@@ -240,6 +240,14 @@ ancestor, and undo toasts cover stage moves and deletes. The command palette has
 Actions commands, and `g`/`n` sequences plus `?` open the shortcut help. See
 `docs/dealflow/PRODUCTIVITY.md`.
 
+## Design (Part 11)
+
+Every screen matches Pipedrive's measured palette, type scale, spacing, radius and component
+sizes, with a light parity theme and a derived dark theme. `pnpm check:design` enforces the rules
+and `e2e/15-design.spec.ts` proves the computed values and the 26-screen screenshot gallery; the
+tokens, components and opt-out policy are in `docs/dealflow/DESIGN.md`. The pass changes no
+behaviour.
+
 ## Installable app, offline and push (Part 10)
 
 Dealflow installs as a PWA with a manifest, icons and a service worker. The service worker caches

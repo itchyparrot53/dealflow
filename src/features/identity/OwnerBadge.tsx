@@ -14,7 +14,7 @@ export function OwnerBadge({ name, avatarUrl, className }: OwnerBadgeProps): Rea
 
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap", className)}>
-      <Avatar name={displayName} src={avatarUrl} className="h-5 w-5 text-[10px]" />
+      <Avatar name={displayName} src={avatarUrl} className="h-5 w-5 text-caption" />
       <span className="truncate">{displayName}</span>
     </span>
   );

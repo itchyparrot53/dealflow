@@ -50,7 +50,7 @@ export function ColumnsMenu({
         align="end"
         className="min-w-56 max-h-[min(70vh,32rem)] overflow-y-auto p-1 text-sm"
       >
-        <p className="px-2 py-1 text-xs font-medium uppercase text-muted-foreground">Columns</p>
+        <p className="px-2 py-1 text-meta font-semibold text-muted-foreground">Columns</p>
         <ColumnsMenuSortableList
           catalog={catalog}
           order={order}
@@ -60,7 +60,7 @@ export function ColumnsMenu({
         />
         {hidden.length > 0 ? (
           <>
-            <p className="px-2 pt-2 text-xs font-medium uppercase text-muted-foreground">Hidden</p>
+            <p className="px-2 pt-2 text-meta font-semibold text-muted-foreground">Hidden</p>
             {hidden.map((col) => (
               <div
                 key={col.key}

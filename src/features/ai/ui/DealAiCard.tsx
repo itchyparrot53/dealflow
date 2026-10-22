@@ -85,7 +85,7 @@ function SummarySection({
       </p>
       {summary.risks.length > 0 && (
         <div>
-          <p className="text-xs font-semibold uppercase text-muted-foreground">Risks</p>
+          <p className="text-meta font-semibold text-muted-foreground">Risks</p>
           <ul className="list-disc pl-4 text-sm">
             {summary.risks.map((risk) => (
               <li key={risk}>{risk}</li>
@@ -95,7 +95,7 @@ function SummarySection({
       )}
       {summary.nextSteps.length > 0 && (
         <div>
-          <p className="text-xs font-semibold uppercase text-muted-foreground">Next steps</p>
+          <p className="text-meta font-semibold text-muted-foreground">Next steps</p>
           <ul className="space-y-1">
             {summary.nextSteps.map((step, index) => (
               <li
@@ -249,7 +249,7 @@ export function DealAiCard({ dealId, personId, orgId }: Props): React.ReactNode 
   }
 
   return (
-    <section data-testid="deal-ai-card" className="rounded-lg border bg-card p-4 shadow-sm">
+    <section data-testid="deal-ai-card" className="rounded-lg border bg-card p-4">
       <h3 className="flex items-center gap-1.5 text-sm font-semibold">
         <Sparkles className="size-3.5 text-muted-foreground" aria-hidden="true" />
         AI insights

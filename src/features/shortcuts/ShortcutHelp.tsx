@@ -33,9 +33,7 @@ export function ShortcutHelp({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {SHORTCUT_HELP_GROUPS.map((group) => (
             <section key={group.title}>
-              <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {group.title}
-              </h2>
+              <h2 className="mb-1 text-meta font-semibold text-muted-foreground">{group.title}</h2>
               <table className="w-full text-sm">
                 <tbody>
                   {group.items.map((item) => (

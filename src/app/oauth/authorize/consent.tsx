@@ -34,7 +34,7 @@ function redirectDisplay(redirectUri: string): string {
 export function Consent({ action, clientName, redirectUri }: ConsentProps): React.ReactElement {
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
-      <section className="w-full max-w-md space-y-6 rounded-xl border bg-card p-6 shadow-sm">
+      <section className="w-full max-w-md space-y-6 rounded-xl border bg-card p-6">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">Connection request</p>
           <h1 className="text-balance text-2xl font-semibold">

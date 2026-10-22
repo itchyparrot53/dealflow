@@ -76,9 +76,7 @@ export function CustomFieldCreateFields({
 
   return (
     <fieldset className="space-y-3 border-t pt-3">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </legend>
+      <legend className="px-1 text-meta font-semibold text-muted-foreground">{title}</legend>
       {visibleDefs.map((def) => {
         const required = def.isImportant || def.isRequired;
         return (

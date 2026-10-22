@@ -90,7 +90,7 @@ export function StageEditCard({
           aria-label={`Delete stage ${index + 1}`}
           disabled={!canDelete}
           onClick={onDelete}
-          className="grid size-10 -m-2 place-items-center rounded text-muted-foreground transition-transform hover:bg-accent hover:text-red-600 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-40"
+          className="grid size-10 -m-2 place-items-center rounded text-muted-foreground transition-transform hover:bg-accent hover:text-next-red active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-40"
         >
           <span aria-hidden="true">&times;</span>
         </button>

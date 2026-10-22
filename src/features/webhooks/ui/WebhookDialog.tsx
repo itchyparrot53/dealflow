@@ -125,9 +125,7 @@ export function WebhookDialog({
                 );
                 return (
                   <div key={group.title}>
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      {group.title}
-                    </p>
+                    <p className="text-meta font-semibold text-muted-foreground">{group.title}</p>
                     <div className="mt-1 grid gap-1 sm:grid-cols-2">
                       {groupEvents.map((type) => (
                         <div key={type} className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-22 11:30
+Current: 3.5 · Last updated: 2026-10-22 11:50
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -29,7 +29,7 @@ Current: 3.4 · Last updated: 2026-10-22 11:30
 - [x] 3.1 Settings
 - [x] 3.2 Auth and public pages
 - [x] 3.3 Empty, loading and error states
-- [ ] 3.4 Remaining worklist, wording and docs
+- [x] 3.4 Remaining worklist, wording and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 Full e2e and the gallery
 - [ ] 4.2 Integration suite and smoke
@@ -100,6 +100,9 @@ Current: 3.4 · Last updated: 2026-10-22 11:30
 - 3.2: every public surface is light-locked (`data-theme-lock="light"`) on a canvas-subtle ground: the sign-in, magic-link and invite cards are 400 wide with 32 px padding; the public form card is 560 wide at 32 px; the booking page is 720 wide at 32 px with 40x40 day buttons (green when selected) and 32 px slot buttons; the cancel page and the offline shell are light-locked too; "Powered by Dealflow" stays 12 px secondary. Section-divider labels dropped their uppercase.
 - 3.2: `DESIGN_SCREENS=login,public-form,public-booking,offline` passes 4/4 and the auth/forms/scheduling/offline suites 101/101.
 - 3.3: the last two plain loading lines are now content-shaped skeletons: the thread reader paints title + two message cards, and the booking slot grid paints six 32 px slot skeletons. The skeleton containers carry `role="status"` with `aria-busy`/`aria-label`. A new `ErrorRow` primitive renders 6.8.13's inline failure (3 px destructive left bar on the soft red fill, 14 text, optional action) and is used by the activities table and the thread's mark-unread error.
+- 3.4: `check-design` is now 0 violations in 0 files with 12 opt-outs (seven intercepted `@modal` routes whose underlying page owns the title, four redirect-only routes, and the drag bar's upper-case labels). The last 36 hits in 25 files were closed by tokenising the remaining palette steps and soft-red error rows, removing shadows from static cards, switching all-caps section labels to 13/600 sentence case, replacing the arbitrary 10/11 px sizes with `text-caption`, and the composer tab underline's raw `#2b74da` with `--info`.
+- 3.4: `docs/dealflow/DESIGN-WORKLIST.md` is rewritten as the final record (0 violations, every opt-out with file, line and reason, the 6.1 table with every row's closing task); `docs/dealflow/DESIGN.md` documents the parity statement, the full token table in both themes, type/spacing/radius/shadow/motion/focus, the component inventory, the opt-out policy and the commands; `UPSTREAM.md` has the Part 11 section by folder and the README has its design paragraph. 6.9 wording holds (search "Search Dealflow", sentence case, no "successfully" toasts).
+- 3.4: changed tests for the shared secondary-nav and notification tint: contacts nav asserts the info tokens, and the notification row asserts `bg-info-soft`. The full unit suite is 5346/5346 and lint/typecheck are green.
 - 3.3: `git grep -nE ">Loading[^<]*\.\.\.<" -- src` prints nothing; the changed files are at `check:design` 0; the thread and booking design screens pass 2/2 and the mail/activities/scheduling suites 1476/1476.
 
 - 3.1: changed tests for the new settings contract: `SettingsHeading` asserts the section h2 at 16/600 with no breadcrumb; `SettingsNav` asserts the info tokens and left bar; the email, import and enrichment page tests assert the h2 section heading. `DESIGN_SCREENS=settings-profile,settings-automation` passes 2/2 and the settings suites 325/325.

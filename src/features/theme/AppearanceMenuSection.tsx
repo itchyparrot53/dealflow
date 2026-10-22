@@ -32,7 +32,7 @@ const SECTION_LABEL = "Appearance";
 export function AppearanceMenuSection({ choice }: { choice: AppearanceChoice }): React.ReactNode {
   return (
     <>
-      <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <DropdownMenuLabel className="text-meta font-semibold text-muted-foreground">
         {SECTION_LABEL}
       </DropdownMenuLabel>
       <DropdownMenuRadioGroup value={choice.value} onValueChange={choice.choose}>

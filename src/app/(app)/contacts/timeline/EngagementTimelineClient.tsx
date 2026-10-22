@@ -44,7 +44,7 @@ export function EngagementTimelineClient(): React.ReactNode {
     <div className="flex min-w-0 max-w-full flex-col gap-3">
       <EngagementFilters filter={filter} onChange={setFilter} owners={owners} types={types} />
       {dataQ.error !== null ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {LOAD_ERROR}
         </p>
       ) : dataQ.isLoading || dataQ.data === undefined ? (
@@ -58,7 +58,7 @@ export function EngagementTimelineClient(): React.ReactNode {
           // exception to the general rule against putting static containers in the tab order.
           // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard-scrollable data grid viewport
           tabIndex={0}
-          className="max-w-full overflow-x-auto overscroll-x-contain rounded-lg border bg-card shadow-sm [scrollbar-gutter:stable]"
+          className="max-w-full overflow-x-auto overscroll-x-contain rounded-lg border bg-card [scrollbar-gutter:stable]"
         >
           <table
             className="w-full table-fixed border-separate border-spacing-0"

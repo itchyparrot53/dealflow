@@ -34,7 +34,7 @@ export interface EntityComboboxProps {
 // (c) runs a bespoke Levenshtein "Review" mode surfacing near-duplicates that are not substrings of
 // the query. cmdk models none of that, and swapping to a trigger button would break pixel parity.
 const MENU =
-  "absolute left-0 right-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-md border bg-popover shadow-md";
+  "absolute left-0 right-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-lg border bg-popover shadow-pop";
 const ROW = "block w-full px-2.5 py-1.5 text-left text-sm hover:bg-accent";
 
 // Pipedrive-style select-or-create field: a text input that searches existing options as you type
@@ -170,12 +170,12 @@ export function EntityCombobox(props: EntityComboboxProps): React.ReactNode {
         className={FIELD}
       />
       {chosen === "new" && query.trim() !== "" && (
-        <span className="pointer-events-none absolute right-2.5 top-8 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+        <span className="pointer-events-none absolute right-2.5 top-8 rounded bg-primary px-1.5 py-0.5 text-caption font-semibold text-primary-foreground">
           NEW
         </span>
       )}
       {showWarning && (
-        <p className="mt-1 flex items-center gap-1 text-xs text-amber-600">
+        <p className="mt-1 flex items-center gap-1 text-xs text-warning-soft-foreground">
           <span aria-hidden="true">&#9888;</span>
           <span>{similarWarning}</span>
           <button

@@ -210,7 +210,7 @@ export function DealProductsSection({ dealId, canEdit, baseCurrency }: Props): R
           ) : (
             <div className="mt-2 overflow-x-auto">
               <table className="w-full text-xs">
-                <thead className="text-left text-[11px] uppercase text-muted-foreground">
+                <thead className="text-left text-sm font-semibold text-foreground">
                   <tr>
                     <th className="py-1 pr-1 font-medium">{S.name}</th>
                     <th className="px-1 py-1 text-right font-medium">{S.quantity}</th>

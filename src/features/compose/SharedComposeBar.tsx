@@ -206,7 +206,7 @@ export function SharedComposeBar({
       className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 mb-4 rounded border bg-card md:static md:bottom-auto"
     >
       <Tabs value={activeTab} onValueChange={(v) => openTab(v as ComposeTab)}>
-        {/* The strip's divider is an inset shadow, not a border: a border sits below the content
+        {/* The strip's divider is an inset ring, not a border: a border sits below the content
             box, so the active tab's underline needed a -mb-px to cover it and that 1px of vertical
             overflow made the horizontal-scroll container render a stray vertical scrollbar. */}
         <div className="flex items-center justify-between gap-2">
@@ -220,7 +220,7 @@ export function SharedComposeBar({
                 // Radix onValueChange does not fire on a same-value click, so drive openTab from onClick;
                 // onValueChange still handles keyboard arrow switching.
                 onClick={() => openTab(id)}
-                className="flex h-10 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 text-start font-[450] text-muted-foreground hover:text-foreground data-[state=active]:border-[#2b74da] data-[state=active]:text-link"
+                className="flex h-10 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 text-start font-[450] text-muted-foreground hover:text-foreground data-[state=active]:border-info data-[state=active]:text-link"
               >
                 <Icon />
                 {label}

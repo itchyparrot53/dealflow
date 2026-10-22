@@ -94,9 +94,7 @@ function Section({
 }) {
   return (
     <div>
-      <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {heading}
-      </p>
+      <p className="px-3 py-1 text-meta font-semibold text-muted-foreground">{heading}</p>
       {items.length === 0 ? (
         <p className="px-3 py-1.5 text-sm text-muted-foreground">{empty}</p>
       ) : (
@@ -146,9 +144,7 @@ function CommandGroups({
         if (items.length === 0) return null;
         return (
           <div key={group}>
-            <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {group}
-            </p>
+            <p className="px-3 py-1 text-meta font-semibold text-muted-foreground">{group}</p>
             {items.map((command) => (
               <button
                 key={command.id}

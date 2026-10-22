@@ -95,7 +95,7 @@ export function SaveViewDialog({
           <label htmlFor={sharedId}>{SHARED_LABEL}</label>
         </div>
         {error !== null && (
-          <div role="alert" className="text-sm text-red-600">
+          <div role="alert" className="text-sm text-destructive">
             <p className="font-medium">{error.title}</p>
             <p>{error.body}</p>
           </div>

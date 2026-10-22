@@ -125,9 +125,7 @@ export function AutomationEditor({
           </label>
 
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase text-muted-foreground">
-              {S.editor.when}
-            </h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">{S.editor.when}</h2>
             <TriggerPicker
               value={definition.trigger}
               onChange={(trigger) => setDefinition({ ...definition, trigger })}
@@ -136,9 +134,7 @@ export function AutomationEditor({
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase text-muted-foreground">
-              {S.editor.onlyIf}
-            </h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">{S.editor.onlyIf}</h2>
             <ConditionEditor
               value={definition.condition}
               onChange={(condition) => setDefinition({ ...definition, condition })}

@@ -422,3 +422,56 @@ and UI), `src/features/push/**`, `src/features/navigation/mobile/**` (`BottomNav
   plus `src/app/(app)/settings/profile/ProfileClient.tsx` (install card).
 - Tests updated for the changed contracts: the notification preferences form and settings page,
   the activities filter literals, and the new push/offline/search cases.
+
+## Part 11: Pipedrive parity design pass (2026-10-22)
+
+No upstream dependency changed: only `@axe-core/playwright@4.14.0` was added as a dev dependency.
+The pass touches the presentation of almost every screen but changes no behaviour. New files:
+`scripts/dealflow/check-design.mjs`, `scripts/dealflow/hex-to-hsl.mjs`,
+`src/components/ui/{page-toolbar,panel,kbd,status-badge,view-switcher,table-styles,error-row}.ts(x)`,
+`src/components/shell/pageTitle.tsx`, `src/features/deals/ui/StageTrack.tsx`,
+`e2e/15-design.spec.ts`, `e2e/design/{routes,styleChecks}.ts`, `docs/dealflow/DESIGN.md`, this
+section, and the rewritten `docs/dealflow/DESIGN-WORKLIST.md`.
+
+Global files changed:
+
+- `src/app/globals.css` (the 6.4 token set in both themes, radius 2/4/8/8, `--text-meta`,
+  `--text-title`, `--text-caption`, `--track`, `--track-foreground`, `--warning-soft-foreground`,
+  floating shadows, 100 ms motion defaults, the global focus outline, `.tabular`, `.board-column`,
+  `[data-theme-lock="light"]`).
+- `src/lib/utils.ts` (`text-title`/`text-meta` registered with tailwind-merge),
+  `src/constants/strings.ts` (search placeholder, sentence case), `src/app/layout.tsx` (no change
+  beyond what Part 10 left), `src/app/(app)/layout.tsx` (full-height rail beside the top bar,
+  `PageTitleProvider`).
+- `src/components/ui/**` every primitive from 6.6 plus the new files above.
+- `src/components/shell/{LeftNav,TopBar,UserMenu,SearchTrigger,PageHeading,skeletons}.tsx`,
+  `src/components/navigation/SecondaryNavLink.tsx`, `src/features/navigation/mobile/{BottomNav,MoreSheet}.tsx`,
+  `src/features/theme/{appearance,AppearanceSync,useAppearanceChoice}.ts`, the shared tab strips
+  (`SharedComposeBar`, `TimelineTabs`, `HistoryTypeTabs`, `ContactHistoryTabs`, the contact detail
+  tabs, `LeadTimeline`, `DocumentsList`) which gained hidden `TabsContent` targets.
+
+Screens restyled (all presentation):
+
+- Deals: `src/features/deals/{Board,BoardColumn,BoardStages,BoardToolbar,BoardSortControl,BoardFilterMenu,BoardFilterMenuParts,BoardSummary,PipelineSelect,DealCard,DealList,DealListTableBody,DealTitleCell,DragDropZones,NewDealButton,AddDealPersonColumn,CreateFilterModal}.tsx`,
+  `src/features/pipelines/{CreatePipelineDialog,EditPipelineClient,StageEditCard}.tsx`, the
+  `src/app/(app)/pipeline/**` pages and the new `StageTrack`.
+- Deal workspace: `src/features/deal-workspace/{DealSidebar,CollapsibleSection,DealCloseActions,DealSummaryActionList,ParticipantsControl}.tsx`,
+  its `header/**`, `sidebar/**`, `composer/**` and `history/**` files,
+  `src/app/(app)/deals/[dealId]/{DealWorkspaceClient,page}.tsx`, `src/features/inline-edit/InlineFieldShell.tsx`.
+- Contacts, leads, activities and lists: `src/features/contacts/**`, `src/features/leads/**`,
+  `src/features/activities/**`, `src/features/entity-create/EntityCombobox.tsx`,
+  `src/features/data-table/ColumnsMenu.tsx`, the `src/app/(app)/contacts/**`, `leads/**` and
+  `activities/**` pages and calendar components.
+- Mail, documents, insights, projects, settings, auth and public pages: their feature folders and
+  route pages, as logged task by task in `PROGRESS.md`.
+- `src/app/(app)/settings/SettingsSurface.tsx` and `SettingsHeading.tsx`, every settings page
+  (`PageTitle`), `src/features/stats/ui/{Panel,KpiTile,Dashboard,GoalsWidget,Scoreboard,TrendWidget,GoalChart}.tsx`,
+  `src/features/insights/ui/**`, `src/features/forecast/ui/**`.
+- Public: `src/app/(auth)/**`, `src/app/f/[publicId]/page.tsx`, `src/app/book/**`,
+  `src/app/d/[publicId]/page.tsx`, `src/features/forms/ui/PublicForm.tsx`,
+  `src/features/scheduling/ui/PublicBooking.tsx`, `src/features/pwa/offline/ui/**` (light lock).
+- `e2e/helpers.ts`, `scripts/e2e/seed-session.ts` (design-gallery fixtures), `package.json`
+  (`check:design`, axe), the lockfile, `README.md`, `docs/dealflow/DESIGN-WORKLIST.md`.
+
+Tests updated for the changed contracts are listed in the Part 11 Decisions; no assertion was
+weakened or deleted.

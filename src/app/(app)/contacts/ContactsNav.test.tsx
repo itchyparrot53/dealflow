@@ -17,7 +17,7 @@ import { ContactsNav } from "./ContactsNav";
 afterEach(cleanup);
 
 describe("ContactsNav", () => {
-  it("uses the Settings secondary-navigation icon and active-state treatment", () => {
+  it("uses the shared secondary-navigation active treatment (info-soft with a blue left bar)", () => {
     render(<ContactsNav />);
 
     for (const label of ["People", "Organizations", "Timeline"]) {
@@ -26,7 +26,7 @@ describe("ContactsNav", () => {
 
     const active = screen.getByRole("link", { name: "People" });
     expect(active).toHaveAttribute("aria-current", "page");
-    expect(active).toHaveClass("bg-blue-50", "font-semibold", "text-blue-700");
+    expect(active).toHaveClass("bg-info-soft", "text-info", "border-l-info");
 
     const idle = screen.getByRole("link", { name: "Organizations" });
     expect(idle).toHaveClass("font-normal", "text-foreground");

@@ -60,7 +60,7 @@ describe("NotificationItem", () => {
     expect(screen.queryByTestId("unread-dot")).not.toBeInTheDocument();
   });
 
-  it("hovers a read row with a theme token, and gives the unread tint a Night pair", () => {
+  it("hovers a read row with a theme token, and tints an unread row with info-soft", () => {
     render(
       <NotificationItem item={{ ...base, readAt: new Date().toISOString() }} onOpen={() => {}} />,
     );
@@ -69,6 +69,6 @@ describe("NotificationItem", () => {
     expect(read.className).not.toMatch(/-gray-/);
     cleanup();
     render(<NotificationItem item={base} onOpen={() => {}} />);
-    expect(screen.getByRole("button")).toHaveClass("dark:bg-blue-950/50");
+    expect(screen.getByRole("button")).toHaveClass("bg-info-soft");
   });
 });

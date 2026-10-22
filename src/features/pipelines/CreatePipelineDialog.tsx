@@ -93,7 +93,7 @@ export function CreatePipelineDialog(props: CreatePipelineDialogProps): React.Re
           {error !== null && (
             <p
               role="alert"
-              className="mt-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 text-pretty"
+              className="mt-3 rounded-md border border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive text-pretty"
             >
               {error}
             </p>

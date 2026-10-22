@@ -231,9 +231,7 @@ function ContactCreateModal({
           />
         ) : (
           <fieldset className="flex flex-col gap-3">
-            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Address
-            </legend>
+            <legend className="mb-1 text-meta font-semibold text-muted-foreground">Address</legend>
             {ADDRESS_FIELDS.map(([key, label]) => {
               const id = `${addressId}-${key}`;
               return (

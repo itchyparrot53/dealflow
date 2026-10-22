@@ -127,7 +127,7 @@ export function ContactTimelinePanel({
   return (
     <div className="space-y-6">
       {emailQuery.isError && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {EMAIL_LOAD_ERROR}
         </p>
       )}
