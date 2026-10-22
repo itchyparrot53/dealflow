@@ -2,7 +2,7 @@
 import { CircleHelp, Info } from "lucide-react";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
-import { DOCS_SITE_URL } from "@/constants/docs";
+import { USER_GUIDE_URL } from "@/constants/docs";
 import { STRINGS } from "@/constants/strings";
 import { AssistantLauncher } from "@/features/ai/ui/AssistantLauncher";
 import { NotificationsBell } from "@/features/notifications/ui/NotificationsBell";
@@ -67,7 +67,7 @@ export function TopBar({
       <div className="flex shrink-0 items-center gap-1">
         <NotificationsBell userId={userId} />
         <a
-          href={DOCS_SITE_URL}
+          href={USER_GUIDE_URL}
           target="_blank"
           rel="noreferrer noopener"
           aria-label={STRINGS.nav.docs}
