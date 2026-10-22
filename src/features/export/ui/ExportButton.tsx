@@ -30,7 +30,7 @@ export function ExportButton({
     <a
       data-testid="export-csv"
       href={`/export/${entity}?${query.toString()}`}
-      className={buttonVariants({ variant: "outline", size: "sm" })}
+      className={`${buttonVariants({ variant: "outline", size: "sm" })} min-h-10`}
     >
       {S.button}
     </a>

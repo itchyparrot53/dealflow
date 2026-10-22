@@ -51,11 +51,23 @@ type WorkerGlobal = {
 const worker = globalThis as unknown as WorkerGlobal;
 const origin = globalThis.location.origin;
 
+// The offline page is a client page, so its HTML alone is not enough: its CSS and JS chunks must be
+// in the cache too or the offline navigation renders unstyled and never hydrates. They are static
+// build assets, so caching them follows the same rule as the icons.
+const STATIC_ASSET = /\/_next\/static\/[^"'\s]+?\.(?:css|js)/g;
+
 async function precache(): Promise<void> {
   const cache = await caches.open(CACHE_NAME);
   // allSettled: one unavailable icon must not abort the install and leave the app without the
   // offline page.
   await Promise.allSettled(PRECACHE.map((url) => cache.add(url)));
+  try {
+    const html = await (await fetch(OFFLINE_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })).text();
+    const assets = [...new Set([...html.matchAll(STATIC_ASSET)].map((match) => match[0]))];
+    await Promise.allSettled(assets.map((url) => cache.add(url)));
+  } catch {
+    // Without the shell the rest of the worker still works; the browser cache covers a retry.
+  }
 }
 
 async function cacheFirst(request: Request): Promise<Response> {

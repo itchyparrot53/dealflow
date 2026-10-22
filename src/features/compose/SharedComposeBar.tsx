@@ -229,7 +229,7 @@ export function SharedComposeBar({
               variant="outline"
               size="sm"
               data-testid="log-call"
-              className="mr-2 shrink-0"
+              className="mr-2 min-h-10 shrink-0"
               onClick={() => setLogCallOpen(true)}
             >
               <Phone className="h-3.5 w-3.5" aria-hidden="true" />

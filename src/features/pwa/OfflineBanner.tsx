@@ -4,21 +4,48 @@ import { useSyncExternalStore } from "react";
 
 const MESSAGE = "You're offline. Changes can't be saved until you reconnect.";
 
+// navigator.onLine is the source of truth, but the online/offline events are what tell an open tab
+// that it changed (and some embedded/webview browsers update the event before the property). The
+// last event therefore wins over a stale property value.
+let override: boolean | null = null;
+const listeners = new Set<() => void>();
+
+function notify(): void {
+  for (const listener of listeners) listener();
+}
+
 function subscribe(listener: () => void): () => void {
-  window.addEventListener("online", listener);
-  window.addEventListener("offline", listener);
+  listeners.add(listener);
+  if (typeof window !== "undefined") {
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+  }
   return () => {
-    window.removeEventListener("online", listener);
-    window.removeEventListener("offline", listener);
+    listeners.delete(listener);
+    if (listeners.size === 0 && typeof window !== "undefined") {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    }
   };
 }
 
-function getSnapshot(): boolean {
-  return navigator.onLine;
+function onOnline(): void {
+  override = true;
+  notify();
 }
 
-// Server and initial client render both assume online, so the banner only appears after a real
-// offline event instead of flashing during hydration.
+function onOffline(): void {
+  override = false;
+  notify();
+}
+
+function getSnapshot(): boolean {
+  if (typeof navigator === "undefined") return true;
+  return override ?? navigator.onLine;
+}
+
+// The server and the first client render both assume online, so the banner never flashes during
+// hydration; an actual offline state appears from the next snapshot.
 const getServerSnapshot = (): boolean => true;
 
 export function OfflineBanner(): React.ReactNode {

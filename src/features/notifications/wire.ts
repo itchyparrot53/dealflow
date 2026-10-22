@@ -2,7 +2,6 @@ import { and, eq, ne } from "drizzle-orm";
 import type { NotificationType } from "@/constants/notificationTypes";
 import type { Db } from "@/db/client";
 import { dealFollowers, deals } from "@/db/schema";
-import { enqueueOrDeliverPush } from "@/features/push/deliver";
 import type { CreateNotificationInput } from "@/types/notification";
 import { enqueueEmailNotification } from "./emailDispatch";
 import { createNotification, fanOut } from "./produce";
@@ -22,23 +21,6 @@ async function deliver(db: Db, input: CreateNotificationInput, signal: AbortSign
   }
   if ("suppressed" in r.value) return;
   await enqueueEmailNotification(db, r.value.notificationId, input.recipientId, input.type, signal);
-  // Push is best-effort: a failure here must never fail the notification (or the email above).
-  try {
-    await enqueueOrDeliverPush(
-      db,
-      {
-        id: r.value.notificationId,
-        userId: input.recipientId,
-        type: input.type,
-        entityType: input.entityType,
-        entityId: input.entityId,
-        payload: input.payload,
-      },
-      signal,
-    );
-  } catch (error) {
-    console.warn("push enqueue failed", { error });
-  }
 }
 
 // Load follower ids for a deal, optionally excluding one user (the actor).

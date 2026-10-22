@@ -62,6 +62,7 @@ export function DealProjectsSection({
             variant="outline"
             size="sm"
             data-testid="deal-create-project"
+            className="min-h-10"
             disabled={pending}
             onClick={() => void create()}
           >

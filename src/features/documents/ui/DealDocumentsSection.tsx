@@ -135,6 +135,7 @@ export function DealDocumentsSection({ dealId, canEdit }: Props): React.ReactNod
               variant="outline"
               size="sm"
               data-testid="deal-new-quote"
+              className="min-h-10"
               disabled={pending}
               onClick={() => void start("quote")}
             >
@@ -145,6 +146,7 @@ export function DealDocumentsSection({ dealId, canEdit }: Props): React.ReactNod
               variant="outline"
               size="sm"
               data-testid="deal-new-invoice"
+              className="min-h-10"
               disabled={pending}
               onClick={() => void start("invoice")}
             >

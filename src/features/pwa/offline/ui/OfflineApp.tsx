@@ -2,7 +2,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllOfflineRecords } from "../db";
 import type { OfflineRecordType, OfflineSnapshot } from "../snapshots";
 import { readOfflineUserId } from "../wipe";
@@ -74,14 +74,14 @@ export function OfflineApp(): React.ReactNode {
 
       {selected === null ? (
         <Tabs defaultValue="deal">
-          <TabsList>
+          <TabsList className="gap-1 border-b pb-2">
             {TABS.map((tab) => (
               <TabsTrigger
                 key={tab.type}
                 value={tab.type}
                 data-testid="offline-tab"
                 data-type={tab.type}
-                className="min-h-10"
+                className={`${PILL_TAB} min-h-10`}
               >
                 {tab.label}
               </TabsTrigger>

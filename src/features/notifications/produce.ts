@@ -3,6 +3,7 @@ import { wsChannel } from "@/constants/wsChannels";
 import type { Db } from "@/db/client";
 import { notifications } from "@/db/schema";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
+import { enqueueOrDeliverPush } from "@/features/push/deliver";
 import { hydrateActor } from "@/server/hydrateActor";
 import { publishEvent } from "@/server/notify";
 import type { CreateNotificationInput } from "@/types/notification";
@@ -86,6 +87,28 @@ export async function createNotification(
 
     return row.id;
   });
+
+  // Push is best-effort and runs after the notification row commits. Every producer (forms,
+  // bookings, documents, automations and the wire helpers) goes through createNotification, so
+  // this is the one hook a new producer cannot miss. A dead push service never fails the
+  // notification; only an abort is allowed through.
+  try {
+    await enqueueOrDeliverPush(
+      db,
+      {
+        id: notificationId,
+        userId: input.recipientId,
+        type: input.type,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        payload: input.payload,
+      },
+      signal,
+    );
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    console.warn("push dispatch failed", { error });
+  }
 
   return ok({ notificationId });
 }
