@@ -26,6 +26,10 @@ export const PGBOSS_QUEUE_FILE_REAPER = "file.reaper";
 // Task 7 registers the worker that consumes this queue.
 export const EMAIL_NOTIFICATION_QUEUE = "notification.email";
 
+// Web push delivery: payload is { notificationId: string }. Best-effort; a failed push never
+// fails the notification that produced it.
+export const PUSH_DELIVERY_QUEUE = "push.deliver";
+
 // Self-hoster update check: poll GitHub for the latest release and cache it. Fixed queue name,
 // cron-scheduled (see RELEASE_CHECK_CRON) plus one immediate run on worker boot. No payload.
 export const PGBOSS_QUEUE_RELEASE_CHECK = "release.check";

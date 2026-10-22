@@ -10,16 +10,16 @@ import { PreferencesForm } from "./PreferencesForm";
 
 afterEach(cleanup);
 
-const { columnInApp, columnEmail } = STRINGS.notifications.preferences;
+const { columnInApp, columnEmail, columnPush } = STRINGS.notifications.preferences;
 
-type Prefs = Record<NotificationType, { inApp: boolean; email: boolean }>;
+type Prefs = Record<NotificationType, { inApp: boolean; email: boolean; push: boolean }>;
 
 const allFalse: Prefs = Object.fromEntries(
-  NOTIFICATION_TYPES.map((t) => [t, { inApp: false, email: false }]),
+  NOTIFICATION_TYPES.map((t) => [t, { inApp: false, email: false, push: false }]),
 ) as Prefs;
 
 const allTrue: Prefs = Object.fromEntries(
-  NOTIFICATION_TYPES.map((t) => [t, { inApp: true, email: true }]),
+  NOTIFICATION_TYPES.map((t) => [t, { inApp: true, email: true, push: true }]),
 ) as Prefs;
 
 describe("PreferencesForm", () => {
@@ -60,7 +60,7 @@ describe("PreferencesForm", () => {
     const inAppToggles = screen.getAllByRole("switch", { name: columnInApp });
     // getAllByRole throws if nothing found, so index 0 is always defined
     await user.click(inAppToggles[0]!);
-    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false });
+    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false, push: false });
   });
 
   it("toggles the switch when its visible label text is clicked (label association)", async () => {
@@ -70,7 +70,7 @@ describe("PreferencesForm", () => {
     // Click the visible "In-app" label of the first row, not the switch control itself.
     const inAppLabels = screen.getAllByText(columnInApp);
     await user.click(inAppLabels[0]!);
-    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false });
+    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false, push: false });
   });
 
   it("calls onChange with flipped email value when the email switch is toggled", async () => {
@@ -80,6 +80,17 @@ describe("PreferencesForm", () => {
     const emailToggles = screen.getAllByRole("switch", { name: columnEmail });
     // getAllByRole throws if nothing found, so index 0 is always defined
     await user.click(emailToggles[0]!);
-    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false });
+    expect(onChange).toHaveBeenCalledWith("mention", { inApp: true, email: false, push: true });
+  });
+
+  it("renders a push switch per row with the push hook and flips it", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<PreferencesForm prefs={allFalse} onChange={onChange} />);
+    const pushToggles = screen.getAllByRole("switch", { name: columnPush });
+    expect(pushToggles).toHaveLength(NOTIFICATION_TYPES.length);
+    expect(screen.getAllByTestId("push-pref")[0]).toHaveAttribute("data-type", "mention");
+    await user.click(pushToggles[0]!);
+    expect(onChange).toHaveBeenCalledWith("mention", { inApp: false, email: false, push: true });
   });
 });

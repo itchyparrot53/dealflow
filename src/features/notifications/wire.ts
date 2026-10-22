@@ -2,14 +2,15 @@ import { and, eq, ne } from "drizzle-orm";
 import type { NotificationType } from "@/constants/notificationTypes";
 import type { Db } from "@/db/client";
 import { dealFollowers, deals } from "@/db/schema";
+import { enqueueOrDeliverPush } from "@/features/push/deliver";
 import type { CreateNotificationInput } from "@/types/notification";
 import { enqueueEmailNotification } from "./emailDispatch";
 import { createNotification, fanOut } from "./produce";
 
 // deliver: call the producer and, if a notification row was created, enqueue
-// the email-dispatch job. Suppressed outcomes (visibility or preferences) are
-// a no-op. Errors are logged via console.warn and swallowed so a single
-// recipient failure never aborts a fan-out.
+// the email-dispatch and push-delivery work. Suppressed outcomes (visibility or
+// preferences) are a no-op. Errors are logged via console.warn and swallowed so
+// a single recipient failure never aborts a fan-out.
 async function deliver(db: Db, input: CreateNotificationInput, signal: AbortSignal): Promise<void> {
   const r = await createNotification(db, input, signal);
   if (!r.ok) {
@@ -21,6 +22,23 @@ async function deliver(db: Db, input: CreateNotificationInput, signal: AbortSign
   }
   if ("suppressed" in r.value) return;
   await enqueueEmailNotification(db, r.value.notificationId, input.recipientId, input.type, signal);
+  // Push is best-effort: a failure here must never fail the notification (or the email above).
+  try {
+    await enqueueOrDeliverPush(
+      db,
+      {
+        id: r.value.notificationId,
+        userId: input.recipientId,
+        type: input.type,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        payload: input.payload,
+      },
+      signal,
+    );
+  } catch (error) {
+    console.warn("push enqueue failed", { error });
+  }
 }
 
 // Load follower ids for a deal, optionally excluding one user (the actor).

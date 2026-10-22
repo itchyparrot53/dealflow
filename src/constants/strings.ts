@@ -132,6 +132,7 @@ export const STRINGS = {
       loading: "Loading preferences...",
       columnInApp: "In-app",
       columnEmail: "Email",
+      columnPush: "Push",
       saveError: "Failed to save preference. Please try again.",
       typeLabels: {
         mention: "Mentions",

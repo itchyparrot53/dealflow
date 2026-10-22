@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-22 03:30
+Current: 2.3 · Last updated: 2026-10-22 03:45
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -18,7 +18,7 @@ Current: 2.2 · Last updated: 2026-10-22 03:30
 - [x] 1.3 Offline records and the offline page
 - [x] 1.4 Phase 1 QA gate
 - [x] 2.1 Subscriptions, preferences and the worker push handler (test-first)
-- [ ] 2.2 Delivery and settings UI (test-first)
+- [x] 2.2 Delivery and settings UI (test-first)
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Mobile shell
 - [ ] 3.2 Key screens on mobile
@@ -68,6 +68,11 @@ Current: 2.2 · Last updated: 2026-10-22 03:30
 - 2.1: the 11 subscription/preference/config cases were written before the modules. `subscribePush` upserts on the unique endpoint so a re-subscribe (or another user on the same browser) moves the row instead of duplicating it; non-https or empty keys return `E_PUSH_002` and a Zod failure `E_PUSH_004`.
 - 2.1: push defaults live beside the email defaults in `src/constants/notificationDefaults.ts`: on for mention, activity_assigned, project_task_assigned, booking_created, document_accepted and form_submission, off for the rest; a missing row always reads the map.
 - 2.1: the tRPC router exposes reads only (`push.config`, `push.subscriptions`, `push.preferences`) and `config` returns `{ enabled, publicKey }` from the pure `pushConfigFrom`, so the private key cannot appear in a client payload; all mutations go through CSRF-checked server actions (`actions.ts`).
+- 2.2: delivery is hooked into `deliver()` in `src/features/notifications/wire.ts` after the notification commits, and `enqueueOrDeliverPush` uses the `push.deliver` pg-boss queue when one is running (registered in `src/server/worker.ts`), otherwise delivers inline. Every failure is logged and swallowed, so push can never fail the notification or the email.
+- 2.2: the notification label builder moved from the client `NotificationItem` into the server-safe `src/features/notifications/labels.ts`, so the push title is exactly the in-app text (body empty, never invented copy) and the link comes from the existing `notificationHref`.
+- 2.2: six delivery cases pass on real Postgres (capture file per subscription, preference off, not configured, 410 removal, five failures, success reset). The tests inject `mode`/`sender` so no VAPID key or network is needed; production still reads `PUSH_FAKE`/web-push from env.
+- 2.2: the settings page gained a Push card (`push-settings`, `push-status`, `push-enable`) and a third switch per type (`push-pref` with `data-type`); `PreferencesForm` now takes `push` in its row shape and its tests were updated for the new contract, plus one new push-toggle case.
+- 2.2: on iOS the settings explain the Home Screen requirement; capture mode writes JSON to `PUSH_FAKE_DIR` and records a success, exactly as a real send would.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

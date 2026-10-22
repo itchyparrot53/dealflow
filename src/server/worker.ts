@@ -14,6 +14,7 @@ import { type IdleManager, startIdleManager } from "@/features/mail/idle/idleMan
 import { registerMailAppendWorker } from "@/features/mail/imap/appendSent";
 import { registerMailBackfillWorker } from "@/features/mail/imap/backfill";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
+import { registerPushDeliveryWorker } from "@/features/push/job";
 import { registerRecyclePurgeJob } from "@/features/recycle/purgeJob";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { registerWebhookDeliveryJob } from "@/features/webhooks/deliveryJob";
@@ -30,6 +31,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerReaperJob(boss);
   await registerImportWorkers(boss);
   await registerEmailNotificationWorker(boss);
+  // Web push delivery follows the email notification worker: same notification row, no throw.
+  await registerPushDeliveryWorker(boss);
   await registerReminderWorker(boss);
   // Daily overdue invoice sweep (06:00 UTC). Safe on every worker boot: the
   // schedule is idempotent and the UPDATE only touches sent invoices past due.

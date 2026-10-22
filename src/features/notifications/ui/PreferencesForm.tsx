@@ -6,18 +6,24 @@ import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import { STRINGS } from "@/constants/strings";
 
-type Prefs = Record<NotificationType, { inApp: boolean; email: boolean }>;
+type Prefs = Record<NotificationType, { inApp: boolean; email: boolean; push: boolean }>;
 
 type ToggleProps = {
   label: string;
   checked: boolean;
   onChange: (next: boolean) => void;
+  testId?: string;
+  dataType?: string;
 };
 
-function Toggle({ label, checked, onChange }: ToggleProps) {
+function Toggle({ label, checked, onChange, testId, dataType }: ToggleProps) {
   const id = useId();
   return (
-    <span className="flex items-center gap-2 text-sm select-none">
+    <span
+      data-testid={testId}
+      data-type={dataType}
+      className="flex items-center gap-2 text-sm select-none"
+    >
       <label htmlFor={id} className="cursor-pointer text-muted-foreground">
         {label}
       </label>
@@ -31,9 +37,9 @@ export function PreferencesForm({
   onChange,
 }: {
   prefs: Prefs;
-  onChange: (type: NotificationType, next: { inApp: boolean; email: boolean }) => void;
+  onChange: (type: NotificationType, next: Prefs[NotificationType]) => void;
 }) {
-  const { columnInApp, columnEmail, typeLabels } = STRINGS.notifications.preferences;
+  const { columnInApp, columnEmail, columnPush, typeLabels } = STRINGS.notifications.preferences;
 
   return (
     <div className="divide-y">
@@ -50,6 +56,13 @@ export function PreferencesForm({
               label={columnEmail}
               checked={prefs[type].email}
               onChange={(next) => onChange(type, { ...prefs[type], email: next })}
+            />
+            <Toggle
+              label={columnPush}
+              checked={prefs[type].push}
+              testId="push-pref"
+              dataType={type}
+              onChange={(next) => onChange(type, { ...prefs[type], push: next })}
             />
           </div>
         </div>
