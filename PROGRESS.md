@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-22 09:30
+Current: 4.5 · Last updated: 2026-10-22 10:05
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -30,7 +30,7 @@ Current: 4.4 · Last updated: 2026-10-22 09:30
 - [x] 4.1 E2E PWA and mobile spec and screenshots
 - [x] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -118,4 +118,23 @@ Current: 4.4 · Last updated: 2026-10-22 09:30
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist
+1. PASS - `git --no-optional-locks status --porcelain` was empty at the 4.3 commit.
+2. PASS - `pnpm install --frozen-lockfile` exit 0; the only added dependencies are `web-push@3.6.7` and `@types/web-push@3.6.4` (`git diff de06153 -- package.json`).
+3. PASS - `pnpm typecheck` exit 0.
+4. PASS - `pnpm lint` exit 0 (15 warnings, 1 info).
+5. PASS - `pnpm test:unit` 5351/5351 in 833 files, above the 5320 baseline.
+6. PASS - `pnpm test:integration` 2097/2097 in 412 files on the final tree.
+7. PASS - `pnpm build` exit 0, lists `/manifest.webmanifest` and `/offline`; `public/sw.js` exists and is git-ignored.
+8. PASS - `pnpm e2e` 24/24 (specs 00 to 14) on the final tree.
+9. PASS - 8 `p10-*` screenshots exist and all 77 Part 1 to 9 screenshots remain (85 total).
+10. PASS - smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)`, with no `dealflow-smoke` container or volume left.
+11. PASS - `drizzle/0092_dealflow_push.sql` creates exactly `push_subscriptions` and `notification_push_prefs`.
+12. PASS - `git grep "VAPID_PRIVATE_KEY" -- src` reads it only in `src/config/env.ts` and `src/features/push/vapid.ts` (the integration test names the env key as a fixture value); it is never in a client file or a tRPC output.
+13. PASS - `cache.put`/`caches.open` appear only in the service worker's precache (`sw.ts:60`, static assets plus `/offline` and its assets) and cache-first path (`sw.ts:80-81`, `/_next/static`, icons, fonts, manifest).
+14. PASS - `dangerouslySetInnerHTML` under `src/features/pwa`, `src/features/push` and `src/features/navigation/mobile` prints nothing.
+15. PASS - the em-dash scan over every changed non-kit file printed nothing.
+16. PASS - `docs/dealflow/PWA.md` exists and `UPSTREAM.md` has the Part 10 section with this part's upstream files.
+17. PASS - `pnpm check:progress --final` passes.
+
