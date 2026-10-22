@@ -71,7 +71,7 @@ describe("ConditionRows", () => {
     const input = screen.getByLabelText("Condition 1 value");
     expect(input.tagName).toBe("INPUT");
     // The wrapper's focus ring is what a bare <input> did not have.
-    expect(input).toHaveClass("focus-visible:ring-ring/50");
+    expect(input).toHaveClass("focus-visible:ring-1", "focus-visible:ring-ring");
   });
 
   it("hides the combinator selector until there is more than one row", () => {

@@ -26,7 +26,7 @@ describe("Checkbox", () => {
     render(<Checkbox checked={false} onCheckedChange={vi.fn()} label="Unchecked row" />);
     const cb = screen.getByRole("checkbox", { name: "Unchecked row" });
     expect(cb.className).not.toContain("border-input");
-    expect(cb.className).toContain("border-muted-foreground/50");
+    expect(cb.className).toContain("border-border-strong");
   });
 
   it("does not fire onCheckedChange when disabled", () => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { useToastStore } from "@/features/feedback/toastStore";
 
 // The single toast region (6.8): bottom-centre on mobile, bottom-right on desktop. Each toast can
@@ -33,33 +32,28 @@ export function Toaster(): React.ReactNode {
           onKeyDown={(event) => {
             if (event.key === "Escape") dismiss(toast.id);
           }}
-          className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-lg border bg-card px-3 py-2 shadow-lg"
+          className={
+            toast.tone === "error"
+              ? "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-lg border-l-[3px] border-l-destructive bg-tooltip px-4 py-3 text-tooltip-foreground shadow-pop"
+              : "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-lg bg-tooltip px-4 py-3 text-tooltip-foreground shadow-pop"
+          }
         >
-          <p
-            className={
-              toast.tone === "error"
-                ? "min-w-0 flex-1 text-sm text-destructive"
-                : "min-w-0 flex-1 text-sm text-foreground"
-            }
-          >
-            {toast.message}
-          </p>
+          <p className="min-w-0 flex-1 text-sm">{toast.message}</p>
           {toast.action !== undefined && (
-            <Button
+            <button
               type="button"
-              size="sm"
-              variant="outline"
               data-testid={toast.action.testId ?? "toast-undo"}
               onClick={() => void runAction(toast.id)}
+              className="shrink-0 rounded-md px-1 text-sm font-semibold text-tooltip-foreground transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {toast.action.label}
-            </Button>
+            </button>
           )}
           <button
             type="button"
             aria-label="Dismiss notification"
             onClick={() => dismiss(toast.id)}
-            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="shrink-0 rounded-md p-1 text-tooltip-foreground/70 transition-colors duration-100 hover:bg-white/10 hover:text-tooltip-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>

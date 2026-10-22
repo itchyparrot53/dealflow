@@ -92,7 +92,7 @@ export function DatePicker({
         onMouseEnter={preloadDayPicker}
         onFocus={preloadDayPicker}
         className={
-          triggerClassName ?? cn(buttonVariants({ variant: "outline", size: "sm" }), "font-normal")
+          triggerClassName ?? cn(buttonVariants({ variant: "outline", size: "md" }), "font-normal")
         }
       >
         {label === "" ? (

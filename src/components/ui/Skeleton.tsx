@@ -9,5 +9,12 @@ export function Skeleton({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">): React.ReactNode {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
+  return (
+    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)} {...props}>
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent motion-reduce:hidden"
+      />
+    </div>
+  );
 }

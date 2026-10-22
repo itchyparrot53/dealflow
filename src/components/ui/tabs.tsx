@@ -14,7 +14,7 @@ export const Tabs = RadixTabs.Root;
 // The app's two parity-locked tab looks, as TabsTrigger className presets so the
 // several strips that share a look stay identical. Active state via data-[state=active].
 export const PILL_TAB =
-  "rounded-md px-2.5 py-1 text-muted-foreground hover:bg-accent/50 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:font-medium data-[state=active]:text-primary";
+  "h-auto rounded-md border-0 px-2.5 py-1 text-muted-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-info-soft data-[state=active]:font-medium data-[state=active]:text-info data-[state=active]:after:hidden";
 
 // List/Trigger carry only structural + focus/disabled defaults. The app has two
 // tab looks (pill and underline) with parity-locked colors, so each surface passes
@@ -24,7 +24,11 @@ export const TabsList = forwardRef<
   React.ElementRef<typeof RadixTabs.List>,
   React.ComponentPropsWithoutRef<typeof RadixTabs.List>
 >(({ className, ...props }, ref) => (
-  <RadixTabs.List ref={ref} className={cn("flex items-center", className)} {...props} />
+  <RadixTabs.List
+    ref={ref}
+    className={cn("flex items-center border-b border-border", className)}
+    {...props}
+  />
 ));
 TabsList.displayName = "TabsList";
 
@@ -35,7 +39,7 @@ export const TabsTrigger = forwardRef<
   <RadixTabs.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
+      "relative inline-flex h-10 items-center gap-2 whitespace-nowrap px-4 text-sm font-medium text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:bg-disabled disabled:text-disabled-foreground data-[state=active]:bg-info-soft data-[state=active]:text-info data-[state=active]:after:absolute data-[state=active]:after:inset-x-0 data-[state=active]:after:-bottom-px data-[state=active]:after:h-0.5 data-[state=active]:after:bg-info",
       className,
     )}
     {...props}

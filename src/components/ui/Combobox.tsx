@@ -82,7 +82,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
         aria-label={ariaLabel}
         disabled={disabled}
         className={cn(
-          buttonVariants({ variant: "outline", size: "sm" }),
+          buttonVariants({ variant: "outline", size: "md" }),
           "w-full justify-between font-normal disabled:opacity-50",
           triggerClassName,
         )}
@@ -92,7 +92,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             <Avatar
               name={selected.avatarName}
               src={selected.avatarUrl}
-              className="h-5 w-5 text-[10px]"
+              className="h-5 w-5 text-xs"
             />
           )}
           {selected?.label ?? <span className="text-muted-foreground">{placeholder}</span>}
@@ -105,7 +105,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
             placeholder="Search..."
             value={search?.value}
             onValueChange={search?.onChange}
-            className="w-full border-b px-2.5 py-2 text-sm outline-none"
+            className="h-8 w-full border-b px-3 text-sm outline-none"
           />
           <CommandList className="max-h-56 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
               <CommandGroup
                 key={g.options[0]?.value ?? g.heading}
                 heading={g.heading}
-                className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground"
+                className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-meta [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
               >
                 {g.options.map((o) => (
                   <CommandItem
@@ -126,14 +126,10 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
                       onChange(o.value);
                       setOpen(false);
                     }}
-                    className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm data-[selected=true]:bg-accent"
+                    className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-3 text-sm data-[selected=true]:bg-info-soft data-[selected=true]:text-info"
                   >
                     {o.avatarName !== undefined && (
-                      <Avatar
-                        name={o.avatarName}
-                        src={o.avatarUrl}
-                        className="h-5 w-5 text-[10px]"
-                      />
+                      <Avatar name={o.avatarName} src={o.avatarUrl} className="h-5 w-5 text-xs" />
                     )}
                     {o.label}
                     {o.value === value && <Check className="ml-auto h-4 w-4" />}

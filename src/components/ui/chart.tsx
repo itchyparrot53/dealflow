@@ -106,7 +106,7 @@ export function ChartTooltipContent({
   const config = useChartConfig();
   if (active !== true || payload === undefined || payload.length === 0) return null;
   return (
-    <div className="rounded-md border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-md">
+    <div className="rounded-md border bg-popover px-2 py-1.5 text-xs text-popover-foreground shadow-pop">
       <p className="mb-1 font-medium">{labelFormatter?.(label) ?? label}</p>
       {payload.map((item) => {
         const key = String(item.dataKey ?? "");

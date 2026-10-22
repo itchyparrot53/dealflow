@@ -29,7 +29,7 @@ describe("Button", () => {
     const classes = buttonVariants({ variant: "default" });
     expect(classes).toContain("bg-action");
     expect(classes).toContain("text-action-foreground");
-    expect(classes).not.toContain("bg-primary");
+    expect(classes).not.toContain(" bg-primary ");
   });
 
   // Dimming a filled button to 50% put white on a pale green at 1.55:1. A disabled filled button
@@ -43,9 +43,12 @@ describe("Button", () => {
     }
   });
 
-  it("unfilled variants keep the plain fade, which has no fill to misread", () => {
-    for (const variant of ["outline", "ghost"] as const) {
-      expect(buttonVariants({ variant })).toContain("disabled:opacity-50");
+  // PLAN-PART11.md 6.6: every variant swaps to the neutral disabled pair instead of fading.
+  it("keeps the neutral disabled pair on every variant", () => {
+    for (const variant of ["default", "outline", "ghost"] as const) {
+      const classes = buttonVariants({ variant });
+      expect(classes).toContain("disabled:bg-disabled");
+      expect(classes).toContain("disabled:text-disabled-foreground");
     }
   });
 });

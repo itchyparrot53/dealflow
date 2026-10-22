@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-22 07:50
+Current: 0.4 · Last updated: 2026-10-22 07:58
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -9,7 +9,7 @@ Current: 0.3 · Last updated: 2026-10-22 07:50
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
 - [x] 0.2 Tokens and global styles
-- [ ] 0.3 Primitives and layout components
+- [x] 0.3 Primitives and layout components
 - [ ] 0.4 Design e2e harness
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Shell
@@ -51,6 +51,12 @@ Current: 0.3 · Last updated: 2026-10-22 07:50
 - 0.2: `--text-display` is gone: its 27 heading uses became `text-title` (24/32/400) and the two composer Subject inputs became `text-sm` (controls are 14/20), so no surface keeps a 25 px step. `cn` registers `text-title`/`text-meta` as font sizes, otherwise tailwind-merge drops the size when a colour class follows it.
 - 0.2: the typeScale guard's second case now requires every painted h1 to name `text-title` or `text-base` (the type table's two heading steps) instead of the removed `text-display`; it still fails on an unnamed size. Tests updated for the class contract: `PageHeading`, `LeadHeader`, `EditableTitle`, `ActivityComposerInline.fields`, `lib/utils`.
 - 0.2: the public light lock is `[data-theme-lock="light"]`, which re-declares the light palette in the same rule as `:root`, so its subtree stays light even with `.dark` on `<html>`; `AppearanceSync` and `useAppearanceChoice` also refuse to add `.dark` while the attribute is present (checked on mount, when the page tree is already committed).
+- 0.3: every 6.6 primitive is restyled at the token level while keeping its props, roles and test ids: controls 28/32/40 with `SplitButton` added to `Button.tsx`, fields 32 with the strong border and a 1 px blue focus ring, 18 px checkbox/radio with the blue checked fill, 32x18 switch on green, 20 px status badges, 40 px tabs with the blue underline, overlays on `shadow-pop`/`shadow-dialog` and the 50% foreground scrim, dark toasts, a shimmering skeleton and the 4 px progress bar. The dialog and sheet chrome keeps the 56/64 header/footer rhythm with full-bleed rules via negative margins, so the body padding stays 24 and no call site changed.
+- 0.3: added a `--track` token (#E4E4E4 light, #30343D dark) for the progress track and the future StageTrack segments; 6.4 gives that value but no token name, and `bg-track` keeps both surfaces on one value.
+- 0.3: `Avatar` now uses the measured `--avatar` / `--avatar-foreground` neutral pair instead of a per-name colour swatch; initials stay 600 and the 20/32/40 sizes come from the caller's size classes.
+- 0.3: new `Panel`, `Kbd`, `StatusBadge`, `ViewSwitcher`, `PageToolbar`, `tableStyles` and `shell/pageTitle.tsx`, each with a unit test. The switcher is a `fieldset` of `aria-pressed` buttons because no Radix toggle-group is installed and Part 11 allows only `@axe-core/playwright` as a new dependency.
+- 0.3: changed tests for the new primitive contract: Input focus ring (ConditionRows, SavedViewControl), the disabled neutral pair on every Button variant, the Checkbox strong border, and the Switch track/on tokens. No assertion was loosened.
+
 
 
 ## Owner actions

@@ -84,7 +84,7 @@ function SelectItem({ option }: { option: SelectOption }): React.ReactNode {
     <RadixSelect.Item
       value={toInternal(option.value)}
       className={cn(
-        "flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm outline-none transition-colors duration-150",
+        "flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-3 text-sm outline-none transition-colors duration-100 data-[highlighted]:bg-muted data-[state=checked]:bg-info-soft data-[state=checked]:text-info",
         "data-[highlighted]:bg-accent data-[state=checked]:font-medium",
       )}
     >
@@ -115,7 +115,7 @@ function SelectSection({
   }
   return (
     <RadixSelect.Group>
-      <RadixSelect.Label className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <RadixSelect.Label className="px-3 py-1.5 text-meta font-semibold text-muted-foreground">
         {heading}
       </RadixSelect.Label>
       {options.map((o) => (
@@ -164,7 +164,7 @@ export function Select({
         title={triggerTitle}
         data-testid={testId}
         className={cn(
-          "group flex w-full items-center justify-between rounded-md border bg-card px-2.5 py-1.5 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-150 ease-out focus:border-ring focus:ring-2 focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none",
+          "group flex h-8 w-full items-center justify-between rounded-md border border-border-strong bg-card px-2 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-100 ease-out hover:border-placeholder focus:border-ring focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground motion-reduce:transition-none",
           triggerClassName,
         )}
       >
@@ -181,7 +181,7 @@ export function Select({
         <RadixSelect.Content
           position="popper"
           sideOffset={4}
-          className="z-50 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
+          className="z-50 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-pop data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
         >
           <RadixSelect.Viewport className="p-1">
             {groupOptions(options).map((section) => (

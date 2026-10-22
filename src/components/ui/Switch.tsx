@@ -36,15 +36,15 @@ export function Switch({
       disabled={disabled}
       data-testid={testId}
       className={cn(
-        "peer relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-muted-foreground/30 outline-none transition-[background-color,box-shadow,scale] duration-150 ease-out",
+        "peer relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer items-center rounded-full bg-border-strong outline-none transition-[background-color,box-shadow,scale] duration-100 ease-out",
         "after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
-        "hover:not-disabled:ring-4 hover:not-disabled:ring-ring/15 data-[state=unchecked]:hover:not-disabled:bg-muted-foreground/40",
-        "data-[state=checked]:bg-success data-[state=checked]:hover:not-disabled:bg-success/85 motion-safe:active:not-disabled:scale-[0.96] motion-reduce:transition-colors",
+        "hover:not-disabled:ring-4 hover:not-disabled:ring-ring/15",
+        "data-[state=checked]:bg-primary data-[state=checked]:hover:not-disabled:bg-primary/85 motion-safe:active:not-disabled:scale-[0.96] motion-reduce:transition-colors",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
-      <SwitchPrimitive.Thumb className="pointer-events-none block size-4 translate-x-0.5 rounded-full bg-background shadow-sm transition-transform duration-150 ease-out data-[state=checked]:translate-x-[1.125rem] motion-reduce:transition-none" />
+      <SwitchPrimitive.Thumb className="pointer-events-none block size-3.5 translate-x-0.5 rounded-full bg-white transition-transform duration-100 ease-out data-[state=checked]:translate-x-4 motion-reduce:transition-none" />
     </SwitchPrimitive.Root>
   );
 }

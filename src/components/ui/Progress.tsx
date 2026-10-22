@@ -22,7 +22,7 @@ export const Progress = forwardRef<React.ElementRef<typeof RadixProgress.Root>, 
         value={clamped}
         max={safeMax}
         aria-label={label}
-        className={cn("h-2 w-full overflow-hidden rounded-full bg-muted", className)}
+        className={cn("h-1 w-full overflow-hidden rounded-full bg-track", className)}
         {...props}
       >
         <RadixProgress.Indicator

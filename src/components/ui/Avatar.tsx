@@ -1,5 +1,5 @@
 import type React from "react";
-import { avatarColorClass, initials } from "@/lib/avatar";
+import { initials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 interface AvatarProps {
@@ -21,7 +21,7 @@ export function Avatar({ name, src, className }: AvatarProps): React.ReactNode {
         src={src}
         alt={name}
         className={cn(
-          "inline-block h-7 w-7 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10",
+          "inline-block h-8 w-8 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10",
           className,
         )}
       />
@@ -32,8 +32,7 @@ export function Avatar({ name, src, className }: AvatarProps): React.ReactNode {
       role="img"
       aria-label={name}
       className={cn(
-        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-        avatarColorClass(name),
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-avatar text-xs font-semibold text-avatar-foreground",
         className,
       )}
     >

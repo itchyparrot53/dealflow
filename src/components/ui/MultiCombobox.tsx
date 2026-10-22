@@ -39,19 +39,19 @@ export function MultiCombobox({
     <Popover open={open} onOpenChange={setOpen}>
       <div
         className={cn(
-          buttonVariants({ variant: "outline", size: "sm" }),
+          buttonVariants({ variant: "outline", size: "md" }),
           // whitespace-normal opts back out of the button base: this row grows to fit its chips,
           // so a long label has to be able to break rather than push past the field edge.
-          "h-auto min-h-9 w-full flex-wrap justify-start gap-1 py-1 font-normal whitespace-normal",
+          "h-auto min-h-8 w-full flex-wrap justify-start gap-1 py-1 font-normal whitespace-normal",
         )}
       >
         {selected.map((o) => (
           <span
             key={o.value}
-            className="inline-flex items-center gap-1 rounded bg-accent px-1.5 py-0.5 text-xs text-accent-foreground"
+            className="inline-flex items-center gap-1 rounded-md bg-info-soft px-2 py-0.5 text-xs text-info"
           >
             {o.avatarName !== undefined && (
-              <Avatar name={o.avatarName} src={o.avatarUrl} className="h-4 w-4 text-[9px]" />
+              <Avatar name={o.avatarName} src={o.avatarUrl} className="h-4 w-4 text-xs" />
             )}
             {o.label}
             <button
@@ -76,7 +76,7 @@ export function MultiCombobox({
         <Command>
           <CommandInput
             placeholder="Search..."
-            className="w-full border-b px-2.5 py-2 text-sm outline-none"
+            className="h-8 w-full border-b px-3 text-sm outline-none"
           />
           <CommandList className="max-h-56 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
@@ -88,10 +88,10 @@ export function MultiCombobox({
                   key={o.value}
                   value={o.label}
                   onSelect={() => toggle(o.value)}
-                  className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1.5 text-sm data-[selected=true]:bg-accent"
+                  className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-3 text-sm data-[selected=true]:bg-info-soft data-[selected=true]:text-info"
                 >
                   {o.avatarName !== undefined && (
-                    <Avatar name={o.avatarName} src={o.avatarUrl} className="h-5 w-5 text-[10px]" />
+                    <Avatar name={o.avatarName} src={o.avatarUrl} className="h-5 w-5 text-xs" />
                   )}
                   {o.label}
                   {values.includes(o.value) && <Check className="ml-auto h-4 w-4" />}
