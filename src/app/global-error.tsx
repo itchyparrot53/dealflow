@@ -2,6 +2,7 @@
 import type React from "react";
 import { useEffect } from "react";
 import { STRINGS } from "@/constants/strings";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 import { forwardBoundaryError } from "@/features/observability/errorForwarding";
 
 export interface GlobalErrorProps {
@@ -27,6 +28,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps): React.R
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center font-sans">
+        <BrandLogo variant="mark" height={48} />
         <h1 className="text-lg font-semibold">{STRINGS.errors.appCrashTitle}</h1>
         <p className="max-w-md text-sm text-muted-foreground">{STRINGS.errors.appCrashBody}</p>
         {error.digest !== undefined && error.digest !== "" ? (

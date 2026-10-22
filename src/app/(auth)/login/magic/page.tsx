@@ -5,6 +5,7 @@ import { AUTH_STRINGS } from "@/constants/authStrings";
 import { db } from "@/db/client";
 import { peekAuthToken } from "@/features/auth/authTokens";
 import { safeLoginReturnPath } from "@/features/auth/loginReturn";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -31,8 +32,11 @@ export default async function MagicLinkPage({
   return (
     <main
       data-theme-lock="light"
-      className="flex min-h-screen items-center justify-center bg-canvas-subtle p-6"
+      className="flex min-h-screen flex-col items-center justify-center bg-canvas-subtle p-6"
     >
+      <div className="mb-6 flex w-full max-w-[400px] justify-center">
+        <BrandLogo height={32} />
+      </div>
       <div className="w-full max-w-[400px] rounded-lg border border-border bg-card p-8">
         {peek !== null && peek.ok ? (
           <>

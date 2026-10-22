@@ -3,6 +3,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 import { getAllOfflineRecords } from "../db";
 import type { OfflineRecordType, OfflineSnapshot } from "../snapshots";
 import { readOfflineUserId } from "../wipe";
@@ -57,11 +58,14 @@ export function OfflineApp(): React.ReactNode {
       className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-4 bg-canvas-subtle p-4 sm:p-6"
     >
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-title">You're offline</h1>
-          <p className="text-sm text-muted-foreground">
-            Records you opened while online. They are read-only.
-          </p>
+        <div className="flex items-center gap-3">
+          <BrandLogo height={24} />
+          <div>
+            <h1 className="text-title">You're offline</h1>
+            <p className="text-sm text-muted-foreground">
+              Records you opened while online. They are read-only.
+            </p>
+          </div>
         </div>
         <Button
           type="button"

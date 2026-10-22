@@ -6,6 +6,7 @@ import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { getPublicDocument } from "@/features/documents/publicDocuments";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 import { DocumentView } from "@/features/documents/ui/DocumentView";
 import { PrintButton, PublicActions } from "@/features/documents/ui/PublicActions";
 import { clientIp } from "@/features/net/clientIp";
@@ -91,7 +92,10 @@ export default async function PublicDocumentPage({
       )}
       <div className="mx-auto mt-6 flex max-w-[860px] flex-col items-center gap-4">
         <PrintButton label={DOCUMENTS_STRINGS.downloadPdf} />
-        <p className="text-xs text-muted-foreground">Powered by Dealflow</p>
+        <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <BrandLogo variant="mark" height={16} alt="" />
+          Powered by Dealflow
+        </p>
       </div>
     </main>
   );

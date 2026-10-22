@@ -19,6 +19,16 @@ describe("global error boundary", () => {
     expect(container.querySelector("body")).not.toBeNull();
   });
 
+  it("shows the colour Dealflow mark above the message", () => {
+    const { container } = render(<GlobalError error={new Error("boom")} reset={vi.fn()} />, {
+      container: document.documentElement,
+    });
+    const mark = container.querySelector("img");
+    expect(mark?.getAttribute("src")).toBe("/brand/dealflow-mark-colour.svg");
+    expect(mark?.getAttribute("width")).toBe("48");
+    expect(mark?.getAttribute("height")).toBe("48");
+  });
+
   it("shows the digest when Next supplies one", () => {
     render(
       <GlobalError
@@ -47,5 +57,8 @@ describe("(app) not-found boundary", () => {
     render(<AppNotFound />);
     expect(screen.getByRole("heading").textContent).toBeTruthy();
     expect(screen.getByRole("link").getAttribute("href")).toBe("/pipeline");
+    const mark = screen.getByRole("img", { name: "Dealflow" });
+    expect(mark.getAttribute("src")).toBe("/brand/dealflow-mark-colour.svg");
+    expect(mark.getAttribute("height")).toBe("48");
   });
 });
