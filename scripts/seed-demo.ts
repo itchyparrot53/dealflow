@@ -99,6 +99,14 @@ async function main(): Promise<void> {
   );
   // A pending invite (no SSO yet) so the users settings list shows the Invited state.
   await seedInvitedUser(db, regularSetId, everyoneGroupId);
+  // One audit event so the audit-log page has a row in a fresh database (the e2e spec asserts the
+  // table renders; without a seed the page is legitimately empty until a security change happens).
+  await db.q(
+    `INSERT INTO audit_events (actor_id, target_type, target_id, action, before, after)
+     SELECT $1, 'settings', NULL, 'settings.update', NULL, '{"seeded":true}'::jsonb
+     WHERE NOT EXISTS (SELECT 1 FROM audit_events)`,
+    [at(userIds, 0)],
+  );
 
   await wipeDemo(db, userIds);
 

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-22 12:00
+Current: 4.2 · Last updated: 2026-10-22 12:35
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -32,7 +32,7 @@ Current: 4.1 · Last updated: 2026-10-22 12:00
 - [x] 3.3 Empty, loading and error states
 - [x] 3.4 Remaining worklist, wording and docs
 - [x] 3.5 Phase 3 QA gate
-- [ ] 4.1 Full e2e and the gallery
+- [x] 4.1 Full e2e and the gallery
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review with a computed-style critique
 - [ ] 4.4 Final checklist
@@ -104,6 +104,9 @@ Current: 4.1 · Last updated: 2026-10-22 12:00
 - 3.3: the last two plain loading lines are now content-shaped skeletons: the thread reader paints title + two message cards, and the booking slot grid paints six 32 px slot skeletons. The skeleton containers carry `role="status"` with `aria-busy`/`aria-label`. A new `ErrorRow` primitive renders 6.8.13's inline failure (3 px destructive left bar on the soft red fill, 14 text, optional action) and is used by the activities table and the thread's mark-unread error.
 - 3.4: `check-design` is now 0 violations in 0 files with 12 opt-outs (seven intercepted `@modal` routes whose underlying page owns the title, four redirect-only routes, and the drag bar's upper-case labels). The last 36 hits in 25 files were closed by tokenising the remaining palette steps and soft-red error rows, removing shadows from static cards, switching all-caps section labels to 13/600 sentence case, replacing the arbitrary 10/11 px sizes with `text-caption`, and the composer tab underline's raw `#2b74da` with `--info`.
 - 3.4: `docs/dealflow/DESIGN-WORKLIST.md` is rewritten as the final record (0 violations, every opt-out with file, line and reason, the 6.1 table with every row's closing task); `docs/dealflow/DESIGN.md` documents the parity statement, the full token table in both themes, type/spacing/radius/shadow/motion/focus, the component inventory, the opt-out policy and the commands; `UPSTREAM.md` has the Part 11 section by folder and the README has its design paragraph. 6.9 wording holds (search "Search Dealflow", sentence case, no "successfully" toasts).
+- 4.1: the full e2e suite passes 50/50 (specs 00 to 15) and the gallery has 73 PNGs. Three harness issues surfaced and were fixed without touching app behaviour: the design gallery now re-authenticates the admin in a `beforeAll` (spec 14 signs out to prove sign-out wipes offline records, which revoked the seeded session, so the app screens were redirecting to /login); spec 12 targets the person heading by name instead of bare `h1` (the top bar adds an `h1`) and waits for the recycle-bin restore row to disappear before navigating (the immediate `goto` was aborting the in-flight server action); and `seed-demo.ts` seeds one audit event so the audit-log page has a row in a fresh database.
+- 4.1: the full run also caught a real design bug: the `Badge` destructive variant painted destructive ink on a 10% fill (3.95:1). It is now a filled pill with white text (4.6:1).
+- 4.1: integration ran alongside and passed 2097/2097 in 412 files (Task 4.2 continues with the smoke run).
 - 3.5 fixes: none needed. The full 26-screen design pass (parity checks on, axe light and dark, 1440/375) passed first time, `check-design` is 0, and the unit suite is 5346/5346. The gallery wrote the expected 73 PNGs.
 - 3.4: changed tests for the shared secondary-nav and notification tint: contacts nav asserts the info tokens, and the notification row asserts `bg-info-soft`. The full unit suite is 5346/5346 and lint/typecheck are green.
 - 3.3: `git grep -nE ">Loading[^<]*\.\.\.<" -- src` prints nothing; the changed files are at `check:design` 0; the thread and booking design screens pass 2/2 and the mail/activities/scheduling suites 1476/1476.

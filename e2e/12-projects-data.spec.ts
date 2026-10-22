@@ -39,7 +39,7 @@ async function dragFirstCardToSecondColumn(page: Page): Promise<void> {
 }
 
 test("projects, API, recycle bin, export, audit log and backups", async ({ page, request }) => {
-  const { dealId, personId } = fixtures();
+  const { dealId, personId, personName } = fixtures();
   expect(personId).not.toBeNull();
 
   // 1. Mark the demo deal won, then create a project from its sidebar.
@@ -105,8 +105,15 @@ test("projects, API, recycle bin, export, audit log and backups", async ({ page,
   await expect(row).toBeVisible({ timeout: 20_000 });
   await shot(page, "p8-recycle-bin");
   await row.getByTestId("recycle-restore").click();
+  // The restore is a server action; navigating before it lands aborts the request and the record
+  // still looks deleted. Wait for the restored row to leave the bin first.
+  await expect(row).toHaveCount(0, { timeout: 20_000 });
   await page.goto(`/contacts/people/${personId ?? ""}`);
-  await expect(page.locator("h1")).toBeVisible({ timeout: 20_000 });
+  // The page name moved to the top bar, so target the person heading by name instead of `h1`
+  // (which is now the top-bar title plus the content heading).
+  await expect(page.getByRole("heading", { level: 1, name: personName })).toBeVisible({
+    timeout: 20_000,
+  });
 
   // 4. Export the deals list: the first line carries the table headers.
   await page.goto("/pipeline");

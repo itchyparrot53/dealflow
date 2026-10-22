@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { type DesignRoute, designRoutes, selectedScreens } from "./design/routes";
 import { runStyleChecks } from "./design/styleChecks";
-import { fixtures } from "./helpers";
+import { E2E_ADMIN_PASSWORD, fixtures } from "./helpers";
 
 // Part 11 design gallery (PLAN-PART11.md 6.10). Public screens run signed out and always light;
 // app screens run as the seeded admin. DESIGN_SCREENS narrows a run while the restyle is in
@@ -112,6 +112,21 @@ test.describe("design gallery: public screens", () => {
 
 test.describe("design gallery: app screens", () => {
   test.use({ storageState: ".e2e/admin.json" });
+
+  // Spec 14 signs the admin out (to prove sign-out wipes offline records), which revokes the
+  // session the seeded storage state carries. Re-authenticate once before the gallery so these
+  // screens have a live session regardless of file order.
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto("/login");
+    await page.locator("#login-email").fill(fixtures().adminEmail);
+    await page.locator("#login-password").fill(E2E_ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/pipeline/);
+    await context.storageState({ path: ".e2e/admin.json" });
+    await context.close();
+  });
   for (const route of SELECTED.filter((entry) => entry.app)) {
     test(route.id, async ({ page }) => {
       await runScreen(page, route);
