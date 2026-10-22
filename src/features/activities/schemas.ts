@@ -91,5 +91,8 @@ export const activityListFilter = z.object({
   from: z.string().date().nullable().default(null),
   to: z.string().date().nullable().default(null),
   typeKey: z.string().nullable().default(null),
+  // Free-text search over subject and note, trimmed and capped so a pasted paragraph cannot
+  // turn into a pathological LIKE pattern.
+  search: z.string().trim().max(100).nullable().default(null),
 });
 export type ActivityListFilter = z.infer<typeof activityListFilter>;

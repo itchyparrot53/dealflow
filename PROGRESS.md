@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-22 04:50
+Current: 3.4 · Last updated: 2026-10-22 05:20
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -23,7 +23,7 @@ Current: 3.3 · Last updated: 2026-10-22 04:50
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Mobile shell
 - [x] 3.2 Key screens on mobile
-- [ ] 3.3 Create anywhere and activities search
+- [x] 3.3 Create anywhere and activities search
 - [ ] 3.4 Smoke seed, demo and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E PWA and mobile spec and screenshots
@@ -80,6 +80,10 @@ Current: 3.3 · Last updated: 2026-10-22 04:50
 - 3.1: the shell adds `pb-24` to the content area below md so the fixed bar never covers the last row, and the bar pads itself with `env(safe-area-inset-bottom)`; the top bar drops the brand, quick-add and assistant below md, leaving search, notifications and the avatar.
 - 3.2: the board becomes one 85vw snap column per swipe (its list still scrolls internally, never the page); the deal workspace puts the main panel first and the sidebar sections below it on a phone, keeping the two-column split at lg; the activities table renders cards below md (`useIsMobile`, which reads as desktop when `matchMedia` is missing so jsdom and the server keep the table markup); the documents table got an overflow container and the inbox context sidebar is hidden below md.
 - 3.2: the mobile activities cards duplicate text in the DOM if rendered always, which broke 16 existing activities tests. They now render only when `useIsMobile()` is true, so the tests and the server see exactly the table markup they did before; no assertion was changed.
+- 3.3: `CreateDialogProvider` owns the existing deal, person, organization, activity, project and call dialogs and is mounted once in the app shell. The `n` sequences and the palette's Create commands call `openCreate`; the shortcut registry now encodes actions as `navigate:<href>` or `create:<kind>` (the help sheet and the documented `href` per sequence are unchanged).
+- 3.3: "Log a call" uses the deal/person/organization already on screen (path-derived); anywhere else a small person picker chooses the record before the existing `LogCallForm`. The project dialog opened from anywhere starts with empty optional deal/owner lists, which `createProject` already accepts; the projects page keeps its richer local dialog.
+- 3.3: activities gained `search` (trimmed, max 100) in the filter schema, SQL `ilike` over subject and note, the URL-backed list state (`?search=`), and the toolbar input `activities-search`. The CSV export filters subject or note in `filterActivities`, and the generic subject-only search is skipped for activities so a note-only match is not dropped; `ActivityTableRow` carries the note for that.
+- 3.3: three activity test files gained `search: null` in their filter literals (the changed filter contract), and new real-Postgres cases cover list search by subject and note plus the export's note-only match.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

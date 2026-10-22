@@ -1,4 +1,5 @@
 import type { PermissionFlagKey } from "@/constants/permissionFlags";
+import type { CreateDefaults, CreateKind } from "@/features/create/CreateDialogProvider";
 
 // Palette commands (6.5). The registry itself is built in Task 3.2; this module owns the shape and
 // the permission filter so the palette can drop commands an actor may not run before rendering.
@@ -9,6 +10,9 @@ export type CommandGroup = (typeof COMMAND_GROUPS)[number];
 export interface CommandContext {
   router: { push: (href: string) => void; refresh?: () => void };
   openDialog: (id: string) => void;
+  // The create dialogs are owned by CreateDialogProvider, so a palette command can open one in
+  // place instead of routing to the page that hosts it.
+  openCreate: (kind: CreateKind, defaults?: CreateDefaults) => void;
 }
 
 export interface Command {

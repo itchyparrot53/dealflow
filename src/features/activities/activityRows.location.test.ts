@@ -33,7 +33,7 @@ it("surfaces the saved location on an activity table row", async () => {
     const rows = await listActivityRows(
       db,
       actor,
-      { ownerId: null, done: "all", from: null, to: null, typeKey: null },
+      { ownerId: null, done: "all", from: null, to: null, typeKey: null, search: null },
       signal,
     );
     expect(rows[0]?.location).toBe("HQ, 5th floor");

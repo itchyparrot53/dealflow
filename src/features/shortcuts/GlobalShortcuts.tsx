@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { NAV_ITEMS } from "@/constants/nav";
+import { type CreateKind, useCreateDialog } from "@/features/create/CreateDialogProvider";
 import { navHrefForKey } from "./navShortcut";
 import { SEQUENCE_MAP, SEQUENCE_TIMEOUT_MS } from "./registry";
 import { ShortcutHelp } from "./ShortcutHelp";
@@ -14,6 +15,7 @@ import { isOverlayOpen, isTypingTarget } from "./shortcutTarget";
 // shortcut sheet. Mounted once in the app layout.
 export function GlobalShortcuts(): React.ReactNode {
   const router = useRouter();
+  const { openCreate } = useCreateDialog();
   const [helpOpen, setHelpOpen] = useState(false);
   const helpOpenRef = useRef(false);
 
@@ -48,10 +50,14 @@ export function GlobalShortcuts(): React.ReactNode {
         router.push(href);
         return;
       }
-      const sequenceHref = matcher.press(e.key, Date.now());
-      if (sequenceHref !== null) {
+      const command = matcher.press(e.key, Date.now());
+      if (command !== null) {
         e.preventDefault();
-        router.push(sequenceHref);
+        if (command.startsWith("create:")) {
+          openCreate(command.slice("create:".length) as CreateKind);
+        } else {
+          router.push(command.slice("navigate:".length));
+        }
       }
     };
 
@@ -65,7 +71,7 @@ export function GlobalShortcuts(): React.ReactNode {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("warpdrive:open-shortcuts", openHelp);
     };
-  }, [router]);
+  }, [router, openCreate]);
 
   return <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />;
 }

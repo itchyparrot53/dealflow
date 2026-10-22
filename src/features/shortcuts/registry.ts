@@ -1,13 +1,17 @@
 import { SHORTCUT_SEQUENCE_MS } from "@/constants/productivity";
 
 // One registry drives both the matcher and the help sheet (6.8), so a shortcut cannot exist in one
-// place and be missing from the other. Create sequences navigate to the list page that owns the
-// create dialog, matching the palette's Create commands.
+// place and be missing from the other. Navigation sequences router.push; create sequences (n ...)
+// open the dialog in place through CreateDialogProvider, with the owning page kept as the fallback
+// href for anything that still needs a route.
+
+import type { CreateKind } from "@/features/create/CreateDialogProvider";
 
 export interface ShortcutSequence {
   keys: string;
   label: string;
   href: string;
+  create?: CreateKind;
 }
 
 export const SHORTCUT_SEQUENCES: readonly ShortcutSequence[] = [
@@ -20,15 +24,20 @@ export const SHORTCUT_SEQUENCES: readonly ShortcutSequence[] = [
   { keys: "g j", label: "Projects", href: "/projects" },
   { keys: "g f", label: "Forecast", href: "/forecast" },
   { keys: "g m", label: "Inbox", href: "/inbox" },
-  { keys: "n d", label: "New deal", href: "/pipeline" },
-  { keys: "n p", label: "New person", href: "/contacts/people" },
-  { keys: "n o", label: "New organization", href: "/contacts/orgs" },
-  { keys: "n a", label: "New activity", href: "/activities/list" },
-  { keys: "n c", label: "Log a call", href: "/activities/list" },
+  { keys: "n d", label: "New deal", href: "/pipeline", create: "deal" },
+  { keys: "n p", label: "New person", href: "/contacts/people", create: "person" },
+  { keys: "n o", label: "New organization", href: "/contacts/orgs", create: "organization" },
+  { keys: "n a", label: "New activity", href: "/activities/list", create: "activity" },
+  { keys: "n c", label: "Log a call", href: "/activities/list", create: "call" },
 ];
 
+// Encoded actions: "create:<kind>" opens a dialog, "navigate:<href>" routes. The matcher stays a
+// pure string matcher (see sequences.ts) and GlobalShortcuts decodes the result.
 export const SEQUENCE_MAP: Record<string, string> = Object.fromEntries(
-  SHORTCUT_SEQUENCES.map((sequence) => [sequence.keys, sequence.href]),
+  SHORTCUT_SEQUENCES.map((sequence) => [
+    sequence.keys,
+    sequence.create === undefined ? `navigate:${sequence.href}` : `create:${sequence.create}`,
+  ]),
 );
 
 export const SEQUENCE_TIMEOUT_MS = SHORTCUT_SEQUENCE_MS;

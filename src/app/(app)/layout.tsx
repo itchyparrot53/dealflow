@@ -12,6 +12,7 @@ import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
+import { CreateDialogProvider } from "@/features/create/CreateDialogProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
@@ -59,33 +60,35 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
       />
       <InterfacePrefsProvider value={interfacePrefsFromUi(prefs.ui)}>
         <FollowUpPromptProvider>
-          <div data-density={prefs.density} className="flex h-screen flex-col">
-            <CsrfRefresher hasCsrf={hasCsrf} />
-            {ctx.actor.type === "admin" && <VersionBanner />}
-            <ReconnectBanner />
-            <OfflineBanner />
-            <TopBar
-              userId={ctx.actor.id}
-              userName={ctx.actor.name}
-              avatarUrl={ctx.actor.avatarUrl}
-              appearance={parseAppearance(prefs.ui.appearance)}
-            />
-            <div className="flex min-h-0 flex-1">
-              {/* Below md the rail is replaced by the bottom navigation (BottomNav). */}
-              <div className="hidden md:block">
-                <LeftNav initialExpanded={navExpanded} />
+          <CreateDialogProvider>
+            <div data-density={prefs.density} className="flex h-screen flex-col">
+              <CsrfRefresher hasCsrf={hasCsrf} />
+              {ctx.actor.type === "admin" && <VersionBanner />}
+              <ReconnectBanner />
+              <OfflineBanner />
+              <TopBar
+                userId={ctx.actor.id}
+                userName={ctx.actor.name}
+                avatarUrl={ctx.actor.avatarUrl}
+                appearance={parseAppearance(prefs.ui.appearance)}
+              />
+              <div className="flex min-h-0 flex-1">
+                {/* Below md the rail is replaced by the bottom navigation (BottomNav). */}
+                <div className="hidden md:block">
+                  <LeftNav initialExpanded={navExpanded} />
+                </div>
+                <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-4 pb-24 md:p-6 md:pb-6">
+                  {children}
+                </main>
               </div>
-              <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-4 pb-24 md:p-6 md:pb-6">
-                {children}
-              </main>
+              <BottomNav />
+              <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
+              <OfflineUserSync userId={ctx.actor.id} />
+              <GlobalShortcuts />
+              <ServiceWorkerRegistration production={env.NODE_ENV === "production"} />
+              <Toaster />
             </div>
-            <BottomNav />
-            <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
-            <OfflineUserSync userId={ctx.actor.id} />
-            <GlobalShortcuts />
-            <ServiceWorkerRegistration production={env.NODE_ENV === "production"} />
-            <Toaster />
-          </div>
+          </CreateDialogProvider>
         </FollowUpPromptProvider>
       </InterfacePrefsProvider>
     </ActionErrorProvider>

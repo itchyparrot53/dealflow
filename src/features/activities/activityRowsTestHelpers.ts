@@ -29,6 +29,7 @@ export const noFilter: ActivityListFilter = {
   from: null,
   to: null,
   typeKey: null,
+  search: null,
 };
 
 export async function callTypeId(

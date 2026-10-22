@@ -16,7 +16,7 @@ import { useLocalNow } from "./useLocalNow";
 // link and the CSV export all see the same filter instead of a fresh in-memory default.
 
 const UNRESOLVED_RANGE: PresetRange = { from: null, to: null };
-const FILTER_KEYS = ["ownerId", "done", "from", "to", "typeKey"] as const;
+const FILTER_KEYS = ["ownerId", "done", "from", "to", "typeKey", "search"] as const;
 const DONE_VALUES = ["all", "open", "done"] as const;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -27,7 +27,14 @@ export interface ActivityListFilterState {
 }
 
 function defaultFilter(currentUserId: string, range: PresetRange): ActivityListFilter {
-  return { ownerId: currentUserId, done: "open", from: range.from, to: range.to, typeKey: null };
+  return {
+    ownerId: currentUserId,
+    done: "open",
+    from: range.from,
+    to: range.to,
+    typeKey: null,
+    search: null,
+  };
 }
 
 function parseFilter(
@@ -40,6 +47,8 @@ function parseFilter(
   const done = params.get("done");
   const from = params.get("from");
   const to = params.get("to");
+  const typeKey = params.get("typeKey");
+  const search = params.get("search");
   return {
     // "ownerId=" (empty) means every owner; an absent key keeps the signed-in default.
     ownerId: params.has("ownerId") ? (owner === "" ? null : owner) : base.ownerId,
@@ -49,7 +58,8 @@ function parseFilter(
     // "none" is the explicit cleared range (a null from/to would otherwise re-derive today).
     from: from === "none" ? null : from !== null && DATE.test(from) ? from : base.from,
     to: to === "none" ? null : to !== null && DATE.test(to) ? to : base.to,
-    typeKey: params.get("typeKey"),
+    typeKey,
+    search: search !== null && search.trim() !== "" ? search.trim().slice(0, 100) : null,
   };
 }
 
@@ -65,6 +75,7 @@ function serialize(filter: ActivityListFilter): string {
   params.set("from", filter.from ?? "none");
   params.set("to", filter.to ?? "none");
   if (filter.typeKey !== null) params.set("typeKey", filter.typeKey);
+  if (filter.search !== null && filter.search !== "") params.set("search", filter.search);
   return params.toString();
 }
 

@@ -163,6 +163,14 @@ function filterActivities(
   params: Record<string, string>,
 ): Record<string, unknown>[] {
   let filtered = rows;
+  const search = (params.search ?? "").trim().toLowerCase().slice(0, 100);
+  if (search !== "") {
+    filtered = filtered.filter(
+      (row) =>
+        text(row, "subject").toLowerCase().includes(search) ||
+        text(row, "note").toLowerCase().includes(search),
+    );
+  }
   const by = (key: string, param: string): Record<string, unknown>[] => {
     const wanted = params[param];
     if (wanted === undefined || wanted === "") return filtered;
@@ -213,7 +221,9 @@ function filterRows(
     return filtered.filter((row) => text(row, key) === wanted);
   };
   let filtered = rows;
-  if (search !== "") {
+  // Activities have their own search below (subject OR note); the generic one only looks at
+  // subject, which would drop a row that matched on its note.
+  if (search !== "" && entity !== "activities") {
     filtered = filtered.filter(
       (row) =>
         text(row, "title").toLowerCase().includes(search) ||
@@ -334,6 +344,7 @@ async function apiRows(
           from: null,
           to: null,
           typeKey: null,
+          search: null,
         },
         signal,
       );

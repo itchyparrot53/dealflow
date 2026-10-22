@@ -2,6 +2,7 @@
 import type React from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { ActivityPresetChips } from "./ActivityPresetChips";
 import { ActivityTypeTab } from "./ActivityTypeTab";
@@ -43,6 +44,16 @@ export function ActivitiesFilters({
     <div className="flex flex-col gap-2">
       <ActivityPresetChips from={filter.from} to={filter.to} onApply={(range) => patch(range)} />
       <div className="flex flex-wrap items-center gap-2">
+        <Input
+          aria-label="Search activities"
+          data-testid="activities-search"
+          className="min-h-10 w-full sm:w-56"
+          placeholder="Search subject or note"
+          value={filter.search ?? ""}
+          onChange={(event) =>
+            patch({ search: event.target.value === "" ? null : event.target.value })
+          }
+        />
         {/* Both primitives default to w-full; with no width here each claims the whole flex line
             and wraps, so the pickers render full-bleed and stacked. */}
         <Combobox

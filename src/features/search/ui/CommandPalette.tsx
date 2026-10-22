@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { STRINGS } from "@/constants/strings";
+import { useCreateDialog } from "@/features/create/CreateDialogProvider";
 import {
   COMMAND_GROUP_ORDER,
   COMMANDS,
@@ -183,6 +184,7 @@ export function CommandPalette({
   const [debounced, setDebounced] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { openCreate } = useCreateDialog();
 
   // 150ms debounce on the query string.
   useEffect(() => {
@@ -231,7 +233,7 @@ export function CommandPalette({
 
   function runCommand(command: Command): void {
     close();
-    command.run({ router, openDialog: () => undefined });
+    command.run({ router, openDialog: () => undefined, openCreate });
   }
 
   function handleSelect(kind: "deal" | "person" | "organization" | "lead", r: SearchResult) {

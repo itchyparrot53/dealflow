@@ -140,6 +140,43 @@ describe("exportTable", () => {
     expect(subjects).not.toContain("Regular call");
   });
 
+  it("narrows the activities export by search, including a note-only match", async () => {
+    const [type] = await h.db.select().from(activityTypes).where(eq(activityTypes.key, "call"));
+    if (type === undefined) throw new Error("activity type 'call' not found");
+    await h.db.insert(activities).values([
+      {
+        typeId: type.id,
+        subject: "Pricing call",
+        ownerId: admin.id,
+        assigneeId: admin.id,
+        dueAt: new Date("2026-07-10T09:00:00.000Z"),
+      },
+      {
+        typeId: type.id,
+        subject: "Kickoff call",
+        note: "<p>raise pricing with them</p>",
+        ownerId: admin.id,
+        assigneeId: admin.id,
+        dueAt: new Date("2026-07-11T09:00:00.000Z"),
+      },
+      {
+        typeId: type.id,
+        subject: "Unrelated call",
+        ownerId: admin.id,
+        assigneeId: admin.id,
+        dueAt: new Date("2026-07-12T09:00:00.000Z"),
+      },
+    ]);
+
+    const result = await exportTable(h.db, admin, "activities", { search: "pricing" }, sig());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const subjects = result.value.rows.map((row) => row[0]);
+    expect(subjects).toContain("Pricing call");
+    expect(subjects).toContain("Kickoff call");
+    expect(subjects).not.toContain("Unrelated call");
+  });
+
   it("refuses without data.export", async () => {
     const result = await exportTable(h.db, regular, "deals", {}, sig());
     expect(result.ok).toBe(false);

@@ -4,9 +4,9 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { COMMAND_GROUPS, type Command, type CommandGroup } from "./commands";
 import type { PaletteDeal } from "./dealContext";
 
-// Palette command registry (6.8). Commands navigate to the surface that owns the action: the
-// dialogs live on the list pages, so "New project" opens the projects page rather than
-// duplicating its dialog here. Record search is unchanged and renders below these groups.
+// Palette command registry (6.8). Create commands open their dialog in place through
+// CreateDialogProvider (6.9); navigation commands still route. Record search is unchanged and
+// renders below these groups.
 
 const CREATE: Command[] = [
   {
@@ -15,7 +15,7 @@ const CREATE: Command[] = [
     label: "New deal",
     keywords: ["deal", "pipeline", "create", "new"],
     requires: "deal.create",
-    run: ({ router }) => router.push("/pipeline"),
+    run: ({ openCreate }) => openCreate("deal"),
   },
   {
     id: "create.person",
@@ -23,7 +23,7 @@ const CREATE: Command[] = [
     label: "New person",
     keywords: ["person", "contact", "create", "new"],
     requires: "contact.create",
-    run: ({ router }) => router.push("/contacts/people"),
+    run: ({ openCreate }) => openCreate("person"),
   },
   {
     id: "create.organization",
@@ -31,7 +31,7 @@ const CREATE: Command[] = [
     label: "New organization",
     keywords: ["organization", "company", "create", "new"],
     requires: "contact.create",
-    run: ({ router }) => router.push("/contacts/orgs"),
+    run: ({ openCreate }) => openCreate("organization"),
   },
   {
     id: "create.activity",
@@ -39,7 +39,7 @@ const CREATE: Command[] = [
     label: "New activity",
     keywords: ["activity", "task", "create", "new"],
     requires: "activity.create",
-    run: ({ router }) => router.push("/activities/list"),
+    run: ({ openCreate }) => openCreate("activity"),
   },
   {
     id: "create.call",
@@ -47,14 +47,14 @@ const CREATE: Command[] = [
     label: "Log a call",
     keywords: ["call", "log", "phone", "activity"],
     requires: "activity.create",
-    run: ({ router }) => router.push("/activities/list"),
+    run: ({ openCreate }) => openCreate("call"),
   },
   {
     id: "create.project",
     group: "Create",
     label: "New project",
     keywords: ["project", "create", "new"],
-    run: ({ router }) => router.push("/projects"),
+    run: ({ openCreate }) => openCreate("project"),
   },
   {
     id: "create.quote",

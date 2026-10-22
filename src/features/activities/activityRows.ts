@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, lte, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, isNull, lte, or, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { VisibilityLevel } from "@/constants/visibility";
 import type { Db } from "@/db/client";
@@ -26,6 +26,9 @@ const ownerUser = alias(users, "owner_user");
 export interface ActivityTableRow {
   id: string;
   subject: string;
+  // Rich-text note; present so the CSV export can search it. Optional so older row fixtures stay
+  // valid.
+  note?: string | null;
   typeKey: string;
   priority: string | null;
   done: boolean;
@@ -142,6 +145,11 @@ function activityFilterPredicates(filter: ActivityListFilter): SQL[] {
   if (filter.from !== null) preds.push(gte(activities.dueAt, new Date(`${filter.from}T00:00:00`)));
   if (filter.to !== null) preds.push(lte(activities.dueAt, new Date(`${filter.to}T23:59:59`)));
   if (filter.typeKey !== null) preds.push(eq(activityTypes.key, filter.typeKey));
+  if (filter.search !== null && filter.search !== "") {
+    const pattern = `%${filter.search}%`;
+    const matches = or(ilike(activities.subject, pattern), ilike(activities.note, pattern));
+    if (matches !== undefined) preds.push(matches);
+  }
   return preds;
 }
 
@@ -162,6 +170,7 @@ export async function listActivityRows(
     .select({
       id: activities.id,
       subject: activities.subject,
+      note: activities.note,
       dueAt: activities.dueAt,
       allDay: activities.allDay,
       done: activities.done,
@@ -238,6 +247,9 @@ export async function listActivityRows(
 type JoinedRow = LinkGateColumns & {
   id: string;
   subject: string;
+  // Rich-text note; present so the CSV export can search it. Optional so older row fixtures stay
+  // valid.
+  note?: string | null;
   typeKey: string;
   priority: string | null;
   done: boolean;
@@ -263,6 +275,7 @@ function toTableRow(row: JoinedRow, gates: LinkGates): ActivityTableRow {
   return {
     id: row.id,
     subject: row.subject,
+    note: row.note ?? null,
     typeKey: row.typeKey,
     priority: row.priority,
     done: row.done,

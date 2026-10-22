@@ -27,6 +27,7 @@ const baseFilter: ActivityListFilter = {
   from: null,
   to: null,
   typeKey: null,
+  search: null,
 };
 const owners = [{ value: "u1", label: "Ann", avatarName: "Ann" }];
 const types = [
