@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="brand/svg/logo-horizontal/dealflow-logo-horizontal-colour.svg" alt="Dealflow" width="240">
+</p>
+
 <h1 align="center">Dealflow</h1>
 
 <p align="center">

@@ -10,6 +10,24 @@ The values below are the contract. `scripts/dealflow/check-design.mjs` proves ev
 it, `e2e/15-design.spec.ts` proves the computed values in a browser, and the screenshot gallery in
 `e2e/screenshots/design/` is the owner's side-by-side review.
 
+## Brand
+
+The Dealflow logo and icon masters live in the brand kit: [brand/README.md](../../brand/README.md)
+and [brand-guidelines.html](../../brand/brand-guidelines.html). The leaf is green `#2D8548` with a
+white up-right arrow; the wordmark is indigo `#211C52` "Deal" plus green "flow". The reverse files
+use the light green `#58CC85` leaf, indigo arrow and white "Deal" on dark surfaces such as the
+indigo rail and the mobile More sheet header.
+
+Rules:
+
+- Use the SVG masters for every in-app logo, copied into `public/brand` and rendered through
+  `BrandLogo`. Use PNGs only where a format requires them: app icons, favicons, email and social
+  previews.
+- Never recolour, redraw, stretch, rotate or retype the logo. Do not force a raster icon white
+  with `brightness-0 invert`; use the reverse artwork instead.
+- Keep the clear space and minimum sizes from the guidelines: the horizontal logo is at least
+  96 px wide on screen, the mark at least 16 px.
+
 ## Tokens
 
 Light is the parity theme; dark is the derived palette. Every key is declared in both themes in
