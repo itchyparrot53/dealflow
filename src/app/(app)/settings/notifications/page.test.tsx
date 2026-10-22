@@ -7,11 +7,19 @@ import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 afterEach(cleanup);
 
 const prefs = Object.fromEntries(NOTIFICATION_TYPES.map((t) => [t, { inApp: true, email: false }]));
+const pushPrefs = Object.fromEntries(NOTIFICATION_TYPES.map((t) => [t, false]));
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
-    useUtils: () => ({ notifications: { preferences: { invalidate: vi.fn() } } }),
+    useUtils: () => ({
+      notifications: { preferences: { invalidate: vi.fn() } },
+      push: { preferences: { invalidate: vi.fn() } },
+    }),
     notifications: { preferences: { useQuery: () => ({ data: prefs }) } },
+    push: {
+      preferences: { useQuery: () => ({ data: pushPrefs }) },
+      config: { useQuery: () => ({ data: { enabled: false, publicKey: "" } }) },
+    },
   },
 }));
 vi.mock("@/features/notifications/actions", () => ({

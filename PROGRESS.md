@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-22 03:45
+Current: 3.1 · Last updated: 2026-10-22 04:05
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
 - Phase 1: 93068017be4b4b47442fc9f0023b413bbfa90ef2
 - Phase 2: 6551751
+- Phase 3: 81139f1
 
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
@@ -19,7 +20,7 @@ Current: 2.3 · Last updated: 2026-10-22 03:45
 - [x] 1.4 Phase 1 QA gate
 - [x] 2.1 Subscriptions, preferences and the worker push handler (test-first)
 - [x] 2.2 Delivery and settings UI (test-first)
-- [ ] 2.3 Phase 2 QA gate
+- [x] 2.3 Phase 2 QA gate
 - [ ] 3.1 Mobile shell
 - [ ] 3.2 Key screens on mobile
 - [ ] 3.3 Create anywhere and activities search
@@ -35,6 +36,7 @@ Current: 2.3 · Last updated: 2026-10-22 03:45
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5320/5320 in 828 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5345/5345 in 832 files · no named integration files in this gate (DoD 1 to 4)
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5350/5350 in 833 files · no named integration files in this gate (DoD 3 to 5)
+- Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5351/5351 in 833 files · push/notifications integration 67/67 (12 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p9-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P9.md` and starts Part 10 at Task 0.1.
@@ -73,6 +75,7 @@ Current: 2.3 · Last updated: 2026-10-22 03:45
 - 2.2: six delivery cases pass on real Postgres (capture file per subscription, preference off, not configured, 410 removal, five failures, success reset). The tests inject `mode`/`sender` so no VAPID key or network is needed; production still reads `PUSH_FAKE`/web-push from env.
 - 2.2: the settings page gained a Push card (`push-settings`, `push-status`, `push-enable`) and a third switch per type (`push-pref` with `data-type`); `PreferencesForm` now takes `push` in its row shape and its tests were updated for the new contract, plus one new push-toggle case.
 - 2.2: on iOS the settings explain the Home Screen requirement; capture mode writes JSON to `PUSH_FAKE_DIR` and records a success, exactly as a real send would.
+- 2.3 fixes: the gate's unit run caught the notifications settings page test whose tRPC mock predated the Push card (it had no `push.config`/`push.preferences`), so the page rendered nothing and the layout guard failed. The mock was extended to the page's real reads; no assertion was weakened.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
