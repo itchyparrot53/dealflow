@@ -111,48 +111,50 @@ export function DocumentsList({
       {visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">{S.noMatches}</p>
       ) : (
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b text-muted-foreground">
-              <th className="py-2 font-medium">{S.columnNumber}</th>
-              <th className="py-2 font-medium">{S.columnTitle}</th>
-              <th className="py-2 font-medium">{S.columnDeal}</th>
-              <th className="py-2 font-medium">{S.columnCustomer}</th>
-              <th className="py-2 text-right font-medium">{S.columnTotal}</th>
-              <th className="py-2 font-medium">{S.columnStatus}</th>
-              <th className="py-2 font-medium">{S.columnIssued}</th>
-              <th className="py-2 font-medium">{isInvoice ? S.columnDue : S.columnValid}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((row) => (
-              <tr key={row.id} className="border-b align-top">
-                <td className="py-2 font-mono text-xs">
-                  <Link href={`/documents/${row.id}`} className="hover:underline">
-                    {row.number ?? S.statusDraft}
-                  </Link>
-                </td>
-                <td className="py-2">
-                  <Link href={`/documents/${row.id}`} className="font-medium hover:underline">
-                    {row.title}
-                  </Link>
-                </td>
-                <td className="py-2 text-muted-foreground">{row.dealTitle}</td>
-                <td className="py-2 text-muted-foreground">{row.customerName ?? ""}</td>
-                <td className="py-2 text-right">
-                  {formatMoney(parseCents(row.total), row.currency)}
-                </td>
-                <td className="py-2">
-                  <Badge variant={statusVariant(row.status)}>{STATUS_LABEL[row.status]}</Badge>
-                </td>
-                <td className="py-2 text-muted-foreground">{longDate(row.issueDate)}</td>
-                <td className="py-2 text-muted-foreground">
-                  {longDate(isInvoice ? row.dueDate : row.validUntil)}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b text-muted-foreground">
+                <th className="py-2 font-medium">{S.columnNumber}</th>
+                <th className="py-2 font-medium">{S.columnTitle}</th>
+                <th className="py-2 font-medium">{S.columnDeal}</th>
+                <th className="py-2 font-medium">{S.columnCustomer}</th>
+                <th className="py-2 text-right font-medium">{S.columnTotal}</th>
+                <th className="py-2 font-medium">{S.columnStatus}</th>
+                <th className="py-2 font-medium">{S.columnIssued}</th>
+                <th className="py-2 font-medium">{isInvoice ? S.columnDue : S.columnValid}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((row) => (
+                <tr key={row.id} className="border-b align-top">
+                  <td className="py-2 font-mono text-xs">
+                    <Link href={`/documents/${row.id}`} className="hover:underline">
+                      {row.number ?? S.statusDraft}
+                    </Link>
+                  </td>
+                  <td className="py-2">
+                    <Link href={`/documents/${row.id}`} className="font-medium hover:underline">
+                      {row.title}
+                    </Link>
+                  </td>
+                  <td className="py-2 text-muted-foreground">{row.dealTitle}</td>
+                  <td className="py-2 text-muted-foreground">{row.customerName ?? ""}</td>
+                  <td className="py-2 text-right">
+                    {formatMoney(parseCents(row.total), row.currency)}
+                  </td>
+                  <td className="py-2">
+                    <Badge variant={statusVariant(row.status)}>{STATUS_LABEL[row.status]}</Badge>
+                  </td>
+                  <td className="py-2 text-muted-foreground">{longDate(row.issueDate)}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {longDate(isInvoice ? row.dueDate : row.validUntil)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

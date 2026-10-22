@@ -37,7 +37,10 @@ export function InboxReaderSidebar({
   onLinked,
 }: InboxReaderSidebarProps): React.ReactNode {
   return (
-    <aside aria-label="Conversation details" className="w-72 shrink-0 space-y-4 border-l p-4">
+    <aside
+      aria-label="Conversation details"
+      className="hidden w-72 shrink-0 space-y-4 border-l p-4 md:block"
+    >
       <section>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground tabular-nums">
           {participants.length} people in this conversation

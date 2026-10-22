@@ -33,7 +33,7 @@ export function BoardStages({
   return (
     <ul
       aria-label="Pipeline stages"
-      className="flex min-h-0 flex-1 list-none gap-4 overflow-x-auto pb-4"
+      className="flex min-h-0 w-full flex-1 list-none snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:snap-none"
     >
       {stages.map((s, index) => {
         const stageSum = sumsByStage.get(s.id);
@@ -43,7 +43,9 @@ export function BoardStages({
             key={s.id}
             data-column-divider={dividerBefore ? "true" : undefined}
             className={[
-              "relative flex min-w-72 flex-1",
+              // One stage per swipe on a phone (85vw leaves the next column peeking in); the
+              // desktop board keeps its fluid multi-column layout.
+              "relative flex w-[85vw] min-w-[85vw] shrink-0 snap-start md:w-auto md:min-w-72 md:flex-1",
               dividerBefore
                 ? "before:absolute before:-left-2 before:inset-y-2 before:w-px before:bg-muted-foreground/25"
                 : "",

@@ -13,6 +13,7 @@ import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/use
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Select } from "@/components/ui/Select";
+import { useIsMobile } from "@/features/navigation/mobile/useIsMobile";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import { RememberRecord } from "@/features/pwa/offline/remember";
 import { toTodaySnapshot } from "@/features/pwa/offline/snapshots";
@@ -82,6 +83,7 @@ export function ActivitiesTable({
   const columns = useColumns(ACTIVITY_COLUMNS, initialColumns);
   usePersistColumns("activities", columns.order);
   const promptAfterDone = useFollowUpAfterDone();
+  const isMobile = useIsMobile();
   const rows = useMemo(() => rowsQ.data ?? [], [rowsQ.data]);
   // The offline "Today" tab remembers the activities due today from whatever the list has loaded.
   const todaySnapshot = useMemo(() => {
@@ -271,7 +273,44 @@ export function ActivitiesTable({
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-lg border">
+      {/* Below md every row is a card: a table with a dozen columns would scroll sideways. */}
+      {isMobile && (
+        <ul data-testid="activities-cards" className="flex flex-col gap-2">
+          {rows.map((row) => (
+            <li key={row.id} className="rounded-lg border bg-card p-3">
+              <div className="flex items-start justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => openRow(row)}
+                  className="min-h-10 text-left text-sm font-medium"
+                >
+                  {row.subject}
+                </button>
+                <button
+                  type="button"
+                  aria-label={row.done ? "Mark not done" : "Mark done"}
+                  onClick={() => void complete(row.id, row.done)}
+                  className="min-h-10 min-w-10 shrink-0 rounded-md border text-sm"
+                >
+                  {row.done ? "Undo" : "Done"}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {row.dueAtIso === null ? "No date" : new Date(row.dueAtIso).toLocaleString()}
+                {row.dealTitle === null ? "" : ` · ${row.dealTitle}`}
+                {row.assigneeName === "" ? "" : ` · ${row.assigneeName}`}
+              </p>
+            </li>
+          ))}
+          {rows.length === 0 && !loadPending && !loadFailed && (
+            <li className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+              No activities for these filters.
+            </li>
+          )}
+        </ul>
+      )}
+
+      <div className="hidden min-h-0 flex-1 overflow-auto rounded-lg border md:block">
         <table className="w-full text-sm">
           <ActivitiesTableHead
             effective={effective}

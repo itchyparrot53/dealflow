@@ -139,22 +139,25 @@ export function DealWorkspaceClient({
         />
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[34fr_66fr]">
-          <DealSidebar
-            workspace={workspace}
-            now={now}
-            isHidden={isHidden}
-            baseCurrency={baseCurrency}
-            orgOptions={orgOptions}
-            personOptions={personOptions}
-            sidebarSections={sidebarSections}
-            onSidebarSectionsChange={setSidebarSections}
-            hiddenOrgFields={hiddenOrgFields}
-            hiddenPersonFields={hiddenPersonFields}
-            canEditDeal={canEditDeal}
-            projects={projects}
-          />
+          {/* On a phone the main panel comes first and the sidebar sections stack below it. */}
+          <div className="order-2 min-w-0 lg:order-1">
+            <DealSidebar
+              workspace={workspace}
+              now={now}
+              isHidden={isHidden}
+              baseCurrency={baseCurrency}
+              orgOptions={orgOptions}
+              personOptions={personOptions}
+              sidebarSections={sidebarSections}
+              onSidebarSectionsChange={setSidebarSections}
+              hiddenOrgFields={hiddenOrgFields}
+              hiddenPersonFields={hiddenPersonFields}
+              canEditDeal={canEditDeal}
+              projects={projects}
+            />
+          </div>
 
-          <div className="min-w-0">
+          <div className="order-1 min-w-0 lg:order-2">
             {/* Compose toolbar (Pipedrive): Activity/Notes/Email/Files. */}
             {!isHidden("email") && (
               <SharedComposeBar

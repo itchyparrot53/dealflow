@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-22 04:30
+Current: 3.3 · Last updated: 2026-10-22 04:50
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -22,7 +22,7 @@ Current: 3.2 · Last updated: 2026-10-22 04:30
 - [x] 2.2 Delivery and settings UI (test-first)
 - [x] 2.3 Phase 2 QA gate
 - [x] 3.1 Mobile shell
-- [ ] 3.2 Key screens on mobile
+- [x] 3.2 Key screens on mobile
 - [ ] 3.3 Create anywhere and activities search
 - [ ] 3.4 Smoke seed, demo and docs
 - [ ] 3.5 Phase 3 QA gate
@@ -78,6 +78,8 @@ Current: 3.2 · Last updated: 2026-10-22 04:30
 - 2.3 fixes: the gate's unit run caught the notifications settings page test whose tRPC mock predated the Push card (it had no `push.config`/`push.preferences`), so the page rendered nothing and the layout guard failed. The mock was extended to the page's real reads; no assertion was weakened.
 - 3.1: nav icons moved into one `NAV_ICONS` map in `src/components/shell/NavIcons.tsx`; the rail, the new bottom bar and the More sheet all read it, so a new item cannot get a different glyph per surface. Below 768px the rail is hidden and `BottomNav` shows Deals, Activities, Inbox, Contacts and More; More is the shadcn `Sheet` listing every remaining nav item including Settings.
 - 3.1: the shell adds `pb-24` to the content area below md so the fixed bar never covers the last row, and the bar pads itself with `env(safe-area-inset-bottom)`; the top bar drops the brand, quick-add and assistant below md, leaving search, notifications and the avatar.
+- 3.2: the board becomes one 85vw snap column per swipe (its list still scrolls internally, never the page); the deal workspace puts the main panel first and the sidebar sections below it on a phone, keeping the two-column split at lg; the activities table renders cards below md (`useIsMobile`, which reads as desktop when `matchMedia` is missing so jsdom and the server keep the table markup); the documents table got an overflow container and the inbox context sidebar is hidden below md.
+- 3.2: the mobile activities cards duplicate text in the DOM if rendered always, which broke 16 existing activities tests. They now render only when `useIsMobile()` is true, so the tests and the server see exactly the table markup they did before; no assertion was changed.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
