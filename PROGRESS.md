@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-22 05:20
+Current: 3.5 · Last updated: 2026-10-22 05:45
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -24,7 +24,7 @@ Current: 3.4 · Last updated: 2026-10-22 05:20
 - [x] 3.1 Mobile shell
 - [x] 3.2 Key screens on mobile
 - [x] 3.3 Create anywhere and activities search
-- [ ] 3.4 Smoke seed, demo and docs
+- [x] 3.4 Smoke seed, demo and docs
 - [ ] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E PWA and mobile spec and screenshots
 - [ ] 4.2 Integration suite and smoke
@@ -84,6 +84,8 @@ Current: 3.4 · Last updated: 2026-10-22 05:20
 - 3.3: "Log a call" uses the deal/person/organization already on screen (path-derived); anywhere else a small person picker chooses the record before the existing `LogCallForm`. The project dialog opened from anywhere starts with empty optional deal/owner lists, which `createProject` already accepts; the projects page keeps its richer local dialog.
 - 3.3: activities gained `search` (trimmed, max 100) in the filter schema, SQL `ilike` over subject and note, the URL-backed list state (`?search=`), and the toolbar input `activities-search`. The CSV export filters subject or note in `filterActivities`, and the generic subject-only search is skipped for activities so a note-only match is not dropped; `ActivityTableRow` carries the note for that.
 - 3.3: three activity test files gained `search: null` in their filter literals (the changed filter contract), and new real-Postgres cases cover list search by subject and note plus the export's note-only match.
+- 3.4: `scripts/dealflow/smoke.mjs` seeds three deals ("Smoke renewal", "Smoke expansion", "Smoke pilot") in a pipeline and stage it creates if missing, owned by the seeded admin, after the restart check and before the backup round trip, so the dump/restore comparison has a non-zero count.
+- 3.4: `docs/dealflow/PWA.md` covers install on desktop/Android/iOS, exactly what is stored offline and the shared-device trade-off, the update prompt, push setup (`pnpm push:vapid`, the three keys, `PUSH_FAKE`), the per-type preferences and the iOS Home Screen requirement, and the mobile layout. `UPSTREAM.md` lists the Part 10 files and `README.md` gained a Part 10 section.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

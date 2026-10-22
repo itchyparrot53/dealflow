@@ -194,8 +194,49 @@ async function main() {
   if (count !== "1") throw new Error(`expected one seeded admin, found "${count}"`);
   log("seeded admin survived the restart");
 
+  step = "seed-deals";
+  seedDeals();
+
   step = "backup";
   backupRoundTrip();
+}
+
+// The smoke database starts with no deals, so the backup round trip would compare 0 to 0 and
+// prove nothing. Seed three deals in one pipeline and stage (created if missing) so the count is
+// meaningful; the insert is idempotent by title.
+function seedDeals() {
+  log("seeding three deals for the backup round trip");
+  const sql = `
+INSERT INTO pipelines (name, "order")
+SELECT 'Smoke', 0
+WHERE NOT EXISTS (SELECT 1 FROM pipelines WHERE name = 'Smoke' AND is_archived = false);
+INSERT INTO stages (pipeline_id, name, "order", probability)
+SELECT p.id, 'Lead', 0, 50
+FROM pipelines p
+WHERE p.name = 'Smoke'
+  AND NOT EXISTS (SELECT 1 FROM stages s WHERE s.pipeline_id = p.id AND s.name = 'Lead');
+INSERT INTO deals (title, status, pipeline_id, stage_id, owner_id, visibility_level, board_position)
+SELECT d.title, 'open', p.id, s.id, u.id, 'all', 0
+FROM (VALUES ('Smoke renewal'), ('Smoke expansion'), ('Smoke pilot')) AS d(title)
+JOIN pipelines p ON p.name = 'Smoke'
+JOIN stages s ON s.pipeline_id = p.id AND s.name = 'Lead'
+JOIN users u ON u.email = '${ADMIN_EMAIL}'
+WHERE NOT EXISTS (SELECT 1 FROM deals x WHERE x.title = d.title AND x.deleted_at IS NULL);
+`;
+  compose([
+    "exec",
+    "-T",
+    "postgres",
+    "psql",
+    "-U",
+    "warpdrive",
+    "-d",
+    "warpdrive",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    sql,
+  ]);
 }
 
 // The image's pg_dump/pg_restore round trip: dump the live smoke database inside the worker

@@ -239,3 +239,16 @@ organizations gained bulk owner changes and AI filters, an organization cannot b
 ancestor, and undo toasts cover stage moves and deletes. The command palette has Create, Go to and
 Actions commands, and `g`/`n` sequences plus `?` open the shortcut help. See
 `docs/dealflow/PRODUCTIVITY.md`.
+
+## Installable app, offline and push (Part 10)
+
+Dealflow installs as a PWA with a manifest, icons and a service worker. The service worker caches
+only static assets and the `/offline` page, never authenticated HTML or API responses. Opening a
+deal, person or organization (and the activities list for today) saves a compact read-only snapshot
+in IndexedDB; `/offline` lists them with their saved time, and signing out (or signing in as a
+different user) wipes them. Web push uses VAPID keys from `.env` (`pnpm push:vapid` prints a pair),
+works per device and per notification type from Settings > Notifications, and can be captured to
+`.push-capture` with `PUSH_FAKE=true`. Below 768px a bottom navigation replaces the left rail and
+the key screens are mobile-first. The activities list also gained free-text search (in the URL and
+the CSV export), and `n` sequences plus palette Create commands open their dialog in place. See
+[docs/dealflow/PWA.md](docs/dealflow/PWA.md).

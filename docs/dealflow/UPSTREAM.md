@@ -377,3 +377,39 @@ New modules live in `src/features/activities/recurrence/`, `src/features/activit
   `docs/API.md` unchanged, `docs/dealflow/PRODUCTIVITY.md` (new) and `README.md`.
 - Tests updated for the new wiring: the activities table/filter/bulk suites, the activity dialogs,
   the people and organizations lists, the calendar columns and client, the palette and shortcuts.
+
+## Part 10: PWA, offline, push and mobile (2026-10-22)
+
+New files: `src/db/schema/push.ts`, `drizzle/0092_dealflow_push.sql`, `src/app/manifest.ts`,
+`src/app/offline/page.tsx`, `src/features/pwa/**` (service worker, routing, install, offline store
+and UI), `src/features/push/**`, `src/features/navigation/mobile/**` (`BottomNav`, `MoreSheet`,
+`useIsMobile`), `src/features/create/CreateDialogProvider.tsx`, `public/icons/*.png`,
+`scripts/dealflow/build-sw.mjs`, `scripts/dealflow/push-vapid.mjs`, `e2e/14-pwa-mobile.spec.ts`,
+`docs/dealflow/PWA.md`. Upstream files changed:
+
+- `src/app/layout.tsx` (manifest metadata, apple web app, theme colour viewport),
+  `src/app/(app)/layout.tsx` (offline banner, service worker registration, user sync, create
+  provider, bottom navigation, mobile padding), `next.config.ts` (`worker-src`, `/sw.js` headers).
+- `package.json` and the lockfile (`web-push`, `@types/web-push`, `build:sw`, `push:vapid`, the
+  build/e2e build hooks), `.env.example`, `.gitignore`, `biome.json`, `eslint.config.mjs`,
+  `src/config/env.ts` (VAPID and `PUSH_FAKE`), `src/db/schema/index.ts`.
+- `src/constants/errorIds.ts` and its allow-list test (the `PUSH` domain), `notificationDefaults.ts`
+  (push defaults), `strings.ts` (push column), `jobNames.ts` (`push.deliver`), the new
+  `constants/pwa.ts`.
+- `src/server/trpc/root.ts` (push router) and `src/server/worker.ts` (push worker).
+- Notifications: `wire.ts` (push after commit), the new `labels.ts`, `ui/NotificationItem.tsx` and
+  `ui/PreferencesForm.tsx` (push column), `src/app/(app)/settings/notifications/page.tsx`.
+- Shell: `src/components/shell/{UserMenu,LeftNav,TopBar,NavIcons}.tsx`, `src/components/ui/toaster.tsx`
+  and `src/features/feedback/toastStore.ts` (per-toast test ids).
+- Activities: `ActivitiesTable.tsx` (mobile cards and the today snapshot), `ActivitiesFilters.tsx`
+  (search input), `schemas.ts`, `activityRows.ts`, `useActivityListFilter.ts` (URL search) and the
+  export in `src/features/export/exports.ts`.
+- Mobile layout: `src/features/deals/BoardStages.tsx`, `src/app/(app)/deals/[dealId]/DealWorkspaceClient.tsx`,
+  `src/features/documents/ui/DocumentsList.tsx`, `src/features/email/InboxReaderSidebar.tsx`.
+- Shortcuts and palette: `src/features/shortcuts/registry.ts` and `GlobalShortcuts.tsx`,
+  `src/features/palette/commands.ts` and `commandRegistry.ts`,
+  `src/features/search/ui/CommandPalette.tsx`.
+- `src/app/(app)/settings/profile/ProfileClient.tsx` (install entry), the deal workspace, person
+  and organization detail views (offline snapshots), `scripts/dealflow/smoke.mjs` (three deals).
+- Tests updated for the changed contracts: the notification preferences form and settings page,
+  the activities filter literals, and the new push/offline/search cases.
