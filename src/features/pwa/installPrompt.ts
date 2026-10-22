@@ -51,7 +51,12 @@ export async function promptInstall(): Promise<"accepted" | "dismissed" | "unava
 
 export function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.matchMedia("(display-mode: standalone)").matches) return true;
+  if (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(display-mode: standalone)").matches
+  ) {
+    return true;
+  }
   // iOS Safari predates the display-mode media query in installed web apps.
   const legacy = (window.navigator as Navigator & { standalone?: boolean }).standalone;
   return legacy === true;
@@ -68,7 +73,7 @@ export function isIosBrowser(): boolean {
 // during render (rather than in an effect) keeps the first client render correct and avoids a
 // cascading setState; the server snapshot is always false so SSR never guesses.
 export function subscribeStandalone(listener: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return () => {};
   const query = window.matchMedia("(display-mode: standalone)");
   query.addEventListener("change", listener);
   window.addEventListener("appinstalled", listener);

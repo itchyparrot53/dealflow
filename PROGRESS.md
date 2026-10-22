@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-22 02:55
+Current: 2.1 · Last updated: 2026-10-22 03:10
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
 - Phase 1: 93068017be4b4b47442fc9f0023b413bbfa90ef2
+- Phase 2: 6551751
 
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
@@ -15,7 +16,7 @@ Current: 1.4 · Last updated: 2026-10-22 02:55
 - [x] 1.1 Manifest, icons, metadata and install
 - [x] 1.2 Service worker, registration and update prompt
 - [x] 1.3 Offline records and the offline page
-- [ ] 1.4 Phase 1 QA gate
+- [x] 1.4 Phase 1 QA gate
 - [ ] 2.1 Subscriptions, preferences and the worker push handler (test-first)
 - [ ] 2.2 Delivery and settings UI (test-first)
 - [ ] 2.3 Phase 2 QA gate
@@ -33,6 +34,7 @@ Current: 1.4 · Last updated: 2026-10-22 02:55
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5320/5320 in 828 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5345/5345 in 832 files · no named integration files in this gate (DoD 1 to 4)
+- Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5350/5350 in 833 files · no named integration files in this gate (DoD 3 to 5)
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p9-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P9.md` and starts Part 10 at Task 0.1.
@@ -62,6 +64,7 @@ Current: 1.4 · Last updated: 2026-10-22 02:55
 - 1.3: the wipe rule is a pure `decideWipe(previous, current)` (record on first sign-in, keep for the same user, wipe for a different user or sign-out) with five unit cases; the IndexedDB calls are separate, as the plan allows without `fake-indexeddb`.
 - 1.3: snapshots are written from the deal workspace, person and organization detail pages, and the activities table (today's due rows). The person and org pages gained one small owner-name read, and the org page reuses the visibility-scoped `listPeopleForOrg` for `peopleCount`.
 - 1.3: `/offline` is now the tabbed read-only app (Deals, People, Organizations, Today) with saved times, a detail view and the empty state; the account menu's Log out wipes this device first and then follows `/auth/logout`, and the app shell wipes when the signed-in user differs from `dealflow-offline-user`.
+- 1.4 fixes: the gate's first unit run caught three regressions from the install and offline work: the install store called `window.matchMedia` unguarded (jsdom has none), a new offline `h1` missed the `text-display` page-title rule, and `SignOutLink` needed `forwardRef` plus the prop spread so the Radix menu keeps its `menuitem` role. All three were fixed, not asserted around.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
