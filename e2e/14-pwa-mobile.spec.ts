@@ -223,20 +223,33 @@ test("PWA install, offline records, push capture and mobile layouts", async ({
     background_color: string;
     theme_color: string;
     categories: string[];
-    icons: { sizes: string; purpose?: string }[];
+    icons: { src: string; sizes: string; type: string; purpose?: string }[];
   };
   expect(manifest.name).toBe("Dealflow");
   expect(manifest.short_name).toBe("Dealflow");
   expect(manifest.start_url).toBe("/deals?source=pwa");
   expect(manifest.scope).toBe("/");
   expect(manifest.display).toBe("standalone");
-  expect(manifest.background_color).toBe("#ffffff");
-  expect(manifest.theme_color).toBe("#0f172a");
+  expect(manifest.background_color).toBe("#FFFFFF");
+  expect(manifest.theme_color).toBe("#211C52");
   expect(manifest.categories).toEqual(["business", "productivity"]);
-  expect(manifest.icons.map((icon) => icon.sizes).sort()).toEqual(
-    ["192x192", "512x512", "512x512"].sort(),
-  );
-  expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true);
+  // The Dealflow brand kit supplies both the "any" and the maskable artwork.
+  expect(manifest.icons).toEqual([
+    { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+    { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+    {
+      src: "/icons/icon-maskable-192.png",
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "maskable",
+    },
+    {
+      src: "/icons/icon-maskable-512.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "maskable",
+    },
+  ]);
 
   await page.goto("/deals");
   await page.waitForLoadState("networkidle");

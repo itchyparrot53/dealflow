@@ -39,10 +39,7 @@ export const metadata: Metadata = {
 // deprecated). `viewportFit: cover` is what makes env(safe-area-inset-*) non-zero in an installed
 // app, which the mobile bottom navigation relies on.
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
+  themeColor: "#211C52",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

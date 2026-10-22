@@ -13,7 +13,9 @@ const PRECACHE = [
   OFFLINE_URL,
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/icons/icon-maskable-192.png",
   "/icons/icon-maskable-512.png",
+  "/icons/badge-128.png",
   "/manifest.webmanifest",
 ] as const;
 const FETCH_TIMEOUT_MS = 30_000;
@@ -197,7 +199,7 @@ worker.addEventListener<PushEvent>("push", (event) => {
       await worker.registration.showNotification(payload.title, {
         body: payload.body,
         icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        badge: "/icons/badge-128.png",
         tag: payload.tag,
         data: { url: payload.url },
       });
