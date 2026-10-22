@@ -30,9 +30,40 @@ const inter = localFont({
 // name so every tab reads "<where> · Dealflow". Routes with no title fall back
 // to `default`.
 export const metadata: Metadata = {
+  // Absolute preview image URLs resolve against this, and the public /d, /f and /book
+  // pages inherit the whole block.
+  metadataBase: new URL(env.BASE_URL),
   title: { default: STRINGS.app.name, template: `%s · ${STRINGS.app.name}` },
   applicationName: "Dealflow",
   appleWebApp: { capable: true, title: "Dealflow", statusBarStyle: "default" },
+  openGraph: {
+    type: "website",
+    siteName: "Dealflow",
+    title: STRINGS.app.name,
+    description: "A self-hosted CRM for business development",
+    url: "/",
+    images: [
+      {
+        url: "/og/og-image-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "Dealflow",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: STRINGS.app.name,
+    description: "A self-hosted CRM for business development",
+    images: [
+      {
+        url: "/og/x-card-1200x675.png",
+        width: 1200,
+        height: 675,
+        alt: "Dealflow",
+      },
+    ],
+  },
 };
 
 // themeColor lives on the viewport export in this Next version (metadata.themeColor is

@@ -19,4 +19,35 @@ describe("root layout", () => {
     // Keeps the existing antialiasing hint.
     expect(tree.props.className).toContain("antialiased");
   });
+
+  it("builds social previews from the app base URL", async () => {
+    const { metadata } = await import("./layout");
+    // JSON removes the URL instance while keeping the absolute value the metadata resolver emits.
+    const plain = JSON.parse(JSON.stringify(metadata)) as {
+      metadataBase: string;
+      openGraph: {
+        siteName: string;
+        images: { url: string; width: number; height: number; alt: string }[];
+      };
+      twitter: {
+        card: string;
+        images: { url: string; width: number; height: number; alt: string }[];
+      };
+    };
+    expect(plain.metadataBase).toBe("https://app.example.com/");
+    expect(plain.openGraph.siteName).toBe("Dealflow");
+    expect(plain.openGraph.images[0]).toEqual({
+      url: "/og/og-image-1200x630.png",
+      width: 1200,
+      height: 630,
+      alt: "Dealflow",
+    });
+    expect(plain.twitter.card).toBe("summary_large_image");
+    expect(plain.twitter.images[0]).toEqual({
+      url: "/og/x-card-1200x675.png",
+      width: 1200,
+      height: 675,
+      alt: "Dealflow",
+    });
+  });
 });
