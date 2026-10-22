@@ -36,6 +36,8 @@ const BASE_CSP = [
   // every relative URL on the page.
   "base-uri 'self'",
   "object-src 'none'",
+  // The PWA registers /sw.js; without this a future default-src would silently break it.
+  "worker-src 'self'",
 ];
 
 // Keeps injected markup from retargeting a form at an attacker's collector. Deliberately absent on
@@ -85,6 +87,16 @@ const nextConfig: NextConfig = {
       {
         source: ALL_ROUTES_EXCEPT_CONSENT_AND_PUBLIC,
         headers: securityHeaders([...BASE_CSP, FORM_ACTION]),
+      },
+      // A service worker must never be served from the browser's HTTP cache: a stale /sw.js keeps
+      // the old worker alive for up to 24 hours. The scope header is what allows /sw.js (served
+      // from the root) to claim the whole site.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
       },
     ]);
   },

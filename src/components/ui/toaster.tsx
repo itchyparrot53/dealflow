@@ -23,7 +23,7 @@ export function Toaster(): React.ReactNode {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          data-testid="toast"
+          data-testid={toast.testId ?? "toast"}
           role="status"
           aria-live={toast.tone === "error" ? "assertive" : "polite"}
           onMouseEnter={() => pause(toast.id)}
@@ -49,7 +49,7 @@ export function Toaster(): React.ReactNode {
               type="button"
               size="sm"
               variant="outline"
-              data-testid="toast-undo"
+              data-testid={toast.action.testId ?? "toast-undo"}
               onClick={() => void runAction(toast.id)}
             >
               {toast.action.label}

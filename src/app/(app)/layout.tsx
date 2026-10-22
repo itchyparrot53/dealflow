@@ -7,6 +7,7 @@ import { LeftNav } from "@/components/shell/LeftNav";
 import { ReconnectBanner } from "@/components/shell/ReconnectBanner";
 import { TopBar } from "@/components/shell/TopBar";
 import { Toaster } from "@/components/ui/toaster";
+import { env } from "@/config/env";
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { db } from "@/db/client";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
@@ -15,6 +16,8 @@ import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvid
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
+import { OfflineBanner } from "@/features/pwa/OfflineBanner";
+import { ServiceWorkerRegistration } from "@/features/pwa/register";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
@@ -58,6 +61,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
             <CsrfRefresher hasCsrf={hasCsrf} />
             {ctx.actor.type === "admin" && <VersionBanner />}
             <ReconnectBanner />
+            <OfflineBanner />
             <TopBar
               userId={ctx.actor.id}
               userName={ctx.actor.name}
@@ -70,6 +74,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
             </div>
             <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
             <GlobalShortcuts />
+            <ServiceWorkerRegistration production={env.NODE_ENV === "production"} />
             <Toaster />
           </div>
         </FollowUpPromptProvider>

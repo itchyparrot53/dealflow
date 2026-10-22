@@ -9,6 +9,8 @@ import type { Result } from "@/types/result";
 export interface ToastAction {
   label: string;
   run: () => Promise<Result<unknown, unknown>>;
+  // Overrides the default "toast-undo" hook for actions that are not an undo (e.g. Reload).
+  testId?: string;
 }
 
 export interface ToastItem {
@@ -19,6 +21,8 @@ export interface ToastItem {
   paused: boolean;
   // Errors are announced assertively; ordinary confirmations politely.
   tone: "info" | "error";
+  // Overrides the default "toast" hook for a toast that a spec singles out.
+  testId?: string;
 }
 
 export interface ToastInput {
@@ -26,6 +30,7 @@ export interface ToastInput {
   action?: ToastAction;
   durationMs?: number;
   tone?: "info" | "error";
+  testId?: string;
 }
 
 interface ToastState {
@@ -84,6 +89,7 @@ export const useToastStore = create<ToastState>((set, get) => {
             durationMs,
             paused: false,
             tone: input.tone ?? "info",
+            testId: input.testId,
           },
         ];
         while (toasts.length > TOAST_MAX) {

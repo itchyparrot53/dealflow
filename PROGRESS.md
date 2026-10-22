@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-22 02:05
+Current: 1.3 · Last updated: 2026-10-22 02:20
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -13,7 +13,7 @@ Current: 1.2 · Last updated: 2026-10-22 02:05
 - [x] 0.3 Pure core (test-first)
 - [x] 0.4 Phase 0 QA gate
 - [x] 1.1 Manifest, icons, metadata and install
-- [ ] 1.2 Service worker, registration and update prompt
+- [x] 1.2 Service worker, registration and update prompt
 - [ ] 1.3 Offline records and the offline page
 - [ ] 1.4 Phase 1 QA gate
 - [ ] 2.1 Subscriptions, preferences and the worker push handler (test-first)
@@ -54,6 +54,10 @@ Current: 1.2 · Last updated: 2026-10-22 02:05
 - 1.1: the manifest colours come from the design tokens (light background #ffffff, primary #0f172a), `themeColor` is exported from the root layout's `viewport` (this Next version deprecates `metadata.themeColor`), and `viewportFit: "cover"` is set so safe-area insets work in an installed app.
 - 1.1: the three icons are generated from `src/app/icon.png` with `sips`; the maskable one pads the 512 icon to 640 on the brand navy and scales back to 512 (20% total padding). No new dependency.
 - 1.1: `installPrompt.ts` captures the single `beforeinstallprompt` event in a module-level store read through `useSyncExternalStore`; the account menu only shows "Install app" when the prompt is actionable (an instruction there would just close the menu), while Settings > Profile always shows an entry (prompt button, iOS Share instructions, or a browser-menu hint) and nothing once installed.
+- 1.2: the worker is bundled to one classic script and imports app modules through the same `@` alias, so `scripts/dealflow/build-sw.mjs` gained an `alias` entry. It precaches only `/offline` plus the icons and manifest, caches static assets cache-first, serves navigations network-first with the offline page as fallback, never caches an HTML or API response, and deletes every other `dealflow-` cache on activate.
+- 1.2: the toast store gained optional `testId` and `action.testId` (defaulting to `toast`/`toast-undo`) so the update prompt exposes `update-available`/`update-reload` without a second notification UI. The prompt stays for an hour instead of the 8s undo window, and reload waits for `controllerchange` after posting `SKIP_WAITING`.
+- 1.2: `register.ts` takes a `production` prop from the server layout instead of reading `process.env` in a client component (the env boundary is server-only); development unregisters existing workers.
+- 1.2: `next.config.ts` adds `worker-src 'self'` to the strict CSP and serves `/sw.js` with `Cache-Control: no-cache, no-store, must-revalidate` and `Service-Worker-Allowed: /`. The `/offline` shell is a client page because its "Try again" button reloads; Task 1.3 fills it from IndexedDB.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

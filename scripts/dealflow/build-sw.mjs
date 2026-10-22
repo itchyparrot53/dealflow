@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { build } from "esbuild";
 
 // The service worker must be one classic script served from /sw.js, so it is bundled separately
@@ -21,6 +22,8 @@ await build({
   bundle: true,
   format: "iife",
   target: ["es2020"],
+  // The worker imports app modules by the same "@/..." alias the app uses.
+  alias: { "@": resolve("src") },
   define: { __SW_BUILD_ID__: JSON.stringify(id) },
   logLevel: "warning",
 });
