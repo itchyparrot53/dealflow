@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
+import { tableStyles } from "@/components/ui/table-styles";
 import type { ActivitySortField } from "./schemas";
 
 // Extracted from ActivitiesTable to keep it under the project's file-size budget (mirrors
@@ -26,7 +27,7 @@ export function ActivitySortableTh({
   onSort: (field: ActivitySortField) => void;
 }): React.ReactNode {
   return (
-    <th className="px-3 py-2 font-semibold">
+    <th className={tableStyles.th}>
       <button
         type="button"
         onClick={() => onSort(field)}

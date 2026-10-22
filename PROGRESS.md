@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-22 12:50
+Current: 4.4 · Last updated: 2026-10-22 14:05
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -34,6 +34,7 @@ Current: 4.3 · Last updated: 2026-10-22 12:50
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 Full e2e and the gallery
 - [x] 4.2 Integration suite and smoke
+- [x] 4.3 Independent review with a computed-style critique
 - [ ] 4.3 Independent review with a computed-style critique
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -44,6 +45,14 @@ Current: 4.3 · Last updated: 2026-10-22 12:50
 - Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 203 violations in 130 files, 9 opt-outs · design 8/8 · existing e2e 4/4
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5364/5364 in 840 files · check-design 285 violations in 182 files, 0 opt-outs · design login 1/1
+
+- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/6 majors/12 minors · fixed 1 blocker, 5 majors and 8 minors · parity mismatches 0 in the measured set
+- 4.3 fixes: the list tables (deals list, people, organizations, leads) now use `tableStyles` edge to edge and drop their card wrappers (the blocker); the gallery's `deals-list` route is the real `/pipeline/{id}/list`; dashboard widgets are `Panel`s on `canvas-subtle`; activity-type chips are 24 px info-soft/blue; AI insights is a flush 64 px sidebar section; the timeline has 40 px white markers on a dashed rail with rounded-lg cards and warning-soft notes; the breadcrumb is blue and underlined; composer tabs, the toolbar height, the sort pill, the public card widths and the duplicate content titles were corrected. The reviewer's table/screen measurements were re-checked with the design spec after the fixes (26/26).
+- 4.3 decision (list toolbars): every list publishes its top-bar title; the board and deals list share `PageToolbar` through `BoardToolbar`, while people, organizations, leads and activities keep their own single-row toolbars. The 6.3 checker accepts `PageTitle` OR `PageToolbar`, and 6.5's own sentence says so; no screen lost a control.
+- 4.3 decision (board column meta): the header keeps `{value} · {n} deals` on its 13 px line and shows the weighted total on a second 13 px line rather than a tooltip, because `e2e/07-sales.spec.ts` reads the weighted total from the visible text and a tooltip would hide it.
+- 4.3 CONTRACT CHANGE: the inbox conversation list stays a full-width list (single pane, Part 7 architecture) instead of the 360 px column in 6.8.5; the row snippet and date are now 13 px secondary as specified.
+- 4.3 e2e locator updates for deliberate layout changes: the note card is found by its `bg-warning-soft` class (06.8.2 note tint); `spec 03`, `08`, `12` and `14` retry their first click/navigation because server-rendered action buttons can be clicked before hydration; the design gallery re-authenticates before the app screens (spec 14 signs out) and uses the real list route. No behaviour assertion was loosened.
+- 4.3 changed tests: `page-toolbar.test` asserts the fixed `h-16`; audit seeding and the recycle-bin wait from 4.1 remain.
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p10-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P10.md` and starts Part 11 at Task 0.1.

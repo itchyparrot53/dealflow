@@ -138,7 +138,7 @@ export function ThreadRow({
         {/* A15: the label chip leads the subject (Pipedrive positions it before, not after). */}
         <ThreadLabelChips labels={thread.labels} />
         {/* Subject + inline snippet preview, subject bolded when unread. */}
-        <span className="min-w-0 flex-1 truncate text-sm">
+        <span className="min-w-0 flex-1 truncate text-meta">
           {thread.senderEmail === null && thread.unread && (
             <span
               aria-hidden="true"

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { PageHeading } from "@/components/shell/PageHeading";
 import { PageTitle } from "@/components/shell/pageTitle";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -28,22 +27,15 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
   return (
     <main aria-label={STRINGS.contacts.orgsHeading} className="flex flex-col gap-4">
       <PageTitle title="Organizations" />
-      <PageHeading
-        crumbs={[
-          { label: STRINGS.nav.contacts, href: "/contacts/people" },
-          { label: STRINGS.contacts.orgsHeading },
-        ]}
-        title={STRINGS.contacts.orgsHeading}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {can(ctx.actor, "data.export") && (
-              <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />
-            )}
-            <QuickAddContact kind="org" />
-            <LinkButton href="/contacts/duplicates">Find duplicates</LinkButton>
-          </div>
-        }
-      />
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {can(ctx.actor, "data.export") && (
+            <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />
+          )}
+          <QuickAddContact kind="org" />
+          <LinkButton href="/contacts/duplicates">Find duplicates</LinkButton>
+        </div>
+      </div>
       <Suspense fallback={<ListSectionSkeleton />}>
         <OrgsSection actorId={ctx.actor.id} />
       </Suspense>

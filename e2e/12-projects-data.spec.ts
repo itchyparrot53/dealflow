@@ -15,11 +15,20 @@ async function markDealWon(page: Page, dealId: string): Promise<void> {
     await reopen.click();
     await expect(won).toBeVisible({ timeout: 20_000 });
   }
-  await won.click();
-  // Wait for the server round trip: the header swaps Won for Reopen once the deal is won.
-  await expect(page.getByRole("button", { name: "Reopen", exact: true })).toBeVisible({
-    timeout: 20_000,
-  });
+  // The status controls hydrate client-side, so retry the click until the header reacts. Winning
+  // may open the optional follow-up composer first; dismiss it, then wait for Reopen.
+  const dialog = page.getByRole("dialog");
+  await expect(async () => {
+    if (!(await reopen.isVisible()) && !(await dialog.isVisible().catch(() => false))) {
+      await won.click({ timeout: 2_000 });
+    }
+    await expect(reopen.or(dialog.first())).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 40_000 });
+  if (await dialog.isVisible().catch(() => false)) {
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0, { timeout: 10_000 });
+  }
+  await expect(reopen).toBeVisible({ timeout: 20_000 });
   await page.keyboard.press("Escape");
 }
 

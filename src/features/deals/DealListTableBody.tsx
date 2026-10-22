@@ -6,6 +6,7 @@ import { CustomFieldCell, customFieldCellClass } from "@/components/data-table/C
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { tableStyles } from "@/components/ui/table-styles";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { DealStatusBadge } from "./DealStatusBadge";
 import { DealTitleCell } from "./DealTitleCell";
@@ -38,9 +39,9 @@ interface DealListTableBodyProps {
 
 function cellClass(col: ColumnDef): string {
   if (col.customField !== undefined) return customFieldCellClass(col.customField);
-  if (col.key === "title") return "px-3 py-2 font-semibold";
-  if (col.key === "value") return "px-3 py-2 tabular-nums text-foreground";
-  return "px-3 py-2 text-muted-foreground";
+  if (col.key === "title") return `${tableStyles.td} font-semibold`;
+  if (col.key === "value") return `${tableStyles.td} tabular-nums text-foreground`;
+  return `${tableStyles.td} text-muted-foreground`;
 }
 
 export function DealListTableBody(props: DealListTableBodyProps): React.ReactNode {
@@ -109,9 +110,9 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
       {rowWindow.visible.map((row) => (
         <tr
           key={row.id}
-          className={`border-b last:border-0 hover:bg-muted/50 ${selected.has(row.id) ? "bg-accent/50" : ""}`}
+          className={`${tableStyles.tr} ${selected.has(row.id) ? "bg-info-soft" : ""}`}
         >
-          <td className="w-10 px-3 py-2">
+          <td className={tableStyles.checkboxCell}>
             <Checkbox
               label={`Select ${row.title}`}
               checked={selected.has(row.id)}
@@ -124,7 +125,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
             </td>
           ))}
           {onUnarchive ? (
-            <td className="px-3 py-2">
+            <td className={tableStyles.td}>
               <button
                 type="button"
                 onClick={() => onUnarchive(row.id)}

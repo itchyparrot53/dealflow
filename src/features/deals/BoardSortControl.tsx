@@ -34,18 +34,18 @@ export function BoardSortControl<K extends string = BoardSortKey>(
     <div className="inline-flex items-center gap-2">
       {/* Label kept on one line: at the far right of the filter row a wrapping "Sort / by" reads
           as broken. */}
-      <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-info">
-        {SORT.label}:
-      </span>
-      {/* Field + direction share one bordered pill (like the "+ Deal" split button) so the sort
-          reads as a single control rather than three loose pieces. */}
-      <div className="inline-flex items-center">
+      {/* 6.6 Sort control: one 32 px info-soft pill carrying "Sort by: {field}" and its caret,
+          with the direction toggle as a separate 32x32 arrow square. */}
+      <div className="inline-flex h-8 items-center rounded-md bg-info-soft pl-2">
+        <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-info">
+          {SORT.label}:
+        </span>
         <Select
           ariaLabel={SORT.label}
           value={sortKey}
           onChange={(v) => onKeyChange(v as K)}
           options={options}
-          triggerClassName="h-8 w-auto rounded-md border-0 bg-info-soft px-2 font-semibold text-info hover:bg-info-soft"
+          triggerClassName="h-8 w-auto rounded-md border-0 bg-transparent pl-1 pr-1 font-semibold text-info hover:bg-transparent"
         />
         <Tip label={toggleLabel}>
           <button

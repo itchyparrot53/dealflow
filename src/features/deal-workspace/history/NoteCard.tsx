@@ -106,7 +106,10 @@ export function NoteCard({
     isCommentableEntityType(entityType) && entityId !== undefined ? { entityType, entityId } : null;
 
   return (
-    <div className="rounded-md border bg-warning/10 px-3 py-2 transition-colors hover:border-ring/40">
+    <div
+      data-testid="note-card"
+      className="rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 transition-colors hover:border-ring/40"
+    >
       {editing ? (
         <div>
           <textarea

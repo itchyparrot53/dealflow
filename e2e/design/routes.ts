@@ -21,7 +21,7 @@ export function designRoutes(f: Fixtures): DesignRoute[] {
     { id: "login", path: () => "/login", app: false },
     { id: "board", path: () => `/pipeline/${id(f.pipelineId, "board")}`, app: true },
     { id: "deal", path: () => `/deals/${id(f.dealId, "deal")}`, app: true },
-    { id: "deals-list", path: () => "/deals", app: true },
+    { id: "deals-list", path: () => `/pipeline/${id(f.pipelineId, "deals-list")}/list`, app: true },
     { id: "people", path: () => "/contacts/people", app: true },
     { id: "person", path: () => `/contacts/people/${id(f.personId, "person")}`, app: true },
     { id: "organizations", path: () => "/contacts/orgs", app: true },

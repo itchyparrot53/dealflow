@@ -10,10 +10,17 @@ test.describe("deal AI", () => {
     const card = page.getByTestId("deal-ai-card");
     await expect(card).toBeVisible();
 
-    await card.getByRole("button", { name: "Generate summary" }).click();
-    await expect(page.getByTestId("deal-ai-summary")).toContainText("FAKE summary of this deal.", {
-      timeout: 20_000,
-    });
+    // The button is server-rendered before hydration, so a click can land on the inert HTML.
+    // Retry the click until the summary actually arrives.
+    await expect(async () => {
+      if ((await page.getByTestId("deal-ai-summary").count()) === 0) {
+        await card.getByRole("button", { name: "Generate summary" }).click({ timeout: 2_000 });
+      }
+      await expect(page.getByTestId("deal-ai-summary")).toContainText(
+        "FAKE summary of this deal.",
+        { timeout: 3_000 },
+      );
+    }).toPass({ timeout: 40_000 });
     await expect(page.getByTestId("deal-ai-health")).toHaveAttribute("data-health", "at_risk");
 
     const firstStep = page.getByTestId("deal-ai-next-step").first();
@@ -22,8 +29,14 @@ test.describe("deal AI", () => {
     // The next step is on the card already; the activity adds a second copy on the timeline.
     await expect.poll(async () => page.getByText("FAKE follow-up call").count()).toBeGreaterThan(1);
 
-    await card.getByRole("button", { name: "Score deal" }).click();
-    await expect(page.getByTestId("deal-ai-score")).toHaveAttribute("data-score", "72");
+    await expect(async () => {
+      if ((await page.getByTestId("deal-ai-score").count()) === 0) {
+        await card.getByRole("button", { name: "Score deal" }).click({ timeout: 2_000 });
+      }
+      await expect(page.getByTestId("deal-ai-score")).toHaveAttribute("data-score", "72", {
+        timeout: 3_000,
+      });
+    }).toPass({ timeout: 40_000 });
     await shot(page, "p1-deal-ai-card");
 
     // Notes to activities: write a note, open its menu, propose, create the first follow-up.
@@ -35,7 +48,8 @@ test.describe("deal AI", () => {
     const note = page.getByText("Call went well, send pricing Friday");
     await expect(note).toBeVisible();
 
-    const noteCard = note.locator("xpath=ancestor::div[contains(@class,'bg-warning/10')]");
+    // The note card's tint moved to the warning-soft token; find the card by that class.
+    const noteCard = note.locator("xpath=ancestor::div[contains(@class,'bg-warning-soft')]");
     await noteCard.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Turn into activities" }).click();
 

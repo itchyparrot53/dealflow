@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useColumns } from "@/components/data-table/useColumns";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
-import { STRINGS } from "@/constants/strings";
 import { addFormCustomFieldDefs } from "@/features/custom-fields/CustomFieldCreateFields";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabelsContext";
@@ -190,7 +189,6 @@ export function LeadsInbox({
 
   return (
     <div className="flex h-full flex-col p-4">
-      <h1 className="mb-3 text-title">{STRINGS.nav.leads}</h1>
       <LeadsActionBar
         filter={filter}
         onFilter={setFilter}

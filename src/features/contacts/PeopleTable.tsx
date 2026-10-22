@@ -4,6 +4,7 @@ import { CustomFieldCell, customFieldCellClass } from "@/components/data-table/C
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { tableStyles } from "@/components/ui/table-styles";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
@@ -88,11 +89,11 @@ function SortableHeader({
   onSort: (field: PersonSortField) => void;
 }): React.ReactNode {
   return (
-    <th className="px-3 py-2 font-semibold">
+    <th className={tableStyles.th}>
       <button
         type="button"
         onClick={() => onSort(field)}
-        className="inline-flex items-center font-semibold hover:text-foreground"
+        className="inline-flex items-center hover:text-foreground"
       >
         {label}
         <SortGlyph dir={sort.field === field ? sort.dir : null} />
@@ -165,7 +166,7 @@ function cellClass(col: PeopleColumn): string {
   if (col.key === "phone" || col.key === "closedDeals")
     return "px-3 py-2 tabular-nums text-muted-foreground";
   if (col.key === "name") return "px-3 py-2";
-  return "px-3 py-2 text-muted-foreground";
+  return `${tableStyles.td} text-muted-foreground`;
 }
 
 export function PeopleTable({
@@ -187,10 +188,10 @@ export function PeopleTable({
         <div className="flex items-center justify-end pb-1.5">{columnsMenu}</div>
       ) : null}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b bg-muted/60 text-left text-muted-foreground">
-              <th className="w-8 px-3 py-2">
+        <table className={tableStyles.table}>
+          <thead className={tableStyles.thead}>
+            <tr>
+              <th className={tableStyles.checkboxCell}>
                 <Checkbox
                   label="Select all people"
                   checked={allSelected}
@@ -207,7 +208,7 @@ export function PeopleTable({
                     onSort={onSort}
                   />
                 ) : (
-                  <th key={col.key} className="px-3 py-2 font-semibold">
+                  <th key={col.key} className={tableStyles.th}>
                     {col.header}
                   </th>
                 ),
@@ -216,8 +217,8 @@ export function PeopleTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b last:border-0 hover:bg-muted/50">
-                <td className="px-3 py-2">
+              <tr key={row.id} className={tableStyles.tr}>
+                <td className={tableStyles.td}>
                   <Checkbox
                     label={`Select ${row.name}`}
                     checked={isSelected(row.id)}

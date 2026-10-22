@@ -17,7 +17,7 @@ export function PageToolbar({
   return (
     <div
       data-testid="page-toolbar"
-      className={cn("flex min-h-16 flex-wrap items-center gap-3 py-4 md:flex-nowrap", className)}
+      className={cn("flex h-16 flex-wrap items-center gap-2 py-0 md:flex-nowrap", className)}
     >
       {left === undefined ? null : <div className="flex items-center gap-2">{left}</div>}
       {primary === undefined ? null : <div className="flex items-center gap-2">{primary}</div>}

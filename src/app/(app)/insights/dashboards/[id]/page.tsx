@@ -39,9 +39,8 @@ export default async function DashboardPage({
   const canEdit = ctx.actor.type === "admin" || ctx.actor.id === dashboard.value.ownerId;
 
   return (
-    <main aria-label={dashboard.value.name} className="space-y-4 p-4">
+    <main aria-label={dashboard.value.name} className="space-y-4 bg-canvas-subtle p-4">
       <PageTitle title="Dashboards" />
-      <h1 className="text-title">{dashboard.value.name}</h1>
       <DashboardView
         dashboard={dashboard.value}
         reports={reports.map((report) => ({

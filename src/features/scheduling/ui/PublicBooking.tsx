@@ -373,7 +373,7 @@ export function PublicBooking({
 
   return (
     <main
-      className="mx-auto w-full max-w-[720px] bg-canvas-subtle px-6 py-10 text-foreground"
+      className="mx-auto w-full bg-canvas-subtle px-6 py-10 text-foreground"
       data-testid="public-booking"
     >
       <div className="rounded-lg border border-border bg-card p-8">

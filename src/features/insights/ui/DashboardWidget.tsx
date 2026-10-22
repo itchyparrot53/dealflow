@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Panel } from "@/components/ui/panel";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import type { GoalWithProgress } from "@/features/goals/router";
 import { GoalRow } from "@/features/stats/ui/GoalsWidget";
@@ -165,14 +166,11 @@ export function DashboardWidget({
   const title = widget.kind === "report" ? (report?.name ?? S.ui.tabReports) : S.ui.goals;
 
   return (
-    <section
-      data-testid="dashboard-widget"
-      data-widget-id={widget.id}
-      className="rounded-lg border p-4"
-    >
-      <header className="mb-2 flex items-center justify-between gap-2">
-        <h2 className="truncate text-sm font-medium text-muted-foreground">{title}</h2>
-        {canEdit && (
+    <Panel
+      title={title}
+      className="h-full"
+      actions={
+        canEdit ? (
           <WidgetMenu
             widget={widget}
             onMove={(direction) =>
@@ -189,25 +187,27 @@ export function DashboardWidget({
             }
             onRemove={() => void act(removeWidgetAction(widget.id, readCsrfToken()))}
           />
+        ) : undefined
+      }
+    >
+      <div data-testid="dashboard-widget" data-widget-id={widget.id} className="h-full">
+        {error !== null && (
+          <p role="alert" className="text-sm text-destructive">
+            {insightErrorMessage(error)}
+          </p>
         )}
-      </header>
 
-      {error !== null && (
-        <p role="alert" className="text-sm text-destructive">
-          {insightErrorMessage(error)}
-        </p>
-      )}
-
-      {widget.kind === "report" ? (
-        <ReportBody
-          report={report}
-          result={run.data}
-          loading={run.isLoading}
-          failed={run.isError}
-        />
-      ) : (
-        <GoalBody row={goalRow} currency={currency} />
-      )}
-    </section>
+        {widget.kind === "report" ? (
+          <ReportBody
+            report={report}
+            result={run.data}
+            loading={run.isLoading}
+            failed={run.isError}
+          />
+        ) : (
+          <GoalBody row={goalRow} currency={currency} />
+        )}
+      </div>
+    </Panel>
   );
 }

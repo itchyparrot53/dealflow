@@ -101,8 +101,8 @@ export function PublicForm({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 px-6 py-12 text-foreground">
-      <div className="rounded-lg border border-border bg-card p-8">
+    <main className="mx-auto flex min-h-screen w-full flex-col justify-center gap-6 px-6 py-12 text-foreground">
+      <div className="mx-auto w-full max-w-[560px] rounded-lg border border-border bg-card p-8">
         <header className="space-y-2">
           <h1 className="text-title">{title}</h1>
           {description === null || description.trim() === "" ? null : (

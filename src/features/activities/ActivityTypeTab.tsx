@@ -23,10 +23,12 @@ export function ActivityTypeTab({
       aria-pressed={active === value}
       onClick={() => onSelect(value)}
       className={cn(
-        "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm capitalize",
+        // 6.6 chips: 24 high, 0 8 padding, info-soft fill, blue 14/500. "All" is 600.
+        "flex h-6 items-center gap-1.5 rounded-md px-2 text-sm",
         active === value
-          ? "bg-accent font-medium text-accent-foreground"
-          : "text-muted-foreground hover:bg-accent",
+          ? "bg-info-soft text-info"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        value === null && "font-semibold",
       )}
     >
       {icon === true && value !== null && <ActivityTypeIcon typeKey={value} />}

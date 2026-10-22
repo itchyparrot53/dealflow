@@ -290,8 +290,12 @@ test("PWA install, offline records, push capture and mobile layouts", async ({
 
   // 3. Push: enable this device, then submit a public form so the admin receives a real
   // notification whose type is push-by-default.
-  await page.goto("/settings/notifications");
-  await expect(page.getByTestId("push-settings")).toBeVisible({ timeout: 30_000 });
+  // Going online is asynchronous in the browser; retry the navigation until the settings page
+  // renders instead of the offline shell.
+  await expect(async () => {
+    await page.goto("/settings/notifications");
+    await expect(page.getByTestId("push-settings")).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 45_000 });
   await page.getByTestId("push-enable").click();
   await expect(page.getByTestId("push-status")).toHaveText("Push is on for this device", {
     timeout: 30_000,

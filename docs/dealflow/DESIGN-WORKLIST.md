@@ -53,20 +53,20 @@ No opt-out hides a restyle.
 |---|---|---|
 | 1 | Rail | 1.1 |
 | 2 | Top bar | 1.1 |
-| 3 | Page title | 0.3, all screens |
+| 3 | Page title | 0.3, 1.1 to 3.2 (content h1s removed in 4.3) |
 | 4 | Buttons | 0.3 |
 | 5 | Text colours | 0.2 |
-| 6 | Links | 0.2, screens |
+| 6 | Links | 0.2, screens (breadcrumb blue + underline in 4.3) |
 | 7 | Canvas | 0.2, 1.2, 1.3 |
 | 8 | Board columns | 1.2 |
 | 9 | Deal cards | 1.2 |
 | 10 | Deal stage bar | 1.3 |
-| 11 | Deal sidebar | 1.3 |
+| 11 | Deal sidebar | 1.3 (AI insights made a flush row in 4.3) |
 | 12 | Deal activity side | 1.3 |
 | 13 | Deal header | 1.3 |
-| 14 | Lists | 1.4 |
+| 14 | Lists | 1.4 (every list table on `tableStyles` after 4.3; activity/type chips 24 px) |
 | 15 | Badges | 0.3 |
-| 16 | Notes | 1.3 |
+| 16 | Notes | 1.3 (warning-soft cards on the dashed 40 px rail in 4.3) |
 | 17 | Mobile nav | 1.1 |
 
 ## How the final zero was reached

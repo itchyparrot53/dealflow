@@ -315,12 +315,14 @@ export function DealSidebar({
   };
 
   return (
-    <aside className="min-w-0 space-y-2">
-      <DealAiCard
-        dealId={workspace.deal.id}
-        personId={workspace.person?.id ?? null}
-        orgId={workspace.org?.id ?? null}
-      />
+    <aside className="min-w-0">
+      <CollapsibleSection title="AI insights" showFilter={false}>
+        <DealAiCard
+          dealId={workspace.deal.id}
+          personId={workspace.person?.id ?? null}
+          orgId={workspace.org?.id ?? null}
+        />
+      </CollapsibleSection>
       <ManageSectionsDialog
         open={manageSectionsOpen}
         sections={sectionPrefs}

@@ -16,7 +16,7 @@ export function PipelineBreadcrumb({
 }: PipelineBreadcrumbProps): React.ReactNode {
   return (
     <p className="text-sm text-muted-foreground">
-      <Link href={`/pipeline/${pipelineId}`} className="hover:text-foreground hover:underline">
+      <Link href={`/pipeline/${pipelineId}`} className="text-info underline underline-offset-2">
         {pipelineName}
       </Link>
       {currentStageName !== null && (

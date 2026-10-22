@@ -49,8 +49,13 @@ test("documents: settings, quote, public accept, invoice paid and the list", asy
   await page.goto(`/deals/${dealId}`);
   const section = page.getByTestId("deal-documents-section");
   await expect(section).toBeAttached();
-  await section.getByTestId("deal-new-quote").click();
-  await page.waitForURL(/\/documents\/[0-9a-f-]+$/, { timeout: 30_000 });
+  // The action button is server-rendered; retry the click until the client handler navigates.
+  await expect(async () => {
+    if (!/\/documents\/[0-9a-f-]+$/.test(page.url())) {
+      await section.getByTestId("deal-new-quote").click({ timeout: 2_000 });
+    }
+    await page.waitForURL(/\/documents\/[0-9a-f-]+$/, { timeout: 3_000 });
+  }).toPass({ timeout: 45_000 });
   const documentId = page.url().split("/").pop() ?? "";
   expect(documentId).not.toBe("");
   await expect(page.getByTestId("document-status")).toContainText("Draft");

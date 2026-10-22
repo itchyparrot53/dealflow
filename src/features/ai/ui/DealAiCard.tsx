@@ -249,11 +249,11 @@ export function DealAiCard({ dealId, personId, orgId }: Props): React.ReactNode 
   }
 
   return (
-    <section data-testid="deal-ai-card" className="rounded-lg border bg-card p-4">
-      <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-        <Sparkles className="size-3.5 text-muted-foreground" aria-hidden="true" />
-        AI insights
-      </h3>
+    <section data-testid="deal-ai-card">
+      <p className="flex items-center gap-1.5 text-meta text-muted-foreground">
+        <Sparkles className="size-3.5" aria-hidden="true" />
+        Generated from this deal
+      </p>
 
       {unavailable ? (
         <p className="mt-2 text-sm text-muted-foreground">

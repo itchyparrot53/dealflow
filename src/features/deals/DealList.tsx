@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { tableStyles } from "@/components/ui/table-styles";
 import { Tip } from "@/components/ui/tooltip";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { DealListBulkBar } from "./DealListBulkBar";
@@ -115,9 +116,11 @@ export function DealList(props: DealListProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card">
+    <div className="overflow-hidden">
       {columnsMenu !== undefined ? (
-        <div className="flex items-center justify-end border-b px-3 py-1.5">{columnsMenu}</div>
+        <div className="flex items-center justify-end border-b border-border px-3 py-1.5">
+          {columnsMenu}
+        </div>
       ) : null}
       {selectedIds.length > 0 ? (
         <DealListBulkBar
@@ -136,11 +139,11 @@ export function DealList(props: DealListProps) {
       ) : null}
 
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className={tableStyles.table}>
           <caption className="sr-only">Deals list</caption>
-          <thead>
-            <tr className="border-b bg-muted/60 text-left text-muted-foreground">
-              <th scope="col" className="w-10 px-3 py-2">
+          <thead className={tableStyles.thead}>
+            <tr>
+              <th scope="col" className={tableStyles.checkboxCell}>
                 <Checkbox
                   label="Select all deals"
                   checked={selectAllState()}
@@ -148,12 +151,12 @@ export function DealList(props: DealListProps) {
                 />
               </th>
               {visibleColumns.map((col) => (
-                <th key={col.key} scope="col" className="px-3 py-2 font-semibold">
+                <th key={col.key} scope="col" className={tableStyles.th}>
                   {col.header}
                 </th>
               ))}
               {onUnarchive ? (
-                <th scope="col" className="px-3 py-2 font-semibold">
+                <th scope="col" className={tableStyles.th}>
                   Actions
                 </th>
               ) : null}

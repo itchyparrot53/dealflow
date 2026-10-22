@@ -2,6 +2,7 @@
 import type React from "react";
 import { customFieldCellClass } from "@/components/data-table/CustomFieldCell";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { tableStyles } from "@/components/ui/table-styles";
 import { type RecordPreview, useRecordPreview } from "@/features/navigation/recordPreviewStore";
 import type { LeadRow } from "../leadRepo";
 import type { LeadSortField } from "../schemas";
@@ -66,10 +67,10 @@ export function LeadsTable({
   const setPreview = useRecordPreview((s) => s.setPreview);
   const colSpan = columns.length + 2;
   return (
-    <table className="w-full text-sm">
-      <thead className="sticky top-0 bg-card text-left text-sm font-semibold text-foreground">
+    <table className={tableStyles.table}>
+      <thead className={`${tableStyles.thead} sticky top-0 bg-card`}>
         <tr>
-          <th className="w-8 px-3 py-2">
+          <th className={tableStyles.checkboxCell}>
             <Checkbox
               label="Select all leads"
               checked={allSelected}
@@ -77,7 +78,7 @@ export function LeadsTable({
             />
           </th>
           {columns.map((col) => (
-            <th key={col.key} className="px-3 py-2 font-semibold">
+            <th key={col.key} className={tableStyles.th}>
               {col.sortField !== undefined ? (
                 <button
                   type="button"
@@ -93,13 +94,13 @@ export function LeadsTable({
               {col.key === "sourceOrigin" && <SourceOriginInfo />}
             </th>
           ))}
-          <th className="px-3 py-2 font-semibold sr-only">Actions</th>
+          <th className={`${tableStyles.th} sr-only`}>Actions</th>
         </tr>
       </thead>
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <td colSpan={colSpan} className="px-3">
+            <td colSpan={colSpan} className={tableStyles.td}>
               {empty}
             </td>
           </tr>
@@ -118,9 +119,9 @@ export function LeadsTable({
                 setPreview(leadPreview(row));
                 onOpen(row.id);
               }}
-              className="cursor-pointer border-t hover:bg-accent/40"
+              className={`${tableStyles.tr} cursor-pointer`}
             >
-              <td className="px-3 py-2">
+              <td className={tableStyles.td}>
                 {/* Stop the row's open-detail onClick from firing when toggling selection. */}
                 {/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper only guards event bubbling */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard toggling is handled by the Checkbox itself */}

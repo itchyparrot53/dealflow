@@ -15,7 +15,7 @@ it("renders the view switcher, primary action and right-side controls in one 64 
     />,
   );
   const toolbar = screen.getByTestId("page-toolbar");
-  expect(toolbar.className).toContain("min-h-16");
+  expect(toolbar.className).toContain("h-16");
   expect(toolbar.className).toContain("flex-wrap");
   expect(screen.getByText("Views")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Add deal" })).toBeInTheDocument();

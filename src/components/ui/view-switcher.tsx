@@ -42,7 +42,7 @@ export function ViewSwitcher({
           "inline-flex h-8 w-12 items-center justify-center border-l border-border-strong text-foreground transition-colors duration-100 first:border-l-0 [&_svg]:size-4",
           index === 0 && "rounded-l-md",
           index === options.length - 1 && "rounded-r-md",
-          selected && "bg-info-soft text-info ring-1 ring-info ring-inset",
+          selected && "border-info bg-info-soft text-info",
         );
         return (
           <Tip key={option.value} label={option.label}>
