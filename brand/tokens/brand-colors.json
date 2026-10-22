@@ -1,0 +1,15 @@
+{
+  "brand": {
+    "green":       { "hex": "#2D8548", "rgb": "45 133 72",  "use": "Primary brand colour, leaf, 'flow' in the wordmark, primary buttons" },
+    "greenLight":  { "hex": "#58CC85", "rgb": "88 204 133", "use": "Leaf and 'flow' on dark backgrounds, highlights" },
+    "indigo":      { "hex": "#211C52", "rgb": "33 28 82",   "use": "'Deal' in the wordmark, app icon background, dark surfaces" },
+    "white":       { "hex": "#FFFFFF", "rgb": "255 255 255","use": "Arrow on the green leaf, text on indigo" }
+  },
+  "support": {
+    "violet":      { "hex": "#6250E2", "use": "Active navigation, AI accents (product UI only)" },
+    "text":        { "hex": "#21232C", "use": "Body text" },
+    "textMuted":   { "hex": "#65686F", "use": "Secondary text" },
+    "surface":     { "hex": "#F5F5F5", "use": "Subtle backgrounds" }
+  },
+  "typeface": { "family": "Inter", "logoWeight": 600, "license": "SIL Open Font License 1.1" }
+}
