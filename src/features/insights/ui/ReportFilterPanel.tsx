@@ -125,7 +125,7 @@ function ActivityFilterPanel({
 export function ReportFilterPanel({ definition, onChange, stages }: Props): React.ReactNode {
   return (
     <div data-testid="report-filter" className="space-y-2">
-      <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.filter}</p>
+      <p className="text-meta font-semibold text-muted-foreground">{S.ui.filter}</p>
       {definition.entity === "deal" ? (
         <DealFilter definition={definition} onChange={onChange} stages={stages} />
       ) : (

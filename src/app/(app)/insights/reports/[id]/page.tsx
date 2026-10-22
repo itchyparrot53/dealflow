@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { db } from "@/db/client";
 import { getReport } from "@/features/insights/reports";
@@ -34,6 +35,7 @@ export default async function ReportPage({
 
   return (
     <main aria-label={report.value.name} className="space-y-4 p-4">
+      <PageTitle title="Reports" />
       <h1 className="text-title">{report.value.name}</h1>
       <ReportBuilder
         reportId={report.value.id}

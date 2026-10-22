@@ -19,7 +19,7 @@ export function ReportTable({
   return (
     <div data-testid="report-table" className="overflow-x-auto rounded-lg border">
       <table className="w-full text-sm">
-        <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+        <thead className="bg-muted/40 text-left text-meta font-semibold text-muted-foreground">
           <tr>
             <th scope="col" className="px-3 py-2 font-medium">
               {S.ui.group}

@@ -19,11 +19,11 @@ export function KpiTile({
 }): React.ReactNode {
   const noun = definition.entity === "deal" ? S.ui.deals : S.ui.activities;
   return (
-    <div className="rounded-lg border p-6">
-      <p className="text-3xl font-medium tabular-nums">
+    <div className="rounded-lg border border-border bg-card p-6">
+      <p className="text-title font-semibold tabular">
         {formatReportValue(result.total.value, definition, result.baseCurrency)}
       </p>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-meta text-muted-foreground">
         {result.total.count} {noun} · {description}
       </p>
     </div>

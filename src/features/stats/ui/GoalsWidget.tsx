@@ -12,7 +12,7 @@ import { ExcludedNote, money, Panel } from "./Panel";
 
 function paceTone(pace: number | null): string {
   if (pace === null) return "text-muted-foreground";
-  return pace >= 1 ? "text-emerald-600" : "text-destructive";
+  return pace >= 1 ? "text-link-record" : "text-destructive";
 }
 
 export function GoalRow({

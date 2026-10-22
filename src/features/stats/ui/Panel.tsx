@@ -1,4 +1,5 @@
 import type React from "react";
+import { Panel as DesignPanel } from "@/components/ui/panel";
 import { STRINGS } from "@/constants/strings";
 import type { ExcludedCurrency } from "@/types/stats";
 
@@ -16,13 +17,12 @@ export function Panel({
   children: React.ReactNode;
 }): React.ReactNode {
   return (
-    <section className="rounded-lg border p-4">
-      <h2 className="mb-2 text-balance text-sm font-medium text-muted-foreground">{title}</h2>
+    <DesignPanel title={title} padded>
       {isEmpty && <p className="text-sm text-muted-foreground">{emptyText}</p>}
       {/* Rendered in both states: an empty panel may still carry an action, and swallowing
           children here made the "set up goals" link unreachable exactly when it was needed. */}
       {children}
-    </section>
+    </DesignPanel>
   );
 }
 

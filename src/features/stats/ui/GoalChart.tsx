@@ -19,8 +19,8 @@ const ACTUAL = "actual";
 const TARGET = "target";
 
 const CONFIG: ChartConfig = {
-  [ACTUAL]: { label: STRINGS.dashboard.goalBooked, color: "hsl(var(--primary))" },
-  [TARGET]: { label: STRINGS.dashboard.goalTargetPace, color: "hsl(var(--muted-foreground))" },
+  [ACTUAL]: { label: STRINGS.dashboard.goalBooked, color: "hsl(var(--chart-1))" },
+  [TARGET]: { label: STRINGS.dashboard.goalTargetPace, color: "hsl(var(--chart-6))" },
 };
 
 const DAY_LABEL = new Intl.DateTimeFormat(undefined, {

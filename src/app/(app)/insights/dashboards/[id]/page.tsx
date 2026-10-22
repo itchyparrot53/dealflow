@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { db } from "@/db/client";
 import { readBaseCurrency } from "@/features/currency/rates";
@@ -39,6 +40,7 @@ export default async function DashboardPage({
 
   return (
     <main aria-label={dashboard.value.name} className="space-y-4 p-4">
+      <PageTitle title="Dashboards" />
       <h1 className="text-title">{dashboard.value.name}</h1>
       <DashboardView
         dashboard={dashboard.value}

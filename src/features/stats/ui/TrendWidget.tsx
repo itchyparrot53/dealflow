@@ -21,7 +21,7 @@ import { trendTooltipValue } from "./trendTooltip";
 const SERIES = "value";
 
 const CONFIG: ChartConfig = {
-  [SERIES]: { label: STRINGS.dashboard.trendValue, color: "hsl(var(--primary))" },
+  [SERIES]: { label: STRINGS.dashboard.trendValue, color: "hsl(var(--chart-1))" },
 };
 
 // Past two years of monthly samples the dots merge into a band and stop marking anything.

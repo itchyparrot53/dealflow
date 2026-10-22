@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { todayInZone } from "@/features/goals/todayInZone";
@@ -28,6 +29,7 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
 
   return (
     <main aria-label={STRINGS.dashboard.title}>
+      <PageTitle title="Performance" />
       <Dashboard
         canViewOthers={canViewOthers}
         canManageGoals={canManageGoals}

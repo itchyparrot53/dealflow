@@ -58,7 +58,7 @@ export function ChartContainer({
         className={cn(
           "w-full text-xs",
           "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
-          "[&_.recharts-cartesian-grid_line]:stroke-border",
+          "[&_.recharts-cartesian-grid_line]:stroke-grid",
           "[&_.recharts-cartesian-axis-line]:stroke-border",
           "[&_.recharts-cartesian-axis-tick-line]:stroke-border",
           className,

@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Switch } from "@/components/ui/Switch";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { trpc } from "@/lib/trpc-client";
@@ -142,13 +143,13 @@ export function ReportBuilder({ reportId, initial, canEdit, pipelines }: Props):
         )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
-        <aside className="rounded-lg border p-4">
+      <div className="grid gap-0 lg:grid-cols-[320px_1fr]">
+        <aside className="border-r border-border bg-card p-4 lg:min-h-[60vh]">
           <ReportConfigPanel definition={definition} onChange={change} pipelines={pipelines} />
         </aside>
 
-        <section className="min-w-0 space-y-3">
-          {run.isLoading && <p className="text-sm text-muted-foreground">{S.ui.loading}</p>}
+        <section className="min-w-0 space-y-3 bg-canvas-subtle p-4">
+          {run.isLoading && <Skeleton className="h-[320px] w-full" />}
           {run.isError && (
             <p role="alert" className="text-sm text-destructive">
               {insightErrorMessage(run.error.message)}

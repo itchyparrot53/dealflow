@@ -146,7 +146,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.entity}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.entity}</p>
         <Select
           ariaLabel={S.ui.entity}
           testId="report-entity"
@@ -160,7 +160,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.measure}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.measure}</p>
         <Select
           ariaLabel={S.ui.measure}
           testId="report-measure"
@@ -171,7 +171,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.groupBy}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.groupBy}</p>
         <Select
           ariaLabel={S.ui.groupBy}
           testId="report-group-by"
@@ -194,7 +194,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.segmentBy}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.segmentBy}</p>
         <Select
           ariaLabel={S.ui.segmentBy}
           testId="report-segment-by"
@@ -207,7 +207,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.dateField}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.dateField}</p>
         <Select
           ariaLabel={S.ui.dateField}
           value={dateField}
@@ -276,7 +276,7 @@ export function ReportConfigPanel({ definition, onChange, pipelines }: Props): R
       <ReportFilterPanel definition={definition} onChange={onChange} stages={stages} />
 
       <div className="space-y-1">
-        <p className="text-xs font-medium uppercase text-muted-foreground">{S.ui.chartType}</p>
+        <p className="text-meta font-semibold text-muted-foreground">{S.ui.chartType}</p>
         <fieldset
           aria-label={S.ui.chartType}
           data-testid="report-chart-type"

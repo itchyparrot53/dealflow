@@ -36,11 +36,12 @@ const S = INSIGHTS_STRINGS;
 // table beside the chart carries every label.
 
 const PALETTE = [
-  "hsl(var(--primary))",
-  "hsl(var(--ring))",
-  "hsl(var(--muted-foreground))",
-  "hsl(var(--destructive))",
-  "hsl(var(--accent-foreground))",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--chart-6))",
 ];
 
 function unique(values: string[]): string[] {

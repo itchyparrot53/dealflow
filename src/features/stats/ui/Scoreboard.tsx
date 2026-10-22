@@ -17,7 +17,7 @@ function Tile({
 }) {
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
+      <p className="text-meta font-semibold text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-medium tabular-nums">{value}</p>
       {children}
     </div>
