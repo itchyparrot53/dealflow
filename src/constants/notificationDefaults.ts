@@ -32,3 +32,29 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
 };
 
 export const DEFAULT_IN_APP = true;
+
+// Whether a notification type pushes to a device when the user has set no preference. Push is
+// more intrusive than email (it lands on the lock screen), so the default is narrower: on for
+// someone waiting on you or an outcome worth interrupting for, off for the per-event and per-edit
+// types. A missing row always falls back to this map (src/features/push/prefs.ts).
+export const DEFAULT_PUSH_BY_TYPE: Record<NotificationType, boolean> = {
+  mention: true,
+  comment_reply: false,
+  activity_assigned: true,
+  activity_reminder: false,
+  deal_won: false,
+  deal_lost: false,
+  deal_followed_update: false,
+  email_open: false,
+  email_click: false,
+  deal_email_received: false,
+  document_viewed: false,
+  document_accepted: true,
+  document_declined: false,
+  automation: false,
+  form_submission: true,
+  booking_created: true,
+  booking_cancelled: false,
+  ai_bulk_score: false,
+  project_task_assigned: true,
+};

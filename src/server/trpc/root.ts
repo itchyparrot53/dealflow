@@ -23,6 +23,7 @@ import { oauthRouter } from "@/features/oauth/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { productsRouter } from "@/features/products/router";
 import { projectsRouter } from "@/features/projects/router";
+import { pushRouter } from "@/features/push/router";
 import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
 import { schedulingRouter } from "@/features/scheduling/router";
@@ -62,6 +63,7 @@ export const appRouter = router({
   forecast: forecastRouter,
   goals: goalsRouter,
   notifications: notificationsRouter,
+  push: pushRouter,
   oauth: oauthRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,

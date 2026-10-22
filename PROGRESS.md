@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-22 03:10
+Current: 2.2 · Last updated: 2026-10-22 03:30
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -17,7 +17,7 @@ Current: 2.1 · Last updated: 2026-10-22 03:10
 - [x] 1.2 Service worker, registration and update prompt
 - [x] 1.3 Offline records and the offline page
 - [x] 1.4 Phase 1 QA gate
-- [ ] 2.1 Subscriptions, preferences and the worker push handler (test-first)
+- [x] 2.1 Subscriptions, preferences and the worker push handler (test-first)
 - [ ] 2.2 Delivery and settings UI (test-first)
 - [ ] 2.3 Phase 2 QA gate
 - [ ] 3.1 Mobile shell
@@ -65,6 +65,9 @@ Current: 2.1 · Last updated: 2026-10-22 03:10
 - 1.3: snapshots are written from the deal workspace, person and organization detail pages, and the activities table (today's due rows). The person and org pages gained one small owner-name read, and the org page reuses the visibility-scoped `listPeopleForOrg` for `peopleCount`.
 - 1.3: `/offline` is now the tabbed read-only app (Deals, People, Organizations, Today) with saved times, a detail view and the empty state; the account menu's Log out wipes this device first and then follows `/auth/logout`, and the app shell wipes when the signed-in user differs from `dealflow-offline-user`.
 - 1.4 fixes: the gate's first unit run caught three regressions from the install and offline work: the install store called `window.matchMedia` unguarded (jsdom has none), a new offline `h1` missed the `text-display` page-title rule, and `SignOutLink` needed `forwardRef` plus the prop spread so the Radix menu keeps its `menuitem` role. All three were fixed, not asserted around.
+- 2.1: the 11 subscription/preference/config cases were written before the modules. `subscribePush` upserts on the unique endpoint so a re-subscribe (or another user on the same browser) moves the row instead of duplicating it; non-https or empty keys return `E_PUSH_002` and a Zod failure `E_PUSH_004`.
+- 2.1: push defaults live beside the email defaults in `src/constants/notificationDefaults.ts`: on for mention, activity_assigned, project_task_assigned, booking_created, document_accepted and form_submission, off for the rest; a missing row always reads the map.
+- 2.1: the tRPC router exposes reads only (`push.config`, `push.subscriptions`, `push.preferences`) and `config` returns `{ enabled, publicKey }` from the pure `pushConfigFrom`, so the private key cannot appear in a client payload; all mutations go through CSRF-checked server actions (`actions.ts`).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
