@@ -29,7 +29,7 @@ Current: 4.5 · Last updated: 2026-10-22 10:05
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 E2E PWA and mobile spec and screenshots
 - [x] 4.2 Integration suite and smoke
-- [ ] 4.3 Independent review and hardening
+- [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
