@@ -36,6 +36,17 @@ export function isDarkAppearance(value: Appearance, prefersDark: boolean): boole
 
 export const PREFERS_DARK_QUERY = "(prefers-color-scheme: dark)";
 
+// Public pages (sign-in, public forms, booking, the offline shell) wrap their root in this
+// attribute so they always render light. globals.css re-declares the light palette under it,
+// and the appearance sync never adds `.dark` while it is present.
+export const LIGHT_LOCK_ATTRIBUTE = "data-theme-lock";
+export const LIGHT_LOCK_SELECTOR = `[${LIGHT_LOCK_ATTRIBUTE}="light"]`;
+
+// Called from client effects only; the server has no document and no lock element.
+export function hasLightLock(): boolean {
+  return typeof document !== "undefined" && document.querySelector(LIGHT_LOCK_SELECTOR) !== null;
+}
+
 // Inlined at the top of <body> so the class lands before the first paint. Kept as one dependency
 // free expression: it runs before any bundle has loaded. A browser that denies cookies or lacks
 // matchMedia falls through to the light palette, which is the safe default. // silent-ok

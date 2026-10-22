@@ -1,10 +1,11 @@
 import { type ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
-// text-display is declared in globals.css, so tailwind-merge ships no rule for it and would read
-// it as a text colour: a later text-foreground then drops the size, with nothing reporting it.
+// text-title and text-meta are declared in globals.css, so tailwind-merge ships no rule for them
+// and would read them as text colours: a later text-foreground then drops the size, with nothing
+// reporting it.
 const twMerge = extendTailwindMerge({
-  extend: { classGroups: { "font-size": ["text-display"] } },
+  extend: { classGroups: { "font-size": ["text-title", "text-meta"] } },
 });
 
 export function cn(...inputs: ClassValue[]): string {

@@ -232,9 +232,7 @@ export function DocumentEditor({
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {isInvoice ? "Invoice" : "Quote"}
           </p>
-          <h1 className="truncate text-display font-[450] leading-tight tracking-tight">
-            {previewTitle}
-          </h1>
+          <h1 className="truncate text-title">{previewTitle}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={statusVariant(document.status)} data-testid="document-status">
               {STATUS_LABEL[document.status]}

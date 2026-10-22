@@ -33,9 +33,7 @@ export default async function MagicLinkPage({
       <div className="w-full max-w-[400px] rounded-lg border bg-background p-6">
         {peek !== null && peek.ok ? (
           <>
-            <h1 className="text-balance text-display font-semibold">
-              {AUTH_STRINGS.signInAs(peek.value.email)}
-            </h1>
+            <h1 className="text-balance text-title">{AUTH_STRINGS.signInAs(peek.value.email)}</h1>
             <form method="post" action="/auth/magic/verify" className="mt-6">
               <input type="hidden" name="token" value={token ?? ""} />
               <input type="hidden" name="next" value={next} />

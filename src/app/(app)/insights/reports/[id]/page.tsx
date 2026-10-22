@@ -34,7 +34,7 @@ export default async function ReportPage({
 
   return (
     <main aria-label={report.value.name} className="space-y-4 p-4">
-      <h1 className="text-display font-[450] leading-tight tracking-tight">{report.value.name}</h1>
+      <h1 className="text-title">{report.value.name}</h1>
       <ReportBuilder
         reportId={report.value.id}
         initial={{

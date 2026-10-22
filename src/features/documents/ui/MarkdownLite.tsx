@@ -101,10 +101,7 @@ export function MarkdownLite({
         switch (block.type) {
           case "h1":
             return (
-              <h1
-                key={blockKey(block, index)}
-                className="text-display font-semibold leading-tight tracking-tight"
-              >
+              <h1 key={blockKey(block, index)} className="text-title">
                 <Inline text={block.text} />
               </h1>
             );

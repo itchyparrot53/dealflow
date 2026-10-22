@@ -26,9 +26,7 @@ export default async function DocumentsPage(): Promise<ReactNode> {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-display font-[450] leading-tight tracking-tight">
-          {DOCUMENTS_STRINGS.title}
-        </h1>
+        <h1 className="text-title">{DOCUMENTS_STRINGS.title}</h1>
         {can(actor, "data.export") && (
           <ExportButton
             entity="invoices"

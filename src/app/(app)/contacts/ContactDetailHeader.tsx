@@ -40,7 +40,7 @@ function ContactDetailHeaderFrame({
         <Avatar name={name} className={avatarClassName} />
         <div className="min-w-0">
           {/* A record name, so it matches EditableHeading's weight rather than a page title's. */}
-          <h1 className="truncate text-display font-semibold text-foreground">{name}</h1>
+          <h1 className="truncate text-title text-foreground">{name}</h1>
           <ContactLabelsControl entityType={entityType} entityId={entityId} labels={labels} />
         </div>
       </div>

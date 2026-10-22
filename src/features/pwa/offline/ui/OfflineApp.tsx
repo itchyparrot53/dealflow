@@ -57,7 +57,7 @@ export function OfflineApp(): React.ReactNode {
     >
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-display font-[450] leading-tight tracking-tight">You're offline</h1>
+          <h1 className="text-title">You're offline</h1>
           <p className="text-sm text-muted-foreground">
             Records you opened while online. They are read-only.
           </p>

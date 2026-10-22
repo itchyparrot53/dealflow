@@ -7,9 +7,10 @@ export interface Crumb {
   href?: string;
 }
 
-// Shared page heading: a Pipedrive-style breadcrumb over a 25px page title. Centralizing the title
+// Shared page heading: a Pipedrive-style breadcrumb over a record title. Centralizing the title
 // size + breadcrumb here stops the per-page drift (bare 18-20px titles, no breadcrumb) the parity
-// specs flagged across settings, contacts, leads, and inbox.
+// specs flagged across settings, contacts, leads, and inbox. Part 11 moves app page titles into
+// the top bar; this stays for surfaces whose title belongs in the content card.
 export function PageHeading({
   title,
   crumbs,
@@ -54,8 +55,7 @@ export function PageHeading({
         </nav>
       ) : null}
       <div className="flex items-center justify-between gap-3">
-        {/* Inter is a vendored variable font, so the 450 weight (lighter than semibold) resolves. */}
-        <h1 className="text-display font-[450] leading-tight tracking-tight">{title}</h1>
+        <h1 className="text-title">{title}</h1>
         {actions}
       </div>
       {description !== undefined ? (

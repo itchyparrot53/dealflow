@@ -51,16 +51,19 @@ describe("type scale", () => {
     expect(offenders).toEqual([]);
   });
 
-  // Hierarchy was carried almost entirely by weight and colour: ten pages titled themselves at
-  // text-lg, one step off body copy, so nothing on screen outranked the controls beside it.
-  it("titles every page at the display size", () => {
+  // Part 11 replaced the one-off 25px display step with the type table's two heading steps:
+  // the page title in the top bar is 16/600 (text-base) and an in-content record title is
+  // 24/32/400 (text-title). An h1 must name one of those, so a stray 18px or 20px heading
+  // cannot come back by guess (PLAN-PART11.md 6.4).
+  it("titles every h1 with a named step from the type table", () => {
+    const NAMED_TITLE_CLASSES = ["text-title", "text-base"];
     const offenders = sourceFiles(SRC).flatMap((path) => {
       const rel = path.slice(SRC.length + 1);
       if (NOT_PAGE_TITLES.has(rel)) return [];
       return (
         [...readFileSync(path, "utf8").matchAll(HEADING)]
           .map((m) => (m[1] ?? "").split(/\s+/))
-          .filter((classes) => !classes.includes("text-display"))
+          .filter((classes) => !classes.some((cls) => NAMED_TITLE_CLASSES.includes(cls)))
           // An sr-only h1 exists for the document outline and is never painted, so it has no
           // visual size to get wrong. Surfaces whose title lives in a toolbar use one.
           .filter((classes) => !classes.includes("sr-only"))

@@ -121,9 +121,7 @@ export function Dashboard({
   return (
     <div className="p-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-balance text-display font-[450] leading-tight tracking-tight">
-          {STRINGS.dashboard.title}
-        </h1>
+        <h1 className="text-balance text-title">{STRINGS.dashboard.title}</h1>
         <OwnerScopeSelect
           value={result?.effectiveOwnerScope ?? ownerScope}
           onChange={setOwnerScope}

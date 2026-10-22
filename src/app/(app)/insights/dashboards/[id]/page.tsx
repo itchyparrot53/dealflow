@@ -39,9 +39,7 @@ export default async function DashboardPage({
 
   return (
     <main aria-label={dashboard.value.name} className="space-y-4 p-4">
-      <h1 className="text-display font-[450] leading-tight tracking-tight">
-        {dashboard.value.name}
-      </h1>
+      <h1 className="text-title">{dashboard.value.name}</h1>
       <DashboardView
         dashboard={dashboard.value}
         reports={reports.map((report) => ({

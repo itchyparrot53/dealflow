@@ -9,6 +9,7 @@ import {
   type Appearance,
   appearanceCookieValue,
   DARK_CLASS,
+  hasLightLock,
   isDarkAppearance,
   PREFERS_DARK_QUERY,
   parseAppearance,
@@ -22,7 +23,8 @@ function prefersDark(): boolean {
 // change lands without a reload.
 function applyAppearance(value: Appearance): void {
   document.cookie = appearanceCookieValue(value);
-  document.documentElement.classList.toggle(DARK_CLASS, isDarkAppearance(value, prefersDark()));
+  const dark = !hasLightLock() && isDarkAppearance(value, prefersDark());
+  document.documentElement.classList.toggle(DARK_CLASS, dark);
 }
 
 export interface AppearanceChoice {

@@ -132,7 +132,7 @@ export function DuplicatesPage({
   return (
     <div data-testid="duplicates-page" className="space-y-4">
       <div>
-        <h1 className="text-display font-semibold">Possible duplicates</h1>
+        <h1 className="text-title">Possible duplicates</h1>
         <p className="text-sm text-muted-foreground">
           Review likely duplicates, merge the ones that are the same record, or hide the pairs that
           are not.

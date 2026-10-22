@@ -16,7 +16,7 @@ export default async function ForecastPage(): Promise<React.ReactNode> {
 
   return (
     <main aria-label="Forecast" className="flex h-full flex-col p-4">
-      <h1 className="mb-4 text-display font-[450] leading-tight tracking-tight">Forecast</h1>
+      <h1 className="mb-4 text-title">Forecast</h1>
       <ForecastBoard
         pipelines={pipelines.map((pipeline) => ({ id: pipeline.id, name: pipeline.name }))}
       />

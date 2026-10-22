@@ -30,7 +30,7 @@ export function BookingConfirmed({
   const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
   return (
     <section className="space-y-4" data-testid="booking-confirmed">
-      <h1 className="text-display font-semibold">You&apos;re booked</h1>
+      <h1 className="text-title">You&apos;re booked</h1>
       <p className="text-sm">
         You&apos;re booked for {whenLabel(start, displayTimezone)} ({displayTimezone}) with{" "}
         {hostName}.

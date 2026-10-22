@@ -190,9 +190,7 @@ export function LeadsInbox({
 
   return (
     <div className="flex h-full flex-col p-4">
-      <h1 className="mb-3 text-display font-[450] leading-tight tracking-tight">
-        {STRINGS.nav.leads}
-      </h1>
+      <h1 className="mb-3 text-title">{STRINGS.nav.leads}</h1>
       <LeadsActionBar
         filter={filter}
         onFilter={setFilter}

@@ -362,7 +362,7 @@ export function PublicBooking({
     >
       <header className="space-y-2">
         <p className="text-sm text-muted-foreground">{hostName}</p>
-        <h1 className="text-display font-semibold">{title}</h1>
+        <h1 className="text-title">{title}</h1>
         <p className="text-sm text-muted-foreground">
           {durationMinutes} {S.editor.minutes}
           {location === null ? "" : ` · ${location}`}

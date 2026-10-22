@@ -35,9 +35,7 @@ export default async function InvitePage({
       <div className="w-full max-w-[400px] rounded-lg border bg-background p-6">
         {peek !== null && peek.ok ? (
           <>
-            <h1 className="text-balance text-display font-semibold">
-              {AUTH_STRINGS.setPasswordTitle}
-            </h1>
+            <h1 className="text-balance text-title">{AUTH_STRINGS.setPasswordTitle}</h1>
             {errorText !== undefined && (
               <p data-testid="invite-error" className="mt-3 text-sm text-destructive">
                 {errorText}

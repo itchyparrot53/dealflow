@@ -191,9 +191,9 @@ it("renders icon+label type buttons (Pipedrive parity) and selecting one sets th
   expect(screen.getByLabelText<HTMLInputElement>("Subject").value).toBe("Meeting");
 });
 
-it("renders the activity-name input at the display size", () => {
+it("renders the activity-name input at the control size", () => {
   render(<ActivityComposerInline dealId="d1" personId={null} orgId="o1" onCreated={vi.fn()} />);
-  expect(screen.getByLabelText("Subject")).toHaveClass("text-display");
+  expect(screen.getByLabelText("Subject")).toHaveClass("text-sm");
 });
 
 it("lays the start and end date controls out on a single compact row", () => {

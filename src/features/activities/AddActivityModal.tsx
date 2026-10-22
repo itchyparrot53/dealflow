@@ -148,7 +148,7 @@ export function AddActivityModal({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Subject"
-            className="w-full rounded-md border px-3 py-2 text-display font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+            className="w-full rounded-md border px-3 py-2 text-sm font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
           />
           <TypeIconRail types={types} value={effectiveTypeId} onChange={setTypeId} />
 

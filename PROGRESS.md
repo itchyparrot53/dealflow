@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-22 07:44
+Current: 0.3 · Last updated: 2026-10-22 07:50
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
 
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
-- [ ] 0.2 Tokens and global styles
+- [x] 0.2 Tokens and global styles
 - [ ] 0.3 Primitives and layout components
 - [ ] 0.4 Design e2e harness
 - [ ] 0.5 Phase 0 QA gate
@@ -47,6 +47,11 @@ Current: 0.2 · Last updated: 2026-10-22 07:44
 - 0.1: `npm view @axe-core/playwright version` prints 4.14.0, so the planned pin holds for Task 0.4.
 - 0.1: pnpm is 9.15.9 from `/tmp/dealflow-tools`, matching Part 10's environment; the subagent tool is available in this harness.
 - 0.1: `check-design.mjs` is 6.3 verbatim; `biome check --write` only reflowed its whitespace (no rule, threshold or message changed) so `pnpm lint` stays green, and the baseline it reports (289/184) matches the planner's dry run exactly.
+- 0.2: every 6.4 token is a CSS variable in `globals.css` in both themes (HSL channels for the shadcn-style roles, raw hex where the role is not colour-converted), with the measured radius scale 2/4/8/8, `--text-meta` 13/18, `--text-title` 24/32, the four floating shadows, 100 ms ease-out default transitions, the global 2 px blue focus outline, `.tabular`, `.board-column` and the 16/24 page paddings. `scripts/dealflow/hex-to-hsl.mjs` produced the channel values.
+- 0.2: `--text-display` is gone: its 27 heading uses became `text-title` (24/32/400) and the two composer Subject inputs became `text-sm` (controls are 14/20), so no surface keeps a 25 px step. `cn` registers `text-title`/`text-meta` as font sizes, otherwise tailwind-merge drops the size when a colour class follows it.
+- 0.2: the typeScale guard's second case now requires every painted h1 to name `text-title` or `text-base` (the type table's two heading steps) instead of the removed `text-display`; it still fails on an unnamed size. Tests updated for the class contract: `PageHeading`, `LeadHeader`, `EditableTitle`, `ActivityComposerInline.fields`, `lib/utils`.
+- 0.2: the public light lock is `[data-theme-lock="light"]`, which re-declares the light palette in the same rule as `:root`, so its subtree stays light even with `.dark` on `<html>`; `AppearanceSync` and `useAppearanceChoice` also refuse to add `.dark` while the attribute is present (checked on mount, when the page tree is already committed).
+
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

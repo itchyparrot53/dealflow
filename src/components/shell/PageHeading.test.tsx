@@ -6,13 +6,11 @@ import { PageHeading } from "./PageHeading";
 afterEach(cleanup);
 
 describe("PageHeading", () => {
-  it("renders the title as an h1 at the display size and 450 weight", () => {
+  it("renders the title as an h1 at the named record-title size", () => {
     render(<PageHeading title="People" />);
     const h1 = screen.getByRole("heading", { level: 1, name: "People" });
-    // The named display size, so a page title cannot be sized by guess.
-    expect(h1.className).toContain("text-display");
-    // PD's title weight is ~450 (lighter than semibold/600). Pin it so it cannot drift heavy again.
-    expect(h1.className).toContain("font-[450]");
+    // The named record-title size (24/32/400), so a title cannot be sized by guess.
+    expect(h1.className).toContain("text-title");
     expect(h1.className).not.toContain("font-semibold");
   });
 

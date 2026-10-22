@@ -228,7 +228,7 @@ export function ProjectBoard({
               className="max-w-md"
             />
           ) : (
-            <h1 className="truncate text-display font-[450] leading-tight tracking-tight">
+            <h1 className="truncate text-title">
               <button
                 type="button"
                 className="text-left"

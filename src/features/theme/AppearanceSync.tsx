@@ -3,6 +3,7 @@ import type React from "react";
 import { useEffect } from "react";
 import {
   DARK_CLASS,
+  hasLightLock,
   isDarkAppearance,
   PREFERS_DARK_QUERY,
   readAppearanceCookie,
@@ -16,7 +17,8 @@ export function AppearanceSync(): React.ReactNode {
     const mq = matchMedia(PREFERS_DARK_QUERY);
     const apply = (): void => {
       const choice = readAppearanceCookie(document.cookie);
-      document.documentElement.classList.toggle(DARK_CLASS, isDarkAppearance(choice, mq.matches));
+      const dark = !hasLightLock() && isDarkAppearance(choice, mq.matches);
+      document.documentElement.classList.toggle(DARK_CLASS, dark);
     };
     apply();
     mq.addEventListener("change", apply);
