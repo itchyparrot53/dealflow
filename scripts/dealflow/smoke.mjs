@@ -210,8 +210,8 @@ function seedDeals() {
 INSERT INTO pipelines (name, "order")
 SELECT 'Smoke', 0
 WHERE NOT EXISTS (SELECT 1 FROM pipelines WHERE name = 'Smoke' AND is_archived = false);
-INSERT INTO stages (pipeline_id, name, "order", probability)
-SELECT p.id, 'Lead', 0, 50
+INSERT INTO stages (pipeline_id, name, "order")
+SELECT p.id, 'Lead', 0
 FROM pipelines p
 WHERE p.name = 'Smoke'
   AND NOT EXISTS (SELECT 1 FROM stages s WHERE s.pipeline_id = p.id AND s.name = 'Lead');

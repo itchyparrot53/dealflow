@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-22 07:20
+Current: 4.3 · Last updated: 2026-10-22 08:05
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -28,7 +28,7 @@ Current: 4.2 · Last updated: 2026-10-22 07:20
 - [x] 3.4 Smoke seed, demo and docs
 - [x] 3.5 Phase 3 QA gate
 - [x] 4.1 E2E PWA and mobile spec and screenshots
-- [ ] 4.2 Integration suite and smoke
+- [x] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
 - [ ] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
@@ -91,6 +91,8 @@ Current: 4.2 · Last updated: 2026-10-22 07:20
 - 3.5 fixes: the gate's unit run caught `ActivitiesTable.sort.test.tsx`, whose expected `listRows` input predated the new `search` filter field; the expectation gained `search: null` (same changed-contract group as the other activity filter literals), and no assertion was relaxed.
 - 4.1: the e2e spec proved the manifest and worker, offline snapshots and the SW-served /offline app, the wipe on sign-out and for a second user, push capture, and all nine mobile routes. It caught four real gaps, fixed rather than asserted around: push was hooked only in the notification wire, so form/booking/document/automation producers never pushed (it now runs in `createNotification` after the row commits, which every producer goes through); the precached `/offline` HTML pulled its hashed CSS/JS from the network, so offline the page was unstyled and never hydrated (the worker now precaches the static assets referenced by the shell); the offline banner trusted only `navigator.onLine` (the last online/offline event is now authoritative); and five controls with test ids were 32px tall (log call, the two document buttons, the create-project button and the CSV export link).
 - 4.1: the spec stubs `ServiceWorkerRegistration.pushManager` so no real push service is contacted, and triggers a default-on push by submitting a public form from a visitor context instead of a mention from a second signed-in session; both still exercise the real subscribe action, preference gate and capture writer. Full suite: 24/24 (specs 00 to 14), 8 `p10-*` screenshots.
+- 4.2: the full integration suite is green on the final tree: 2097/2097 tests in 412 files (baseline 2077/410). `COMPOSE_PARALLEL_LIMIT=1 DOCKER_BUILDKIT=0 pnpm smoke` printed `SMOKE PASS` and `backup round trip ok (3 deals)`, and left no `dealflow-smoke` container or volume.
+- 4.2: the first smoke run failed at the new seed with `column "probability" of relation "stages" does not exist` (Part 8 moved stage probability to `stage_probabilities`); the seed now inserts only `pipeline_id, name, order`, and the rerun passed with the three deals compared.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
