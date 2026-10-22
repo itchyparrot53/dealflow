@@ -108,8 +108,10 @@ it("primary Won marks the deal won", () => {
 
 it("has no Won options dropdown: Won is a single plain button", () => {
   render(<DealCloseActions {...props} />);
-  expect(screen.getByLabelText("Deal status: Open")).toBeInTheDocument();
+  // An open deal shows the two close buttons, not a redundant OPEN status badge (6.8.2 row 13).
+  expect(screen.queryByLabelText("Deal status: Open")).toBeNull();
   expect(screen.getByRole("button", { name: "Won" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Lost" })).toBeInTheDocument();
   // The redundant split-button chevron / "Mark as won" menu item is gone.
   expect(screen.queryByRole("button", { name: "Won options" })).toBeNull();
   expect(screen.queryByRole("menuitem", { name: "Mark as won" })).toBeNull();

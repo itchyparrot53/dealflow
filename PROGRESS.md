@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-22 08:30
+Current: 1.4 · Last updated: 2026-10-22 09:05
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -15,7 +15,7 @@ Current: 1.3 · Last updated: 2026-10-22 08:30
 - [x] 0.5 Phase 0 QA gate
 - [x] 1.1 Shell
 - [x] 1.2 Pipeline board
-- [ ] 1.3 Deal workspace and StageTrack
+- [x] 1.3 Deal workspace and StageTrack
 - [ ] 1.4 Lists and person/organization detail
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Inbox, thread and mobile reply sheet
@@ -70,6 +70,12 @@ Current: 1.3 · Last updated: 2026-10-22 08:30
 - 1.2: the board now uses `PageToolbar` (a four-view `ViewSwitcher`, the split "+ Deal", the count with its info toggle, the pipeline menu joined to a 32 px pencil, Filter and the actions overflow), a 40 px filter row (Pin filters, chips, the sort pill and arrow), 248 px `board-column`s with the chevron clip-path and canvas-subtle fill, white cards with the 3 px warning rot border, the score chip before the 16 px next-activity dot, and a drag bar of 64 px dashed zones. `PageTitle` publishes "Deals" for the board, list and archived pages, and the edit page's in-content h1 moved to the top bar.
 - 1.2: the split button's caret repeats the primary action: Part 11 cannot add create entries to it (that would change behaviour), and Part 7 dropped the old caret for the same reason. The drag bar keeps its three real zones instead of the spec's four: delete is deliberately not a drop target (confirmed action on the menu), so a Delete zone would be a dead control.
 - 1.2: dnd-kit's attributes and listeners moved off the wrapper div and onto the card's own button, because the wrapper rendered `role="button"` around a `<button>` and axe fails that as `nested-interactive`. The canvas role and drop targets are unchanged.
+- 1.3: the deal header is the measured three-row block: 24/400 editable title with owner (32 avatar, 14/600 name, 13 secondary role), followers, presence, 32x62 Won/Lost, block visibility and the "..." menu; the new `StageTrack` (24 px, equal-width chevrons with a 2 px gap, green passed/current, track-grey future, stage-name tooltips, same `changeStageAction` and undo path); the blue "Pipeline > Stage" breadcrumb; a 1 px rule. The chevron `StageSelector` and its test were deleted (nothing else used them).
+- 1.3: the body is a 400 px white sidebar with a right border and flush 64 px section rows (`CollapsibleSection` no longer draws a card), and the activity side is `canvas-subtle` with the composer in a white card, so the sidebar-row, deal-title, deal-sidebar and activity-side parity checks all read the measured values. Record links and completed-activity text use `--link-record` instead of `--primary`, which is both the 6.1 rule and the reason the dark pass contrast now passes.
+- 1.3: the rail highlights the pipeline tile on `/deals/{id}` (`isNavActive`), so the deal page always has exactly one active rail tile, which the parity check requires.
+- 1.3: three tab strips render only a strip (the editor/list lives outside a `TabsContent`), so Radix's generated `aria-controls` dangled and axe failed `aria-valid-attr-value`; each now mounts a hidden `TabsContent forceMount` target per value. No behaviour changed.
+- 1.3 CONTRACT CHANGE: the future-stage label uses a new `--track-foreground` token (#5E6066 light, #A3A6AD dark) because the measured #65686F on #E4E4E4 is 4.38:1 and axe AA needs 4.5; #5E6066 measures 4.98:1.
+- 1.3: changed tests for the contract: the OVERDUE chip is now the filled StatusBadge, the stage parity check reads the current segment (the seeded deal can sit in the first stage, so no passed segment exists), the deal workspace test asserts the stage track's `aria-current="step"` option, and an open deal no longer renders an OPEN status badge.
 - 1.2 CONTRACT CHANGE: the dark palette keeps the light action green `#2D8548` and destructive `#D73C38` instead of `#3FA864` / `#EE6461`: white on the lighter pair measures 3.0:1 and 3.1:1, and on the darker pair 4.6:1 (6.4's contrast note). The rot age text uses `--next-red` (dark `#EE6461`, 5.2:1 on the dark card) instead of `--destructive`.
 - 1.2: changed tests for the board contract: rot is a warning border rather than a graded red fill, the owner avatar is the neutral token pair, the drag overlay uses `shadow-drag` + `rotate-2`, the next-activity dot uses the measured green/grey/red tokens, view segments are icon-only with names, lanes are 248 px with a 4 px gap and no divider, and "Move to" replaced "Move". The design spec now prints axe node targets, and its light pass pins `colorScheme: light` so a dark host OS cannot flip the gallery.
 - 1.1: changed tests for the new shell contract: `LeftNav.test.tsx` rewritten for the icon-only rail (width, 44 px tiles, violet active tile, Settings absent, no collapse control); `SearchTrigger.test.tsx` now asserts the placeholder span truncates inside the pill; `paletteTokens.test.ts` lost its LeftNav fixed-palette exemption; the engagement skeleton dropped its static-card shadow so `check:design src/components/shell` is 0.

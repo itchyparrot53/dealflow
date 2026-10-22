@@ -22,6 +22,8 @@ interface InlineFieldShellProps {
   // Headings use the same field shell while retaining their document semantics and typography.
   valueElement?: "span" | "h1";
   valueClassName?: string;
+  // Optional hook for the record-title parity checks (the deal's h1).
+  valueTestId?: string;
   // Blue prompt shown when the field is empty; clicking it opens the editor directly.
   emptyPrompt?: string;
   // The editor, rendered in place of the value while editing.
@@ -43,6 +45,7 @@ export function InlineFieldShell({
   value,
   valueElement = "span",
   valueClassName,
+  valueTestId,
   emptyPrompt,
   children,
 }: InlineFieldShellProps): React.ReactNode {
@@ -76,6 +79,7 @@ export function InlineFieldShell({
   return (
     <div className="group -mx-1 -my-1 relative flex min-w-0 items-center rounded px-1 py-1 pr-8 hover:bg-field-hover">
       <ValueElement
+        data-testid={valueTestId}
         className={cn(
           "min-w-0 cursor-text select-text break-words text-left text-sm",
           valueClassName,

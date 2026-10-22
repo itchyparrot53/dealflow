@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { DealDetailView, loadDeal } from "./DealDetailView";
@@ -21,5 +22,10 @@ export default async function DealPage({
   params: Promise<{ dealId: string }>;
 }): Promise<React.ReactNode> {
   const { dealId } = await params;
-  return <DealDetailView dealId={dealId} />;
+  return (
+    <>
+      <PageTitle title="Deals" />
+      <DealDetailView dealId={dealId} />
+    </>
+  );
 }

@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { LeftNav } from "./LeftNav";
+import { isNavActive, LeftNav } from "./LeftNav";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
@@ -43,6 +43,12 @@ describe("LeftNav (Pipedrive rail)", () => {
     render(<LeftNav />);
     expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
     expect(screen.getByRole("link", { name: "Performance" })).toBeTruthy();
+  });
+
+  test("highlights the pipeline destination on the deal workspace", () => {
+    expect(isNavActive("/deals/abc", "/pipeline")).toBe(true);
+    expect(isNavActive("/deals", "/pipeline")).toBe(true);
+    expect(isNavActive("/contacts/people", "/pipeline")).toBe(false);
   });
 
   test("has no collapse control: the rail is always icon-only", () => {

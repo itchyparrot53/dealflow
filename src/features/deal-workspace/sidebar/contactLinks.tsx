@@ -45,7 +45,7 @@ export function LinkValue({
   return (
     <a
       href={href}
-      className="text-primary hover:underline"
+      className="text-link-record hover:underline"
       {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {display}

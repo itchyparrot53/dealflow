@@ -72,7 +72,7 @@ export function DealListTableBody(props: DealListTableBodyProps): React.ReactNod
         );
       case "org":
         return row.orgId !== null && (row.orgName ?? null) !== null ? (
-          <Link href={`/contacts/orgs/${row.orgId}`} className="text-primary hover:underline">
+          <Link href={`/contacts/orgs/${row.orgId}`} className="text-link-record hover:underline">
             {row.orgName}
           </Link>
         ) : (

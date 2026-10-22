@@ -4,7 +4,7 @@ import Link from "next/link";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogCallForm, type LogCallTarget } from "@/features/activities/calls/ui/LogCallForm";
 import type { EditableActivity } from "@/features/activities/getForEdit";
 import { ActivityComposerInline } from "@/features/deal-workspace/composer/ActivityComposerInline";
@@ -227,6 +227,11 @@ export function SharedComposeBar({
               </TabsTrigger>
             ))}
           </TabsList>
+          {/* The editor lives below the strip rather than inside a TabsContent, so each trigger
+              needs a mounted target for the aria-controls Radix generates (axe). */}
+          {tabs.map(({ id }) => (
+            <TabsContent key={id} forceMount value={id} className="hidden" />
+          ))}
           {logCall !== null && (
             <Button
               type="button"

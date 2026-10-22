@@ -59,8 +59,8 @@ export function OwnerBlock({
     <div className="flex items-center gap-2">
       <Avatar name={name} src={owner?.avatarUrl ?? null} />
       <div className="min-w-0 leading-tight">
-        <p className="truncate text-sm font-medium text-foreground">{name}</p>
-        <p className="text-xs text-muted-foreground">Owner</p>
+        <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+        <p className="text-meta text-muted-foreground">Owner</p>
       </div>
       {canChangeOwner && (
         <DropdownMenu>

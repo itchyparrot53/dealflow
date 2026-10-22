@@ -184,7 +184,7 @@ export function DealSummaryActionList({
         >
           <Link
             href={`/contacts/people/${person.id}`}
-            className="font-semibold text-primary hover:underline"
+            className="font-semibold text-link-record hover:underline"
           >
             {person.name}
           </Link>

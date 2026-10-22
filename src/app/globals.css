@@ -51,6 +51,7 @@
   --color-topbar-border: hsl(var(--topbar-border));
   --color-canvas-subtle: hsl(var(--canvas-subtle));
   --color-track: hsl(var(--track));
+  --color-track-foreground: hsl(var(--track-foreground));
 
   /* Link and active-tab roles. Record links are green, navigational links are blue. */
   --color-link: var(--link);
@@ -213,6 +214,8 @@
     --topbar-border: 0 0% 91%;
     --canvas-subtle: 0 0% 96.1%;
     --track: 0 0% 89.4%;
+    /* CONTRACT CHANGE (axe AA): #65686F on #E4E4E4 is 4.38:1; #5E6066 is 4.98:1. */
+    --track-foreground: 225 4.1% 38.4%;
     --info: 211.6 84.4% 42.7%;
     --info-soft: 213.8 100% 96.9%;
     --info-soft-strong: 214 100% 94.1%;
@@ -307,6 +310,7 @@
     --topbar-border: 221.5 11.9% 21.4%;
     --canvas-subtle: 220 12.5% 9.4%;
     --track: 221.5 11.9% 21.4%;
+    --track-foreground: 222 5.7% 65.9%;
     --info: 212.1 83% 65.5%;
     --info-soft: 216.8 34.1% 17.8%;
     --info-soft-strong: 217 40.2% 22.9%;

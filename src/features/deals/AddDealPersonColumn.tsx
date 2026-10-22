@@ -105,7 +105,7 @@ function ContactRows({
         type="button"
         disabled={disabled}
         onClick={() => onChange([...rows, { label: labels[0] ?? "Work", value: "" }])}
-        className="mt-2 text-sm font-medium text-primary hover:underline disabled:opacity-40"
+        className="mt-2 text-sm font-medium text-link-record hover:underline disabled:opacity-40"
       >
         + Add {kind.toLowerCase()}
       </button>

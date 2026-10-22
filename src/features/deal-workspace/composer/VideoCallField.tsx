@@ -36,7 +36,7 @@ export function VideoCallField({ value, onChange }: Props): React.ReactNode {
   return (
     <div className="flex items-center gap-1.5 text-sm">
       <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <a href={value} className="truncate text-primary hover:underline">
+      <a href={value} className="truncate text-link-record hover:underline">
         {value}
       </a>
       <button

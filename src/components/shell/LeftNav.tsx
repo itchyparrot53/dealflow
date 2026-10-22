@@ -19,6 +19,14 @@ const ITEMS = NAV_ITEMS.filter((item) => item.key !== "settings").map((item) => 
   Icon: NAV_ICONS[item.key],
 }));
 
+// The deal workspace lives at /deals/{id} but belongs to the pipeline destination, so the rail
+// still shows an active tile there (and there is always exactly one active tile).
+export function isNavActive(pathname: string, section: string): boolean {
+  if (pathname === section || pathname.startsWith(`${section}/`)) return true;
+  if (section === "/pipeline") return pathname === "/deals" || pathname.startsWith("/deals/");
+  return false;
+}
+
 export function LeftNav(): React.ReactNode {
   const pathname = usePathname();
   return (
@@ -38,7 +46,7 @@ export function LeftNav(): React.ReactNode {
       </Link>
       <div className="flex flex-col items-center gap-2 pt-2">
         {ITEMS.map((item) => {
-          const active = pathname === item.section || pathname.startsWith(`${item.section}/`);
+          const active = isNavActive(pathname, item.section);
           return (
             <Tip key={item.href} label={item.label}>
               <Link

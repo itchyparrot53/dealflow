@@ -89,7 +89,7 @@ export function PersonBlock({
       <SidebarFieldRow
         label="Name"
         value={
-          <a href={`/contacts/people/${person.id}`} className="text-primary hover:underline">
+          <a href={`/contacts/people/${person.id}`} className="text-link-record hover:underline">
             {person.name}
           </a>
         }

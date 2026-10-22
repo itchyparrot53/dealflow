@@ -144,13 +144,12 @@ describe("DealWorkspaceClient", () => {
 
   it("marks the active stage with aria-current='step' and drops the 'to' connector text", () => {
     render(<DealWorkspaceClient workspace={workspace as never} {...props} />);
-    // Pipedrive-style chevron pipeline: the current segment is the active step,
-    // and stages connect visually (no literal "to" word between them).
-    const current = screen
-      .getAllByText("Proposal")
-      .map((el) => el.closest("[aria-current='step']"))
-      .find((el) => el !== null);
-    expect(current).toBeTruthy();
+    // Pipedrive-style day-count track: the current segment is the active step, and stages
+    // connect visually (no literal "to" word between them).
+    expect(screen.getByRole("option", { name: /Proposal/ })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
     // Scoped to the stage listbox: the activity composer (now mounted for real on the Activity
     // tab) has its own unrelated "Start time to End time" separator text elsewhere on the page.
     const stageBar = screen.getByRole("listbox", { name: "Stage" });

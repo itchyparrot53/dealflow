@@ -1,5 +1,5 @@
 import type React from "react";
-import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
 import { historyTabLabel } from "@/features/deal-workspace/historyTabCounts";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
@@ -79,6 +79,11 @@ export function HistoryTypeTabs({
           </TabsTrigger>
         ))}
       </TabsList>
+      {/* Each trigger needs a mounted target for Radix's aria-controls; the real list renders
+          below by active tab rather than inside a TabsContent. */}
+      {TABS.map((t) => (
+        <TabsContent key={t} forceMount value={t} className="hidden" />
+      ))}
 
       <div className="pt-4">
         {/* History is a view of what is attached, not a compose surface: read-only so the

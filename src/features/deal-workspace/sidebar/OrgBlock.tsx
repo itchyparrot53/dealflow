@@ -96,7 +96,7 @@ export function OrgBlock({
       <SidebarFieldRow
         label="Name"
         value={
-          <a href={`/contacts/orgs/${org.id}`} className="text-primary hover:underline">
+          <a href={`/contacts/orgs/${org.id}`} className="text-link-record hover:underline">
             {org.name}
           </a>
         }

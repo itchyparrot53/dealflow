@@ -121,9 +121,11 @@ async function cardTitleCheck(page: Page): Promise<void> {
 }
 
 async function stageTrackCheck(page: Page): Promise<void> {
-  const passed = await computed(page, '[data-testid="stage-track"] [data-state="passed"]');
-  expect(passed.height, "stage track height").toBe(24);
-  expect(passed.backgroundColor, "passed stage fill").toBe("rgb(45, 133, 72)");
+  // The seeded deal can sit in the first stage, so there may be no passed segment; the current
+  // one carries the same green token.
+  const current = await computed(page, '[data-testid="stage-track"] [data-state="current"]');
+  expect(current.height, "stage track height").toBe(24);
+  expect(current.backgroundColor, "current stage fill").toBe("rgb(45, 133, 72)");
   const future = await computed(page, '[data-testid="stage-track"] [data-state="future"]');
   expect(future.backgroundColor, "future stage fill").toBe("rgb(228, 228, 228)");
 }

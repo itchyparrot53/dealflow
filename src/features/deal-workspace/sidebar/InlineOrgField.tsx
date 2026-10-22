@@ -105,7 +105,7 @@ export function InlineOrgField({
         org !== null ? (
           <Link
             href={`/contacts/orgs/${org.id}`}
-            className="font-semibold text-primary hover:underline"
+            className="font-semibold text-link-record hover:underline"
           >
             {org.name}
           </Link>

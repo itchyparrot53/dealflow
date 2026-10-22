@@ -37,7 +37,7 @@ export function DealTitleCell(props: DealTitleCellProps): React.ReactNode {
 
   return (
     <span className="group flex items-center gap-2">
-      <Link href={`/deals/${dealId}`} className="text-primary hover:underline">
+      <Link href={`/deals/${dealId}`} className="text-link-record hover:underline">
         {title}
       </Link>
       <button

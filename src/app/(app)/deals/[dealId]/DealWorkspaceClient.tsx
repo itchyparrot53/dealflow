@@ -126,7 +126,7 @@ export function DealWorkspaceClient({
 
   return (
     <DealActionErrorProvider>
-      <div className="flex h-full flex-col p-4">
+      <div className="flex h-full flex-col">
         <DealHeader
           workspace={workspace}
           selfActorId={selfActorId}
@@ -138,9 +138,12 @@ export function DealWorkspaceClient({
           scheduleFollowUpAfterWon={scheduleFollowUpAfterWon}
         />
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[34fr_66fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-auto lg:grid-cols-[400px_1fr]">
           {/* On a phone the main panel comes first and the sidebar sections stack below it. */}
-          <div className="order-2 min-w-0 lg:order-1">
+          <div
+            data-testid="deal-sidebar"
+            className="order-2 min-w-0 border-r border-border bg-card lg:order-1"
+          >
             <DealSidebar
               workspace={workspace}
               now={now}
@@ -157,46 +160,51 @@ export function DealWorkspaceClient({
             />
           </div>
 
-          <div className="order-1 min-w-0 lg:order-2">
+          <div
+            data-testid="activity-side"
+            className="order-1 min-w-0 bg-canvas-subtle p-4 md:p-6 lg:order-2"
+          >
             {/* Compose toolbar (Pipedrive): Activity/Notes/Email/Files. */}
             {!isHidden("email") && (
-              <SharedComposeBar
-                scope={{
-                  entityType: "deal",
-                  entityId: deal.id,
-                  personId: person?.id,
-                  orgId: org?.id,
-                  personName: person?.name,
-                  personEmail: person?.primaryEmail ?? undefined,
-                  // Display values for the email composer's "Insert field" menu (EMAIL-21).
-                  orgName: org?.name,
-                  dealTitle: deal.title,
-                  dealValue: deal.value ?? undefined,
-                  participantEmails,
-                }}
-                emailAccountId={emailAccountId}
-                emailAddress={emailAddress}
-                resumeDraft={resumeDraft}
-                onResumeDraftDone={() => setResumeDraft(null)}
-                onActivityCreated={() =>
-                  void utils.activities.listForEntity.invalidate({
+              <div className="rounded-lg border border-topbar-border bg-card p-4">
+                <SharedComposeBar
+                  scope={{
                     entityType: "deal",
                     entityId: deal.id,
-                  })
-                }
-                onNoteCreated={() =>
-                  void utils.collaboration.listNotes.invalidate({
-                    entityType: "deal",
-                    entityId: deal.id,
-                  })
-                }
-                editing={editingActivity}
-                onEditSaved={() => {
-                  onActivityChanged();
-                  setEditingActivityId(null);
-                }}
-                onEditCancel={() => setEditingActivityId(null)}
-              />
+                    personId: person?.id,
+                    orgId: org?.id,
+                    personName: person?.name,
+                    personEmail: person?.primaryEmail ?? undefined,
+                    // Display values for the email composer's "Insert field" menu (EMAIL-21).
+                    orgName: org?.name,
+                    dealTitle: deal.title,
+                    dealValue: deal.value ?? undefined,
+                    participantEmails,
+                  }}
+                  emailAccountId={emailAccountId}
+                  emailAddress={emailAddress}
+                  resumeDraft={resumeDraft}
+                  onResumeDraftDone={() => setResumeDraft(null)}
+                  onActivityCreated={() =>
+                    void utils.activities.listForEntity.invalidate({
+                      entityType: "deal",
+                      entityId: deal.id,
+                    })
+                  }
+                  onNoteCreated={() =>
+                    void utils.collaboration.listNotes.invalidate({
+                      entityType: "deal",
+                      entityId: deal.id,
+                    })
+                  }
+                  editing={editingActivity}
+                  onEditSaved={() => {
+                    onActivityChanged();
+                    setEditingActivityId(null);
+                  }}
+                  onEditCancel={() => setEditingActivityId(null)}
+                />
+              </div>
             )}
 
             {!isHidden("timeline") && (

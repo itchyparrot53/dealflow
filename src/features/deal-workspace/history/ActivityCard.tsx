@@ -3,6 +3,7 @@ import Link from "next/link";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { completeActivityAction, deleteActivityAction } from "@/features/activities/actions";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import { CallOutcomeChip } from "@/features/activities/calls/ui/CallOutcomeChip";
@@ -159,7 +160,7 @@ export function ActivityCard({
             type="button"
             onClick={() => onEdit?.()}
             disabled={onEdit === undefined}
-            className="flex w-full items-center gap-1.5 text-pretty text-left text-sm font-medium text-foreground enabled:hover:text-primary disabled:cursor-default"
+            className="flex w-full items-center gap-1.5 text-pretty text-left text-sm font-medium text-foreground enabled:hover:text-link-record disabled:cursor-default"
           >
             <ActivityTypeIcon typeKey={activity.typeKey} />
             <span className="min-w-0 truncate">{activity.subject}</span>
@@ -174,9 +175,7 @@ export function ActivityCard({
             </div>
           )}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
-            {activity.overdue ? (
-              <span className="font-semibold uppercase text-destructive">Overdue</span>
-            ) : null}
+            {activity.overdue ? <StatusBadge tone="overdue">Overdue</StatusBadge> : null}
             <span
               data-testid="activity-date"
               className={activity.overdue ? "text-destructive" : ""}
@@ -192,7 +191,7 @@ export function ActivityCard({
             {activity.personId !== null ? (
               <Link
                 href={`/contacts/people/${activity.personId}`}
-                className="text-primary hover:underline"
+                className="text-link-record hover:underline"
                 aria-label="Linked person"
               >
                 · {activity.personName ?? "Person"}
@@ -201,7 +200,7 @@ export function ActivityCard({
             {activity.orgId !== null ? (
               <Link
                 href={`/contacts/orgs/${activity.orgId}`}
-                className="text-primary hover:underline"
+                className="text-link-record hover:underline"
                 aria-label="Linked organization"
               >
                 · {activity.orgName ?? "Organization"}
@@ -209,7 +208,7 @@ export function ActivityCard({
             ) : null}
           </p>
           {done && activity.doneAt != null ? (
-            <p data-testid="activity-completed" className="mt-0.5 text-xs text-success">
+            <p data-testid="activity-completed" className="mt-0.5 text-xs text-link-record">
               Completed {formatDateTime(activity.doneAt)}
             </p>
           ) : null}
@@ -218,7 +217,7 @@ export function ActivityCard({
               href={activity.videoCallUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-0.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              className="mt-0.5 inline-flex items-center gap-1 text-xs text-link-record hover:underline"
             >
               Join video call
             </a>

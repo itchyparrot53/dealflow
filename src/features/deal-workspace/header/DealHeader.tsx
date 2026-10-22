@@ -4,6 +4,7 @@ import type { DealBlockId } from "@/constants/dealBlocks";
 import { wsChannel } from "@/constants/wsChannels";
 import { DealCloseActions } from "@/features/deal-workspace/DealCloseActions";
 import type { DealWorkspace } from "@/features/deal-workspace/summaryRepo";
+import { StageTrack } from "@/features/deals/ui/StageTrack";
 import { PresenceBar } from "@/features/presence/ui/PresenceBar";
 import { BlockVisibilityButton } from "./BlockVisibilityButton";
 import { DealActionsMenu } from "./DealActionsMenu";
@@ -11,7 +12,6 @@ import { EditableTitle } from "./EditableTitle";
 import { FollowersButton } from "./FollowersButton";
 import { OwnerBlock } from "./OwnerBlock";
 import { PipelineBreadcrumb } from "./PipelineBreadcrumb";
-import { StageSelector } from "./StageSelector";
 
 interface DealHeaderProps {
   workspace: DealWorkspace;
@@ -29,9 +29,10 @@ interface DealHeaderProps {
   scheduleFollowUpAfterWon: boolean;
 }
 
-// Two-row deal-detail header (Pipedrive parity). Row 1: editable title + a right cluster of owner,
-// followers, presence, close actions, block-visibility, and the overflow menu. Row 2: the
-// interactive stage selector + pipeline breadcrumb. Layout only; each control owns its own logic.
+// The measured deal header (6.8.2): row 1 is the 24/400 title with owner, followers, presence,
+// close actions, visibility and overflow at right; row 2 is the 24 px StageTrack; row 3 the
+// "Pipeline > Stage" blue breadcrumb. A 1 px rule closes the header. Layout only; each control owns
+// its own logic.
 export function DealHeader({
   workspace,
   selfActorId,
@@ -57,8 +58,8 @@ export function DealHeader({
   const currentStageName = stageProgress.chips.find((c) => c.current)?.name ?? null;
 
   return (
-    <div className="mb-4">
-      <div className="mb-3 flex items-start justify-between gap-4">
+    <div className="shrink-0 border-b border-track bg-background px-6 pb-3 pt-5">
+      <div className="flex items-start justify-between gap-3 pb-3">
         <div className="min-w-0">
           <EditableTitle
             dealId={deal.id}
@@ -97,20 +98,18 @@ export function DealHeader({
           />
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <StageSelector
-            dealId={deal.id}
-            expectedUpdatedAt={expectedUpdatedAt}
-            chips={stageProgress.chips}
-          />
-        </div>
-        <PipelineBreadcrumb
-          pipelineId={deal.pipelineId}
-          pipelineName={pipelineName}
-          currentStageName={currentStageName}
+      <div className="min-w-0 pb-2">
+        <StageTrack
+          dealId={deal.id}
+          expectedUpdatedAt={expectedUpdatedAt}
+          chips={stageProgress.chips}
         />
       </div>
+      <PipelineBreadcrumb
+        pipelineId={deal.pipelineId}
+        pipelineName={pipelineName}
+        currentStageName={currentStageName}
+      />
     </div>
   );
 }

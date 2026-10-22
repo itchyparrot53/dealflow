@@ -1,5 +1,5 @@
 import type React from "react";
-import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type TimelineView = "focus" | "history";
 
@@ -27,6 +27,10 @@ export function TimelineTabs({ view, onView, children }: TimelineTabsProps): Rea
           </TabsTrigger>
         ))}
       </TabsList>
+      {/* Targets for Radix's aria-controls: the caller renders the active view as children. */}
+      {VIEWS.map((v) => (
+        <TabsContent key={v.key} forceMount value={v.key} className="hidden" />
+      ))}
       {children}
     </Tabs>
   );

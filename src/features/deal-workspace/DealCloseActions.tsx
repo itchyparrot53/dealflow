@@ -112,14 +112,13 @@ export function DealCloseActions({
 
   return (
     <div className="flex items-center gap-2">
-      <DealStatusBadge status="open" />
       {/* Won marks the deal won on a single click (Pipedrive parity). No options dropdown: there was
           only a redundant "Mark as won" item, so the plain button is the whole control. */}
       <button
         type="button"
         disabled={pending}
         onClick={() => void won()}
-        className="rounded-md bg-success px-3 py-1.5 text-sm font-medium text-success-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        className="h-8 w-[62px] rounded-md bg-success text-sm font-semibold text-success-foreground transition-colors duration-100 hover:bg-primary-hover disabled:bg-disabled disabled:text-disabled-foreground"
       >
         Won
       </button>
@@ -127,7 +126,7 @@ export function DealCloseActions({
         type="button"
         disabled={pending}
         onClick={() => setPicking(true)}
-        className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-[opacity,scale] duration-150 ease-out hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+        className="h-8 w-[62px] rounded-md bg-destructive text-sm font-semibold text-destructive-foreground transition-colors duration-100 hover:bg-destructive/90 disabled:bg-disabled disabled:text-disabled-foreground"
       >
         Lost
       </button>

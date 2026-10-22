@@ -65,7 +65,7 @@ export function ParticipantsDialog({
                   <td className="py-2 pr-3">
                     <Link
                       href={`/contacts/people/${p.personId}`}
-                      className="font-semibold text-primary hover:underline"
+                      className="font-semibold text-link-record hover:underline"
                     >
                       {p.name}
                     </Link>

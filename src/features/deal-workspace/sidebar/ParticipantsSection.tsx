@@ -44,7 +44,7 @@ export function ParticipantsSection({
             <User aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <Link
               href={`/contacts/people/${p.personId}`}
-              className="min-w-0 truncate font-semibold text-primary hover:underline"
+              className="min-w-0 truncate font-semibold text-link-record hover:underline"
             >
               {p.name}
             </Link>

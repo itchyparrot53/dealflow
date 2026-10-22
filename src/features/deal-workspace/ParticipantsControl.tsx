@@ -25,7 +25,7 @@ export function ParticipantsControl({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-0.5 text-sm font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-0.5 text-sm font-semibold text-link-record hover:underline"
       >
         {count === 0 ? (
           <>

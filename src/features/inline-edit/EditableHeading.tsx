@@ -11,12 +11,18 @@ interface EditableHeadingProps {
   title: string;
   label: string;
   onCommit: InlineSaveFn<string>;
+  valueTestId?: string;
 }
 
 // Page-heading variant of the same Pipedrive inline field used throughout the sidebars: the
 // title remains selectable text, row hover reveals the shared bordered pencil, and the editor
 // uses the shared Save/Cancel footer. Blank and unchanged values never reach the mutation.
-export function EditableHeading({ title, label, onCommit }: EditableHeadingProps): React.ReactNode {
+export function EditableHeading({
+  title,
+  label,
+  onCommit,
+  valueTestId,
+}: EditableHeadingProps): React.ReactNode {
   const f = useInlineEditField(title);
   const trimmedDraft = f.draft.trim();
   const dirty = trimmedDraft !== "" && trimmedDraft !== title;
@@ -65,6 +71,7 @@ export function EditableHeading({ title, label, onCommit }: EditableHeadingProps
         value={title}
         valueElement="h1"
         valueClassName="truncate text-title text-foreground"
+        valueTestId={valueTestId}
       >
         {editor}
       </InlineFieldShell>

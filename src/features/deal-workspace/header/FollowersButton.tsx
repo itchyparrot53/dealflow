@@ -1,5 +1,5 @@
 "use client";
-import { Users } from "lucide-react";
+import { ChevronDown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ICON_BUTTON } from "@/constants/formStyles";
 import { followDealAction, unfollowDealAction } from "@/features/deal-workspace/actions";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -45,9 +44,10 @@ export function FollowersButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={`${ICON_BUTTON} gap-1.5 text-sm`}>
+      <DropdownMenuTrigger className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2 text-sm text-foreground transition-colors duration-100 hover:bg-muted">
         <Users aria-hidden="true" className="h-4 w-4" />
         <span className="tabular-nums">{count}</span> {count === 1 ? "follower" : "followers"}
+        <ChevronDown aria-hidden="true" className="size-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" aria-label="Followers" className="min-w-52">
         <DropdownMenuItem disabled={pending} onSelect={() => void toggle()} className="font-medium">
@@ -59,7 +59,7 @@ export function FollowersButton({
         ) : (
           followers.map((f) => (
             <div key={f.id} className="flex items-center gap-2 px-2 py-1.5 text-sm">
-              <Avatar name={f.name} src={f.avatarUrl} className="h-6 w-6 text-[10px]" />
+              <Avatar name={f.name} src={f.avatarUrl} className="size-6 text-caption" />
               <span className="truncate">{f.name}</span>
             </div>
           ))

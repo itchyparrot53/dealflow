@@ -218,10 +218,11 @@ describe("ActivityCard", () => {
     expect(container.querySelector("svg.lucide-phone.h-4.w-4.shrink-0")).not.toBeNull();
   });
 
-  it("renders an OVERDUE badge with the destructive treatment when overdue", () => {
+  it("renders the OVERDUE status badge when overdue", () => {
     render(<ActivityCard activity={makeActivity({ overdue: true })} at={AT} />);
     const badge = screen.getByText(/overdue/i);
-    expect(badge).toHaveClass("text-destructive");
+    // 6.1 row 15: a filled destructive pill with white 12/700 caps, the StatusBadge primitive.
+    expect(badge).toHaveClass("bg-destructive", "text-destructive-foreground", "uppercase");
   });
 
   it("renders the due date in the destructive color when overdue (PD reddens the date too)", () => {

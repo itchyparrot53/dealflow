@@ -14,15 +14,12 @@ export function FreeBusyIndicator({ busy }: Props): React.ReactNode {
       role="status"
       className={cn(
         "inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-xs font-medium",
-        busy ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800",
+        busy ? "bg-warning-soft text-warning-foreground" : "bg-success/10 text-success",
       )}
     >
       <span
         aria-hidden="true"
-        className={cn(
-          "inline-block h-2 w-2 rounded-full",
-          busy ? "bg-amber-500" : "bg-emerald-500",
-        )}
+        className={cn("inline-block h-2 w-2 rounded-full", busy ? "bg-warning" : "bg-success")}
       />
       {busy ? "Busy" : "Free"}
     </span>
