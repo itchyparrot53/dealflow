@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p10-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-22 05:45
+Current: 4.1 · Last updated: 2026-10-22 06:10
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
 - Phase 1: 93068017be4b4b47442fc9f0023b413bbfa90ef2
 - Phase 2: 6551751
 - Phase 3: 81139f1
+- Phase 4: aabb1c7
 
 ## Tasks
 - [x] 0.1 Start Part 10: progress files, kit and baseline
@@ -25,7 +26,7 @@ Current: 3.5 · Last updated: 2026-10-22 05:45
 - [x] 3.2 Key screens on mobile
 - [x] 3.3 Create anywhere and activities search
 - [x] 3.4 Smoke seed, demo and docs
-- [ ] 3.5 Phase 3 QA gate
+- [x] 3.5 Phase 3 QA gate
 - [ ] 4.1 E2E PWA and mobile spec and screenshots
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review and hardening
@@ -37,6 +38,7 @@ Current: 3.5 · Last updated: 2026-10-22 05:45
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5345/5345 in 832 files · no named integration files in this gate (DoD 1 to 4)
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5350/5350 in 833 files · no named integration files in this gate (DoD 3 to 5)
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5351/5351 in 833 files · push/notifications integration 67/67 (12 files)
+- Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5351/5351 in 833 files · activities/export/push integration 147/147 (36 files)
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p9-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P9.md` and starts Part 10 at Task 0.1.
@@ -86,6 +88,7 @@ Current: 3.5 · Last updated: 2026-10-22 05:45
 - 3.3: three activity test files gained `search: null` in their filter literals (the changed filter contract), and new real-Postgres cases cover list search by subject and note plus the export's note-only match.
 - 3.4: `scripts/dealflow/smoke.mjs` seeds three deals ("Smoke renewal", "Smoke expansion", "Smoke pilot") in a pipeline and stage it creates if missing, owned by the seeded admin, after the restart check and before the backup round trip, so the dump/restore comparison has a non-zero count.
 - 3.4: `docs/dealflow/PWA.md` covers install on desktop/Android/iOS, exactly what is stored offline and the shared-device trade-off, the update prompt, push setup (`pnpm push:vapid`, the three keys, `PUSH_FAKE`), the per-type preferences and the iOS Home Screen requirement, and the mobile layout. `UPSTREAM.md` lists the Part 10 files and `README.md` gained a Part 10 section.
+- 3.5 fixes: the gate's unit run caught `ActivitiesTable.sort.test.tsx`, whose expected `listRows` input predated the new `search` filter field; the expectation gained `search: null` (same changed-contract group as the other activity filter literals), and no assertion was relaxed.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
