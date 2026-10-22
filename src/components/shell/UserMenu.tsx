@@ -15,7 +15,7 @@ import { SignOutLink } from "@/features/pwa/SignOutLink";
 import { AppearanceMenuSection } from "@/features/theme/AppearanceMenuSection";
 import { APPEARANCE_DEFAULT, type Appearance } from "@/features/theme/appearance";
 import { useAppearanceChoice } from "@/features/theme/useAppearanceChoice";
-import { avatarColorClass, initials } from "@/lib/avatar";
+import { initials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 // Top-right account menu (Pipedrive convention): an avatar button that opens a small dropdown
@@ -47,12 +47,13 @@ export function UserMenu({
         <button
           type="button"
           aria-label="Account menu"
+          data-user-id={userId}
           className={cn(
-            "flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-xs font-semibold transition-transform active:scale-[0.96]",
+            "flex size-10 items-center justify-center overflow-hidden rounded-full text-sm font-semibold transition-transform active:scale-[0.96]",
             // Skip the tinted background when a photo fills the circle.
             hasPhoto
               ? "outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
-              : avatarColorClass(userName !== undefined && userName !== "" ? userName : userId),
+              : "bg-avatar text-avatar-foreground",
           )}
         >
           {hasPhoto ? (
@@ -65,23 +66,23 @@ export function UserMenu({
           ) : userName !== undefined && userName !== "" ? (
             initials(userName)
           ) : (
-            <User aria-hidden="true" className="h-4 w-4" />
+            <User aria-hidden="true" className="size-5" />
           )}
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent aria-label="Account" align="end" className="w-56">
-        <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <DropdownMenuLabel className="text-meta font-semibold text-muted-foreground">
           My account
         </DropdownMenuLabel>
         <InstallButton variant="menu" />
-        <DropdownMenuItem asChild className="gap-2.5">
+        <DropdownMenuItem asChild className="gap-2">
           <Link href="/settings/profile">
-            <Settings aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+            <Settings aria-hidden="true" className="size-4 text-muted-foreground" />
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="gap-2.5">
+        <DropdownMenuItem asChild className="gap-2">
           <SignOutLink />
         </DropdownMenuItem>
         <DropdownMenuSeparator />

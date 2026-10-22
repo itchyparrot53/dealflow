@@ -4,9 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const SRC_DIR = fileURLToPath(new URL("./", import.meta.url));
 
-// The main navigation rail is a dark slate rail in BOTH themes, so its slate scale is
-// intentional rather than an un-migrated light-only surface.
-const INTENTIONAL_FIXED_PALETTE = new Set(["components/shell/LeftNav.tsx"]);
+// The rail now uses the rail tokens, so no file needs a fixed-palette exemption. Part 11 removed
+// the last one (components/shell/LeftNav.tsx) rather than widening the allow-list.
 
 // A fixed gray-family step that does not follow the theme, captured with its whole variant chain
 // so a `dark:` anywhere in that chain reads as the deliberate escape hatch.
@@ -36,9 +35,9 @@ function offenders(path: string): string[] {
 
 describe("theme palette tokens", () => {
   it("renders every surface from semantic tokens so both Day and Night are legible", () => {
-    const found = productionTsxFiles(SRC_DIR)
-      .filter((path) => !INTENTIONAL_FIXED_PALETTE.has(relative(path)))
-      .flatMap((path) => offenders(path).map((cls) => `${relative(path)}: ${cls}`));
+    const found = productionTsxFiles(SRC_DIR).flatMap((path) =>
+      offenders(path).map((cls) => `${relative(path)}: ${cls}`),
+    );
     expect(found).toEqual([]);
   });
 

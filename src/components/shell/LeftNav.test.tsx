@@ -1,228 +1,53 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { DOCS_SITE_URL } from "@/constants/docs";
 import { LeftNav } from "./LeftNav";
 
 // LeftNav reads the current path via usePathname to mark the active item; mock it so the
 // component renders outside an app-router provider.
 vi.mock("next/navigation", () => ({ usePathname: () => "/pipeline" }));
 
-// The collapse preference now persists in a cookie (so the server can read it and render the
-// correct width, avoiding the reload flash). jsdom provides a working document.cookie; clear it
-// between tests. Reset to a clean jar by expiring the key.
-function clearNavCookie(): void {
-  document.cookie = "wd_nav_expanded=; path=/; max-age=0";
-}
+afterEach(cleanup);
 
-// jsdom has no matchMedia; shim it so the responsive default (expanded on wide screens, collapsed
-// on small) can be exercised. `setViewport(true)` = wide (min-width query matches).
-let mediaMatches = true;
-function setViewport(wide: boolean): void {
-  mediaMatches = wide;
-}
-vi.stubGlobal("matchMedia", (query: string) => ({
-  matches: /min-width/.test(query) ? mediaMatches : !mediaMatches,
-  media: query,
-  addEventListener: () => {},
-  removeEventListener: () => {},
-  addListener: () => {},
-  removeListener: () => {},
-  dispatchEvent: () => false,
-}));
-
-afterEach(() => {
-  cleanup();
-  clearNavCookie();
-  mediaMatches = true;
-});
-
-describe("LeftNav", () => {
-  test("server render honors initialExpanded so the width is correct at first paint (no reload flash)", () => {
-    // The flash was caused by the server always rendering collapsed (localStorage is not readable
-    // during SSR) and the client correcting to expanded post-mount, animating the width. With the
-    // persisted state passed in as initialExpanded, the server render already reflects it, so there
-    // is nothing to correct and nothing to animate.
-    expect(renderToStaticMarkup(<LeftNav initialExpanded />)).toMatch(/w-56\b/);
-    expect(renderToStaticMarkup(<LeftNav initialExpanded={false} />)).toMatch(/w-16\b/);
+describe("LeftNav (Pipedrive rail)", () => {
+  test("is a 56 px indigo rail with the app mark at the top", () => {
+    const { container } = render(<LeftNav />);
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    expect(nav.getAttribute("data-testid")).toBe("app-rail");
+    expect(nav.className).toContain("w-14");
+    expect(nav.className).toContain("bg-rail");
+    expect(nav.className).toContain("h-full");
+    expect(container.querySelector("img")).not.toBeNull();
   });
 
-  test("renders all primary destinations as links with a navigation landmark", () => {
+  test("renders every destination as an icon-only 44 px link with its label as the name", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("navigation", { name: "Primary" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Pipeline" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Settings" })).toBeTruthy();
+    const pipeline = screen.getByRole("link", { name: "Pipeline" });
+    expect(pipeline.className).toContain("size-11");
+    expect(pipeline.className).toContain("rounded-lg");
+    expect(pipeline.querySelector("svg")).not.toBeNull();
+    // The rail no longer paints text labels; the label is the accessible name (tooltip on hover).
+    expect(pipeline.textContent).toBe("");
   });
 
-  test("labels the stats destination 'Performance', not 'Dashboard'", () => {
+  test("marks the active section with the violet tile and aria-current", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Performance" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
-  });
-
-  test("marks the active section with aria-current", () => {
-    render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Pipeline" }).getAttribute("aria-current")).toBe(
-      "page",
-    );
+    const pipeline = screen.getByRole("link", { name: "Pipeline" });
+    expect(pipeline.getAttribute("aria-current")).toBe("page");
+    expect(pipeline.className).toContain("bg-rail-active");
     expect(screen.getByRole("link", { name: "Contacts" }).getAttribute("aria-current")).toBeNull();
   });
 
-  test("each destination shows a decorative icon (Pipedrive-style icon+label nav)", () => {
-    const { container } = render(<LeftNav />);
-    const links = container.querySelectorAll("nav a");
-    // Every link carries an icon, and icons are aria-hidden so the accessible
-    // name stays the label text.
-    for (const link of links) {
-      expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
-    }
-    expect(links.length).toBeGreaterThan(0);
-  });
-
-  test("defaults to expanded on a wide screen (no stored preference)", () => {
-    setViewport(true);
+  test("moves Settings into the top bar, so the rail does not carry it", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").className).not.toContain("sr-only");
-    expect(screen.getByRole("navigation", { name: "Primary" }).className).toMatch(/w-56\b/);
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Performance" })).toBeTruthy();
   });
 
-  test("defaults to the collapsed rail on a small screen (no stored preference)", () => {
-    setViewport(false);
+  test("has no collapse control: the rail is always icon-only", () => {
     render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Pipeline").className).toContain("sr-only");
-    expect(screen.getByRole("navigation", { name: "Primary" }).className).toMatch(/w-16\b/);
-  });
-
-  test("collapses to icons and expands to full labels via a toggle button", () => {
-    // Start collapsed (small screen), then toggle expands.
-    setViewport(false);
-    render(<LeftNav />);
-    const toggle = screen.getByRole("button", { name: "Expand sidebar" });
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Pipeline").className).toContain("sr-only");
-
-    fireEvent.click(toggle);
-    const collapse = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(collapse.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Pipeline").className).not.toContain("sr-only");
-  });
-
-  test("an explicit expand preference overrides the small-screen default across mounts", () => {
-    // Small screen would default collapsed, but the user's stored choice wins.
-    setViewport(false);
-    const first = render(<LeftNav />);
-    fireEvent.click(screen.getByRole("button", { name: "Expand sidebar" }));
-    first.unmount();
-
-    render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").className).not.toContain("sr-only");
-  });
-
-  test("an explicit collapse preference overrides the wide-screen default across mounts", () => {
-    // Wide screen would default expanded, but a stored collapse choice wins.
-    setViewport(true);
-    const first = render(<LeftNav />);
-    fireEvent.click(screen.getByRole("button", { name: "Collapse sidebar" }));
-    first.unmount();
-
-    render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-    expect(screen.getByText("Settings").className).toContain("sr-only");
-  });
-
-  test("is a narrow, dark, icon-only rail (Pipedrive) with visually hidden labels when collapsed", () => {
-    setViewport(false);
-    const { container } = render(<LeftNav />);
-    const nav = screen.getByRole("navigation", { name: "Primary" });
-    // Narrow fixed-width rail, not a wide labelled sidebar.
-    expect(nav.className).toMatch(/w-16\b/);
-    // Dark rail surface.
-    expect(nav.className).toMatch(/bg-(slate|zinc|neutral|gray)-9\d0/);
-    // Labels are present for a11y but visually hidden (icon-only look).
-    for (const link of container.querySelectorAll("nav a")) {
-      const label = link.querySelector("span.sr-only");
-      expect(label).not.toBeNull();
-    }
-  });
-});
-
-describe("LeftNav bracket shortcuts", () => {
-  test("] collapses an expanded rail", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    fireEvent.keyDown(window, { key: "]" });
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-  });
-
-  test("[ expands a collapsed rail", () => {
-    setViewport(false);
-    render(<LeftNav />);
-    fireEvent.keyDown(window, { key: "[" });
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-  });
-
-  test("[ on an already expanded rail leaves it expanded", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    fireEvent.keyDown(window, { key: "[" });
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-  });
-
-  test("the bracket choice persists across mounts like the toggle button", () => {
-    setViewport(true);
-    const first = render(<LeftNav />);
-    fireEvent.keyDown(window, { key: "]" });
-    first.unmount();
-
-    render(<LeftNav />);
-    expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
-  });
-
-  test("does not fire while typing in a text field", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    const input = document.createElement("input");
-    document.body.append(input);
-    fireEvent.keyDown(input, { key: "]" });
-    input.remove();
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-  });
-
-  test("does not fire while a dialog is open", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    const dialog = document.createElement("div");
-    dialog.setAttribute("role", "dialog");
-    document.body.append(dialog);
-    fireEvent.keyDown(window, { key: "]" });
-    dialog.remove();
-    expect(screen.getByRole("button", { name: "Collapse sidebar" })).not.toBeNull();
-  });
-
-  test("links to the docs site in a new tab", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    const docs = screen.getByRole("link", { name: "Docs" });
-    expect(docs.getAttribute("href")).toBe(DOCS_SITE_URL);
-    expect(docs.getAttribute("target")).toBe("_blank");
-    expect(docs.getAttribute("rel")).toContain("noreferrer");
-  });
-
-  test("the docs link sits directly above the collapse toggle", () => {
-    setViewport(true);
-    render(<LeftNav />);
-    const docs = screen.getByRole("link", { name: "Docs" });
-    const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    expect(docs.nextElementSibling).toBe(toggle);
-  });
-
-  test("keeps an accessible name for the docs link on the collapsed rail", () => {
-    setViewport(false);
-    render(<LeftNav />);
-    expect(screen.getByRole("link", { name: "Docs" })).not.toBeNull();
+    expect(screen.queryByRole("button", { name: /sidebar/i })).toBeNull();
+    expect(renderToStaticMarkup(<LeftNav />)).not.toMatch(/w-56\b/);
   });
 });

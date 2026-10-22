@@ -33,9 +33,9 @@ export function BottomNav(): React.ReactNode {
       <nav
         data-testid="bottom-nav"
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 bg-rail pb-[env(safe-area-inset-bottom)] md:hidden"
       >
-        <div className="grid grid-cols-5">
+        <div className="grid h-14 grid-cols-5">
           {PRIMARY.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
@@ -45,13 +45,24 @@ export function BottomNav(): React.ReactNode {
                 data-testid="bottom-nav-item"
                 data-href={href}
                 aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[11px] font-medium",
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
+                className="flex flex-col items-center justify-center gap-0.5"
               >
-                <Icon className={cn("h-5 w-5", active && "text-foreground")} />
-                {label}
+                <span
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-lg",
+                    active ? "bg-rail-active text-rail-foreground" : "text-rail-foreground/70",
+                  )}
+                >
+                  <Icon className="size-6" />
+                </span>
+                <span
+                  className={cn(
+                    "text-caption font-semibold",
+                    active ? "text-rail-foreground" : "text-rail-foreground/70",
+                  )}
+                >
+                  {label}
+                </span>
               </Link>
             );
           })}
@@ -61,13 +72,24 @@ export function BottomNav(): React.ReactNode {
             data-href="more"
             aria-haspopup="dialog"
             onClick={() => setMoreOpen(true)}
-            className={cn(
-              "flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[11px] font-medium",
-              moreOpen ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
+            className="flex flex-col items-center justify-center gap-0.5"
           >
-            <MoreHorizontal aria-hidden="true" className="h-5 w-5" />
-            More
+            <span
+              className={cn(
+                "flex size-8 items-center justify-center rounded-lg",
+                moreOpen ? "bg-rail-active text-rail-foreground" : "text-rail-foreground/70",
+              )}
+            >
+              <MoreHorizontal aria-hidden="true" className="size-6" />
+            </span>
+            <span
+              className={cn(
+                "text-caption font-semibold",
+                moreOpen ? "text-rail-foreground" : "text-rail-foreground/70",
+              )}
+            >
+              More
+            </span>
           </button>
         </div>
       </nav>

@@ -226,7 +226,7 @@ export const STRINGS = {
     funnelBasisTeam: "Counts only deals the selected team owns that were created in this range.",
   },
   search: {
-    placeholder: "Search deals, people, organizations, leads...",
+    placeholder: "Search Dealflow",
     idle: "Type to search",
     resultsLabel: "Search results",
     headingDeals: "Deals",

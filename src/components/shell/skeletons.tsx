@@ -227,7 +227,7 @@ export function EngagementGridSkeleton({ lanes = 6 }: { lanes?: number } = {}): 
       role="status"
       aria-busy="true"
       aria-label="Loading engagement timeline"
-      className="rounded-lg border bg-card p-3 shadow-sm"
+      className="rounded-lg border bg-card p-3"
     >
       <div className="mb-3 flex gap-3">
         <Skeleton className="h-4 w-[220px] shrink-0" />

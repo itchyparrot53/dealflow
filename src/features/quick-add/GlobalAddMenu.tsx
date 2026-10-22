@@ -1,4 +1,5 @@
 "use client";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -115,9 +116,10 @@ export function GlobalAddMenu(): React.ReactNode {
           <button
             type="button"
             aria-label="Quick add"
-            className="flex h-9 w-9 items-center justify-center rounded-md bg-action text-lg font-medium text-action-foreground transition-transform hover:opacity-90 active:scale-[0.96]"
+            data-testid="global-add"
+            className="flex size-10 items-center justify-center rounded-full border border-border-strong bg-card text-foreground transition-colors duration-100 hover:bg-muted active:brightness-95"
           >
-            <span aria-hidden="true">+</span>
+            <Plus aria-hidden="true" className="size-5" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56" onKeyDown={onContentKeyDown}>

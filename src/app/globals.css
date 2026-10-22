@@ -137,6 +137,8 @@
   /* Metadata and record titles are the two sizes the stock scale lacks. */
   --text-meta: 0.8125rem;
   --text-meta--line-height: 1.125rem;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 0.875rem;
   --text-title: 1.5rem;
   --text-title--line-height: 2rem;
 

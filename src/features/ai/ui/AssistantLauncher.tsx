@@ -2,7 +2,6 @@
 
 import { Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
 import { Tip } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc-client";
 import { AssistantSheet } from "./AssistantSheet";
@@ -57,17 +56,17 @@ export function AssistantLauncher(): React.ReactNode {
     status.data !== undefined && (status.data.available === false || status.data.enabled === false);
 
   const trigger = (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="icon"
       aria-label="Open assistant"
       data-testid="assistant-trigger"
       disabled={unavailable}
       onClick={() => setOpen(true)}
+      className="flex h-10 items-center gap-2 rounded-full bg-ai-soft px-4 text-sm font-semibold text-foreground transition-colors duration-100 hover:bg-muted disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground"
     >
-      <Sparkles className="size-4" aria-hidden="true" />
-    </Button>
+      <Sparkles className="size-4 text-ai" aria-hidden="true" />
+      AI chat
+    </button>
   );
 
   return (

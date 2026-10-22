@@ -33,16 +33,18 @@ export function MoreSheet({
       <SheetContent
         data-testid="more-sheet"
         aria-label="More navigation"
-        className="max-w-xs border-l pb-[env(safe-area-inset-bottom)]"
+        className="max-w-xs border-l bg-card p-0 pb-[env(safe-area-inset-bottom)]"
       >
-        <SheetTitle className="px-5 pb-2 pt-5 text-base font-semibold">More</SheetTitle>
-        <nav className="flex flex-col px-2 pb-6">
+        <div className="bg-rail px-5 py-4">
+          <SheetTitle className="text-base font-semibold text-rail-foreground">More</SheetTitle>
+        </div>
+        <nav className="flex flex-col gap-0.5 p-2 pb-6">
           {SECONDARY.map(({ href, label, Icon }) => (
             <Link
               key={href}
               href={href}
               onClick={() => onOpenChange(false)}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors duration-100 hover:bg-muted"
             >
               <Icon className="h-5 w-5 text-muted-foreground" />
               {label}

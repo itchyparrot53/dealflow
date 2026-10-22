@@ -58,11 +58,11 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label={STRINGS.notifications.title}
-        className="relative flex h-10 w-10 items-center justify-center rounded-md transition-transform hover:bg-accent active:scale-[0.96]"
+        className="relative flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground"
       >
-        <Bell aria-hidden className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+        <Bell aria-hidden className="size-5" strokeWidth={1.75} />
         {unreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-xs font-medium tabular-nums text-white">
+          <span className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold tabular-nums text-destructive-foreground ring-2 ring-background">
             {unreadCount}
           </span>
         ) : null}
@@ -75,7 +75,7 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
             type="button"
             disabled={markingAll || unreadCount === 0}
             onClick={() => void handleMarkAll()}
-            className="text-xs text-link disabled:opacity-40 hover:underline"
+            className="text-sm text-info disabled:bg-disabled disabled:text-disabled-foreground hover:underline"
           >
             {STRINGS.notifications.markAllRead}
           </button>
@@ -83,14 +83,14 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
 
         <div className="max-h-96 overflow-y-auto">
           {feed.length === 0 ? (
-            <p className="px-3 py-4 text-center text-sm text-muted-foreground">
+            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
               {STRINGS.notifications.empty}
             </p>
           ) : null}
 
           {today.length > 0 ? (
             <>
-              <p className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="px-3 pb-1 pt-2 text-meta font-semibold text-muted-foreground">
                 {STRINGS.notifications.today}
               </p>
               {today.map((n) => (
@@ -101,7 +101,7 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
 
           {earlier.length > 0 ? (
             <>
-              <p className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="px-3 pb-1 pt-2 text-meta font-semibold text-muted-foreground">
                 {STRINGS.notifications.earlier}
               </p>
               {earlier.map((n) => (

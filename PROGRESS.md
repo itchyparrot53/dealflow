@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-22 08:30
+Current: 1.2 · Last updated: 2026-10-22 08:10
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -13,7 +13,7 @@ Current: 1.1 · Last updated: 2026-10-22 08:30
 - [x] 0.3 Primitives and layout components
 - [x] 0.4 Design e2e harness
 - [x] 0.5 Phase 0 QA gate
-- [ ] 1.1 Shell
+- [x] 1.1 Shell
 - [ ] 1.2 Pipeline board
 - [ ] 1.3 Deal workspace and StageTrack
 - [ ] 1.4 Lists and person/organization detail
@@ -63,6 +63,11 @@ Current: 1.1 · Last updated: 2026-10-22 08:30
 - 0.4: the gallery's `{id}` routes read one seeded record per detail screen, so `scripts/e2e/seed-session.ts` now also writes the pipeline, organization, lead, project, document (and its public id), dashboard, report, thread, automation, form public id and booking public id into `.e2e/fixtures.json`. Resolving them by clicking through lists would tie the harness to list markup that is about to be restyled.
 - 0.4: `e2e/design/styleChecks.ts` implements the 6.10 table from computed styles and is scoped to the four named screens. It reads test ids the screen tasks add (`app-rail`, `top-bar`, `page-title`, `primary-action`, `search-pill`, `board-column`, `deal-card`, `deal-card-title`, `stage-track`, `deal-sidebar`, `sidebar-row`, `deal-title`, `activity-side`, `table-row`), so the checks fail loudly rather than silently passing if a hook disappears.
 - 0.4: the task verify ran green: `DESIGN_SCREENS=login DESIGN_CHECKS=0 pnpm exec playwright test e2e/15-design.spec.ts` passed 1/1 and wrote `login-1440-light.png` and `login-375-light.png`.
+- 1.1: the rail is now a 56 px full-height `app-rail` of 44 px tiles with a tooltip per item, indigo ground and the violet active tile. The brand cell shows our app icon forced white with `brightness-0 invert` (no Pipedrive asset is used). The collapse control and its `NAV_PREF_COOKIE` read are gone; Settings moved to the avatar menu and help to the top bar, so the rail carries only destinations.
+- 1.1: `TopBar` became a client component so it can read `usePageTitleValue`; it renders the 16/600 page title (with an info tooltip when the page supplies one), the 240x40 search pill (a 40 px round icon button below md), the round add button, the AI pill, the notifications bell, a help link and the 40 px initials avatar. Pages publish their titles from Task 1.2 onward, so the slot is empty until then.
+- 1.1: the bottom nav is rail-coloured with 24 px white icons, a violet 32x32 active tile and 11/600 labels; the More sheet has a rail header strip over a card body. The 11 px label needed a new `--text-caption` token because check-design bans arbitrary `text-[Npx]` and 6.7 measures the label at 11/600.
+- 1.1: `STRINGS.search.placeholder` is now "Search Dealflow" per 6.9, and the trigger reads it instead of hard-coding a second copy.
+- 1.1: changed tests for the new shell contract: `LeftNav.test.tsx` rewritten for the icon-only rail (width, 44 px tiles, violet active tile, Settings absent, no collapse control); `SearchTrigger.test.tsx` now asserts the placeholder span truncates inside the pill; `paletteTokens.test.ts` lost its LeftNav fixed-palette exemption; the engagement skeleton dropped its static-card shadow so `check:design src/components/shell` is 0.
 - 0.5 fixes: the gate's first unit run caught `Board.emptyState.test.tsx`, whose assertions scope to the empty state's title parent; my new EmptyState grouped the title and body in a wrapper div, which moved the action buttons outside that parent. The wrapper was removed (icon, title, body and action stay direct children of the role=status region), not the test. Lint's only error was an unnecessary `rows[0] as ...` assertion in `scripts/e2e/seed-session.ts` plus a Biome reflow in `SavedViewControl.test.tsx`; both fixed.
 
 
