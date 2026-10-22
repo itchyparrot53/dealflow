@@ -78,12 +78,14 @@ export function SplitButton({
   label,
   icon,
   onMain,
+  onMenu,
   menuLabel = "More actions",
   testId,
 }: {
   label: React.ReactNode;
   icon?: React.ReactNode;
   onMain: () => void;
+  onMenu?: () => void;
   menuLabel?: string;
   testId?: string;
 }): React.ReactNode {
@@ -100,7 +102,7 @@ export function SplitButton({
       </button>
       <button
         type="button"
-        onClick={onMain}
+        onClick={onMenu ?? onMain}
         aria-label={menuLabel}
         data-testid={testId === undefined ? undefined : `${testId}-menu`}
         className="inline-flex h-8 w-8 items-center justify-center rounded-r-md border-l border-white/25 bg-action text-action-foreground transition-colors duration-100 hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"

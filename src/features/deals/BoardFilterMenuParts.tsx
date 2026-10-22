@@ -30,7 +30,7 @@ export function OwnerRow({
           selected && "bg-accent font-medium",
         )}
       >
-        <Avatar name={name} className="h-5 w-5 text-[10px]" />
+        <Avatar name={name} className="size-5 text-caption" />
         <span className="truncate">{name}</span>
         {isCurrentUser && <span className="shrink-0 text-muted-foreground">(my)</span>}
       </button>

@@ -21,7 +21,7 @@ export function DealScoreBadge({ score }: { score: number }): React.ReactNode {
         data-testid="deal-score-badge"
         data-score={value}
         className={cn(
-          "inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
+          "inline-flex h-5 shrink-0 items-center rounded-md px-1 text-caption font-semibold tabular",
           tone,
         )}
       >

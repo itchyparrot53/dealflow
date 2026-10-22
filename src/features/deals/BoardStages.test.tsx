@@ -77,15 +77,14 @@ function renderStages(cards: BoardCard[]): void {
 }
 
 describe("BoardStages layout", () => {
-  test("every lane after the first carries a divider between columns", () => {
+  test("separates lanes with a 4 px gap rather than a coloured divider", () => {
     renderStages([]);
-    const items = screen
-      .getByRole("list", { name: "Pipeline stages" })
-      .querySelectorAll(":scope > li");
+    const list = screen.getByRole("list", { name: "Pipeline stages" });
+    const items = list.querySelectorAll(":scope > li");
     expect(items).toHaveLength(3);
-    expect(items[0]?.getAttribute("data-column-divider")).toBeNull();
-    expect(items[1]?.getAttribute("data-column-divider")).toBe("true");
-    expect(items[2]?.getAttribute("data-column-divider")).toBe("true");
+    expect(list.className).toContain("gap-1");
+    for (const item of items) expect(item.getAttribute("data-column-divider")).toBeNull();
+    expect(items[0]?.className).toContain("md:w-[248px]");
   });
 
   test("a lane scrolls its own deals so the lane stays a drop target at any scroll offset", () => {

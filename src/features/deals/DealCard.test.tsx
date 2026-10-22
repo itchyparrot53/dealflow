@@ -58,7 +58,7 @@ describe("DealCard", () => {
     expect(card.getAttribute("aria-roledescription")).toBe("draggable deal card");
   });
 
-  it("shows a colored owner avatar with initials (Pipedrive parity, not muted gray)", () => {
+  it("shows a neutral owner avatar with initials (Pipedrive parity)", () => {
     render(
       <DealCard
         card={baseCard}
@@ -74,9 +74,10 @@ describe("DealCard", () => {
     const avatar = screen.getByRole("img", { name: "owner: Ada King" });
     // Two-letter initials, not a single first char.
     expect(avatar.textContent).toBe("AK");
-    // A palette swatch (bg-*-100), not the muted bg-secondary.
-    expect(avatar.className).toMatch(/bg-\w+-100/);
-    expect(avatar.className).not.toContain("bg-secondary");
+    // The measured avatar pair, not a per-name palette swatch.
+    expect(avatar.className).toContain("bg-avatar");
+    expect(avatar.className).toContain("text-avatar-foreground");
+    expect(avatar.className).not.toMatch(/bg-\w+-100/);
   });
 
   it("renders the owner's uploaded photo instead of initials when ownerAvatarUrl is set", () => {
@@ -100,7 +101,7 @@ describe("DealCard", () => {
     expect(img.textContent).toBe("");
   });
 
-  it("applies a lifted shadow when elevated (drag overlay, Pipedrive)", () => {
+  it("lifts and rotates slightly when elevated (drag overlay, Pipedrive)", () => {
     render(
       <DealCard
         card={baseCard}
@@ -115,7 +116,8 @@ describe("DealCard", () => {
       />,
     );
     const card = screen.getByRole("button", { name: /Acme renewal/ });
-    expect(card.className).toContain("shadow-2xl");
+    expect(card.className).toContain("shadow-drag");
+    expect(card.className).toContain("rotate-2");
   });
 
   it("calls onOpen when the card is clicked (opens the deal, Pipedrive parity)", () => {

@@ -168,9 +168,9 @@ export function CreateFilterModal({
             combinator={combinator}
             onCombinatorChange={setCombinator}
           />
-          {issue !== null ? <p className="text-sm text-red-600">{issue}</p> : null}
+          {issue !== null ? <p className="text-sm text-destructive">{issue}</p> : null}
           {saveError !== null ? (
-            <div className="text-sm text-red-600">
+            <div className="text-sm text-destructive">
               <p className="font-medium">{saveError.title}</p>
               <p>{saveError.body}</p>
             </div>

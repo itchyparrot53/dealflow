@@ -2,7 +2,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type React from "react";
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { SplitButton } from "@/components/ui/Button";
 import { AddDealModal } from "./AddDealModal";
 import { BOARD_QUERY_KEY } from "./useDealMove";
 
@@ -30,15 +30,13 @@ export function NewDealButton({
 
   return (
     <>
-      <Button
-        type="button"
-        variant="default"
-        size="sm"
-        className="px-3"
-        onClick={() => setOpen(true)}
-      >
-        + Deal
-      </Button>
+      <SplitButton
+        label="+ Deal"
+        testId="primary-action"
+        menuLabel="New deal"
+        onMain={() => setOpen(true)}
+        onMenu={() => setOpen(true)}
+      />
 
       {open && (
         <AddDealModal

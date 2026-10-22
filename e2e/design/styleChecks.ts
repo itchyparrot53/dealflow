@@ -54,7 +54,8 @@ function px(value: string): number {
 
 async function bodyCheck(page: Page): Promise<void> {
   const body = await computed(page, "body");
-  expect(body.fontFamily, "body uses Inter").toContain("Inter");
+  // next/font/local names the family after the file ("inter"), so compare case-insensitively.
+  expect(body.fontFamily, "body uses Inter").toMatch(/inter/i);
   expect(body.color, "body primary text").toBe("rgb(33, 35, 44)");
 }
 

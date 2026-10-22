@@ -111,11 +111,11 @@ export function DealList(props: DealListProps) {
   const bodyColSpan = 1 + visibleColumns.length + (onUnarchive ? 1 : 0);
 
   if (rows.length === 0 && empty !== undefined && !filtered) {
-    return <div className="overflow-hidden rounded-lg border bg-card shadow-sm">{empty}</div>;
+    return <div className="overflow-hidden rounded-lg border bg-card">{empty}</div>;
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border bg-card">
       {columnsMenu !== undefined ? (
         <div className="flex items-center justify-end border-b px-3 py-1.5">{columnsMenu}</div>
       ) : null}

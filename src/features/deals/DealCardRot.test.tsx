@@ -6,8 +6,8 @@ afterEach(cleanup);
 
 import { DealCard } from "./DealCard";
 
-// Graded deal-rotting tint (Pipedrive shows aging deals reddening in steps). The rot level comes
-// from rottingState; here we assert the DealCard maps each level to the right background tint.
+// Deal rotting (6.8.1): a 3 px warning left border on a white card, not a graded red fill. The rot
+// level still comes from rottingState; the card maps every level to the same border and the age.
 const baseCard = {
   id: "d1",
   title: "Acme renewal",
@@ -41,19 +41,21 @@ function renderAt(enteredAt: string) {
 }
 
 describe("DealCard rot tint", () => {
-  it("tints the card light red at rot level 1 (just past the threshold)", () => {
+  it("puts a 3 px warning border on a rotting card (level 1)", () => {
     // age 7, R=6 -> level 1
     renderAt("2026-06-13T00:00:00Z");
     const card = screen.getByRole("button", { name: /Acme renewal/ });
-    expect(card.className).toContain("bg-red-50");
-    expect(card.className).not.toContain("bg-red-200");
+    expect(card.className).toContain("border-l-[3px]");
+    expect(card.className).toContain("border-l-warning");
+    expect(card.className).not.toMatch(/bg-red-\d/);
   });
 
-  it("tints the card strong red at rot level 3 (most alerting)", () => {
+  it("keeps the same warning border at the strongest rot", () => {
     // age 12, R=6 -> level 3
     renderAt("2026-06-08T00:00:00Z");
     const card = screen.getByRole("button", { name: /Acme renewal/ });
-    expect(card.className).toContain("bg-red-200");
+    expect(card.className).toContain("border-l-warning");
+    expect(card.className).not.toMatch(/bg-red-\d/);
   });
 
   it("never rots a closed deal, however long it has sat in its last stage", () => {
@@ -72,16 +74,16 @@ describe("DealCard rot tint", () => {
         />,
       );
       const card = screen.getByRole("button", { name: /Acme renewal/ });
-      expect(card.className, status).not.toMatch(/bg-red-\d/);
+      expect(card.className, status).not.toContain("border-l-warning");
       expect(screen.queryByRole("status", { name: /rotting/ }), status).toBeNull();
     }
   });
 
-  it("does not tint a healthy card (age at or below the threshold)", () => {
+  it("does not mark a healthy card (age at or below the threshold)", () => {
     // age 4, R=6 -> level 0
     renderAt("2026-06-16T00:00:00Z");
     const card = screen.getByRole("button", { name: /Acme renewal/ });
-    expect(card.className).not.toMatch(/bg-red-\d/);
+    expect(card.className).not.toContain("border-l-warning");
   });
 
   // The clock is seeded from the request, so a rotting card reads as rotting in the very first
@@ -106,7 +108,7 @@ describe("DealCard rot tint", () => {
       />,
     );
     const card = screen.getByRole("button", { name: /Acme renewal/ });
-    expect(card.className).toMatch(/bg-red-\d/);
+    expect(card.className).toContain("border-l-warning");
     expect(screen.queryByLabelText("No activity scheduled")).toBeNull();
     expect(screen.getByLabelText("Discovery call · 3 days overdue")).not.toBeNull();
   });

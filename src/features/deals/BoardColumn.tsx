@@ -1,6 +1,5 @@
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { Scale } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -8,7 +7,6 @@ import { Tip } from "@/components/ui/tooltip";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { stageSubtitle } from "./boardColumnSubtitle";
-import { accentForOrder, funnelClip, tint } from "./boardStageHeader";
 import { DealCard } from "./DealCard";
 import type { BoardCard } from "./dealRepo";
 import { StageAddButton } from "./StageAddButton";
@@ -32,14 +30,9 @@ function DraggableCard(props: DraggableCardProps): React.ReactNode {
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      data-testid="deal-card"
-      {...attributes}
-      {...listeners}
-      style={{ opacity: isDragging ? 0.4 : undefined }}
-    >
+    <div ref={setNodeRef} style={{ opacity: isDragging ? 0.4 : undefined }}>
       <DealCard
+        dragProps={{ ...attributes, ...listeners }}
         card={card}
         ownerName={card.ownerName ?? "?"}
         ownerAvatarUrl={card.ownerAvatarUrl}
@@ -80,7 +73,6 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
   const {
     stageId,
     stageName,
-    order,
     rottingDays,
     cards,
     dealCount,
@@ -93,7 +85,6 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
   } = props;
   const { pipelineId, pipelines, baseCurrency } = props;
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
-  const accent = accentForOrder(order);
   // P1: local collapse state, toggled from the per-column actions menu. Session-only (no persist):
   // a rep collapses a stage to focus the board for the current session, not as a durable preference.
   const [collapsed, setCollapsed] = useState(false);
@@ -105,23 +96,20 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
       aria-roledescription="stage column"
       aria-label={stageName}
       className={[
-        // Pipedrive-style lane: a tall, subtly filled column so every stage (even empty ones)
-        // reads as a drop lane rather than barren white space. isOver swaps to the accent tint.
-        // flex-1 + min-w lets a few stages fill the board width while many stages scroll.
-        // Concentric radius: lane is rounded-xl so its 8px padding + rounded-lg cards nest cleanly
-        // (outer radius > inner radius) instead of the equal-radius look that reads as "off".
-        "flex min-w-72 flex-1 flex-col gap-2 overflow-hidden rounded-xl p-2 transition-colors",
-        // Collapsed lanes shrink to just their header (no tall empty drop zone); expanded lanes
-        // keep the min-height so even empty stages read as a drop target.
-        collapsed ? "" : "min-h-96",
-        isOver ? "bg-accent/60 ring-2 ring-ring/40" : "bg-muted/40",
+        // The measured column (6.8.1): 248 wide, canvas-subtle fill, radius 8, 8 px inner padding,
+        // and the chevron right edge from globals.css. The first column is square on the left.
+        "board-column flex h-full min-w-[248px] flex-col overflow-hidden rounded-tl-lg bg-canvas-subtle",
+        collapsed ? "" : "min-h-0",
+        isOver ? "bg-info-soft" : "",
       ]
         .join(" ")
         .trim()}
     >
-      <header className="relative">
-        {/* P1: per-column actions menu, top-right of the header (Pipedrive reveals it on hover). */}
-        <div className="absolute right-1 top-0.5 z-10">
+      <header className="h-16 shrink-0 px-3 pt-3">
+        <div className="flex items-center gap-2">
+          <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-foreground">
+            {stageName}
+          </h2>
           <StageColumnMenu
             pipelineId={pipelineId}
             stageId={stageId}
@@ -132,50 +120,37 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
             onToggleCollapse={() => setCollapsed((v) => !v)}
           />
         </div>
-        {/* Pipedrive-style funnel: a tinted arrow segment per stage. P4: 16px stage headings
-            (text-base) to match Pipedrive's board hierarchy; keep the colored funnel chip. */}
-        <div
-          className="px-3 py-1.5 text-base font-semibold text-foreground"
-          style={{
-            clipPath: funnelClip(order === 0),
-            backgroundColor: tint(accent, 0.18),
-            borderLeft: order === 0 ? `3px solid ${accent}` : undefined,
-          }}
-        >
-          {stageName}
-        </div>
-        <div className="mt-1 flex items-center gap-1 px-1 text-xs text-muted-foreground">
-          {/* Balance/scale glyph before the value line (Pipedrive convention). */}
-          <Scale data-stage-metric-icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-          <span data-testid="board-column-total" className="tabular-nums">
+        <p className="mt-1 flex min-w-0 items-center gap-1 truncate text-meta text-muted-foreground">
+          <span data-testid="board-column-total" className="tabular">
             {stageSubtitle(formatCurrency(totalValue, baseCurrency), dealCount)}
           </span>
-        </div>
-        <div className="mt-0.5 px-1 text-xs text-muted-foreground">
-          <span>Weighted </span>
-          <span data-testid="board-column-weighted" className="tabular-nums">
-            {formatCurrency(weightedValue, baseCurrency)}
+          <span aria-hidden="true">|</span>
+          <span className="truncate">
+            Weighted{" "}
+            <span data-testid="board-column-weighted" className="tabular">
+              {formatCurrency(weightedValue, baseCurrency)}
+            </span>
           </span>
           {excludedCount > 0 && (
             <Tip label={`No rate for ${excludedCurrencies.join(", ")}`}>
-              <span data-testid="totals-excluded" className="ml-1 cursor-default">
+              <span data-testid="totals-excluded" className="cursor-default">
                 {excludedCount} excluded
               </span>
             </Tip>
           )}
-        </div>
+        </p>
       </header>
 
       {!collapsed && (
         <>
           <ul
-            className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto"
+            className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 pb-2"
             aria-label={`${stageName} deals`}
           >
             {cards.map((card) => (
               <li
                 key={card.id}
-                className="[content-visibility:auto] [contain-intrinsic-size:auto_96px]"
+                className="[content-visibility:auto] [contain-intrinsic-size:auto_80px]"
               >
                 <DraggableCard
                   card={card}

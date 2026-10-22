@@ -7,6 +7,7 @@ import { createCaller } from "@/server/trpc/root";
 
 export const metadata = { title: STRINGS.nav.pipeline };
 
+// design-ok: this page only redirects to the first visible pipeline board.
 // The primary nav links to /pipeline, but a board is always scoped to a specific
 // pipeline (/pipeline/[id]). Land the section root on the user's first visible
 // pipeline so the nav item never 404s.

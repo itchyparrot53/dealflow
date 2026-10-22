@@ -1,4 +1,5 @@
 import { inArray } from "drizzle-orm";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { stageProbabilities } from "@/db/schema";
@@ -36,7 +37,7 @@ export default async function EditPipelinePage({
 
   return (
     <main aria-label={`Edit pipeline ${pipeline.name}`} className="h-full">
-      <h1 className="mb-4 text-title">Edit pipeline</h1>
+      <PageTitle title="Edit pipeline" />
       <EditPipelineClient
         pipelineId={pipeline.id}
         pipelineName={pipeline.name}

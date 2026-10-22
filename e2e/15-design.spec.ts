@@ -15,6 +15,10 @@ const CHECKS = process.env.DESIGN_CHECKS !== "0";
 const ALL = designRoutes(fixtures());
 const SELECTED = selectedScreens(ALL, process.env.DESIGN_SCREENS);
 
+// The host machine may be in dark mode; the light pass must be deterministic. The dark pass
+// overrides this per page with emulateMedia.
+test.use({ colorScheme: "light" });
+
 test.setTimeout(180_000);
 
 async function settle(page: Page): Promise<void> {
@@ -29,7 +33,16 @@ async function expectNoSeriousAxeViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   const failing = results.violations
     .filter((violation) => violation.impact === "serious" || violation.impact === "critical")
-    .map((violation) => `${violation.id}: ${violation.help}`);
+    .map(
+      (violation) =>
+        `${violation.id}: ${violation.help} [${violation.nodes
+          .map((node) => {
+            const data = node.any[0]?.data as Record<string, unknown> | undefined;
+            const detail = data === undefined ? "" : ` (${JSON.stringify(data).replace(/"/g, "")})`;
+            return `${node.target.join(" ")}${detail}`;
+          })
+          .join(", ")}]`,
+    );
   expect(failing).toEqual([]);
 }
 

@@ -280,18 +280,21 @@
     --card-foreground: 225 9.5% 91.8%;
     --popover: 222 12.2% 16.1%;
     --popover-foreground: 225 9.5% 91.8%;
-    --primary: 141.1 45.5% 45.3%;
+    /* CONTRACT CHANGE (axe AA): #3FA864 with white is 3.0:1, so dark keeps the light action
+       green #2D8548 (4.6:1 with white) instead of the lighter derived step. */
+    --primary: 138.4 49.4% 34.9%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 140.7 43% 51.2%;
+    --primary-hover: 138.6 50% 29%;
     --secondary: 220 12% 19.6%;
     --secondary-foreground: 225 9.5% 91.8%;
     --muted: 220 12% 19.6%;
     --muted-foreground: 222 5.7% 65.9%;
     --accent: 220 12% 19.6%;
     --accent-foreground: 225 9.5% 91.8%;
-    --destructive: 1.3 80.6% 65.7%;
+    /* CONTRACT CHANGE (axe AA): white on #EE6461 is 3.1:1; #D73C38 is 4.6:1. */
+    --destructive: 1.5 66.5% 53.1%;
     --destructive-foreground: 0 0% 100%;
-    --success: 141.1 45.5% 45.3%;
+    --success: 138.4 49.4% 34.9%;
     --success-foreground: 0 0% 100%;
     --warning: 37.9 89.7% 62%;
     --warning-foreground: 222.9 11.5% 12%;
@@ -337,9 +340,9 @@
     --disabled-foreground: 223.6 4.4% 51.2%;
 
     --link: #5ea2f0;
-    --action: #3fa864;
+    --action: #2d8548;
     --action-foreground: #ffffff;
-    --save: #3fa864;
+    --save: #2d8548;
     --save-muted: #a3a6ad;
     --attention: #f5b547;
     --attention-foreground: #1b1d22;

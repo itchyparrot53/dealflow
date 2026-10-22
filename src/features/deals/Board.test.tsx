@@ -92,10 +92,11 @@ function renderBoard(initialCards: BoardCard[]) {
 describe("Board stage header", () => {
   // Pipedrive prefixes each stage's value/count line with a small balance/scale glyph. Assert
   // the header renders that metric icon so the value line reads like Pipedrive, not plain text.
-  test("renders a metric icon before the stage value line", () => {
+  test("renders the stage value and count in the header", () => {
     renderBoard([card("dddddddd-0000-0000-0000-000000000009", "Card One", STAGES[0]!.id, "1")]);
     const alpha = screen.getByRole("region", { name: "Alpha" });
-    expect(alpha.querySelector("[data-stage-metric-icon]")).not.toBeNull();
+    expect(alpha.querySelector('[data-testid="board-column-total"]')).not.toBeNull();
+    expect(alpha.querySelector("h2")?.textContent).toBe("Alpha");
   });
 });
 
@@ -108,7 +109,7 @@ describe("Board stage lanes", () => {
     // Only Alpha has a card; Beta is empty and must still render as a lane.
     renderBoard([card("dddddddd-0000-0000-0000-000000000009", "Card One", STAGES[0]!.id, "1")]);
     const beta = screen.getByRole("region", { name: "Beta" });
-    expect(beta.className).toContain("bg-muted/40");
+    expect(beta.className).toContain("bg-canvas-subtle");
     expect(beta.className).toMatch(/min-h-/);
   });
 

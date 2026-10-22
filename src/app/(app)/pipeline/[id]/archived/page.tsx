@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { DealListClient } from "@/features/deals/DealListClient";
 import { loadDealListPageData } from "@/features/deals/dealListPageData";
@@ -61,6 +62,7 @@ export default async function PipelineArchivedPage({
 
   return (
     <main aria-label={`Archived deals ${pipeline.name}`} className="h-full">
+      <PageTitle title="Archived deals" />
       <DealListClient
         variant="archived"
         initial={{

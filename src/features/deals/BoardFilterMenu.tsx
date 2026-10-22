@@ -92,22 +92,22 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size="md"
           aria-label={triggerCopy}
           data-filtered={filtered}
           className={cn(
-            "bg-card font-normal",
-            filtered && "border-ring bg-accent font-medium text-foreground",
+            "bg-card",
+            filtered && "border-info bg-info-soft text-info hover:bg-info-soft",
           )}
         >
-          <Filter aria-hidden="true" className="h-4 w-4" />
+          <Filter aria-hidden="true" className="size-4" />
           {visibleCopy}
           {activeCount > 0 ? (
-            <span className="ml-0.5 rounded-full bg-primary px-1.5 text-primary-foreground text-xs">
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-destructive-foreground">
               {activeCount}
             </span>
           ) : null}
-          <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown aria-hidden="true" className="size-3.5" />
         </Button>
       </DropdownMenuTrigger>
 

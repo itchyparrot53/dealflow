@@ -51,12 +51,12 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
   }
 
   return (
-    <div className="flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
+    <div className="flex items-center gap-1 text-sm tabular-nums text-foreground">
       <span>
         {dealCount} {dealCount === 1 ? "deal" : "deals"}
       </span>
       {showTotal && (
-        <span className="font-semibold text-foreground">
+        <span className="font-semibold text-foreground tabular">
           {formatCurrency(totalValue, currency)}
         </span>
       )}
@@ -65,9 +65,9 @@ export function BoardSummary(props: BoardSummaryProps): React.ReactNode {
         aria-label="Show deals total value"
         aria-pressed={showTotal}
         onClick={toggle}
-        className="relative flex h-5 w-5 items-center justify-center rounded-full border text-xs text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-accent active:scale-[0.96] before:absolute before:-inset-2.5 before:content-[''] motion-reduce:transition-colors"
+        className="relative flex size-5 items-center justify-center rounded-full text-muted-foreground transition-colors duration-100 before:absolute before:-inset-2.5 before:content-[''] hover:bg-muted hover:text-foreground"
       >
-        <Info aria-hidden="true" className="h-3 w-3" />
+        <Info aria-hidden="true" className="size-4" />
       </button>
     </div>
   );

@@ -34,9 +34,7 @@ export function AddDealPersonColumn({
 }: AddDealPersonColumnProps): React.ReactNode {
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Person
-      </h3>
+      <h3 className="text-meta font-semibold text-muted-foreground">Person</h3>
 
       <ContactRows
         kind="Phone"

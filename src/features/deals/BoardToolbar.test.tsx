@@ -35,11 +35,13 @@ describe("BoardToolbar view toggle", () => {
     expect(board.getAttribute("aria-current")).toBe("page");
   });
 
-  it("shows a visible text label on each segment so List/Archive are discoverable (P6)", () => {
+  it("names every icon-only segment for assistive tech and a tooltip (6.8.1)", () => {
     renderToolbar();
-    expect(screen.getByRole("link", { name: "Board view" }).textContent).toContain("Board");
-    expect(screen.getByRole("link", { name: "List view" }).textContent).toContain("List");
-    expect(screen.getByRole("link", { name: "Archive view" }).textContent).toContain("Archive");
+    for (const name of ["Board view", "List view", "Forecast view", "Archive view"]) {
+      const segment = screen.getByRole("link", { name });
+      expect(segment.textContent).toBe("");
+      expect(segment.querySelector("svg")).not.toBeNull();
+    }
   });
 
   it("links to the Edit Pipeline page from a pencil control", () => {

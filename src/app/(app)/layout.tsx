@@ -64,20 +64,23 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                 {ctx.actor.type === "admin" && <VersionBanner />}
                 <ReconnectBanner />
                 <OfflineBanner />
-                <TopBar
-                  userId={ctx.actor.id}
-                  userName={ctx.actor.name}
-                  avatarUrl={ctx.actor.avatarUrl}
-                  appearance={parseAppearance(prefs.ui.appearance)}
-                />
                 <div className="flex min-h-0 flex-1">
-                  {/* Below md the rail is replaced by the bottom navigation (BottomNav). */}
+                  {/* The rail runs the full viewport height, beside the top bar (Pipedrive). Below md
+                      it is replaced by the bottom navigation (BottomNav). */}
                   <div className="hidden h-full md:block">
                     <LeftNav />
                   </div>
-                  <main className="min-w-0 flex-1 overflow-auto bg-background p-4 pb-24 md:pb-4">
-                    {children}
-                  </main>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <TopBar
+                      userId={ctx.actor.id}
+                      userName={ctx.actor.name}
+                      avatarUrl={ctx.actor.avatarUrl}
+                      appearance={parseAppearance(prefs.ui.appearance)}
+                    />
+                    <main className="min-w-0 flex-1 overflow-auto bg-background p-4 pb-24 md:pb-4">
+                      {children}
+                    </main>
+                  </div>
                 </div>
                 <BottomNav />
                 <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />

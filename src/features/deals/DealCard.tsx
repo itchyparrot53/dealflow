@@ -1,7 +1,8 @@
+import { ChevronRight } from "lucide-react";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { DealScoreBadge } from "@/features/ai/ui/DealScoreBadge";
-import { avatarColorClass, initials } from "@/lib/avatar";
+import { initials } from "@/lib/avatar";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { cn } from "@/lib/utils";
 import type { ActivityState } from "./cardIndicators";
@@ -13,34 +14,14 @@ import type { BoardCard } from "./dealRepo";
 const STRINGS = {
   roledescription: "draggable deal card",
   contactSeparator: ", ",
-  // Next-action affordance: a small colored circle, one fill per urgency. Indigo = booked for
-  // later, green = due today, red = overdue, amber = nothing planned. Amber is the nudge, so a
-  // deal that is already handled must not wear it.
-  activityCircle: {
-    upcoming: "bg-scheduled text-scheduled-foreground",
-    today: "bg-action text-action-foreground",
-    overdue: "bg-destructive text-destructive-foreground",
-    none: "bg-attention text-attention-foreground",
+  // Next-action dot (6.1 row 9): green when something is booked, grey when nothing is, red when
+  // it is overdue. The tooltip names the action and its timing, so colour is never the only signal.
+  activityDot: {
+    upcoming: "bg-next-green",
+    today: "bg-next-green",
+    overdue: "bg-next-red",
+    none: "bg-next-grey",
   } satisfies Record<ActivityState, string>,
-  // Glyph inside the circle: a chevron for the scheduled/overdue states (a forward next-step cue),
-  // a warning "!" when nothing is planned so the empty state reads as an alert, not an action.
-  activityGlyph: {
-    upcoming: "›",
-    today: "›",
-    overdue: "›",
-    none: "!",
-  } satisfies Record<ActivityState, string>,
-} as const;
-
-// Graded rot background: a healthy card (level 0) keeps bg-card; past the stage's rotting
-// threshold the card reddens in steps, capped at the strongest tint. Red is reserved for this
-// alert (brand accent stays elsewhere). Index by rot level (1..3).
-// Night keeps the same three steps: a near-black red ground with a brighter rail, because the
-// light tints would blow out to pink cards on a dark board.
-const ROT_TINT: Record<number, string> = {
-  1: "bg-red-50 border-l-4 border-l-red-400 dark:bg-[#1e1113] dark:border-l-[#b91c1c]",
-  2: "bg-red-100 border-l-4 border-l-red-500 dark:bg-[#2a1416] dark:border-l-[#dc2626]",
-  3: "bg-red-200 border-l-4 border-l-red-600 dark:bg-[#3a181b] dark:border-l-[#ef4444]",
 } as const;
 
 interface DealCardProps {
@@ -58,12 +39,18 @@ interface DealCardProps {
   // Invoked on a plain click (not a drag). Opens the deal, matching Pipedrive where clicking
   // a pipeline card opens the deal. Drag is preserved via the sensor activation distance.
   onOpen?: () => void;
-  // Lifted state for the drag overlay: a strong shadow so the moving card floats above the board.
+  // Lifted state for the drag overlay: the card floats with the drag elevation and a slight rotation.
   elevated?: boolean;
   // Base currency fallback; the card value is in the deal's own currency (Part 3).
   baseCurrency?: string;
+  // dnd-kit keyboard/pointer wiring, spread onto the card's own button so the board does not nest
+  // one interactive control (the drag wrapper) inside another (the card button), which axe flags.
+  dragProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
+// The measured board card (6.8.1): white, 1 px border, radius 4, 8/10 padding, 14/600 title,
+// 13 secondary subtitle, a 20 px avatar and value on the footer, the score chip before the
+// 16 px next-activity dot, and a 3 px warning border when the deal is rotting.
 export function DealCard(props: DealCardProps): React.ReactNode {
   const {
     card,
@@ -77,10 +64,9 @@ export function DealCard(props: DealCardProps): React.ReactNode {
     now,
     onOpen,
   } = props;
-  const { elevated, baseCurrency } = props;
+  const { elevated, baseCurrency, dragProps } = props;
   const compact = density === "compact";
   const activity = activityState(card.nextActivityAt, now);
-  // Hover/aria copy for the next-action badge: names the soonest action and its timing.
   const activityTip = activityTooltip(card.nextActivityTitle ?? null, card.nextActivityAt, now);
   const closed = card.status === "won" || card.status === "lost";
   const rot = rottingState(card.stageEnteredAt, closed ? null : rottingDays, now);
@@ -96,101 +82,96 @@ export function DealCard(props: DealCardProps): React.ReactNode {
   return (
     <button
       type="button"
+      {...dragProps}
       aria-roledescription={STRINGS.roledescription}
       aria-label={card.title}
       data-deal-id={card.id}
+      data-testid="deal-card"
       onClick={onOpen}
       className={cn(
-        "w-full overflow-hidden rounded-lg border bg-card text-left shadow-sm transition-shadow hover:shadow-md",
-        onOpen !== undefined && "cursor-pointer hover:border-ring",
-        elevated === true && "rotate-1 shadow-2xl ring-1 ring-ring/30",
-        compact ? "px-3 py-2" : "px-3 py-3",
-        rot.level > 0 && ROT_TINT[rot.level],
+        "w-full overflow-hidden rounded-md border border-border bg-card px-2.5 py-2 text-left transition-shadow duration-100",
+        onOpen !== undefined && "cursor-pointer hover:shadow-card-hover",
+        elevated === true && "rotate-2 shadow-drag motion-reduce:rotate-0",
+        rot.level > 0 && "border-l-[3px] border-l-warning",
       )}
     >
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1 truncate text-sm font-medium leading-tight">{primary}</div>
-        {typeof card.score === "number" && <DealScoreBadge score={card.score} />}
-        <DealStatusBadge status={card.status} />
+      <div className="min-w-0 truncate text-sm font-semibold leading-5 text-foreground">
+        <span data-testid="deal-card-title">{primary}</span>
       </div>
 
       {/* Description line: "org, person" (comfortable only). */}
       {!compact && descriptionLine !== null && (
-        <div className="mt-0.5 truncate text-xs text-muted-foreground">{descriptionLine}</div>
+        <div className="truncate text-meta text-muted-foreground">{descriptionLine}</div>
       )}
 
-      {/* Value + label chips row (one chip per label, Pipedrive multi-label) */}
-      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-        {card.value !== null && (
-          <span className="font-semibold tabular-nums text-foreground">
-            {formatCurrency(card.value, card.currency ?? baseCurrency ?? "USD")}
-          </span>
-        )}
-        {labels.map((label) => (
-          <span
-            key={label.name}
-            className="rounded-full px-2 py-0.5 text-xs font-medium text-white"
-            style={{ backgroundColor: label.color }}
-          >
-            {label.name}
-          </span>
-        ))}
-      </div>
-
-      {/* Footer: owner avatar initial + activity indicator + rotting badge */}
-      <div className="mt-1 flex items-center justify-between text-xs">
-        {/* Owner avatar: the uploaded photo when present, else colored initials. role="img" so the
+      <div className="mt-1 flex items-center gap-1.5">
+        {/* Owner avatar: the uploaded photo when present, else neutral initials. role="img" so the
             aria-label is valid on both. */}
         {ownerAvatarUrl !== undefined && ownerAvatarUrl !== null && ownerAvatarUrl !== "" ? (
           // biome-ignore lint/performance/noImgElement: tiny board-card avatar, next/image not warranted
           <img
             src={ownerAvatarUrl}
             alt={`owner: ${ownerName}`}
-            className="h-5 w-5 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+            className="size-5 shrink-0 rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
           />
         ) : (
           <span
             role="img"
             aria-label={`owner: ${ownerName}`}
-            className={cn(
-              "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold uppercase",
-              avatarColorClass(ownerName),
-            )}
+            className="flex size-5 shrink-0 items-center justify-center rounded-full bg-avatar text-caption font-semibold text-avatar-foreground"
           >
             {initials(ownerName)}
           </span>
         )}
 
-        <span className="flex items-center gap-1">
-          {/* Next-action indicator: a colored circle with a chevron (Pipedrive). Color encodes
-              urgency; the hover tooltip and aria-label both name the action + timing, so the state
-              is never conveyed by color alone. */}
+        {card.value !== null && (
+          <span className="tabular text-meta font-semibold text-muted-foreground">
+            {formatCurrency(card.value, card.currency ?? baseCurrency ?? "USD")}
+          </span>
+        )}
+
+        {labels.map((label) => (
+          <span
+            key={label.name}
+            className="rounded-md px-1.5 text-caption font-medium text-white"
+            style={{ backgroundColor: label.color }}
+          >
+            {label.name}
+          </span>
+        ))}
+
+        <span className="ml-auto flex items-center gap-1">
+          {rot.rotting && (
+            <span
+              role="status"
+              aria-label={`rotting, idle ${rot.ageDays} days`}
+              className="tabular text-caption font-semibold text-next-red"
+            >
+              {rot.ageDays}d
+            </span>
+          )}
+          {typeof card.score === "number" && <DealScoreBadge score={card.score} />}
           <Tip label={activityTip} side="top">
             <span
               role="img"
               aria-label={activityTip}
               data-activity={activity}
               className={cn(
-                "flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold leading-none",
-                STRINGS.activityCircle[activity],
+                "flex size-4 items-center justify-center rounded-full text-white",
+                STRINGS.activityDot[activity],
               )}
             >
-              <span aria-hidden="true">{STRINGS.activityGlyph[activity]}</span>
+              <ChevronRight aria-hidden="true" className="size-3" strokeWidth={3} />
             </span>
           </Tip>
-
-          {/* Rotting badge: role="status" so aria-label is valid; text days = non-color cue */}
-          {rot.rotting && (
-            <span
-              role="status"
-              aria-label={`rotting, idle ${rot.ageDays} days`}
-              className="rounded bg-white/80 px-1 py-0.5 text-xs font-medium tabular-nums text-red-700 dark:bg-black/40 dark:text-red-300"
-            >
-              {rot.ageDays}d
-            </span>
-          )}
         </span>
       </div>
+
+      {closed && (
+        <div className="mt-1 text-caption text-muted-foreground">
+          <DealStatusBadge status={card.status} />
+        </div>
+      )}
     </button>
   );
 }

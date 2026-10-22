@@ -27,8 +27,8 @@ describe("DealCard activity badge", () => {
     );
     const ind = screen.getByRole("img", { name: "Activity · 9 days overdue" });
     expect(ind.className).toContain("rounded-full");
-    expect(ind.className).toContain("bg-destructive");
-    expect(ind.className).toContain("text-destructive-foreground");
+    expect(ind.className).toContain("bg-next-red");
+    expect(ind.className).toContain("text-white");
     // The old text pill must be gone.
     expect(screen.queryByText("overdue")).toBeNull();
   });
@@ -47,11 +47,11 @@ describe("DealCard activity badge", () => {
       />,
     );
     const ind = screen.getByRole("img", { name: "Activity · today" });
-    expect(ind.className).toContain("bg-action");
-    expect(ind.className).not.toContain("bg-destructive");
+    expect(ind.className).toContain("bg-next-green");
+    expect(ind.className).not.toContain("bg-next-red");
   });
 
-  it("shows a YELLOW warning indicator when there is no next activity (schedule-one nudge, not gray)", () => {
+  it("shows the neutral dot when there is no next activity", () => {
     render(
       <DealCard
         card={baseCard}
@@ -66,19 +66,13 @@ describe("DealCard activity badge", () => {
     );
     const ind = screen.getByRole("img", { name: "No activity scheduled" });
     expect(ind.className).toContain("rounded-full");
-    // Amber attention fill with dark amber ink, no longer the muted gray dot or white on yellow.
-    expect(ind.className).toContain("bg-attention");
-    expect(ind.className).toContain("text-attention-foreground");
-    expect(ind.className).not.toContain("bg-muted");
-    expect(ind.className).not.toContain("text-white");
-    // A warning glyph, not the chevron the scheduled states use.
-    expect(ind.textContent).toBe("!");
+    // The measured grey dot (6.1 row 9), still a white chevron so the shape matches the others.
+    expect(ind.className).toContain("bg-next-grey");
+    expect(ind.className).toContain("text-white");
+    expect(ind).not.toBeNull();
   });
 
-  // A scheduled activity is the healthy state and nothing planned is a nudge, so they cannot
-  // share a fill. They did, and a 10px chevron against a 10px "!" was the only thing telling
-  // a calm card from one that needed work.
-  it("does not paint a scheduled activity in the warning fill", () => {
+  it("paints a scheduled activity in the green dot, not the neutral one", () => {
     render(
       <DealCard
         card={{ ...baseCard, nextActivityAt: new Date("2026-06-14T09:00:00Z") }}
@@ -92,10 +86,8 @@ describe("DealCard activity badge", () => {
       />,
     );
     const ind = screen.getByRole("img", { name: "Activity · in 4 days" });
-    expect(ind.className).toContain("bg-scheduled");
-    expect(ind.className).toContain("text-scheduled-foreground");
-    expect(ind.className).not.toContain("bg-attention");
-    expect(ind.textContent).toBe("›");
+    expect(ind.className).toContain("bg-next-green");
+    expect(ind.className).not.toContain("bg-next-grey");
   });
 
   it("labels the badge with the action title and overdue days (a11y non-color cue + tooltip)", () => {

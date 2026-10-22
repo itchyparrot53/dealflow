@@ -23,7 +23,7 @@ describe("DragDropZones", () => {
 
   it("reveals the Lost/Won/Move action zones during a drag (no Delete drag target)", () => {
     wrap(true);
-    for (const label of ["Lost", "Won", "Move"]) {
+    for (const label of ["Lost", "Won", "Move to"]) {
       expect(screen.getByText(label)).not.toBeNull();
     }
     // Delete is deliberately not a drag target (deletion is a confirmed menu action).

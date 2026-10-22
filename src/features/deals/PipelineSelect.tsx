@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, Menu, Plus } from "lucide-react";
+import { ChevronDown, Kanban, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useRef, useState } from "react";
@@ -33,11 +33,11 @@ export function PipelineSelect(props: PipelineSelectProps): React.ReactNode {
       <DropdownMenu>
         <DropdownMenuTrigger
           ref={triggerRef}
-          className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2 text-sm font-semibold text-foreground transition-colors duration-100 hover:bg-muted"
         >
-          <Menu aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+          <Kanban aria-hidden="true" className="size-4 text-muted-foreground" />
           <span className="max-w-40 truncate">{current?.name ?? "Pipeline"}</span>
-          <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
+          <ChevronDown aria-hidden="true" className="size-3.5 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" aria-label="Select pipeline" className="min-w-44">
           {pipelines.map((p) => (

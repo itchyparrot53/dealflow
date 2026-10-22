@@ -34,28 +34,30 @@ export function BoardSortControl<K extends string = BoardSortKey>(
     <div className="inline-flex items-center gap-2">
       {/* Label kept on one line: at the far right of the filter row a wrapping "Sort / by" reads
           as broken. */}
-      <span className="shrink-0 whitespace-nowrap text-sm text-muted-foreground">{SORT.label}</span>
+      <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-info">
+        {SORT.label}:
+      </span>
       {/* Field + direction share one bordered pill (like the "+ Deal" split button) so the sort
           reads as a single control rather than three loose pieces. */}
-      <div className="inline-flex items-center rounded-md border bg-card">
+      <div className="inline-flex items-center">
         <Select
           ariaLabel={SORT.label}
           value={sortKey}
           onChange={(v) => onKeyChange(v as K)}
           options={options}
-          triggerClassName="w-auto rounded-r-none border-0 bg-transparent"
+          triggerClassName="h-8 w-auto rounded-md border-0 bg-info-soft px-2 font-semibold text-info hover:bg-info-soft"
         />
         <Tip label={toggleLabel}>
           <button
             type="button"
             aria-label={toggleLabel}
             onClick={onToggleDirection}
-            className="flex items-center justify-center rounded-r-md border-l px-2 py-1.5 text-muted-foreground transition-[color,scale] duration-150 ease-out hover:text-foreground active:scale-[0.96] motion-reduce:transition-colors"
+            className="flex size-8 items-center justify-center rounded-md bg-info-soft text-info transition-colors duration-100 hover:bg-info-soft-strong"
           >
             {/* Up arrow = ascending; rotated 180deg for descending. */}
             <ArrowUp
               aria-hidden="true"
-              className={cn("h-4 w-4 transition-transform", direction === "desc" && "rotate-180")}
+              className={cn("size-4 transition-transform", direction === "desc" && "rotate-180")}
             />
           </button>
         </Tip>

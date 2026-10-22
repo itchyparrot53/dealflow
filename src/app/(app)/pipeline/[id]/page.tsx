@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listRates } from "@/features/currency/rates";
@@ -91,6 +92,7 @@ export default async function PipelineBoardPage({
   // so no separate stageSums fetch is needed here.
   return (
     <main aria-label={`Board ${pipeline.name}`} className="h-full">
+      <PageTitle title="Deals" info="Every deal in this pipeline that you can see" />
       <Board
         pipelineId={id}
         serverNow={new Date()}
