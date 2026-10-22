@@ -15,6 +15,7 @@ import { CSRF_COOKIE } from "@/features/auth/csrf";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
+import { BottomNav } from "@/features/navigation/mobile/BottomNav";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { OfflineBanner } from "@/features/pwa/OfflineBanner";
 import { OfflineUserSync } from "@/features/pwa/offline/remember";
@@ -70,9 +71,15 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
               appearance={parseAppearance(prefs.ui.appearance)}
             />
             <div className="flex min-h-0 flex-1">
-              <LeftNav initialExpanded={navExpanded} />
-              <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
+              {/* Below md the rail is replaced by the bottom navigation (BottomNav). */}
+              <div className="hidden md:block">
+                <LeftNav initialExpanded={navExpanded} />
+              </div>
+              <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-4 pb-24 md:p-6 md:pb-6">
+                {children}
+              </main>
             </div>
+            <BottomNav />
             <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
             <OfflineUserSync userId={ctx.actor.id} />
             <GlobalShortcuts />

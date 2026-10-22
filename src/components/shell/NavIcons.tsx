@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import type React from "react";
+import type { NavKey } from "@/constants/nav";
 
 // Named wrappers over lucide so the nav's glyph vocabulary lives in one place.
 // aria-hidden keeps each link's accessible name its label text.
@@ -75,3 +76,19 @@ export function DashboardIcon({ className }: IconProps): React.ReactNode {
 export function SettingsIcon({ className }: IconProps): React.ReactNode {
   return <Settings aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
+
+// One map for every nav surface (rail, bottom bar, More sheet), so a new item cannot render a
+// different glyph in one place than another.
+export const NAV_ICONS: Record<NavKey, (props: IconProps) => React.ReactNode> = {
+  pipeline: PipelineIcon,
+  forecast: ForecastIcon,
+  documents: DocumentsIcon,
+  insights: InsightsIcon,
+  projects: ProjectsIcon,
+  leads: LeadsIcon,
+  contacts: ContactsIcon,
+  activities: ActivitiesIcon,
+  inbox: InboxIcon,
+  dashboard: DashboardIcon,
+  settings: SettingsIcon,
+};

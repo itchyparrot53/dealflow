@@ -7,45 +7,16 @@ import { useEffect, useState } from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { DOCS_SITE_URL } from "@/constants/docs";
-import { NAV_ITEMS, type NavKey } from "@/constants/nav";
+import { NAV_ITEMS } from "@/constants/nav";
 import { STRINGS } from "@/constants/strings";
 import { isOverlayOpen, isTypingTarget } from "@/features/shortcuts/shortcutTarget";
 import { cn } from "@/lib/utils";
-import {
-  ActivitiesIcon,
-  ContactsIcon,
-  DashboardIcon,
-  DocsIcon,
-  DocumentsIcon,
-  ForecastIcon,
-  InboxIcon,
-  InsightsIcon,
-  LeadsIcon,
-  PipelineIcon,
-  ProjectsIcon,
-  SettingsIcon,
-} from "./NavIcons";
-
-// Icons live here (NAV_ITEMS is a plain constants module and must stay free of JSX), keyed by the
-// shared nav key so the rail and the number shortcuts can never drift out of order.
-const ICONS: Record<NavKey, typeof PipelineIcon> = {
-  pipeline: PipelineIcon,
-  forecast: ForecastIcon,
-  documents: DocumentsIcon,
-  insights: InsightsIcon,
-  projects: ProjectsIcon,
-  leads: LeadsIcon,
-  contacts: ContactsIcon,
-  activities: ActivitiesIcon,
-  inbox: InboxIcon,
-  dashboard: DashboardIcon,
-  settings: SettingsIcon,
-};
+import { DocsIcon, NAV_ICONS } from "./NavIcons";
 
 const ITEMS = NAV_ITEMS.map((item) => ({
   ...item,
   label: STRINGS.nav[item.key],
-  Icon: ICONS[item.key],
+  Icon: NAV_ICONS[item.key],
 }));
 
 // The collapsed/expanded rail preference lives in a COOKIE, not localStorage, so the server layout
