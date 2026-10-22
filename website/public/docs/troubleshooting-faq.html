@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting and FAQ: Dealflow User Guide</title>
+<meta name="description" content="## Signing in">
+<link rel="canonical" href="https://dealflow.umev.co.uk/docs/troubleshooting-faq">
+<meta name="theme-color" content="#211C52">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dealflow">
+<meta property="og:title" content="Troubleshooting and FAQ: Dealflow User Guide">
+<meta property="og:description" content="## Signing in">
+<meta property="og:url" content="https://dealflow.umev.co.uk/docs/troubleshooting-faq">
+<meta property="og:image" content="https://dealflow.umev.co.uk/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Troubleshooting and FAQ: Dealflow User Guide">
+<meta name="twitter:description" content="## Signing in">
+<meta name="twitter:image" content="https://dealflow.umev.co.uk/assets/x-card.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/" aria-label="Dealflow home"><img src="/assets/dealflow-logo.svg" alt="Dealflow" width="144" height="30"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr">Menu</span><span class="bars" aria-hidden="true"></span></button>
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/features">Features</a></li>
+        <li><a href="/get-started">Self-hosting</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/about">About &amp; FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/docs">Read the guide</a>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap docs-layout"><nav class="docs-side" aria-label="User guide"><h2>User guide</h2><ul><li><a href="/docs">Overview</a></li><li><a href="/docs/getting-started">Getting started</a></li><li><a href="/docs/pipelines-and-deals">Pipelines and deals</a></li><li><a href="/docs/activities">Activities and calendar</a></li><li><a href="/docs/contacts-and-organizations">Contacts and organizations</a></li><li><a href="/docs/email">Email</a></li><li><a href="/docs/notifications">Notifications</a></li><li><a href="/docs/stats-and-reporting">Stats and reporting</a></li><li><a href="/docs/quotes-and-invoices">Quotes and invoices</a></li><li><a href="/docs/projects">Projects</a></li><li><a href="/docs/forms-and-booking">Forms and booking pages</a></li><li><a href="/docs/ai-features">AI features</a></li><li><a href="/docs/admin">Admin</a></li><li><a href="/docs/self-hosting">Self-hosting and install</a></li><li><a href="/docs/troubleshooting-faq" aria-current="page">Troubleshooting and FAQ</a></li></ul><h2>On this page</h2><ul><li><a href="#signing-in">Signing in</a></li><li><a href="#email">Email</a></li><li><a href="#deals-and-data">Deals and data</a></li><li><a href="#ai">AI</a></li><li><a href="#offline-and-mobile">Offline and mobile</a></li><li><a href="#quotes-and-invoices">Quotes and invoices</a></li><li><a href="#general">General</a></li></ul><h2>Download</h2><ul><li><a class="pdf-link" href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide</a></li></ul></nav><article class="prose"><h1 id="troubleshooting-and-faq">Troubleshooting and FAQ</h1>
+<h2 id="signing-in">Signing in</h2>
+<p><strong>My sign-in link does not work.</strong>
+Links expire after 15 minutes and work once. Request a new one from the <strong>Email link</strong> tab.</p>
+<p><strong>I did not get the sign-in email.</strong>
+Check your spam folder. The sign-in page shows the same message whether or not your address has an account, so also check you typed the address your admin invited. If it still does not arrive, ask your admin to check the server&#39;s email settings.</p>
+<p><strong>I forgot my password.</strong>
+Sign in with an email link, then set a new password in <strong>Settings › Personal preferences</strong>.</p>
+<p><strong>My invite link has expired.</strong>
+Ask an admin to invite you again from <strong>Settings › Users</strong>.</p>
+<h2 id="email">Email</h2>
+<p><strong>Test and connect fails.</strong>
+Most failures are a mistyped app password, or using your normal mail password instead of an app password. Create a new app password with your mail provider and try again. For <strong>Other IMAP/SMTP server</strong>, check the server names and ports with your provider.</p>
+<p><strong>An email is not linked to the right deal.</strong>
+Open the conversation and use <strong>Link to existing</strong> in the right-hand panel. Conversations that are not linked to anyone appear under <strong>Unmatched</strong>.</p>
+<p><strong>A scheduled email has not gone out.</strong>
+Look in <strong>Outbox</strong>. Scheduled emails wait there until their send time.</p>
+<p><strong>Images in an email are missing.</strong>
+Dealflow hides images from outside senders until you select <strong>Show remote content</strong>.</p>
+<h2 id="deals-and-data">Deals and data</h2>
+<p><strong>I cannot see a deal a colleague can see.</strong>
+What you can see depends on your visibility group and permission set. Ask your admin.</p>
+<p><strong>A deal disappeared from the board.</strong>
+It may have been won, lost or archived. Check the list view with a filter for won or lost deals, or <strong>Archived deals</strong>. If it was deleted, it is in <strong>Settings › Recycle bin</strong> for 30 days.</p>
+<p><strong>I deleted something by mistake.</strong>
+Select <strong>Undo</strong> in the message that appears straight away, or restore it from <strong>Settings › Recycle bin</strong> within 30 days.</p>
+<p><strong>Totals in another currency look wrong.</strong>
+Totals are converted to your company&#39;s base currency using the rates in <strong>Settings › Currencies</strong>. Ask your admin to update them.</p>
+<p><strong>My CSV import went wrong.</strong>
+Select <strong>Undo</strong> next to the import in <strong>Settings › Import data</strong> to remove the records it created, fix the file and import again.</p>
+<h2 id="ai">AI</h2>
+<p><strong>The AI buttons do nothing or show a limit message.</strong>
+Your company or your own monthly AI limit may have been reached, or an admin may have turned AI off. Ask your admin to check <strong>Settings › AI</strong>.</p>
+<p><strong>The AI got something wrong.</strong>
+AI suggestions are drafts. Check them before you send or save. The assistant never changes data until you select <strong>Confirm</strong>.</p>
+<h2 id="offline-and-mobile">Offline and mobile</h2>
+<p><strong>I see &quot;You&#39;re offline&quot;.</strong>
+Your device has lost its connection. You can still open the records you viewed recently, read-only. Select <strong>Try again</strong> when you are back online.</p>
+<p><strong>How do I install Dealflow on my phone?</strong>
+Open Dealflow in your phone&#39;s browser and use the browser&#39;s <strong>Add to Home Screen</strong> or <strong>Install</strong> option.</p>
+<h2 id="quotes-and-invoices">Quotes and invoices</h2>
+<p><strong>My customer cannot accept a quote.</strong>
+The quote may have passed its <strong>Valid until</strong> date. Duplicate it and send the new one.</p>
+<p><strong>I sent an invoice by mistake.</strong>
+Open it and select <strong>Void</strong>. Issued invoices are never deleted, so the numbering stays complete.</p>
+<h2 id="general">General</h2>
+<p><strong>Is my data shared with anyone?</strong>
+Dealflow runs on your company&#39;s own server. Data leaves it only for the services your admin sets up: your mail server, the AI provider (for AI features), and any enrichment provider.</p>
+<p><strong>Where is the full list of keyboard shortcuts?</strong>
+Press <code>?</code> anywhere outside a text box.</p>
+<p><strong>Who do I ask for help?</strong>
+Your Dealflow admin. Admins can find the technical guides in the <code>docs</code> folder of the Dealflow repository.</p>
+<p><a class="pdf-link" href="/docs/pdf/14-troubleshooting-faq.pdf">Download this section as a PDF</a></p><nav class="pager" aria-label="Previous and next"><a href="/docs/self-hosting">← Self-hosting and install</a><span></span></nav></article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/assets/dealflow-logo-reverse.svg" alt="Dealflow" width="144" height="30">
+        <p>The business development CRM you run on your own server.</p>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/features#pipeline">Pipeline and deals</a></li>
+            <li><a href="/features#email">Email</a></li>
+            <li><a href="/features#activities">Activities</a></li>
+            <li><a href="/features#documents">Quotes and invoices</a></li>
+            <li><a href="/features#reporting">Reports and forecast</a></li>
+            <li><a href="/features#ai">AI features</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>More features</h2>
+          <ul>
+            <li><a href="/features#automations">Automations</a></li>
+            <li><a href="/features#forms">Forms and booking</a></li>
+            <li><a href="/features#projects">Projects</a></li>
+            <li><a href="/features#contacts">Contacts</a></li>
+            <li><a href="/features#admin">Admin and security</a></li>
+            <li><a href="/features#mobile">Mobile and offline</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Self-hosting</h2>
+          <ul>
+            <li><a href="/get-started#requirements">Requirements</a></li>
+            <li><a href="/get-started#install">Install</a></li>
+            <li><a href="/get-started#proxy">Reverse proxy</a></li>
+            <li><a href="/get-started#backups">Backups</a></li>
+            <li><a href="/docs/self-hosting">Operator guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs">User guide</a></li>
+            <li><a href="/docs/getting-started">Getting started</a></li>
+            <li><a href="/docs/admin">Admin guide</a></li>
+            <li><a href="/docs/troubleshooting-faq">Troubleshooting</a></li>
+            <li><a href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>About</h2>
+          <ul>
+            <li><a href="/about">About Dealflow</a></li>
+            <li><a href="/about#faq">FAQ</a></li>
+            <li><a href="/about#licence">Licence</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Dealflow. Released under the MIT licence.</p>
+      <p><a href="/about#privacy">This site uses no cookies and no tracking.</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

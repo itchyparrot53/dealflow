@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email: Dealflow User Guide</title>
+<meta name="description" content="Dealflow connects to your own mailbox over IMAP and SMTP, so email you send and receive appears in Dealflow, threaded and linked to the right deals and con">
+<link rel="canonical" href="https://dealflow.umev.co.uk/docs/email">
+<meta name="theme-color" content="#211C52">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dealflow">
+<meta property="og:title" content="Email: Dealflow User Guide">
+<meta property="og:description" content="Dealflow connects to your own mailbox over IMAP and SMTP, so email you send and receive appears in Dealflow, threaded and linked to the right deals and con">
+<meta property="og:url" content="https://dealflow.umev.co.uk/docs/email">
+<meta property="og:image" content="https://dealflow.umev.co.uk/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Email: Dealflow User Guide">
+<meta name="twitter:description" content="Dealflow connects to your own mailbox over IMAP and SMTP, so email you send and receive appears in Dealflow, threaded and linked to the right deals and con">
+<meta name="twitter:image" content="https://dealflow.umev.co.uk/assets/x-card.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/" aria-label="Dealflow home"><img src="/assets/dealflow-logo.svg" alt="Dealflow" width="144" height="30"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr">Menu</span><span class="bars" aria-hidden="true"></span></button>
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/features">Features</a></li>
+        <li><a href="/get-started">Self-hosting</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/about">About &amp; FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/docs">Read the guide</a>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap docs-layout"><nav class="docs-side" aria-label="User guide"><h2>User guide</h2><ul><li><a href="/docs">Overview</a></li><li><a href="/docs/getting-started">Getting started</a></li><li><a href="/docs/pipelines-and-deals">Pipelines and deals</a></li><li><a href="/docs/activities">Activities and calendar</a></li><li><a href="/docs/contacts-and-organizations">Contacts and organizations</a></li><li><a href="/docs/email" aria-current="page">Email</a></li><li><a href="/docs/notifications">Notifications</a></li><li><a href="/docs/stats-and-reporting">Stats and reporting</a></li><li><a href="/docs/quotes-and-invoices">Quotes and invoices</a></li><li><a href="/docs/projects">Projects</a></li><li><a href="/docs/forms-and-booking">Forms and booking pages</a></li><li><a href="/docs/ai-features">AI features</a></li><li><a href="/docs/admin">Admin</a></li><li><a href="/docs/self-hosting">Self-hosting and install</a></li><li><a href="/docs/troubleshooting-faq">Troubleshooting and FAQ</a></li></ul><h2>On this page</h2><ul><li><a href="#how-to-connect-your-mailbox">How to connect your mailbox</a></li><li><a href="#how-to-read-your-email">How to read your email</a></li><li><a href="#how-to-link-an-email-to-a-deal-or-contact">How to link an email to a deal or contact</a></li><li><a href="#how-to-reply">How to reply</a></li><li><a href="#how-to-write-a-new-email">How to write a new email</a></li><li><a href="#how-to-see-whether-your-email-was-opened">How to see whether your email was opened</a></li><li><a href="#how-to-set-a-follow-up-reminder-on-a-conversation">How to set a follow-up reminder on a conversation</a></li><li><a href="#how-to-manage-templates-and-signatures">How to manage templates and signatures</a></li></ul><h2>Download</h2><ul><li><a class="pdf-link" href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide</a></li></ul></nav><article class="prose"><h1 id="email">Email</h1>
+<p>Dealflow connects to your own mailbox over IMAP and SMTP, so email you send and receive appears in Dealflow, threaded and linked to the right deals and contacts. Replies from Dealflow go out through your normal mail server and land in your Sent folder.</p>
+<h2 id="how-to-connect-your-mailbox">How to connect your mailbox</h2>
+<p>You need an <strong>app password</strong> from your mail provider. This is a separate password made for one app, not the password you use to sign in to your mail. Your provider&#39;s help pages explain how to create one.</p>
+<p><img src="/docs/images/email-sync.png" alt="Email sync settings" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Email sync</strong>.</li>
+<li>Type your <strong>Email address</strong> and the <strong>App password</strong>.</li>
+<li>Choose your <strong>Provider</strong>: <strong>Purelymail</strong>, or <strong>Other IMAP/SMTP server</strong> and enter the server details your provider gives you.</li>
+<li>Select <strong>Test and connect</strong>.</li>
+</ol>
+<p><strong>Result:</strong> the status changes to <strong>Connected</strong> and Dealflow starts syncing your recent mail. Older mail is fetched in the background.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>If the test fails, check the address and app password first. Most failures are a mistyped app password.</li>
+<li>To stop syncing, select <strong>Disconnect</strong> on the same page.</li>
+</ul>
+<h2 id="how-to-read-your-email">How to read your email</h2>
+<p><img src="/docs/images/inbox.png" alt="The inbox" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Select <strong>Inbox</strong> in the left rail.</li>
+<li>Use the folders on the left: <strong>Inbox</strong>, <strong>Drafts</strong>, <strong>Outbox</strong> (scheduled email), <strong>Sent</strong> and <strong>Archive</strong>.</li>
+<li>Narrow the list with <strong>All</strong>, <strong>Unmatched</strong> (email not yet linked to a contact), <strong>Needs linking</strong>, follow-up status, labels, <strong>Has attachment</strong>, <strong>Unread only</strong> and the date range.</li>
+<li>Select a conversation to open it.</li>
+</ol>
+<p><img src="/docs/images/thread.png" alt="A conversation" width="1440" height="900" loading="lazy"></p>
+<p><strong>Result:</strong> the conversation opens with every message in order. The right-hand panel shows the people in the conversation and the contact and deal it is linked to.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>Images from outside senders are hidden until you select <strong>Show remote content</strong>.</li>
+<li><strong>Archive</strong>, <strong>Delete</strong> and <strong>Mark as unread</strong> are at the top of the conversation.</li>
+</ul>
+<h2 id="how-to-link-an-email-to-a-deal-or-contact">How to link an email to a deal or contact</h2>
+<ol>
+<li>Open the conversation.</li>
+<li>In the right-hand panel, under <strong>Deal</strong>, select <strong>Link to existing</strong> and choose the deal, or select <strong>Add new deal</strong>.</li>
+<li>Under <strong>Contact</strong>, use <strong>Change</strong> to pick a different person if needed.</li>
+</ol>
+<p><strong>Result:</strong> the email shows in the deal&#39;s and contact&#39;s history under <strong>Email</strong>.</p>
+<h2 id="how-to-reply">How to reply</h2>
+<ol>
+<li>Open the conversation and select <strong>Reply</strong>.</li>
+<li>Write your reply and select <strong>Send</strong>.</li>
+</ol>
+<p><strong>Result:</strong> the reply is sent from your mailbox and added to the same conversation.</p>
+<h2 id="how-to-write-a-new-email">How to write a new email</h2>
+<p><img src="/docs/images/compose.png" alt="Writing a new email" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Select <strong>+ New email</strong> in the inbox (or <strong>Email</strong> in Quick add, or the <strong>Email</strong> tab on a deal or contact).</li>
+<li>Fill in <strong>To</strong> and the <strong>Subject</strong>. Use <strong>Cc/Bcc</strong> if you need them.</li>
+<li>Write your message. You can:<ul>
+<li>pick a saved template with <strong>Choose template</strong>,</li>
+<li>add a merge field such as the person&#39;s name with <strong>Insert field</strong>,</li>
+<li>ask the AI to write it with <strong>Write with AI</strong> (see <a href="/docs/ai-features">AI features</a>),</li>
+<li>attach files with the paperclip.</li>
+</ul>
+</li>
+<li>Select <strong>Send</strong>, or use the arrow next to it and choose <strong>Send later</strong> to schedule it.</li>
+</ol>
+<p><strong>Result:</strong> the email is sent (or waits in <strong>Outbox</strong> until its time), and appears in <strong>Sent</strong>.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li><strong>Link to a deal or lead</strong> on the right keeps the email with the right record.</li>
+<li><strong>Visible to everyone</strong> controls whether teammates can read the conversation. Turn it off for private email.</li>
+</ul>
+<h2 id="how-to-see-whether-your-email-was-opened">How to see whether your email was opened</h2>
+<ol>
+<li>Before sending, leave the <strong>Opens</strong> and <strong>Links</strong> switches at the bottom of the email on.</li>
+<li>Send the email.</li>
+</ol>
+<p><strong>Result:</strong> when the recipient opens the email or selects a link in it, Dealflow records it and can notify you (&quot;Your email was opened&quot;).</p>
+<p><strong>Tip:</strong> opens are counted only when the recipient&#39;s mail app loads images, so &quot;not opened&quot; does not always mean &quot;not read&quot;.</p>
+<h2 id="how-to-set-a-follow-up-reminder-on-a-conversation">How to set a follow-up reminder on a conversation</h2>
+<p>Open the conversation and use the follow-up control under the subject to mark it (for example <strong>To do</strong> or <strong>Later</strong>). Use the follow-up filter in the inbox to see everything you still need to chase.</p>
+<h2 id="how-to-manage-templates-and-signatures">How to manage templates and signatures</h2>
+<p><img src="/docs/images/email-templates.png" alt="Email templates and signatures" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Email templates</strong>.</li>
+<li>Select <strong>New template</strong>, give it a name, subject and body, and choose whether to share it with the team.</li>
+<li>Under <strong>Signatures</strong>, select <strong>New signature</strong> to add the sign-off used at the bottom of your emails.</li>
+</ol>
+<p><strong>Result:</strong> shared templates appear in everyone&#39;s <strong>Choose template</strong> list.</p>
+<p><a class="pdf-link" href="/docs/pdf/05-email.pdf">Download this section as a PDF</a></p><nav class="pager" aria-label="Previous and next"><a href="/docs/contacts-and-organizations">← Contacts and organizations</a><a href="/docs/notifications">Notifications →</a></nav></article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/assets/dealflow-logo-reverse.svg" alt="Dealflow" width="144" height="30">
+        <p>The business development CRM you run on your own server.</p>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/features#pipeline">Pipeline and deals</a></li>
+            <li><a href="/features#email">Email</a></li>
+            <li><a href="/features#activities">Activities</a></li>
+            <li><a href="/features#documents">Quotes and invoices</a></li>
+            <li><a href="/features#reporting">Reports and forecast</a></li>
+            <li><a href="/features#ai">AI features</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>More features</h2>
+          <ul>
+            <li><a href="/features#automations">Automations</a></li>
+            <li><a href="/features#forms">Forms and booking</a></li>
+            <li><a href="/features#projects">Projects</a></li>
+            <li><a href="/features#contacts">Contacts</a></li>
+            <li><a href="/features#admin">Admin and security</a></li>
+            <li><a href="/features#mobile">Mobile and offline</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Self-hosting</h2>
+          <ul>
+            <li><a href="/get-started#requirements">Requirements</a></li>
+            <li><a href="/get-started#install">Install</a></li>
+            <li><a href="/get-started#proxy">Reverse proxy</a></li>
+            <li><a href="/get-started#backups">Backups</a></li>
+            <li><a href="/docs/self-hosting">Operator guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs">User guide</a></li>
+            <li><a href="/docs/getting-started">Getting started</a></li>
+            <li><a href="/docs/admin">Admin guide</a></li>
+            <li><a href="/docs/troubleshooting-faq">Troubleshooting</a></li>
+            <li><a href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>About</h2>
+          <ul>
+            <li><a href="/about">About Dealflow</a></li>
+            <li><a href="/about#faq">FAQ</a></li>
+            <li><a href="/about#licence">Licence</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Dealflow. Released under the MIT licence.</p>
+      <p><a href="/about#privacy">This site uses no cookies and no tracking.</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

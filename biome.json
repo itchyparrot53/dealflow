@@ -13,6 +13,7 @@
       "!**/.claude",
       "!brand",
       "!site",
+      "!website",
       "!docs-site",
       "!**/drizzle",
       "!**/.next",

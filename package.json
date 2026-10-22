@@ -41,7 +41,8 @@
     "e2e": "pnpm e2e:build && playwright test",
     "smoke": "node scripts/dealflow/smoke.mjs",
     "docs:pdf": "node scripts/dealflow/build-user-guide-pdf.mjs",
-    "docs:screenshots": "node scripts/dealflow/capture-user-guide.mjs"
+    "docs:screenshots": "node scripts/dealflow/capture-user-guide.mjs",
+    "site:build": "node scripts/dealflow/build-site.mjs"
   },
   "keywords": [],
   "author": "Nikita Sawinyh",

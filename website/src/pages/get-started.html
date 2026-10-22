@@ -1,0 +1,145 @@
+<!-- {"title": "Get started: self-host Dealflow", "description": "Dealflow is free, open source and self-hosted. See what you need, install it with Docker Compose, put it behind your reverse proxy and invite your team.", "path": "/get-started", "nav": "get-started", "bodyClass": "get-started"} -->
+<section class="hero" style="padding-bottom: 72px">
+  <div class="wrap center">
+    <span class="eyebrow">Self-hosting</span>
+    <h1 style="margin-left:auto;margin-right:auto;max-width:17ch">Free to run. Yours to keep.</h1>
+    <p class="lead">Dealflow is self-hosted and built for one company per install. There are no plans, seats or tiers: you run it on your own server and every feature is included.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:56px">
+  <div class="wrap">
+    <div class="plans">
+      <div class="plan">
+        <h3>Try it</h3>
+        <p>Run it on your own machine to look around.</p>
+        <div class="price">£0</div>
+        <ul>
+          <li>Docker on your laptop</li>
+          <li>Demo data to explore</li>
+          <li>Every feature switched on</li>
+          <li>AI and email in safe fake modes</li>
+        </ul>
+        <a class="btn btn-ghost" href="#install">Install steps</a>
+      </div>
+      <div class="plan featured">
+        <span class="tag">Most teams</span>
+        <h3>Run it for your team</h3>
+        <p>One server, your domain, your whole team.</p>
+        <div class="price">£0 <small>plus your server</small></div>
+        <ul>
+          <li>Unlimited users, no per-seat fees</li>
+          <li>Your mailbox over IMAP and SMTP</li>
+          <li>Built-in AI with your own OpenRouter key</li>
+          <li>Daily backups and an audit log</li>
+          <li>Installable on phones and desktops</li>
+        </ul>
+        <a class="btn btn-primary" href="#install">Get started</a>
+      </div>
+      <div class="plan">
+        <h3>Keep it running</h3>
+        <p>Simple to update, back up and restore.</p>
+        <div class="price">2 <small>commands to update</small></div>
+        <ul>
+          <li><code>git pull</code> then <code>docker compose up -d --build</code></li>
+          <li>Database changes applied automatically</li>
+          <li>Backups you can restore in minutes</li>
+          <li>Health check for your monitoring</li>
+        </ul>
+        <a class="btn btn-ghost" href="/docs/self-hosting">Operator guide</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="requirements">
+  <div class="wrap">
+    <div class="row">
+      <div class="row-text">
+        <span class="eyebrow">Requirements</span>
+        <h2>What you need</h2>
+        <ul>
+          <li>A Linux server with Docker and the Docker Compose plugin</li>
+          <li>A domain for the app and a second one for file storage</li>
+          <li>A reverse proxy that handles HTTPS, such as Caddy or nginx</li>
+          <li>An SMTP account for sign-in links, invites and notifications</li>
+          <li>Optional: an OpenRouter API key for the AI features</li>
+        </ul>
+      </div>
+      <div class="row-text">
+        <h3>What runs</h3>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Table, scrolls sideways on small screens">
+          <table>
+            <thead><tr><th scope="col">Service</th><th scope="col">What it does</th></tr></thead>
+            <tbody>
+              <tr><td><code>app</code></td><td>The Dealflow web app</td></tr>
+              <tr><td><code>ws</code></td><td>Live updates in the browser</td></tr>
+              <tr><td><code>worker</code></td><td>Mail sync, scheduled email, automations, reminders, backups</td></tr>
+              <tr><td><code>postgres</code></td><td>The database</td></tr>
+              <tr><td><code>minio</code></td><td>File storage for attachments, imports and photos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="wrap" style="max-width:900px">
+    <div class="section-head">
+      <span class="eyebrow">Install</span>
+      <h2>Up and running in five steps</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Copy the example settings</h3><pre tabindex="0"><code>cp .env.example .env</code></pre></li>
+      <li><h3>Fill in your settings</h3><p>Set <code>BASE_URL</code>, <code>NEXT_PUBLIC_WS_URL</code>, <code>MINIO_ENDPOINT</code>, <code>SEED_ADMIN_EMAIL</code>, your <code>SMTP_*</code> account and, for AI, <code>OPENROUTER_API_KEY</code>.</p></li>
+      <li><h3>Generate the secrets</h3><pre tabindex="0"><code>openssl rand -base64 32   # TOKEN_ENCRYPTION_KEY
+openssl rand -hex 32      # WS_TICKET_SECRET
+openssl rand -hex 16      # MINIO_ACCESS_KEY and MINIO_SECRET_KEY</code></pre></li>
+      <li><h3>Start everything</h3><pre tabindex="0"><code>docker compose up -d --build</code></pre></li>
+      <li><h3>Sign in as the first admin</h3><p>Open your app address, choose <strong>Email link</strong> and enter the <code>SEED_ADMIN_EMAIL</code> address. Then invite your team from <strong>Settings › Users</strong>.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-alt" id="proxy">
+  <div class="wrap" style="max-width:900px">
+    <span class="eyebrow">Reverse proxy</span>
+    <h2>Three routes to point at Dealflow</h2>
+    <p class="lead">Dealflow does not include a proxy, so it fits whatever you already run. Keep the ports bound to <code>127.0.0.1</code> so only your proxy can reach them.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Table, scrolls sideways on small screens">
+      <table>
+        <thead><tr><th scope="col">Public address</th><th scope="col">Send to</th><th scope="col">Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>https://crm.example.com</code></td><td><code>127.0.0.1:3000</code></td><td>The app</td></tr>
+          <tr><td><code>https://crm.example.com/_ws</code></td><td><code>127.0.0.1:8080</code></td><td>Live updates (WebSocket)</td></tr>
+          <tr><td><code>https://s3.crm.example.com</code></td><td><code>127.0.0.1:9000</code></td><td>File uploads and downloads</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:20px">Check it with <code>curl -fsS https://crm.example.com/api/health</code>, which answers <code>{"ok":true}</code>.</p>
+  </div>
+</section>
+
+<section class="section" id="backups">
+  <div class="wrap">
+    <div class="row">
+      <div class="row-text">
+        <span class="eyebrow">Backups</span>
+        <h2>Daily backups, restored from the server</h2>
+        <p>Dealflow backs up the database and stored files every day and keeps them for as many days as you choose. Admins can check the status and run an extra backup from Settings. Restoring is done on the server, never from the browser.</p>
+        <a href="/docs/self-hosting#backups-and-restore">Restore steps</a>
+      </div>
+      <div class="row-media"><div class="shot-frame"><img src="/docs/images/backups.png" alt="The backups settings page with status, schedule and restore instructions" width="1440" height="900" loading="lazy"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap center">
+    <h2>Need the details?</h2>
+    <p class="lead">The operator guide covers every setting, the reverse proxy, updates and backups.</p>
+    <div class="btn-row"><a class="btn btn-light" href="/docs/self-hosting">Operator guide</a><a class="btn btn-outline-light" href="/docs/pdf/13-self-hosting.pdf">Download as PDF</a></div>
+  </div>
+</section>

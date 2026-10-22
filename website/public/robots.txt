@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dealflow.umev.co.uk/sitemap.xml

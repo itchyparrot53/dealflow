@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin: Dealflow User Guide</title>
+<meta name="description" content="This section is for admins: the people who set Dealflow up for the company. Most of these pages are under Settings (open the Account menu and choose Settin">
+<link rel="canonical" href="https://dealflow.umev.co.uk/docs/admin">
+<meta name="theme-color" content="#211C52">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dealflow">
+<meta property="og:title" content="Admin: Dealflow User Guide">
+<meta property="og:description" content="This section is for admins: the people who set Dealflow up for the company. Most of these pages are under Settings (open the Account menu and choose Settin">
+<meta property="og:url" content="https://dealflow.umev.co.uk/docs/admin">
+<meta property="og:image" content="https://dealflow.umev.co.uk/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Admin: Dealflow User Guide">
+<meta name="twitter:description" content="This section is for admins: the people who set Dealflow up for the company. Most of these pages are under Settings (open the Account menu and choose Settin">
+<meta name="twitter:image" content="https://dealflow.umev.co.uk/assets/x-card.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/" aria-label="Dealflow home"><img src="/assets/dealflow-logo.svg" alt="Dealflow" width="144" height="30"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr">Menu</span><span class="bars" aria-hidden="true"></span></button>
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/features">Features</a></li>
+        <li><a href="/get-started">Self-hosting</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/about">About &amp; FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/docs">Read the guide</a>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap docs-layout"><nav class="docs-side" aria-label="User guide"><h2>User guide</h2><ul><li><a href="/docs">Overview</a></li><li><a href="/docs/getting-started">Getting started</a></li><li><a href="/docs/pipelines-and-deals">Pipelines and deals</a></li><li><a href="/docs/activities">Activities and calendar</a></li><li><a href="/docs/contacts-and-organizations">Contacts and organizations</a></li><li><a href="/docs/email">Email</a></li><li><a href="/docs/notifications">Notifications</a></li><li><a href="/docs/stats-and-reporting">Stats and reporting</a></li><li><a href="/docs/quotes-and-invoices">Quotes and invoices</a></li><li><a href="/docs/projects">Projects</a></li><li><a href="/docs/forms-and-booking">Forms and booking pages</a></li><li><a href="/docs/ai-features">AI features</a></li><li><a href="/docs/admin" aria-current="page">Admin</a></li><li><a href="/docs/self-hosting">Self-hosting and install</a></li><li><a href="/docs/troubleshooting-faq">Troubleshooting and FAQ</a></li></ul><h2>On this page</h2><ul><li><a href="#how-to-invite-a-user">How to invite a user</a></li><li><a href="#how-to-control-what-people-can-do">How to control what people can do</a></li><li><a href="#how-to-control-what-people-can-see">How to control what people can see</a></li><li><a href="#how-to-organise-users-into-teams">How to organise users into teams</a></li><li><a href="#how-to-set-company-wide-options">How to set company-wide options</a></li><li><a href="#how-to-set-exchange-rates">How to set exchange rates</a></li><li><a href="#how-to-add-custom-fields">How to add custom fields</a></li><li><a href="#how-to-automate-routine-work">How to automate routine work</a></li><li><a href="#how-to-send-events-to-another-system-webhooks">How to send events to another system (webhooks)</a></li><li><a href="#how-to-give-another-tool-api-access">How to give another tool API access</a></li><li><a href="#how-to-manage-ai">How to manage AI</a></li><li><a href="#how-to-restore-something-deleted">How to restore something deleted</a></li><li><a href="#how-to-review-security-changes">How to review security changes</a></li><li><a href="#how-to-check-backups">How to check backups</a></li><li><a href="#other-settings">Other settings</a></li></ul><h2>Download</h2><ul><li><a class="pdf-link" href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide</a></li></ul></nav><article class="prose"><h1 id="admin">Admin</h1>
+<p>This section is for admins: the people who set Dealflow up for the company. Most of these pages are under <strong>Settings</strong> (open the <strong>Account menu</strong> and choose <strong>Settings</strong>). The settings menu has two parts: <strong>My account</strong> (your own preferences, which every user has) and <strong>Company overview</strong> (company-wide settings, shown only to users with the right permissions).</p>
+<h2 id="how-to-invite-a-user">How to invite a user</h2>
+<p><img src="/docs/images/users.png" alt="Users" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Users</strong>.</li>
+<li>Under <strong>Invite a user</strong>, type their <strong>Email</strong> and <strong>Name</strong>. Turn on <strong>Admin</strong> only if they should manage company settings.</li>
+<li>Select <strong>Invite</strong>.</li>
+</ol>
+<p><strong>Result:</strong> they receive an invite email with a link to set their password, and appear under <strong>Invited</strong> until they accept.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>Use the row&#39;s menu in the list to change a user&#39;s permission set or to deactivate them. A deactivated user cannot sign in, but their records stay.</li>
+<li>The filters above the list show <strong>All</strong>, <strong>Active</strong>, <strong>Invited</strong> or <strong>Deactivated</strong> users.</li>
+</ul>
+<h2 id="how-to-control-what-people-can-do">How to control what people can do</h2>
+<p><strong>Permission sets</strong> decide what users can do. Dealflow comes with <strong>Regular</strong> (create deals, contacts and activities, and edit their own) and <strong>Admin</strong> (everything).</p>
+<p><img src="/docs/images/permission-sets.png" alt="Permission sets" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Permission sets</strong>.</li>
+<li>To make a new set, type a name under <strong>Create a permission set</strong> and select <strong>Create</strong>.</li>
+<li>Tick the permissions the set should have. Examples: <code>data.import</code>, <code>data.export</code>, <code>bulk.edit</code>, <code>pipeline.manage</code>, <code>products.manage</code>, <code>documents.manage</code>, <code>automations.manage</code>, <code>forms.manage</code>, <code>goals.manage</code>, and whether users can edit their own records, their team&#39;s, or anyone&#39;s.</li>
+<li>Assign the set to users in <strong>Settings › Users</strong>.</li>
+</ol>
+<h2 id="how-to-control-what-people-can-see">How to control what people can see</h2>
+<p><strong>Visibility groups</strong> decide which records a group of users can see.</p>
+<p><img src="/docs/images/visibility-groups.png" alt="Visibility groups" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Visibility groups</strong>.</li>
+<li>Type a name under <strong>Create a visibility group</strong> and select <strong>Create</strong>.</li>
+<li>Open the group to add members and choose what they can see.</li>
+</ol>
+<h2 id="how-to-organise-users-into-teams">How to organise users into teams</h2>
+<p><img src="/docs/images/teams.png" alt="Teams" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Teams</strong>.</li>
+<li>Under <strong>Create a team</strong>, enter the <strong>Team name</strong>, choose a <strong>Manager</strong>, and add <strong>Members</strong>.</li>
+<li>Select <strong>Create</strong>.</li>
+</ol>
+<p><strong>Result:</strong> teams can be used for goals, reports and filters.</p>
+<h2 id="how-to-set-company-wide-options">How to set company-wide options</h2>
+<p><img src="/docs/images/company-settings.png" alt="Company settings" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Company settings</strong>.</li>
+<li>On <strong>General</strong>, set the <strong>Company name</strong> and the <strong>Base currency</strong> every total is converted into.</li>
+<li>Use the tabs to manage <strong>Activities</strong> (activity types), <strong>Lost reasons</strong>, <strong>Labels</strong> and <strong>Pipelines</strong>.</li>
+</ol>
+<h2 id="how-to-set-exchange-rates">How to set exchange rates</h2>
+<p><img src="/docs/images/currencies.png" alt="Currencies" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Currencies</strong>.</li>
+<li>Under <strong>Exchange rates</strong>, choose a <strong>Currency</strong>, enter the <strong>Rate</strong> (how many units of your base currency one unit is worth, for example 1 EUR = 1.08 GBP) and select <strong>Save</strong>.</li>
+</ol>
+<p><strong>Tip:</strong> rates are not updated automatically. Review them when they move.</p>
+<h2 id="how-to-add-custom-fields">How to add custom fields</h2>
+<p><img src="/docs/images/data-fields.png" alt="Data fields" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Data fields</strong> and choose the <strong>Entity</strong>: deals, people, organizations or activities.</li>
+<li>Under <strong>Custom fields</strong>, add a field and choose its type (for example a single option list such as Industry).</li>
+<li>Choose whether it is <strong>Important</strong>, shown in add forms, or required.</li>
+<li>To hide a built-in field you do not use, turn it off under <strong>Built-in fields</strong>.</li>
+</ol>
+<h2 id="how-to-automate-routine-work">How to automate routine work</h2>
+<p>You need permission to manage automations. Automations run as the user who created them.</p>
+<p><img src="/docs/images/automations.png" alt="Automations" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Automations</strong>.</li>
+<li>Select <strong>New automation</strong>, <strong>Start from a template</strong>, or <strong>Describe it</strong> to type what you want in a sentence and select <strong>Draft it</strong>.</li>
+<li>Set <strong>When</strong> (the trigger, for example &quot;a deal is won&quot;), <strong>Only if</strong> (optional conditions) and <strong>Then</strong> (up to 10 actions in order).</li>
+<li>Turn on <strong>Enabled</strong> and save.</li>
+</ol>
+<p><img src="/docs/images/automation-editor.png" alt="Editing an automation" width="1440" height="900" loading="lazy"></p>
+<p><strong>Actions available:</strong> update the deal, create an activity, add a note, notify a user, send a saved email template, and the AI steps: summarise the deal, score the deal and draft an email. Text fields can use variables such as <code>{{deal.title}}</code> and <code>{{person.first_name}}</code>.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>The <strong>Run log</strong> tab shows every run and why any run failed or was skipped.</li>
+<li>Dealflow stops automations from triggering each other in an endless loop.</li>
+</ul>
+<h2 id="how-to-send-events-to-another-system-webhooks">How to send events to another system (webhooks)</h2>
+<p><img src="/docs/images/webhooks.png" alt="Webhooks" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Webhooks</strong> and select <strong>New webhook</strong>.</li>
+<li>Enter a <strong>Name</strong> and the <strong>URL</strong> to send to, and tick the <strong>Events</strong> you want (for example <code>deal.won</code>, <code>person.created</code>, <code>invoice.paid</code>, <code>form.submitted</code>).</li>
+<li>Select <strong>Create</strong>.</li>
+</ol>
+<p><strong>Result:</strong> each event is sent as a signed request to that URL. Failed deliveries are retried several times over a few hours. After ten deliveries in a row fail, the webhook is disabled and you are told. Use the webhook&#39;s <strong>Delivery log</strong> to see what was sent.</p>
+<h2 id="how-to-give-another-tool-api-access">How to give another tool API access</h2>
+<p><img src="/docs/images/api-tokens.png" alt="API tokens" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › API</strong> (each user can do this for themselves).</li>
+<li>Enter a <strong>Name</strong>, choose the <strong>Scope</strong> (read only, or <strong>Read and write</strong>) and select <strong>Create token</strong>.</li>
+<li>Copy the token now. It is shown once.</li>
+</ol>
+<p><strong>Result:</strong> the token works with the Dealflow REST API and sees exactly what you can see. The <strong>Documentation</strong> tab describes every endpoint. <strong>Revoke</strong> a token to stop it working.</p>
+<p><img src="/docs/images/connected-apps.png" alt="Connected apps" width="1440" height="900" loading="lazy"></p>
+<p><strong>Connected apps:</strong> AI tools that connect to Dealflow (through its MCP server) appear in <strong>Settings › Connected apps</strong>, where you can revoke them.</p>
+<h2 id="how-to-manage-ai">How to manage AI</h2>
+<p><img src="/docs/images/ai-settings.png" alt="AI settings" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › AI</strong>.</li>
+<li>See which AI provider and model are in use, and how many tokens have been used this month, by feature and by user.</li>
+<li>Turn AI on or off for the company, and set the <strong>Company monthly token limit</strong> and an optional <strong>Per-user monthly token limit</strong>.</li>
+<li>Select <strong>Save AI settings</strong>.</li>
+</ol>
+<p><strong>Result:</strong> when a limit is reached, AI features stop until the next month and users see a message saying so.</p>
+<h2 id="how-to-restore-something-deleted">How to restore something deleted</h2>
+<p><img src="/docs/images/recycle-bin.png" alt="The recycle bin" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Recycle bin</strong>.</li>
+<li>Find the item (filter by type or search) and select <strong>Restore</strong>.</li>
+</ol>
+<p><strong>Result:</strong> the record is back where it was. Items are permanently deleted after 30 days; <strong>Days left</strong> shows how long each one has.</p>
+<h2 id="how-to-review-security-changes">How to review security changes</h2>
+<p><img src="/docs/images/audit-log.png" alt="The audit log" width="1440" height="900" loading="lazy"></p>
+<p>Go to <strong>Settings › Audit log</strong> to see who changed permission sets, groups, users, pipeline access and settings, and when. Filter by person, action and date. Secret values are never shown.</p>
+<h2 id="how-to-check-backups">How to check backups</h2>
+<p><img src="/docs/images/backups.png" alt="Backups" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Go to <strong>Settings › Backups</strong>.</li>
+<li>Check the status, the folder, how many days are kept and the next run time (daily at 02:00 UTC by default).</li>
+<li>Select <strong>Back up now</strong> for an extra backup, for example before a big import.</li>
+</ol>
+<p><strong>Restoring</strong> is done on the server, never from the browser. The page lists the exact commands; see also <a href="/docs/self-hosting#backups-and-restore">Self-hosting</a>.</p>
+<h2 id="other-settings">Other settings</h2>
+<ul>
+<li><strong>Import data:</strong> see <a href="/docs/contacts-and-organizations#how-to-import-contacts-from-a-csv-file">Contacts and organizations</a>.</li>
+<li><strong>Products</strong> and <strong>Documents:</strong> see <a href="/docs/quotes-and-invoices">Quotes and invoices</a>.</li>
+<li><strong>Forms</strong> and <strong>Booking pages:</strong> see <a href="/docs/forms-and-booking">Forms and booking pages</a>.</li>
+<li><strong>Goals:</strong> see <a href="/docs/stats-and-reporting#how-to-set-a-goal">Stats and reporting</a>.</li>
+<li><strong>Enrichment (optional):</strong> connect Apollo, RocketReach or GetProspect with your own API key in <strong>Settings › Enrichment</strong> to let users fill in missing contact details. Each provider stays off until you add its key.</li>
+</ul>
+<p><a class="pdf-link" href="/docs/pdf/12-admin.pdf">Download this section as a PDF</a></p><nav class="pager" aria-label="Previous and next"><a href="/docs/ai-features">← AI features</a><a href="/docs/self-hosting">Self-hosting and install →</a></nav></article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/assets/dealflow-logo-reverse.svg" alt="Dealflow" width="144" height="30">
+        <p>The business development CRM you run on your own server.</p>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/features#pipeline">Pipeline and deals</a></li>
+            <li><a href="/features#email">Email</a></li>
+            <li><a href="/features#activities">Activities</a></li>
+            <li><a href="/features#documents">Quotes and invoices</a></li>
+            <li><a href="/features#reporting">Reports and forecast</a></li>
+            <li><a href="/features#ai">AI features</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>More features</h2>
+          <ul>
+            <li><a href="/features#automations">Automations</a></li>
+            <li><a href="/features#forms">Forms and booking</a></li>
+            <li><a href="/features#projects">Projects</a></li>
+            <li><a href="/features#contacts">Contacts</a></li>
+            <li><a href="/features#admin">Admin and security</a></li>
+            <li><a href="/features#mobile">Mobile and offline</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Self-hosting</h2>
+          <ul>
+            <li><a href="/get-started#requirements">Requirements</a></li>
+            <li><a href="/get-started#install">Install</a></li>
+            <li><a href="/get-started#proxy">Reverse proxy</a></li>
+            <li><a href="/get-started#backups">Backups</a></li>
+            <li><a href="/docs/self-hosting">Operator guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs">User guide</a></li>
+            <li><a href="/docs/getting-started">Getting started</a></li>
+            <li><a href="/docs/admin">Admin guide</a></li>
+            <li><a href="/docs/troubleshooting-faq">Troubleshooting</a></li>
+            <li><a href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>About</h2>
+          <ul>
+            <li><a href="/about">About Dealflow</a></li>
+            <li><a href="/about#faq">FAQ</a></li>
+            <li><a href="/about#licence">Licence</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Dealflow. Released under the MIT licence.</p>
+      <p><a href="/about#privacy">This site uses no cookies and no tracking.</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

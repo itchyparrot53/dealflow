@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipelines and deals: Dealflow User Guide</title>
+<meta name="description" content="A pipeline is the path your deals follow, split into stages. The board shows one column per stage, with the total value, number of deals and weighted value">
+<link rel="canonical" href="https://dealflow.umev.co.uk/docs/pipelines-and-deals">
+<meta name="theme-color" content="#211C52">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dealflow">
+<meta property="og:title" content="Pipelines and deals: Dealflow User Guide">
+<meta property="og:description" content="A pipeline is the path your deals follow, split into stages. The board shows one column per stage, with the total value, number of deals and weighted value">
+<meta property="og:url" content="https://dealflow.umev.co.uk/docs/pipelines-and-deals">
+<meta property="og:image" content="https://dealflow.umev.co.uk/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pipelines and deals: Dealflow User Guide">
+<meta name="twitter:description" content="A pipeline is the path your deals follow, split into stages. The board shows one column per stage, with the total value, number of deals and weighted value">
+<meta name="twitter:image" content="https://dealflow.umev.co.uk/assets/x-card.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/" aria-label="Dealflow home"><img src="/assets/dealflow-logo.svg" alt="Dealflow" width="144" height="30"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr">Menu</span><span class="bars" aria-hidden="true"></span></button>
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/features">Features</a></li>
+        <li><a href="/get-started">Self-hosting</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/about">About &amp; FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/docs">Read the guide</a>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap docs-layout"><nav class="docs-side" aria-label="User guide"><h2>User guide</h2><ul><li><a href="/docs">Overview</a></li><li><a href="/docs/getting-started">Getting started</a></li><li><a href="/docs/pipelines-and-deals" aria-current="page">Pipelines and deals</a></li><li><a href="/docs/activities">Activities and calendar</a></li><li><a href="/docs/contacts-and-organizations">Contacts and organizations</a></li><li><a href="/docs/email">Email</a></li><li><a href="/docs/notifications">Notifications</a></li><li><a href="/docs/stats-and-reporting">Stats and reporting</a></li><li><a href="/docs/quotes-and-invoices">Quotes and invoices</a></li><li><a href="/docs/projects">Projects</a></li><li><a href="/docs/forms-and-booking">Forms and booking pages</a></li><li><a href="/docs/ai-features">AI features</a></li><li><a href="/docs/admin">Admin</a></li><li><a href="/docs/self-hosting">Self-hosting and install</a></li><li><a href="/docs/troubleshooting-faq">Troubleshooting and FAQ</a></li></ul><h2>On this page</h2><ul><li><a href="#how-to-read-the-board">How to read the board</a></li><li><a href="#how-to-add-a-deal">How to add a deal</a></li><li><a href="#how-to-move-a-deal-to-another-stage">How to move a deal to another stage</a></li><li><a href="#how-to-open-a-deal">How to open a deal</a></li><li><a href="#how-to-mark-a-deal-as-won-or-lost">How to mark a deal as won or lost</a></li><li><a href="#how-to-add-products-to-a-deal">How to add products to a deal</a></li><li><a href="#how-to-filter-and-sort-the-board">How to filter and sort the board</a></li><li><a href="#how-to-use-the-list-view">How to use the list view</a></li><li><a href="#how-to-see-archived-deals">How to see archived deals</a></li><li><a href="#how-to-see-the-forecast">How to see the forecast</a></li><li><a href="#how-to-edit-a-pipelines-stages">How to edit a pipeline&#39;s stages</a></li><li><a href="#leads">Leads</a></li></ul><h2>Download</h2><ul><li><a class="pdf-link" href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide</a></li></ul></nav><article class="prose"><h1 id="pipelines-and-deals">Pipelines and deals</h1>
+<p>A <strong>pipeline</strong> is the path your deals follow, split into <strong>stages</strong>. The <strong>board</strong> shows one column per stage, with the total value, number of deals and weighted value at the top of each column.</p>
+<p><img src="/docs/images/board.png" alt="The pipeline board" width="1440" height="900" loading="lazy"></p>
+<h2 id="how-to-read-the-board">How to read the board</h2>
+<ul>
+<li>Each card shows the deal title, the organization and person, the value, and a coloured dot for the next activity: green when something is scheduled, grey when nothing is, red when it is overdue.</li>
+<li>A number like <strong>40d</strong> on a card means the deal is <strong>rotting</strong>: it has been in the stage longer than the stage allows.</li>
+<li>The toolbar switches between <strong>Board view</strong>, <strong>List view</strong>, the forecast and <strong>Archived deals</strong>, and holds <strong>+ Deal</strong>, the pipeline picker, <strong>Filter</strong>, the owner picker (<strong>Everyone</strong> or one person) and <strong>Sort by</strong>.</li>
+</ul>
+<h2 id="how-to-add-a-deal">How to add a deal</h2>
+<ol>
+<li>On the board, select <strong>+ Deal</strong> (or press <code>n</code> then <code>d</code>).</li>
+<li>Fill in <strong>Title</strong>, <strong>Value</strong> and currency, <strong>Pipeline</strong> and <strong>Pipeline stage</strong>. Add a <strong>Contact person</strong> or <strong>Organization</strong> if you have them.</li>
+<li>Optionally set <strong>Labels</strong>, <strong>Expected close date</strong>, <strong>Owner</strong> and any company-specific fields.</li>
+<li>Select <strong>Save</strong>.</li>
+</ol>
+<p><strong>Result:</strong> the new card appears at the bottom of its stage column.</p>
+<p><strong>Tip:</strong> fields marked with an asterisk are required by your company. Admins choose these in <strong>Settings › Data fields</strong>.</p>
+<h2 id="how-to-move-a-deal-to-another-stage">How to move a deal to another stage</h2>
+<ol>
+<li>On the board, drag the card to another column.</li>
+<li>Let go.</li>
+</ol>
+<p><strong>Result:</strong> the card moves, the column totals update, and a message says &quot;Moved to {stage}&quot; with an <strong>Undo</strong> button.</p>
+<h2 id="how-to-open-a-deal">How to open a deal</h2>
+<p>Select a card on the board, or a title in the list view.</p>
+<p><img src="/docs/images/deal.png" alt="The deal workspace" width="1440" height="900" loading="lazy"></p>
+<p>The deal workspace has:</p>
+<ul>
+<li><strong>The header:</strong> title, owner, followers, <strong>Won</strong> and <strong>Lost</strong> buttons, and the stage track showing how long the deal has spent in each stage.</li>
+<li><strong>The left column:</strong> <strong>AI insights</strong>, <strong>Summary</strong> (value, organization, person, participants, labels, expected close date), <strong>Source</strong>, <strong>Person</strong>, <strong>Products</strong>, <strong>Documents</strong>, <strong>Projects</strong> and any custom fields.</li>
+<li><strong>The right column:</strong> tabs to add an <strong>Activity</strong>, <strong>Notes</strong>, <strong>Email</strong> or <strong>Files</strong>, the <strong>Focus</strong> list of what needs attention, and <strong>History</strong> (with All, Activities, Notes, Email, Files and Changelog).</li>
+</ul>
+<h2 id="how-to-mark-a-deal-as-won-or-lost">How to mark a deal as won or lost</h2>
+<ol>
+<li>Open the deal.</li>
+<li>Select <strong>Won</strong>, or select <strong>Lost</strong>.</li>
+<li>For a lost deal, choose a <strong>Lost reason</strong>, add optional <strong>Comments</strong>, and select <strong>Mark as lost</strong>.</li>
+</ol>
+<p><img src="/docs/images/deal-won-lost.png" alt="Marking a deal as lost" width="1440" height="900" loading="lazy"></p>
+<p><strong>Result:</strong> the deal leaves the board and shows <strong>Won</strong> or <strong>Lost</strong> in its header.</p>
+<p><strong>Tips:</strong></p>
+<ul>
+<li>To bring a deal back, open it and select <strong>Reopen</strong>.</li>
+<li>Admins edit the list of lost reasons in <strong>Settings › Company settings › Lost reasons</strong>.</li>
+<li>When you are on a deal, the command palette also offers <strong>Mark won</strong> and <strong>Mark lost</strong>.</li>
+</ul>
+<h2 id="how-to-add-products-to-a-deal">How to add products to a deal</h2>
+<p>Products come from your company&#39;s catalogue (see <a href="/docs/quotes-and-invoices">Quotes and invoices</a>).</p>
+<p><img src="/docs/images/deal-products.png" alt="Products on a deal" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Open the deal and find the <strong>Products</strong> section.</li>
+<li>Select <strong>Add product</strong> and choose a product.</li>
+<li>Change <strong>Qty</strong>, <strong>Price</strong> or <strong>Disc %</strong> if needed.</li>
+</ol>
+<p><strong>Result:</strong> the deal value becomes &quot;Calculated from products&quot;, and the section shows the net, tax and gross totals.</p>
+<p><strong>Tip:</strong> a deal has one currency. Values in other currencies are converted to your company&#39;s base currency in totals, using the rates in <strong>Settings › Currencies</strong>.</p>
+<h2 id="how-to-filter-and-sort-the-board">How to filter and sort the board</h2>
+<p><img src="/docs/images/pipeline-filter.png" alt="The filter menu" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Select <strong>Filter</strong>.</li>
+<li>Choose a saved filter such as <strong>All open deals</strong>, <strong>My open deals</strong> or <strong>Rotting deals</strong>, or select <strong>Create new filter</strong> to build your own.</li>
+<li>Use the owner picker to see <strong>Everyone</strong> or one person, and <strong>Sort by</strong> to order the cards (for example by next activity or deal value).</li>
+</ol>
+<p><strong>Tip:</strong> <strong>Pin filters</strong> keeps your favourite filters visible above the board.</p>
+<h2 id="how-to-use-the-list-view">How to use the list view</h2>
+<p><img src="/docs/images/pipeline-list.png" alt="The deals list" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Select <strong>List view</strong> in the toolbar.</li>
+<li>Sort by any column header. Select a title to open the deal.</li>
+<li>Select <strong>Export CSV</strong> to download the list (if your permissions allow exports).</li>
+</ol>
+<h2 id="how-to-see-archived-deals">How to see archived deals</h2>
+<p>Select the archive icon in the toolbar. Archiving takes a deal off the board without deleting it; you can restore it from this list.</p>
+<h2 id="how-to-see-the-forecast">How to see the forecast</h2>
+<p><img src="/docs/images/forecast.png" alt="The forecast" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>Select <strong>Forecast</strong> in the left rail.</li>
+<li>Choose the pipeline, how many months to show, and whether to <strong>Include won</strong> deals.</li>
+</ol>
+<p><strong>Result:</strong> one column per month, showing each open deal by expected close date with its value and probability, plus the month&#39;s <strong>Total</strong>, <strong>Weighted</strong> and <strong>Won</strong> amounts. Deals without an expected close date are listed underneath.</p>
+<h2 id="how-to-edit-a-pipelines-stages">How to edit a pipeline&#39;s stages</h2>
+<p>You need permission to manage pipelines.</p>
+<p><img src="/docs/images/pipeline-edit.png" alt="Editing a pipeline" width="1440" height="900" loading="lazy"></p>
+<ol>
+<li>On the board, select the pencil icon next to the pipeline name (or go to <strong>Settings › Company settings › Pipelines</strong>).</li>
+<li>Rename stages, change each stage&#39;s <strong>Probability %</strong>, and turn on <strong>Rotting in (days)</strong> to flag deals that sit too long.</li>
+<li>Select <strong>Save changes</strong>.</li>
+</ol>
+<h2 id="leads">Leads</h2>
+<p>Leads are enquiries you have not qualified yet, for example from a web form.</p>
+<p><img src="/docs/images/leads.png" alt="The leads list" width="1440" height="900" loading="lazy"></p>
+<h3 id="how-to-work-through-your-leads">How to work through your leads</h3>
+<ol>
+<li>Select <strong>Leads</strong> in the left rail.</li>
+<li>Use <strong>Saved views</strong>, <strong>Filter</strong>, the label and owner pickers, or <strong>Describe a filter</strong> (see <a href="/docs/ai-features">AI features</a>) to narrow the list.</li>
+<li>Select a lead to open it.</li>
+</ol>
+<p><img src="/docs/images/lead.png" alt="A lead" width="1440" height="900" loading="lazy"></p>
+<h3 id="how-to-convert-a-lead-into-a-deal">How to convert a lead into a deal</h3>
+<ol>
+<li>Open the lead.</li>
+<li>Select <strong>Convert to deal</strong>.</li>
+</ol>
+<p><strong>Result:</strong> a deal is created with the lead&#39;s details and the lead is marked as converted.</p>
+<p><strong>Tip:</strong> select <strong>Archive</strong> instead to clear a lead you will not pursue.</p>
+<p><a class="pdf-link" href="/docs/pdf/02-pipelines-and-deals.pdf">Download this section as a PDF</a></p><nav class="pager" aria-label="Previous and next"><a href="/docs/getting-started">← Getting started</a><a href="/docs/activities">Activities and calendar →</a></nav></article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/assets/dealflow-logo-reverse.svg" alt="Dealflow" width="144" height="30">
+        <p>The business development CRM you run on your own server.</p>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/features#pipeline">Pipeline and deals</a></li>
+            <li><a href="/features#email">Email</a></li>
+            <li><a href="/features#activities">Activities</a></li>
+            <li><a href="/features#documents">Quotes and invoices</a></li>
+            <li><a href="/features#reporting">Reports and forecast</a></li>
+            <li><a href="/features#ai">AI features</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>More features</h2>
+          <ul>
+            <li><a href="/features#automations">Automations</a></li>
+            <li><a href="/features#forms">Forms and booking</a></li>
+            <li><a href="/features#projects">Projects</a></li>
+            <li><a href="/features#contacts">Contacts</a></li>
+            <li><a href="/features#admin">Admin and security</a></li>
+            <li><a href="/features#mobile">Mobile and offline</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Self-hosting</h2>
+          <ul>
+            <li><a href="/get-started#requirements">Requirements</a></li>
+            <li><a href="/get-started#install">Install</a></li>
+            <li><a href="/get-started#proxy">Reverse proxy</a></li>
+            <li><a href="/get-started#backups">Backups</a></li>
+            <li><a href="/docs/self-hosting">Operator guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs">User guide</a></li>
+            <li><a href="/docs/getting-started">Getting started</a></li>
+            <li><a href="/docs/admin">Admin guide</a></li>
+            <li><a href="/docs/troubleshooting-faq">Troubleshooting</a></li>
+            <li><a href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>About</h2>
+          <ul>
+            <li><a href="/about">About Dealflow</a></li>
+            <li><a href="/about#faq">FAQ</a></li>
+            <li><a href="/about#licence">Licence</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Dealflow. Released under the MIT licence.</p>
+      <p><a href="/about#privacy">This site uses no cookies and no tracking.</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-hosting and install: Dealflow User Guide</title>
+<meta name="description" content="This page is for the person who runs the Dealflow server. Dealflow is self-hosted and single-company: one install serves one company, and your data stays o">
+<link rel="canonical" href="https://dealflow.umev.co.uk/docs/self-hosting">
+<meta name="theme-color" content="#211C52">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dealflow">
+<meta property="og:title" content="Self-hosting and install: Dealflow User Guide">
+<meta property="og:description" content="This page is for the person who runs the Dealflow server. Dealflow is self-hosted and single-company: one install serves one company, and your data stays o">
+<meta property="og:url" content="https://dealflow.umev.co.uk/docs/self-hosting">
+<meta property="og:image" content="https://dealflow.umev.co.uk/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Self-hosting and install: Dealflow User Guide">
+<meta name="twitter:description" content="This page is for the person who runs the Dealflow server. Dealflow is self-hosted and single-company: one install serves one company, and your data stays o">
+<meta name="twitter:image" content="https://dealflow.umev.co.uk/assets/x-card.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/" aria-label="Dealflow home"><img src="/assets/dealflow-logo.svg" alt="Dealflow" width="144" height="30"></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr">Menu</span><span class="bars" aria-hidden="true"></span></button>
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/features">Features</a></li>
+        <li><a href="/get-started">Self-hosting</a></li>
+        <li><a href="/docs" aria-current="page">Docs</a></li>
+        <li><a href="/about">About &amp; FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/docs">Read the guide</a>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap docs-layout"><nav class="docs-side" aria-label="User guide"><h2>User guide</h2><ul><li><a href="/docs">Overview</a></li><li><a href="/docs/getting-started">Getting started</a></li><li><a href="/docs/pipelines-and-deals">Pipelines and deals</a></li><li><a href="/docs/activities">Activities and calendar</a></li><li><a href="/docs/contacts-and-organizations">Contacts and organizations</a></li><li><a href="/docs/email">Email</a></li><li><a href="/docs/notifications">Notifications</a></li><li><a href="/docs/stats-and-reporting">Stats and reporting</a></li><li><a href="/docs/quotes-and-invoices">Quotes and invoices</a></li><li><a href="/docs/projects">Projects</a></li><li><a href="/docs/forms-and-booking">Forms and booking pages</a></li><li><a href="/docs/ai-features">AI features</a></li><li><a href="/docs/admin">Admin</a></li><li><a href="/docs/self-hosting" aria-current="page">Self-hosting and install</a></li><li><a href="/docs/troubleshooting-faq">Troubleshooting and FAQ</a></li></ul><h2>On this page</h2><ul><li><a href="#what-you-need">What you need</a></li><li><a href="#what-runs">What runs</a></li><li><a href="#how-to-install">How to install</a></li><li><a href="#reverse-proxy-routes">Reverse proxy routes</a></li><li><a href="#how-to-sign-in-the-first-time">How to sign in the first time</a></li><li><a href="#how-to-update">How to update</a></li><li><a href="#backups-and-restore">Backups and restore</a></li><li><a href="#logs">Logs</a></li><li><a href="#privacy-defaults">Privacy defaults</a></li></ul><h2>Download</h2><ul><li><a class="pdf-link" href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide</a></li></ul></nav><article class="prose"><h1 id="self-hosting-and-install">Self-hosting and install</h1>
+<p>This page is for the person who runs the Dealflow server. Dealflow is self-hosted and single-company: one install serves one company, and your data stays on your own machine.</p>
+<p>The full technical references are <code>docs/deploy.md</code> and <code>docs/reverse-proxy.md</code> in the repository. This page is the short version.</p>
+<h2 id="what-you-need">What you need</h2>
+<ul>
+<li>A Linux server with Docker and the Docker Compose plugin.</li>
+<li>A domain for the app (for example <code>crm.example.com</code>) and a second one for file storage (for example <code>s3.crm.example.com</code>), both pointing at the server.</li>
+<li>A reverse proxy that handles HTTPS (for example Caddy or nginx). Dealflow does not include one.</li>
+<li>An SMTP account for the emails Dealflow sends (sign-in links, invites, notifications, quotes).</li>
+<li>Optionally, an OpenRouter API key for the AI features.</li>
+</ul>
+<h2 id="what-runs">What runs</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>app</code></td>
+<td>The Dealflow web app</td>
+</tr>
+<tr>
+<td><code>ws</code></td>
+<td>Live updates in the browser</td>
+</tr>
+<tr>
+<td><code>worker</code></td>
+<td>Background jobs: mail sync, scheduled email, automations, reminders, backups</td>
+</tr>
+<tr>
+<td><code>postgres</code></td>
+<td>The database</td>
+</tr>
+<tr>
+<td><code>minio</code></td>
+<td>File storage (attachments, imports, photos)</td>
+</tr>
+<tr>
+<td><code>migrate</code></td>
+<td>Runs once on each start to update the database</td>
+</tr>
+</tbody></table></div>
+<h2 id="how-to-install">How to install</h2>
+<ol>
+<li><p>Get the code onto the server and copy the example settings:</p>
+<pre tabindex="0"><code class="language-sh">cp .env.example .env
+</code></pre>
+</li>
+<li><p>Fill in <code>.env</code>. The values that matter most:</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What to put</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BASE_URL</code></td>
+<td>Your app address, for example <code>https://crm.example.com</code></td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_WS_URL</code></td>
+<td><code>wss://crm.example.com/_ws</code></td>
+</tr>
+<tr>
+<td><code>MINIO_ENDPOINT</code></td>
+<td>Your storage address, for example <code>https://s3.crm.example.com</code></td>
+</tr>
+<tr>
+<td><code>SEED_ADMIN_EMAIL</code></td>
+<td>The email of the first admin</td>
+</tr>
+<tr>
+<td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_SECURE</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code></td>
+<td>Your outgoing mail account</td>
+</tr>
+<tr>
+<td><code>OPENROUTER_API_KEY</code>, <code>OPENROUTER_MODEL</code></td>
+<td>Your AI key and model (leave the key empty to run without AI)</td>
+</tr>
+<tr>
+<td><code>BASE_CURRENCY</code></td>
+<td>Your company currency, for example <code>GBP</code></td>
+</tr>
+</tbody></table></div>
+</li>
+<li><p>Generate the secrets:</p>
+<pre tabindex="0"><code class="language-sh">openssl rand -base64 32   # TOKEN_ENCRYPTION_KEY
+openssl rand -hex 32      # WS_TICKET_SECRET
+openssl rand -hex 16      # MINIO_ACCESS_KEY and MINIO_SECRET_KEY
+</code></pre>
+</li>
+<li><p>Start everything:</p>
+<pre tabindex="0"><code class="language-sh">docker compose up -d --build
+</code></pre>
+</li>
+<li><p>Point your reverse proxy at the three routes below, then check the app is healthy:</p>
+<pre tabindex="0"><code class="language-sh">curl -fsS https://crm.example.com/api/health
+</code></pre>
+<p><strong>Result:</strong> <code>{&quot;ok&quot;:true}</code>.</p>
+</li>
+</ol>
+<h2 id="reverse-proxy-routes">Reverse proxy routes</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Public address</th>
+<th>Send to</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>https://crm.example.com</code></td>
+<td><code>127.0.0.1:3000</code></td>
+<td>The app, including <code>/api/*</code></td>
+</tr>
+<tr>
+<td><code>https://crm.example.com/_ws</code></td>
+<td><code>127.0.0.1:8080</code></td>
+<td>Live updates (WebSocket). Forward the path and query unchanged.</td>
+</tr>
+<tr>
+<td><code>https://s3.crm.example.com</code></td>
+<td><code>127.0.0.1:9000</code></td>
+<td>File uploads and downloads. Must match <code>MINIO_ENDPOINT</code> exactly.</td>
+</tr>
+</tbody></table></div>
+<p>Keep the app, ws and storage ports bound to <code>127.0.0.1</code> so only your proxy can reach them. A working Caddy example is in <code>docs/reverse-proxy.md</code>.</p>
+<h2 id="how-to-sign-in-the-first-time">How to sign in the first time</h2>
+<ol>
+<li>Go to your app address, choose <strong>Email link</strong>, and enter the <code>SEED_ADMIN_EMAIL</code> address.</li>
+<li>Open the link in the email and set a password.</li>
+</ol>
+<p>If email is not working yet, create a one-time admin link on the server instead:</p>
+<pre tabindex="0"><code class="language-sh">docker compose exec app node dist/bootstrap-link.mjs
+</code></pre>
+<p>Then invite everyone else from <strong>Settings › Users</strong> (see <a href="/docs/admin">Admin</a>).</p>
+<h2 id="how-to-update">How to update</h2>
+<pre tabindex="0"><code class="language-sh">git pull
+docker compose up -d --build
+</code></pre>
+<p>Database changes are applied automatically before the app restarts.</p>
+<h2 id="backups-and-restore">Backups and restore</h2>
+<p>Dealflow makes a daily backup of the database and a copy of stored files, kept for a set number of days. Settings: <code>BACKUP_ENABLED</code>, <code>BACKUP_DIR</code> and <code>BACKUP_KEEP</code>. Admins can see the status and run an extra backup in <strong>Settings › Backups</strong>.</p>
+<p>To restore, on the server, with the app stopped:</p>
+<pre tabindex="0"><code class="language-sh">docker compose stop app worker ws
+docker compose run --rm -v ./backups:/restore worker \
+  node dist/backup-restore.mjs /restore/{backup file name}.tar.gz --files --yes
+docker compose start app worker ws
+</code></pre>
+<p>Without <code>--files</code> only the database is restored. Copy the backup folder somewhere off the server too, so a disk failure cannot take both.</p>
+<h2 id="logs">Logs</h2>
+<pre tabindex="0"><code class="language-sh">docker compose logs -f app      # or ws, worker
+</code></pre>
+<h2 id="privacy-defaults">Privacy defaults</h2>
+<p>Usage telemetry and the update check are off by default (<code>DISABLE_TELEMETRY=true</code>, <code>DISABLE_UPDATE_CHECK=true</code>). Nothing is sent anywhere unless you turn it on, apart from the services you configure: your mail server, your AI provider, and any enrichment provider an admin enables.</p>
+<p><a class="pdf-link" href="/docs/pdf/13-self-hosting.pdf">Download this section as a PDF</a></p><nav class="pager" aria-label="Previous and next"><a href="/docs/admin">← Admin</a><a href="/docs/troubleshooting-faq">Troubleshooting and FAQ →</a></nav></article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/assets/dealflow-logo-reverse.svg" alt="Dealflow" width="144" height="30">
+        <p>The business development CRM you run on your own server.</p>
+        <a class="btn btn-primary" href="/get-started">Get started</a>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/features#pipeline">Pipeline and deals</a></li>
+            <li><a href="/features#email">Email</a></li>
+            <li><a href="/features#activities">Activities</a></li>
+            <li><a href="/features#documents">Quotes and invoices</a></li>
+            <li><a href="/features#reporting">Reports and forecast</a></li>
+            <li><a href="/features#ai">AI features</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>More features</h2>
+          <ul>
+            <li><a href="/features#automations">Automations</a></li>
+            <li><a href="/features#forms">Forms and booking</a></li>
+            <li><a href="/features#projects">Projects</a></li>
+            <li><a href="/features#contacts">Contacts</a></li>
+            <li><a href="/features#admin">Admin and security</a></li>
+            <li><a href="/features#mobile">Mobile and offline</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Self-hosting</h2>
+          <ul>
+            <li><a href="/get-started#requirements">Requirements</a></li>
+            <li><a href="/get-started#install">Install</a></li>
+            <li><a href="/get-started#proxy">Reverse proxy</a></li>
+            <li><a href="/get-started#backups">Backups</a></li>
+            <li><a href="/docs/self-hosting">Operator guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs">User guide</a></li>
+            <li><a href="/docs/getting-started">Getting started</a></li>
+            <li><a href="/docs/admin">Admin guide</a></li>
+            <li><a href="/docs/troubleshooting-faq">Troubleshooting</a></li>
+            <li><a href="/docs/pdf/Dealflow%20User%20Guide.pdf">Full guide (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>About</h2>
+          <ul>
+            <li><a href="/about">About Dealflow</a></li>
+            <li><a href="/about#faq">FAQ</a></li>
+            <li><a href="/about#licence">Licence</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Dealflow. Released under the MIT licence.</p>
+      <p><a href="/about#privacy">This site uses no cookies and no tracking.</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>
