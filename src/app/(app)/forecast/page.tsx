@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { ForecastBoard } from "@/features/forecast/ui/ForecastBoard";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -16,7 +17,7 @@ export default async function ForecastPage(): Promise<React.ReactNode> {
 
   return (
     <main aria-label="Forecast" className="flex h-full flex-col p-4">
-      <h1 className="mb-4 text-title">Forecast</h1>
+      <PageTitle title="Forecast" />
       <ForecastBoard
         pipelines={pipelines.map((pipeline) => ({ id: pipeline.id, name: pipeline.name }))}
       />

@@ -67,11 +67,14 @@ describe("ActivityChip", () => {
     expect(screen.queryByRole("link")).toBeNull();
   });
 
-  it("tones the neutral chip with theme tokens and pairs the overdue red for Night", () => {
+  it("tones the neutral chip with the info surface and the overdue chip with the red tokens", () => {
     const { container, rerender } = render(<ActivityChip a={activity} />);
     const chip = container.querySelector("[data-type]");
-    expect(chip).toHaveClass("bg-muted", "text-foreground");
+    expect(chip).toHaveClass("bg-info-soft", "text-foreground");
+    // 6.8.6: a 3 px type-coloured bar on every chip.
+    expect(chip?.className).toContain("border-l-[3px]");
     rerender(<ActivityChip a={{ ...activity, overdue: true }} />);
-    expect(container.querySelector("[data-type]")).toHaveClass("dark:bg-red-950");
+    expect(container.querySelector("[data-type]")).toHaveClass("bg-destructive/10");
+    expect(container.querySelector("[data-type]")?.className).toContain("border-l-next-red");
   });
 });

@@ -27,7 +27,7 @@ function amount(value: string | null, currency: string): string {
 }
 
 export function ForecastCard({ deal, baseCurrency, won = false }: Props): React.ReactNode {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const { listeners, setNodeRef, isDragging } = useDraggable({
     id: deal.id,
     disabled: won,
   });
@@ -39,14 +39,15 @@ export function ForecastCard({ deal, baseCurrency, won = false }: Props): React.
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
+      // Listeners only: the dnd attributes add role=button/tabindex, which would nest an
+      // interactive wrapper around the card's link (axe nested-interactive).
       {...listeners}
       data-testid="forecast-card"
       data-deal-id={deal.id}
       style={{ opacity: isDragging ? 0.4 : undefined }}
       className={[
-        "rounded-md border bg-card p-2 text-sm shadow-sm",
-        won ? "opacity-70" : "cursor-grab active:cursor-grabbing",
+        "rounded-md border border-border bg-card p-2 text-sm transition-shadow duration-100 hover:shadow-card-hover",
+        won ? "bg-muted/40" : "cursor-grab active:cursor-grabbing",
         deal.overdue && !won ? "border-destructive/50" : "",
       ]
         .join(" ")
@@ -55,7 +56,7 @@ export function ForecastCard({ deal, baseCurrency, won = false }: Props): React.
       <div className="flex items-start justify-between gap-1">
         <Link
           href={`/deals/${deal.id}`}
-          className="min-w-0 flex-1 truncate font-medium text-primary hover:underline"
+          className={`min-w-0 flex-1 truncate font-medium hover:underline ${won ? "text-muted-foreground" : "text-link-record"}`}
         >
           {deal.title}
         </Link>

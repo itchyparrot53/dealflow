@@ -22,7 +22,7 @@ export function MoreActivitiesChip({
           // The block behind this chip is as tall as the span it stands for, but the chip itself is
           // one line; the rest lets clicks through to the hour slots instead of eating them.
           style={{ pointerEvents: "auto" }}
-          className="block w-full truncate rounded px-1 my-0.5 text-left text-xs font-medium text-primary hover:bg-accent tabular-nums"
+          className="block w-full truncate rounded px-1 my-0.5 text-left text-xs font-medium text-info hover:bg-muted tabular-nums"
         >
           +{activities.length} more
         </button>
@@ -33,7 +33,7 @@ export function MoreActivitiesChip({
             own start, the later ones would read as happening at the marker's hour. */}
         {activities.map((a) => (
           <div key={a.id} className="flex items-baseline gap-2">
-            <span className="w-12 shrink-0 text-[11px] tabular-nums text-muted-foreground">
+            <span className="w-12 shrink-0 text-caption tabular-nums text-muted-foreground">
               {a.allDay ? "All day" : startTimeLabel(a.dueAt)}
             </span>
             <ActivityChip a={a} onOpen={onOpen} className="min-w-0 flex-1" />

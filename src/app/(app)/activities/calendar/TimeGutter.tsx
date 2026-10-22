@@ -14,7 +14,7 @@ export function TimeGutter(): React.ReactNode {
       {HOURS.slice(1).map((hour) => (
         <div
           key={hour}
-          className="absolute right-1.5 -translate-y-1/2 text-[10px] tabular-nums text-muted-foreground"
+          className="absolute right-1.5 -translate-y-1/2 text-xs tabular-nums text-muted-foreground"
           style={{ top: hour * HOUR_HEIGHT_PX }}
         >
           {hourLabel(hour)}

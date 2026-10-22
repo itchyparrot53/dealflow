@@ -65,7 +65,7 @@ function DayCell({
       {overflow > 0 ? (
         <a
           href={calendarHref("week", iso)}
-          className="block text-xs text-primary hover:underline mt-0.5 tabular-nums"
+          className="block text-xs text-info hover:underline mt-0.5 tabular-nums"
         >
           +{overflow} more
         </a>

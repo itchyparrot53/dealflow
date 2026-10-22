@@ -200,7 +200,7 @@ export function ForecastBoard({ pipelines }: Props): React.ReactNode {
           <DndContext sensors={sensors} onDragEnd={onDragEnd}>
             <div
               data-testid="forecast-board"
-              className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2"
+              className="flex min-h-0 flex-1 gap-1 overflow-x-auto pb-2"
             >
               {data.months.map((month) => (
                 <ForecastColumn key={month.month} month={month} baseCurrency={data.baseCurrency} />
@@ -214,7 +214,7 @@ export function ForecastBoard({ pipelines }: Props): React.ReactNode {
               <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 {data.noDate.map((deal) => (
                   <li key={deal.id}>
-                    <Link href={`/deals/${deal.id}`} className="text-primary hover:underline">
+                    <Link href={`/deals/${deal.id}`} className="text-link-record hover:underline">
                       {deal.title}
                     </Link>
                   </li>

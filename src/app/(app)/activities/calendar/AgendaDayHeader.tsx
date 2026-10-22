@@ -7,14 +7,17 @@ export function AgendaDayHeader({ iso, today }: { iso: string; today: boolean })
   return (
     <div
       data-today={today}
-      className={cn(
-        "border-l border-border px-2 py-1 text-xs font-medium tabular-nums",
-        // bg-accent is a hair off white and read as no highlight at all; the link blue is the
-        // colour this app already uses for "the one you are on".
-        today ? "bg-link/10 font-semibold text-link" : "text-foreground",
-      )}
+      className="flex items-center gap-1 border-l border-border px-2 py-1 text-xs font-medium tabular-nums"
     >
-      {isoToDayHeading(iso)}
+      {/* 6.8.6: today's date number sits in an info-soft circle, in blue 600. */}
+      <span
+        className={cn(
+          "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1",
+          today ? "bg-info-soft font-semibold text-info" : "text-foreground",
+        )}
+      >
+        {isoToDayHeading(iso)}
+      </span>
       {today && <span className="sr-only"> (today)</span>}
     </div>
   );

@@ -70,7 +70,7 @@ export function CalendarDrag({
       {children}
       <DragOverlay>
         {active === null ? null : (
-          <div className="rounded-md border bg-card px-2 py-1 text-xs shadow-md">
+          <div className="rounded-md border border-border bg-card px-2 py-1 text-meta shadow-drag">
             {active.subject}
           </div>
         )}

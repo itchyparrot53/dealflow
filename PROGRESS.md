@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-22 09:55
+Current: 2.3 · Last updated: 2026-10-22 10:05
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -20,7 +20,7 @@ Current: 2.2 · Last updated: 2026-10-22 09:55
 - [x] 1.4 Lists and person/organization detail
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Inbox, thread and mobile reply sheet
-- [ ] 2.2 Calendar and forecast
+- [x] 2.2 Calendar and forecast
 - [ ] 2.3 Documents and the public document page
 - [ ] 2.4 Insights and dashboards
 - [ ] 2.5 Projects
@@ -84,6 +84,11 @@ Current: 2.2 · Last updated: 2026-10-22 09:55
 - 1.4: `DESIGN_SCREENS=deals-list,people,person,organizations,leads,activities-list` passes 6/6 (axe light+dark, 375, activities parity).
 - 2.1: the inbox follows 6.8.5: a 220 px white folder column with 32 px items and an info-soft active row, the list pane keeping its full-width conversation column (Part 7 chose a standalone reader route, not a two-pane split), 72 px thread rows at 12/16 padding with an info-soft selected state, a canvas-subtle reading pane with rounded-lg white message cards, and the 32 px reply footer. The inbox, thread and compose routes publish their top-bar titles.
 - 2.1: the reply composer opens in a bottom `Sheet` on a phone (closing Part 10's open issue) and inline on desktop; the design spec now proves the 375 sheet opens and closes.
+- 2.2: the calendar follows 6.8.6: event chips are info-soft with a 3 px left bar coloured by activity type (`--chart-*`), done chips read secondary with a line-through, today's date number sits in an info-soft circle in blue 600, hour labels are 12 px secondary, the drag ghost uses `shadow-drag`, and the filter/more links use the blue info token. `PageTitle` publishes Forecast and the month page title.
+- 2.2: the forecast months are 248 px canvas-subtle columns without the board chevron, with a 16/600 month title and 13 px meta; cards follow the board card (border, radius 4, hover elevation), won cards read muted without an opacity fade, and the no-date links use the record green.
+- 2.2 CONTRACT CHANGE: the calendar's overdue chip keeps the red left bar but uses the primary ink on a 10% destructive fill, because #D73C38 on that pale red measures 4.4:1.
+- 2.2: the forecast card's dnd attributes are not spread (listeners only), because they add `role=button` around the card's deal link and axe fails that as nested-interactive; pointer dragging is unchanged.
+- 2.2: changed test: the calendar chip asserts the info surface, the 3 px bar and the destructive overdue fill. `DESIGN_SCREENS=calendar,forecast` passes 2/2 and the calendar/forecast suites 72/72.
 - 2.1 CONTRACT CHANGE: the dark `--avatar-foreground` is #C7C9CE (the planned value) instead of the muted-grey step that had been copied, because initials on the dark avatar measured 4.38:1; text-level error/red links in mail use `--next-red` / `--link-record` for the same reason.
 - 2.1: the Avatar sets its ink with an inline `hsl(var(--avatar-foreground))` rather than a class, because tailwind-merge classified the custom colour token as a font size and dropped it when a caller passed `text-caption`.
 - 2.1: changed tests for the new mail contract: the reply footer and reader card assert `rounded-lg`, label chips assert the caption size and sentence case. The design spec excludes sandboxed email-body iframes from axe (third-party documents), otherwise the thread analysis hangs.

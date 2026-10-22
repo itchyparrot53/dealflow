@@ -172,7 +172,7 @@ export function WeekAgendaGrid({
                   className="grid border-b border-border"
                   style={{ gridTemplateColumns: AGENDA_GRID_COLS }}
                 >
-                  <div className="bg-muted/40 px-1.5 py-1 text-right text-[10px] text-muted-foreground">
+                  <div className="bg-muted/40 px-1.5 py-1 text-right text-xs text-muted-foreground">
                     All day
                   </div>
                   {dayIsos.map((iso) => (

@@ -35,15 +35,15 @@ export function ForecastColumn({ month, baseCurrency }: Props): React.ReactNode 
       data-month={month.month}
       aria-label={month.label}
       className={[
-        "flex min-w-72 flex-1 flex-col gap-2 rounded-xl bg-muted/40 p-2",
+        "flex min-w-[248px] flex-1 flex-col gap-2 rounded-lg bg-canvas-subtle p-2",
         isOver ? "ring-2 ring-ring/40" : "",
       ]
         .join(" ")
         .trim()}
     >
-      <header className="rounded-md bg-muted/60 px-2 py-1.5">
-        <h2 className="text-sm font-semibold">{month.label}</h2>
-        <div className="mt-1 grid grid-cols-3 gap-1 text-xs text-muted-foreground">
+      <header className="px-2 pb-1 pt-2">
+        <h2 className="truncate text-base font-semibold text-foreground">{month.label}</h2>
+        <div className="mt-1 grid grid-cols-3 gap-1 text-meta text-muted-foreground">
           <div>
             <div>{S.total}</div>
             <div data-testid="forecast-month-total" className="font-medium tabular-nums">

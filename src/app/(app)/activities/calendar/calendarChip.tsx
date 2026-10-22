@@ -22,7 +22,7 @@ function ChipLabel({ a, parent }: { a: CalendarActivity; parent: string | null }
           rather than both halves collapsing to three letters each. The colour is explicit rather
           than an opacity fade, which measured 3.93:1 here and 2.96:1 on the overdue tone. */}
       {parent !== null && (
-        <span className="shrink-[4] truncate text-[11px] text-foreground/70">{parent}</span>
+        <span className="shrink-[4] truncate text-caption text-foreground/70">{parent}</span>
       )}
     </span>
   );
@@ -33,9 +33,18 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
   // the neutral tone uses the shared tokens rather than the calendar's own gray scale. Red is the
   // one tone without a token, so it carries its own Night pair or the chip stays light on a dark
   // calendar.
-  const tone = a.overdue
-    ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-200"
-    : "bg-muted text-foreground";
+  // 6.8.6: an info-soft chip with a 3 px left bar whose hue follows the activity type. Overdue
+  // keeps the red bar + red ink; a done chip reads as secondary with a line-through.
+  const TYPE_BAR: Record<string, string> = {
+    call: "border-l-chart-1",
+    meeting: "border-l-chart-2",
+    task: "border-l-chart-3",
+    deadline: "border-l-chart-4",
+    email: "border-l-chart-5",
+    lunch: "border-l-chart-6",
+  };
+  const bar = a.overdue ? "border-l-next-red" : (TYPE_BAR[a.typeKey] ?? "border-l-chart-2");
+  const tone = a.overdue ? "bg-destructive/10 text-foreground" : "bg-info-soft text-foreground";
   const target = calendarActivityTarget(a);
   const parent = target.kind === "record" ? target.preview.title : null;
   const label = <ChipLabel a={a} parent={parent} />;
@@ -48,7 +57,7 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
         onClick={() => onOpen(a)}
         // items-start keeps the text at the top of a block sized to a whole meeting, rather than
         // floating in the middle of it the way a button centres its content by default.
-        className={`flex w-full items-start truncate rounded px-1 my-0.5 text-left text-xs hover:underline ${tone} ${className}`}
+        className={`my-0.5 flex w-full items-start truncate rounded-md border-l-[3px] px-1 py-0.5 text-left text-meta hover:underline ${bar} ${tone} ${a.done ? "text-muted-foreground line-through" : ""} ${className}`}
       >
         {label}
       </button>
@@ -57,7 +66,7 @@ export function ActivityChip({ a, onOpen, className = "" }: ActivityChipProps): 
   return (
     <div
       data-type={a.typeKey}
-      className={`text-xs rounded px-1 my-0.5 truncate ${tone} ${className}`}
+      className={`my-0.5 truncate rounded-md border-l-[3px] px-1 py-0.5 text-meta ${bar} ${tone} ${a.done ? "text-muted-foreground line-through" : ""} ${className}`}
     >
       {target.kind === "record" ? (
         <a href={target.href} className="hover:underline">
