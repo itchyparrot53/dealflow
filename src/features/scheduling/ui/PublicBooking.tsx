@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Textarea } from "@/components/ui/Textarea";
 import { BOOKING_COPY, BOOKING_STRINGS } from "@/constants/formsBookingStrings";
 import { PoweredBy } from "@/features/public/PoweredBy";
@@ -99,7 +100,19 @@ function SlotGrid({
   onPick: (slot: string) => void;
 }): React.ReactNode {
   if (loading) {
-    return <p className="col-span-3 text-sm text-muted-foreground">Loading times...</p>;
+    // 6.8.13: the slot grid loads as skeletons of the slot buttons.
+    return (
+      <div
+        role="status"
+        className="col-span-3 grid grid-cols-3 gap-2"
+        aria-busy="true"
+        aria-label="Loading times"
+      >
+        {["a", "b", "c", "d", "e", "f"].map((slot) => (
+          <Skeleton key={slot} className="h-8 w-full" />
+        ))}
+      </div>
+    );
   }
   if (error !== null) {
     return <p className="col-span-3 text-sm text-destructive">{error}</p>;

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ErrorRow } from "@/components/ui/error-row";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { STRINGS } from "@/constants/strings";
 import { type RouterOutputs, trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -80,7 +82,14 @@ export function ThreadPane({
   }
 
   if (data === undefined) {
-    return <div className="p-4 text-sm text-muted-foreground">Loading...</div>;
+    // 6.8.13: loading is a skeleton shaped like the content, never a text line.
+    return (
+      <div role="status" className="space-y-3 p-4" aria-busy="true" aria-label="Loading thread">
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
   }
 
   const { messages, accountId, canCompose, ownerEmail, personName, dealTitle } = data;
@@ -105,7 +114,9 @@ export function ThreadPane({
             {inboxThread.subject ?? "(no subject)"}
           </h1>
           <div className="flex shrink-0 items-center gap-2">
-            {markUnreadError !== null && <p className="text-xs text-next-red">{markUnreadError}</p>}
+            {markUnreadError !== null && (
+              <ErrorRow className="px-2 py-1 text-xs">{markUnreadError}</ErrorRow>
+            )}
             {/* Owner-only thread privacy (B2). Same canCompose gate as the follow-up controls: only
                 the mailbox owner may flip visibility, and the server re-checks ownership. Reuses the
                 shared ThreadPrivacyToggle (also used per-row in ThreadList), which surfaces a failed
