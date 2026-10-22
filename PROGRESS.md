@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p10-v1
 
-STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-22 10:05
+STATUS: COMPLETE
+Current: 4.5 · Last updated: 2026-10-22 10:20
 
 ## Phase base commits
 - Phase 0: de06153cc5eea0e1bcfbe6609da262cd90107fe3
@@ -31,7 +31,7 @@ Current: 4.5 · Last updated: 2026-10-22 10:05
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review and hardening
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings) · build ok · unit 5320/5320 in 828 files
@@ -118,6 +118,41 @@ Current: 4.5 · Last updated: 2026-10-22 10:05
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
+
+
+### Definition of done
+1. PASS - migration `0092_dealflow_push` adds `push_subscriptions` and `notification_push_prefs` and nothing else; `web-push@3.6.7` and `@types/web-push@3.6.4` are the only new dependencies.
+2. PASS - `sw/routes.ts`, `offline/snapshots.ts`, `offline/trim.ts`, `push/payload.ts` and the wipe rule are pure and unit-tested (25 + 5 cases).
+3. PASS - the manifest, icons, apple touch icon, metadata and the "Install app" entries (menu prompt, iOS instructions, Settings card) are in place.
+4. PASS - the worker caches only static assets and `/offline` (and the static assets that shell references), never authenticated HTML/API/tRPC, bypasses public and embed routes, serves `/offline` on failed navigations, deletes old caches on activate and offers "New version available" with Reload.
+5. PASS - viewing a deal, person or organization (and today's activities) saves a compact per-user IndexedDB snapshot (50 per type); `/offline` lists and shows them with saved times; sign-out and a different user wipe them; the offline banner shows when offline.
+6. PASS - users enable push per device and per notification type; delivery is VAPID web push or a `PUSH_FAKE` capture file; 404/410 removes a subscription, five failures remove it, a success resets it; clicks open the notification link; nothing is sent without keys.
+7. PASS - below 768px the bottom navigation and safe-area padding replace the rail; the board, deal workspace, activities list and agenda, contacts lists, inbox, documents, projects and insights pass the no-horizontal-scroll and 40px-control checks at 390x844.
+8. PASS - the activities list has URL-backed search (subject and note, in the CSV export), `n` sequences and palette Create commands open their dialog in place, and the smoke seed creates three deals.
+9. PASS - typecheck, lint, build, unit (5351) and the full integration suite (2097) pass; e2e specs 00 to 14 pass with the 8 `p10-*` screenshots; smoke passes; one independent review ran and its blocker and majors were fixed.
+
+### Owner actions
+1. Generate push keys and add them to `.env`: run `pnpm push:vapid`, then set `VAPID_PUBLIC_KEY=...`, `VAPID_PRIVATE_KEY=...` and `VAPID_SUBJECT=mailto:your@address` (all three or push stays off). Restart the app and worker.
+2. Rebuild the dev stack so its app image reads migration 0092: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+3. Install the app on your phone: open Settings > Profile > Install app (Android/Chromium) or Share > Add to Home Screen (iOS 16.4 or later).
+4. Test a push: in Settings > Notifications tap "Enable push" on that device, then trigger a notification you receive (for example assign yourself an activity from another account).
+5. Fix the partial Google env in `.env`: set `GOOGLE_WORKSPACE_DOMAIN` or blank all three `GOOGLE_*` values.
+6. Add the currency rates your deals need in Settings > Currencies (the live base is GBP and has no EUR or USD rate).
+
+### Decisions worth reviewing
+- No `CONTRACT CHANGE:` lines were needed.
+- Changed tests: `PreferencesForm` gained the push column (its fixtures and expected `onChange` payloads include `push`); the notification settings page test mocks the new `push.config`/`push.preferences` reads; the activities filter literals gained `search: null` (table sort test included); new push/search integration cases and the `e2e/14-pwa-mobile.spec.ts` spec.
+- Push is dispatched from `createNotification` after the row commits, not from the notification wire, because forms, bookings, documents and automations call the producer directly; the review confirmed no duplicate sends.
+
+### Open issues
+- The inbox thread hides its context sidebar below md but the reply composer stays inline; "reply composer as a sheet" from 6.9 is not implemented.
+- The offline page's `/offline` shell is precached with its static assets; if a deploy changes those hashed assets while a tab is offline before the worker updates, the old shell still uses its own cached assets, which is the intended offline behaviour.
+- The installed-app install prompt is only shown when the browser exposes `beforeinstallprompt`; other Chromium builds show the Settings hint instead of a button.
+
+### Notes for Part 11 (design pass)
+- Routes and latest screenshots: board `/pipeline/{id}` (`p10-mobile-board`), deal workspace `/deals/{id}` (`p10-mobile-deal`), activities list `/activities/list` (`p10-mobile-activities`) and `/activities/calendar` (day agenda below md), contacts `/contacts/people` (`p10-mobile-contacts`) and `/contacts/orgs`, inbox `/inbox`, documents `/documents`, projects `/projects` and `/projects/{id}`, insights `/insights/dashboards/{id}`, offline `/offline` (`p10-offline`), push settings `/settings/notifications` (`p10-push-settings`), install `/settings/profile` (`p10-install`), More sheet (`p10-mobile-more`).
+- Mobile breakpoint is 768px (`MOBILE_BREAKPOINT_PX`, Tailwind `md`); the bottom bar is fixed with `env(safe-area-inset-bottom)` and the content clears it with `pb-24`; board columns are 85vw with snap.
+- Layout components touched: app shell layout, TopBar, LeftNav/NavIcons, BottomNav/MoreSheet, contacts layout/list/cards, settings layout, activities table/calendar/filters, deal board stages and workspace, compose bar, documents list, inbox sidebar, export button and the install/push settings cards.
 
 ### Checklist
 1. PASS - `git --no-optional-locks status --porcelain` was empty at the 4.3 commit.
