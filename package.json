@@ -39,7 +39,9 @@
     "auth:bootstrap-link": "tsx --env-file=.env scripts/dealflow/bootstrap-link.ts",
     "e2e:build": "pnpm build:sw && node scripts/e2e/build.mjs",
     "e2e": "pnpm e2e:build && playwright test",
-    "smoke": "node scripts/dealflow/smoke.mjs"
+    "smoke": "node scripts/dealflow/smoke.mjs",
+    "docs:pdf": "node scripts/dealflow/build-user-guide-pdf.mjs",
+    "docs:screenshots": "node scripts/dealflow/capture-user-guide.mjs"
   },
   "keywords": [],
   "author": "Nikita Sawinyh",
@@ -141,6 +143,7 @@
     "eslint-plugin-security": "^4.0.1",
     "eslint-plugin-sonarjs": "^4.1.0",
     "jsdom": "^29.1.1",
+    "pdf-lib": "1.17.1",
     "postcss": "^8.5.16",
     "tailwindcss": "^4.3.2",
     "tsx": "^4.22.4",
