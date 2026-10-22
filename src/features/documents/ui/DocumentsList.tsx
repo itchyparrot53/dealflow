@@ -5,7 +5,8 @@ import type React from "react";
 import { useState } from "react";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
-import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { tableStyles } from "@/components/ui/table-styles";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { formatMoney, parseCents } from "@/features/currency/money";
 import type { DocumentListItem } from "@/features/documents/documents";
@@ -83,6 +84,8 @@ export function DocumentsList({
               {S.tabInvoices}
             </TabsTrigger>
           </TabsList>
+          <TabsContent forceMount value="quote" className="hidden" />
+          <TabsContent forceMount value="invoice" className="hidden" />
         </Tabs>
         <div className="w-48">
           <Select
@@ -112,42 +115,49 @@ export function DocumentsList({
         <p className="text-sm text-muted-foreground">{S.noMatches}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b text-muted-foreground">
-                <th className="py-2 font-medium">{S.columnNumber}</th>
-                <th className="py-2 font-medium">{S.columnTitle}</th>
-                <th className="py-2 font-medium">{S.columnDeal}</th>
-                <th className="py-2 font-medium">{S.columnCustomer}</th>
-                <th className="py-2 text-right font-medium">{S.columnTotal}</th>
-                <th className="py-2 font-medium">{S.columnStatus}</th>
-                <th className="py-2 font-medium">{S.columnIssued}</th>
-                <th className="py-2 font-medium">{isInvoice ? S.columnDue : S.columnValid}</th>
+          <table className={`${tableStyles.table} text-left`}>
+            <thead className={tableStyles.thead}>
+              <tr>
+                <th className={tableStyles.th}>{S.columnNumber}</th>
+                <th className={tableStyles.th}>{S.columnTitle}</th>
+                <th className={tableStyles.th}>{S.columnDeal}</th>
+                <th className={tableStyles.th}>{S.columnCustomer}</th>
+                <th className={`${tableStyles.th} ${tableStyles.numeric}`}>{S.columnTotal}</th>
+                <th className={tableStyles.th}>{S.columnStatus}</th>
+                <th className={tableStyles.th}>{S.columnIssued}</th>
+                <th className={tableStyles.th}>{isInvoice ? S.columnDue : S.columnValid}</th>
               </tr>
             </thead>
             <tbody>
               {visible.map((row) => (
-                <tr key={row.id} className="border-b align-top">
-                  <td className="py-2 font-mono text-xs">
-                    <Link href={`/documents/${row.id}`} className="hover:underline">
+                <tr key={row.id} className={tableStyles.tr}>
+                  <td className={`${tableStyles.td} font-mono text-xs`}>
+                    <Link href={`/documents/${row.id}`} className={tableStyles.link}>
                       {row.number ?? S.statusDraft}
                     </Link>
                   </td>
-                  <td className="py-2">
-                    <Link href={`/documents/${row.id}`} className="font-medium hover:underline">
+                  <td className={tableStyles.td}>
+                    <Link
+                      href={`/documents/${row.id}`}
+                      className={`${tableStyles.link} font-semibold`}
+                    >
                       {row.title}
                     </Link>
                   </td>
-                  <td className="py-2 text-muted-foreground">{row.dealTitle}</td>
-                  <td className="py-2 text-muted-foreground">{row.customerName ?? ""}</td>
-                  <td className="py-2 text-right">
+                  <td className={`${tableStyles.td} text-muted-foreground`}>{row.dealTitle}</td>
+                  <td className={`${tableStyles.td} text-muted-foreground`}>
+                    {row.customerName ?? ""}
+                  </td>
+                  <td className={`${tableStyles.td} ${tableStyles.numeric}`}>
                     {formatMoney(parseCents(row.total), row.currency)}
                   </td>
-                  <td className="py-2">
+                  <td className={tableStyles.td}>
                     <Badge variant={statusVariant(row.status)}>{STATUS_LABEL[row.status]}</Badge>
                   </td>
-                  <td className="py-2 text-muted-foreground">{longDate(row.issueDate)}</td>
-                  <td className="py-2 text-muted-foreground">
+                  <td className={`${tableStyles.td} text-muted-foreground`}>
+                    {longDate(row.issueDate)}
+                  </td>
+                  <td className={`${tableStyles.td} text-muted-foreground`}>
                     {longDate(isInvoice ? row.dueDate : row.validUntil)}
                   </td>
                 </tr>

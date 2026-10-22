@@ -202,9 +202,7 @@ export function TemplateDialog({
             </div>
           </div>
           <div className="rounded-lg border bg-card p-4">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {S.preview}
-            </p>
+            <p className="mb-3 text-meta font-semibold text-muted-foreground">{S.preview}</p>
             <div data-testid="document-template-preview">
               <MarkdownLite source={preview} />
             </div>

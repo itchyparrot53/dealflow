@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { db } from "@/db/client";
 import { getDocument } from "@/features/documents/documents";
@@ -31,6 +32,7 @@ export default async function DocumentPrintPage({
 
   return (
     <div className="mx-auto max-w-[860px] p-6">
+      <PageTitle title="Documents" />
       <div className="mb-4">
         <PrintButton label={DOCUMENTS_STRINGS.printPreview} />
       </div>

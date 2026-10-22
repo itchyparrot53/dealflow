@@ -41,7 +41,11 @@ export default async function PublicDocumentPage({
 
   const doc = result.value;
   return (
-    <main className="mx-auto max-w-[860px] p-8" data-testid="public-document">
+    <main
+      data-theme-lock="light"
+      data-testid="public-document"
+      className="min-h-screen bg-canvas-subtle px-6 py-10"
+    >
       {/* The machine-readable status is for tests and the outline; the visible status is the
           invoice line in DocumentView and the accept/decline panel below. */}
       <p className="sr-only" data-testid="public-status">
@@ -85,8 +89,9 @@ export default async function PublicDocumentPage({
           />
         </div>
       )}
-      <div className="mt-6">
+      <div className="mx-auto mt-6 flex max-w-[860px] flex-col items-center gap-4">
         <PrintButton label={DOCUMENTS_STRINGS.downloadPdf} />
+        <p className="text-xs text-muted-foreground">Powered by Dealflow</p>
       </div>
     </main>
   );

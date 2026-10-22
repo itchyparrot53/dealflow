@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { db } from "@/db/client";
 import { getDocument } from "@/features/documents/documents";
 import { getDocumentSettings } from "@/features/documents/settings";
@@ -26,15 +27,18 @@ export default async function DocumentPage({
   const settings = await getDocumentSettings(db, signal);
 
   return (
-    <DocumentEditor
-      document={result.value}
-      company={{
-        name: settings.companyName,
-        address: settings.companyAddress,
-        taxId: settings.companyTaxId,
-      }}
-      paymentInstructions={settings.paymentInstructions}
-      footer={settings.footer}
-    />
+    <>
+      <PageTitle title="Documents" />
+      <DocumentEditor
+        document={result.value}
+        company={{
+          name: settings.companyName,
+          address: settings.companyAddress,
+          taxId: settings.companyTaxId,
+        }}
+        paymentInstructions={settings.paymentInstructions}
+        footer={settings.footer}
+      />
+    </>
   );
 }

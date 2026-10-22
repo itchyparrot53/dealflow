@@ -226,10 +226,10 @@ export function DocumentEditor({
   const previewBody = renderDocumentBody(draft ? body : document.body, document);
 
   return (
-    <div className="space-y-6" data-testid="document-editor">
+    <div className="mx-auto max-w-[1200px] space-y-6" data-testid="document-editor">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="text-meta font-semibold text-muted-foreground">
             {isInvoice ? "Invoice" : "Quote"}
           </p>
           <h1 className="truncate text-title">{previewTitle}</h1>
@@ -527,34 +527,40 @@ export function DocumentEditor({
         </p>
       )}
 
-      <DocumentView
-        document={{
-          kind: document.kind,
-          number: document.number,
-          title: previewTitle,
-          body: previewBody,
-          currency: document.currency,
-          subtotal: document.subtotal,
-          tax: document.tax,
-          total: document.total,
-          status: document.status,
-          customerName: draft ? (customerName === "" ? null : customerName) : document.customerName,
-          customerAddress: draft
-            ? customerAddress === ""
-              ? null
-              : customerAddress
-            : document.customerAddress,
-          issueDate: document.issueDate,
-          validUntil: draft ? validUntil : document.validUntil,
-          dueDate: draft ? dueDate : document.dueDate,
-          paidAt: document.paidAt,
-          outstanding: document.outstanding,
-          lines: document.lines,
-          company,
-          paymentInstructions,
-          footer,
-        }}
-      />
+      <div className="rounded-lg bg-canvas-subtle p-6">
+        <DocumentView
+          document={{
+            kind: document.kind,
+            number: document.number,
+            title: previewTitle,
+            body: previewBody,
+            currency: document.currency,
+            subtotal: document.subtotal,
+            tax: document.tax,
+            total: document.total,
+            status: document.status,
+            customerName: draft
+              ? customerName === ""
+                ? null
+                : customerName
+              : document.customerName,
+            customerAddress: draft
+              ? customerAddress === ""
+                ? null
+                : customerAddress
+              : document.customerAddress,
+            issueDate: document.issueDate,
+            validUntil: draft ? validUntil : document.validUntil,
+            dueDate: draft ? dueDate : document.dueDate,
+            paidAt: document.paidAt,
+            outstanding: document.outstanding,
+            lines: document.lines,
+            company,
+            paymentInstructions,
+            footer,
+          }}
+        />
+      </div>
 
       <SendDialog
         open={sendOpen}

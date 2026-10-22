@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-22 10:05
+Current: 2.4 · Last updated: 2026-10-22 10:20
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -21,7 +21,7 @@ Current: 2.3 · Last updated: 2026-10-22 10:05
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Inbox, thread and mobile reply sheet
 - [x] 2.2 Calendar and forecast
-- [ ] 2.3 Documents and the public document page
+- [x] 2.3 Documents and the public document page
 - [ ] 2.4 Insights and dashboards
 - [ ] 2.5 Projects
 - [ ] 2.6 Phase 2 QA gate
@@ -86,6 +86,9 @@ Current: 2.3 · Last updated: 2026-10-22 10:05
 - 2.1: the reply composer opens in a bottom `Sheet` on a phone (closing Part 10's open issue) and inline on desktop; the design spec now proves the 375 sheet opens and closes.
 - 2.2: the calendar follows 6.8.6: event chips are info-soft with a 3 px left bar coloured by activity type (`--chart-*`), done chips read secondary with a line-through, today's date number sits in an info-soft circle in blue 600, hour labels are 12 px secondary, the drag ghost uses `shadow-drag`, and the filter/more links use the blue info token. `PageTitle` publishes Forecast and the month page title.
 - 2.2: the forecast months are 248 px canvas-subtle columns without the board chevron, with a 16/600 month title and 13 px meta; cards follow the board card (border, radius 4, hover elevation), won cards read muted without an opacity fade, and the no-date links use the record green.
+- 2.3: documents follow 6.8.8: the list uses `tableStyles`; the shared `DocumentView` renders the sheet (max 860, rounded-lg, 1 px border, 40 px padding) with sentence-case labels; the editor keeps its single column but previews the sheet on `canvas-subtle` with a 1200 px cap (the header and actions are shared with the print route, so a 400 px sidebar split would have to duplicate them); the public page wraps `data-theme-lock="light"`, paints `canvas-subtle`, and ends with the 12 px secondary "Powered by Dealflow" line. All three routes publish their top-bar title.
+- 2.3: the quotes/invoices tab strip got hidden `TabsContent forceMount` targets, the fourth strip with dangling Radix `aria-controls`.
+- 2.3: `DESIGN_SCREENS=documents,document,public-quote` passes 3/3 and the document suite 104/104.
 - 2.2 CONTRACT CHANGE: the calendar's overdue chip keeps the red left bar but uses the primary ink on a 10% destructive fill, because #D73C38 on that pale red measures 4.4:1.
 - 2.2: the forecast card's dnd attributes are not spread (listeners only), because they add `role=button` around the card's deal link and axe fails that as nested-interactive; pointer dragging is unchanged.
 - 2.2: changed test: the calendar chip asserts the info surface, the 3 px bar and the destructive overdue fill. `DESIGN_SCREENS=calendar,forecast` passes 2/2 and the calendar/forecast suites 72/72.

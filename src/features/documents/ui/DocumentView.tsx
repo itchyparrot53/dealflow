@@ -81,7 +81,7 @@ export function DocumentView({ document }: { document: DocumentViewData }): Reac
   const total = money(document.total, document.currency);
 
   return (
-    <article className="mx-auto w-full max-w-[860px] bg-background text-foreground">
+    <article className="mx-auto w-full max-w-[860px] rounded-lg border border-border bg-background p-10 text-foreground">
       <header className="flex items-start justify-between gap-6 border-b pb-6">
         <div className="min-w-0">
           {document.company.name !== null && (
@@ -97,7 +97,7 @@ export function DocumentView({ document }: { document: DocumentViewData }): Reac
           )}
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="text-meta font-semibold text-muted-foreground">
             {document.kind === "quote" ? "Quote" : "Invoice"}
           </p>
           <p className="text-sm text-muted-foreground" data-testid="document-number">
@@ -127,7 +127,7 @@ export function DocumentView({ document }: { document: DocumentViewData }): Reac
 
       {(document.customerName !== null || document.customerAddress !== null) && (
         <section className="mt-6">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">{customerLabel}</p>
+          <p className="text-meta font-semibold text-muted-foreground">{customerLabel}</p>
           {document.customerName !== null && <p className="font-medium">{document.customerName}</p>}
           {document.customerAddress !== null && (
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ export function DocumentView({ document }: { document: DocumentViewData }): Reac
 
       {document.kind === "invoice" && document.paymentInstructions !== null && (
         <section className="mt-8 border-t pt-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Payment</p>
+          <p className="text-meta font-semibold text-muted-foreground">Payment</p>
           <p className="whitespace-pre-wrap text-sm">{document.paymentInstructions}</p>
         </section>
       )}
