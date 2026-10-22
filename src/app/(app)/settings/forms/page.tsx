@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { env } from "@/config/env";
 import { FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -33,6 +34,7 @@ export default async function FormsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Forms" />
       <SettingsHeading title={FORMS_STRINGS.title} description={FORMS_STRINGS.intro} />
       <FormsList
         currentUserId={actor.id}

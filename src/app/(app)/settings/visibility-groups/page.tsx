@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { listVisibilityGroups } from "@/features/identity/visibility-groups.service";
@@ -22,11 +23,12 @@ export const metadata = { title: STRINGS.settings.visibilityGroups };
 export default async function VisibilityGroupsPage(): Promise<ReactNode> {
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
   const rows = await listVisibilityGroups(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage>
+      <PageTitle title="Visibility groups" />
       <SettingsHeading
         title={STRINGS.settings.visibilityGroups}
         description={STRINGS.settings.visibilityGroupsDescription}

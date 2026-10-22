@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { listPermissionSets } from "@/features/identity/permission-sets.service";
@@ -22,13 +23,14 @@ export const metadata = { title: STRINGS.settings.permissionSets };
 export default async function PermissionSetsPage(): Promise<ReactNode> {
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
   const rows = await listPermissionSets(db, AbortSignal.timeout(5000));
   // Serializable projection for the client editor (flags is a plain JSONB object).
   const sets = rows.map((ps) => ({ id: ps.id, name: ps.name, flags: ps.flags }));
   return (
     <SettingsPage>
+      <PageTitle title="Permission sets" />
       <SettingsHeading
         title={STRINGS.settings.permissionSets}
         description={STRINGS.settings.permissionSetsDescription}

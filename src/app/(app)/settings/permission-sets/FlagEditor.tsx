@@ -90,13 +90,11 @@ export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactE
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card p-5 shadow-sm">
+    <div className="overflow-hidden rounded-lg border bg-card p-5">
       <h3 className="mb-3 text-sm font-semibold">{name}</h3>
       <div className="grid gap-6 md:grid-cols-2">
         <fieldset>
-          <legend className="mb-2 text-xs font-medium uppercase text-muted-foreground">
-            {T.global}
-          </legend>
+          <legend className="mb-2 text-meta font-semibold text-muted-foreground">{T.global}</legend>
           <div className="flex flex-col gap-1.5">
             {GLOBAL_FLAGS.map((key) => (
               <FlagCheckbox
@@ -110,7 +108,7 @@ export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactE
           </div>
         </fieldset>
         <fieldset>
-          <legend className="mb-2 text-xs font-medium uppercase text-muted-foreground">
+          <legend className="mb-2 text-meta font-semibold text-muted-foreground">
             {T.ownership}
           </legend>
           <div className="flex flex-col gap-2">
@@ -149,7 +147,7 @@ export function FlagEditor({ setId, name, flags, onSaved }: Props): React.ReactE
           {isPending ? T.saving : T.save}
         </Button>
         {error !== null && (
-          <span role="alert" className="text-sm text-red-600">
+          <span role="alert" className="text-sm text-destructive">
             {error}
           </span>
         )}

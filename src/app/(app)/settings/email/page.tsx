@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listSignatures, listTemplatesForSettings } from "@/features/email/emailAuthoringReads";
@@ -24,6 +25,7 @@ export default async function EmailSettingsPage(): Promise<ReactNode> {
   const canShare = ctx.actor.flags.has("filter.share");
   return (
     <SettingsPage className="max-w-3xl">
+      <PageTitle title="Email" />
       <SettingsHeading
         title={STRINGS.settings.emailTemplates}
         description={EMAIL_SETTINGS_STRINGS.description}

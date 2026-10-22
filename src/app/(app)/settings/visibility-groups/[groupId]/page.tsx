@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { listAssignableUsers } from "@/features/identity/users.service";
@@ -23,7 +24,7 @@ export default async function GroupDetailPage({
   const { groupId } = await params;
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);
@@ -39,6 +40,7 @@ export default async function GroupDetailPage({
 
   return (
     <SettingsPage>
+      <PageTitle title="Visibility groups" />
       <Link
         href="/settings/visibility-groups"
         className="text-sm text-primary underline-offset-4 hover:underline"

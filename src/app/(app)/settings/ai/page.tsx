@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { AI_STRINGS } from "@/constants/aiStrings";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
@@ -19,6 +20,7 @@ export default async function AiSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
+      <PageTitle title="AI" />
       <SettingsHeading title={AI_STRINGS.title} description={AI_STRINGS.description} />
       <AiSettingsClient
         overview={{

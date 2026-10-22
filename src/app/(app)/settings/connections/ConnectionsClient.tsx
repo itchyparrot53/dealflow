@@ -90,7 +90,7 @@ export function ConnectionsClient({
           </ul>
         )}
         {error !== null ? (
-          <p className="border-t px-5 py-3 text-sm text-red-600" aria-live="polite">
+          <p className="border-t px-5 py-3 text-sm text-destructive" aria-live="polite">
             {error}
           </p>
         ) : null}

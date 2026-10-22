@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { can } from "@/features/permissions/can";
 import { createContext } from "@/server/trpc/context";
@@ -14,13 +15,14 @@ export const metadata = { title: STRINGS.settings.importer.title };
 export default async function ImportPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAuth}</p>;
   }
   if (!can(actor, "data.import")) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.importer.requiresImport}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.importer.requiresImport}</p>;
   }
   return (
     <SettingsPage className="max-w-3xl">
+      <PageTitle title="Import" />
       <SettingsHeading
         title={STRINGS.settings.importer.title}
         description={STRINGS.settings.importer.subtitle}

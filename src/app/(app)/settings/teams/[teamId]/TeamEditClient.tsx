@@ -151,7 +151,7 @@ export function TeamEditClient({
         </div>
 
         {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}
@@ -163,7 +163,7 @@ export function TeamEditClient({
           variant="outline"
           disabled={isPending}
           onClick={remove}
-          className="text-red-600"
+          className="text-destructive"
         >
           Delete team
         </Button>

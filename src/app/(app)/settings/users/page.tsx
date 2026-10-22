@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { listPermissionSets } from "@/features/identity/permission-sets.service";
@@ -13,7 +14,7 @@ export const metadata = { title: STRINGS.settings.users };
 export default async function UsersPage(): Promise<ReactNode> {
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
   const signal = AbortSignal.timeout(5000);
   const [rows, sets] = await Promise.all([listUsers(db, signal), listPermissionSets(db, signal)]);
@@ -29,6 +30,7 @@ export default async function UsersPage(): Promise<ReactNode> {
   const setOptions = sets.map((ps) => ({ id: ps.id, name: ps.name }));
   return (
     <SettingsPage>
+      <PageTitle title="Users" />
       <SettingsHeading
         title={STRINGS.settings.users}
         description={STRINGS.settings.usersDescription}

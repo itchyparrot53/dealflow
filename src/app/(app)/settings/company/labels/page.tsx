@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
@@ -12,7 +13,7 @@ export const metadata = { title: STRINGS.settings.labels };
 export default async function LabelsPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
 
   const rows = await listLabels(db, {}, AbortSignal.timeout(5000));
@@ -22,5 +23,10 @@ export default async function LabelsPage(): Promise<ReactNode> {
     name: l.name,
     color: l.color,
   }));
-  return <LabelsClient rows={serializable} />;
+  return (
+    <>
+      <PageTitle title="Labels" />
+      <LabelsClient rows={serializable} />
+    </>
+  );
 }

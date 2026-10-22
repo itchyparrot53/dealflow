@@ -1,5 +1,6 @@
 import { asc, isNull } from "drizzle-orm";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { activityTypes, teams } from "@/db/schema";
 import { goals } from "@/db/schema/goals";
@@ -18,7 +19,7 @@ export default async function GoalsSettingsPage(): Promise<ReactNode> {
   // Reading a goal needs no permission; setting someone's quota is administrative, so this
   // screen is gated even though the Performance widget is not.
   if (actor === null || !can(actor, "goals.manage")) {
-    return <p className="text-sm text-red-600">{SETTINGS_STRINGS.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{SETTINGS_STRINGS.requiresAdmin}</p>;
   }
   const signal = AbortSignal.timeout(5000);
   const [goalRows, users, teamRows, pipelineRows, typeRows] = await Promise.all([
@@ -37,6 +38,7 @@ export default async function GoalsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
+      <PageTitle title="Goals" />
       <SettingsHeading
         title={SETTINGS_STRINGS.goals}
         description={SETTINGS_STRINGS.goalsDescription}

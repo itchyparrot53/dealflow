@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -33,6 +34,7 @@ export default async function DocumentsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage className="max-w-3xl">
+      <PageTitle title="Documents" />
       <SettingsHeading title={DOCUMENTS_STRINGS.title} description={DOCUMENTS_STRINGS.intro} />
       <DocumentsSettings settings={settings} templates={{ quote: quotes, invoice: invoices }} />
     </SettingsPage>

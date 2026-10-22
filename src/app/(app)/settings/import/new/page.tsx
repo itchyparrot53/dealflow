@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listDefs } from "@/features/custom-fields/defsRepo";
@@ -12,10 +13,10 @@ export const metadata = { title: STRINGS.settings.importer.title };
 export default async function NewImportPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAuth}</p>;
   }
   if (!can(actor, "data.import")) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.importer.requiresImport}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.importer.requiresImport}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);
@@ -34,13 +35,16 @@ export default async function NewImportPage(): Promise<ReactNode> {
   };
 
   return (
-    <ImportWizard
-      personDefs={personDefs}
-      orgDefs={orgDefs}
-      dealDefs={dealDefs}
-      activityDefs={activityDefs}
-      leadDefs={leadDefs}
-      hiddenBuiltins={hiddenBuiltins}
-    />
+    <>
+      <PageTitle title="Import" />
+      <ImportWizard
+        personDefs={personDefs}
+        orgDefs={orgDefs}
+        dealDefs={dealDefs}
+        activityDefs={activityDefs}
+        leadDefs={leadDefs}
+        hiddenBuiltins={hiddenBuiltins}
+      />
+    </>
   );
 }

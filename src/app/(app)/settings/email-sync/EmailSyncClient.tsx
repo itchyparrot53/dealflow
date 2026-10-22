@@ -115,7 +115,7 @@ export function EmailSyncClient({
               </p>
             ) : null}
             {mailbox.lastErrorId !== null ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {S.lastErrorLabel}: {mailbox.lastErrorId}
               </p>
             ) : null}
@@ -147,7 +147,7 @@ export function EmailSyncClient({
       </SettingsCardBody>
 
       <SettingsCardFooter>
-        {error !== null ? <span className="mr-auto text-sm text-red-600">{error}</span> : null}
+        {error !== null ? <span className="mr-auto text-sm text-destructive">{error}</span> : null}
         {connected && mailbox.provider === "imap" && !editing ? (
           <Button type="button" variant="outline" onClick={() => setEditing(true)}>
             {S.updatePassword}

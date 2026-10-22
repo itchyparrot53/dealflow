@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { listTeams } from "@/features/identity/teams.service";
@@ -14,7 +15,7 @@ export const metadata = { title: STRINGS.settings.teams };
 export default async function TeamsPage(): Promise<ReactNode> {
   const { actor, db } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
   const signal = AbortSignal.timeout(5000);
   // Two user lists on purpose: the table resolves an already-set manager's NAME (which may be an
@@ -30,6 +31,7 @@ export default async function TeamsPage(): Promise<ReactNode> {
   const teamRows = teams.map((t) => ({ id: t.id, name: t.name, managerId: t.managerId }));
   return (
     <SettingsPage>
+      <PageTitle title="Teams" />
       <SettingsHeading
         title={STRINGS.settings.teams}
         description={STRINGS.settings.teamsDescription}

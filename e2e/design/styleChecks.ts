@@ -178,11 +178,14 @@ async function focusCheck(page: Page): Promise<void> {
   expect(outline?.color, "focus ring colour").toBe("rgb(17, 104, 201)");
 }
 
-const COMMON = [bodyCheck, railCheck, activeRailTileCheck, topBarCheck, pageTitleCheck];
+// Settings has no rail destination by design (6.7 moves it into the avatar menu), so the active
+// tile is checked on the screens that do have one.
+const COMMON = [bodyCheck, railCheck, topBarCheck, pageTitleCheck];
 
 const BY_SCREEN: Record<string, Array<(page: Page) => Promise<void>>> = {
   board: [
     ...COMMON,
+    activeRailTileCheck,
     primaryButtonCheck,
     searchPillCheck,
     boardColumnCheck,
@@ -198,7 +201,7 @@ const BY_SCREEN: Record<string, Array<(page: Page) => Promise<void>>> = {
     activitySideCheck,
     focusCheck,
   ],
-  "activities-list": [...COMMON, tableRowCheck, tableHeaderCheck, recordLinkCheck, focusCheck],
+  "activities-list": [...COMMON, activeRailTileCheck, tableRowCheck, tableHeaderCheck, recordLinkCheck, focusCheck],
   "settings-profile": [...COMMON, focusCheck],
 };
 

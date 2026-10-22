@@ -75,10 +75,7 @@ export function PasswordCard({ hasPassword, requiresCurrent }: Props): React.Rea
   }
 
   return (
-    <section
-      data-testid="password-card"
-      className="overflow-hidden rounded-lg border bg-card shadow-sm"
-    >
+    <section data-testid="password-card" className="overflow-hidden rounded-lg border bg-card">
       <div className="border-b px-5 py-4">
         <h2 className="text-sm font-semibold">{T.heading}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">{T.description}</p>

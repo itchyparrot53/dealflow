@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { BUILTIN_FIELDS } from "@/constants/builtinFields";
 import { CUSTOM_FIELD_TARGETS, type CustomFieldTarget } from "@/constants/customFieldTypes";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
@@ -30,7 +31,7 @@ export default async function DataFieldsPage({
     actor === null ||
     (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.METADATA_MANAGE))
   ) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);
@@ -65,10 +66,13 @@ export default async function DataFieldsPage({
   }
 
   return (
-    <DataFieldsClient
-      byTarget={byTarget}
-      builtinByTarget={builtinByTarget}
-      initialTarget={initialTarget}
-    />
+    <>
+      <PageTitle title="Data fields" />
+      <DataFieldsClient
+        byTarget={byTarget}
+        builtinByTarget={builtinByTarget}
+        initialTarget={initialTarget}
+      />
+    </>
   );
 }

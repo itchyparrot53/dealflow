@@ -85,7 +85,7 @@ export function FieldRowItem({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-medium">{row.name}</span>
-                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] capitalize text-muted-foreground">
+                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-caption capitalize text-muted-foreground">
                   {row.type.replaceAll("_", " ")}
                 </span>
               </div>

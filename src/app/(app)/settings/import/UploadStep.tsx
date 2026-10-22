@@ -148,7 +148,7 @@ export function UploadStep({ state, dispatch, busy, onError }: UploadStepProps):
       </div>
 
       {uploading && <p className="text-sm text-muted-foreground">{IMP.importing}</p>}
-      {fileError !== null && <p className="text-sm text-red-600">{fileError}</p>}
+      {fileError !== null && <p className="text-sm text-destructive">{fileError}</p>}
     </section>
   );
 }

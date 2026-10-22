@@ -29,7 +29,7 @@ export function FieldList({
   }
 
   return (
-    <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+    <ul className="divide-y overflow-hidden rounded-lg border bg-card">
       {rows.length === 0 ? (
         <li className="px-3 py-2 text-sm text-muted-foreground">{STRINGS.settings.noFields}</li>
       ) : (

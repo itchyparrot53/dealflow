@@ -93,7 +93,7 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border bg-card p-5 shadow-sm">
+      <section className="rounded-lg border bg-card p-5">
         <p className="text-sm">
           <span className="font-medium">{providerLine(overview)}</span>
         </p>
@@ -109,7 +109,7 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <section className="overflow-hidden rounded-lg border bg-card">
         <h2 className="border-b px-5 py-3 text-sm font-semibold">{AI_STRINGS.byFeature}</h2>
         {overview.usage.byFeature.length === 0 ? (
           <p className="px-5 py-4 text-sm text-muted-foreground">{AI_STRINGS.noUsage}</p>
@@ -137,7 +137,7 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
         )}
       </section>
 
-      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <section className="overflow-hidden rounded-lg border bg-card">
         <h2 className="border-b px-5 py-3 text-sm font-semibold">{AI_STRINGS.byUser}</h2>
         {overview.usage.byUser.length === 0 ? (
           <p className="px-5 py-4 text-sm text-muted-foreground">{AI_STRINGS.noUsage}</p>
@@ -167,7 +167,7 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
 
       <form
         onSubmit={(event) => void handleSubmit(event)}
-        className="space-y-4 rounded-lg border bg-card p-5 shadow-sm"
+        className="space-y-4 rounded-lg border bg-card p-5"
       >
         <span className="flex items-center gap-2 text-sm">
           <Switch checked={enabled} onCheckedChange={setEnabled} label={AI_STRINGS.enabledLabel} />

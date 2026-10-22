@@ -24,11 +24,11 @@ export function PreviewStep({
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap gap-3">
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-sm font-medium tabular-nums text-emerald-700">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-success/40 bg-success/10 px-2.5 py-1 text-sm font-medium tabular-nums text-link-record">
           {IMP.valid(validation.valid)}
         </span>
         {validation.invalid > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-sm font-medium tabular-nums text-red-700">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-sm font-medium tabular-nums text-destructive">
             {IMP.withErrors(validation.invalid)}
           </span>
         )}
@@ -41,7 +41,7 @@ export function PreviewStep({
             {invalid.map((r) => (
               <li key={r.id} className="px-3 py-2">
                 <span className="font-medium tabular-nums">#{r.rowNumber}</span>{" "}
-                <span className="text-red-600">
+                <span className="text-destructive">
                   {r.errors.map((e) => `${e.field}: ${e.message}`).join("; ")}
                 </span>
               </li>

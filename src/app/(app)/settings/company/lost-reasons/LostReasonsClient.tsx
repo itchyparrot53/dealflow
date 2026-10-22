@@ -90,7 +90,7 @@ export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }):
 
   return (
     <div className="space-y-4">
-      <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+      <ul className="divide-y overflow-hidden rounded-lg border bg-card">
         {rows.map((row, i) => (
           <li key={row.id} className="flex items-center gap-3 px-3 py-2">
             {editingId === row.id ? (
@@ -148,7 +148,7 @@ export function LostReasonsClient({ rows: initial }: { rows: LostReasonRow[] }):
         )}
       </ul>
 
-      <div className="flex items-end gap-3 rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex items-end gap-3 rounded-lg border bg-card p-4">
         <label htmlFor="new-lost-reason" className="block flex-1">
           <span className="mb-1 block text-sm font-medium">{S.lostReasonName}</span>
           <Input

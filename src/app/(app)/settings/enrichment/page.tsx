@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import type { SelectOption } from "@/components/ui/Select";
 import { BUILTIN_FIELDS } from "@/constants/builtinFields";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
@@ -35,7 +36,7 @@ export default async function EnrichmentSettingsPage(): Promise<ReactNode> {
   const ctx = await createContext();
   // Server-side gate: the nav hides this page for a non-admin, but hiding is not a boundary.
   if (ctx.actor === null || ctx.actor.type !== "admin") {
-    return <p className="text-sm text-red-600">{S.adminOnly}</p>;
+    return <p className="text-sm text-destructive">{S.adminOnly}</p>;
   }
 
   const caller = createCaller(ctx);
@@ -50,6 +51,7 @@ export default async function EnrichmentSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
+      <PageTitle title="Enrichment" />
       <SettingsHeading title={S.title} description={S.description} />
       <EnrichmentClient
         providers={config.providers.map((p) => ({

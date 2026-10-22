@@ -1,3 +1,4 @@
+// design-ok: the settings index only redirects by role.
 import { redirect } from "next/navigation";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { createContext } from "@/server/trpc/context";

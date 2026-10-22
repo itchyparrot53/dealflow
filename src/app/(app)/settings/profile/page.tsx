@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { DEFAULT_DAILY_ACTIVITY_TARGET } from "@/constants/activityLoad";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
@@ -23,7 +24,7 @@ export const metadata = { title: STRINGS.settings.profile };
 export default async function ProfilePage(): Promise<ReactNode> {
   const { actor, session } = await createContext();
   if (actor === null)
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAuth}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAuth}</p>;
 
   const signal = AbortSignal.timeout(5_000);
   const [[me], prefs, credentials] = await Promise.all([
@@ -43,6 +44,7 @@ export default async function ProfilePage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
+      <PageTitle title="Profile" />
       <SettingsHeading
         title={STRINGS.settings.profile}
         description={STRINGS.settings.profileDescription}

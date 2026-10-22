@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -24,6 +25,7 @@ export default async function WebhooksSettingsPage(): Promise<ReactNode> {
   const rows = await listSubscriptions(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Webhooks" />
       <SettingsHeading title={WEBHOOKS_STRINGS.title} description={WEBHOOKS_STRINGS.intro} />
       <WebhooksSettings
         rows={rows.map((row) => ({

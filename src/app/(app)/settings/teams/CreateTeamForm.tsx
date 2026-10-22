@@ -72,7 +72,7 @@ export function CreateTeamForm({ users, onCreated }: Props): React.ReactElement 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="overflow-hidden rounded-lg border bg-card shadow-sm">
+    <form onSubmit={handleSubmit} className="overflow-hidden rounded-lg border bg-card">
       <div className="flex items-start gap-3 border-b px-5 py-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-muted-foreground">
           <UsersRound className="size-4" aria-hidden="true" />
@@ -137,7 +137,7 @@ export function CreateTeamForm({ users, onCreated }: Props): React.ReactElement 
         </div>
 
         {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}

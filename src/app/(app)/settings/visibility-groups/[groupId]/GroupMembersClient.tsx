@@ -81,7 +81,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
               aria-label={`Remove ${m.name}`}
               disabled={isPending}
               onClick={() => handleRemove(m.userId)}
-              className="text-red-600"
+              className="text-destructive"
             >
               Remove
             </Button>
@@ -112,7 +112,7 @@ export function GroupMembersClient({ groupId, members, allUsers }: Props): React
         </div>
 
         {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}

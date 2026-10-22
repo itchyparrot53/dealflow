@@ -21,10 +21,10 @@ export function SecondaryNavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
+        "flex h-8 items-center gap-2.5 rounded-md border-l-[3px] border-l-transparent pl-4 pr-2 text-sm transition-colors duration-100",
         active
-          ? "bg-blue-50 font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-          : "font-normal text-foreground hover:bg-accent/60",
+          ? "border-l-info bg-info-soft font-medium text-info"
+          : "font-normal text-foreground hover:bg-muted",
       )}
     >
       <Icon

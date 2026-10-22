@@ -25,11 +25,11 @@ vi.mock("./SignaturesSettingsClient", () => ({
 afterEach(cleanup);
 
 describe("EmailSettingsPage", () => {
-  it("renders the settings breadcrumb", async () => {
+  it("renders the section heading (the top bar owns the page title)", async () => {
     const { default: EmailSettingsPage } = await import("./page");
     render(await EmailSettingsPage());
 
-    expect(screen.getByRole("link", { name: "Settings" }).getAttribute("href")).toBe("/settings");
-    expect(screen.getByRole("heading", { level: 1, name: "Email templates" })).not.toBeNull();
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Email templates" })).not.toBeNull();
   });
 });

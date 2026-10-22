@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { env } from "@/config/env";
 import { STRINGS } from "@/constants/strings";
 import { resolveMcpEndpoint } from "@/features/oauth/mcpEndpoint";
@@ -15,7 +16,7 @@ export const metadata = { title: S.connectedApps };
 
 export default async function ConnectionsPage(): Promise<ReactNode> {
   const ctx = await createContext();
-  if (ctx.actor === null) return <p className="text-sm text-red-600">{S.requiresAuth}</p>;
+  if (ctx.actor === null) return <p className="text-sm text-destructive">{S.requiresAuth}</p>;
 
   const connections = await createCaller(ctx).oauth.listConnections();
   const mcpEndpoint = resolveMcpEndpoint({
@@ -24,6 +25,7 @@ export default async function ConnectionsPage(): Promise<ReactNode> {
   });
   return (
     <SettingsPage>
+      <PageTitle title="Connected apps" />
       <SettingsHeading title={S.connectedApps} description={S.connectedAppsDescription} />
       {mcpEndpoint !== null ? <McpConnectCard endpointUrl={mcpEndpoint} /> : null}
       <ConnectionsClient

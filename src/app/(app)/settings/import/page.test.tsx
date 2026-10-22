@@ -20,13 +20,13 @@ vi.mock("./ImportHistory", () => ({
 afterEach(cleanup);
 
 describe("ImportPage", () => {
-  it("renders the settings breadcrumb", async () => {
+  it("renders the settings section heading", async () => {
     const { default: ImportPage } = await import("./page");
     render(await ImportPage());
 
-    expect(screen.getByRole("link", { name: "Settings" }).getAttribute("href")).toBe("/settings");
-    // Exactly one page title (SettingsHeading owns it; ImportHistory no longer renders its own h1).
-    expect(screen.getAllByRole("heading", { level: 1, name: "Import data" })).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
+    // Exactly one section heading (SettingsHeading owns it; the top bar owns the page title).
+    expect(screen.getAllByRole("heading", { level: 2, name: "Import data" })).toHaveLength(1);
     // The New-import action moved into the heading actions slot.
     expect(screen.getByRole("link", { name: "New import" }).getAttribute("href")).toBe(
       "/settings/import/new",

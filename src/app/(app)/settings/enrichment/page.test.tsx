@@ -66,7 +66,7 @@ describe("EnrichmentSettingsPage", () => {
     const { default: Page } = await import("./page");
     render(await Page());
     expect(
-      screen.getByRole("heading", { level: 1, name: ENRICHMENT_STRINGS.settings.title }),
+      screen.getByRole("heading", { level: 2, name: ENRICHMENT_STRINGS.settings.title }),
     ).toBeInTheDocument();
     expect(screen.getByText("client:Apollo")).toBeInTheDocument();
   });

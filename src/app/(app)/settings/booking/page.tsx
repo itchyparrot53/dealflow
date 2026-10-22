@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { env } from "@/config/env";
 import { BOOKING_STRINGS } from "@/constants/formsBookingStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -26,6 +27,7 @@ export default async function BookingSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Booking pages" />
       <SettingsHeading title={BOOKING_STRINGS.title} description={BOOKING_STRINGS.intro} />
       <BookingPagesList
         baseUrl={env.BASE_URL}

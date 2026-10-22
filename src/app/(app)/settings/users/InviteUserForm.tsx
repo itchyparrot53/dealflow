@@ -106,11 +106,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="overflow-hidden rounded-lg border bg-card shadow-sm"
-    >
+    <form onSubmit={handleSubmit} noValidate className="overflow-hidden rounded-lg border bg-card">
       <div className="flex items-start gap-3 border-b px-5 py-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-muted-foreground">
           <UserPlus className="size-4" aria-hidden="true" />
@@ -140,7 +136,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
               disabled={isPending}
             />
             {fieldErrors.email !== null && (
-              <p id="invite-email-error" role="alert" className="text-sm text-red-600">
+              <p id="invite-email-error" role="alert" className="text-sm text-destructive">
                 {fieldErrors.email}
               </p>
             )}
@@ -162,7 +158,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
               disabled={isPending}
             />
             {fieldErrors.name !== null && (
-              <p id="invite-name-error" role="alert" className="text-sm text-red-600">
+              <p id="invite-name-error" role="alert" className="text-sm text-destructive">
                 {fieldErrors.name}
               </p>
             )}
@@ -173,7 +169,7 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
           {T.admin}
         </span>
         {error !== null && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}

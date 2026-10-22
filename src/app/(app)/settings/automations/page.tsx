@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -26,6 +27,7 @@ export default async function AutomationsSettingsPage(): Promise<ReactNode> {
   const rows = await listAutomations(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Automations" />
       <SettingsHeading title={AUTOMATIONS_STRINGS.title} description={AUTOMATIONS_STRINGS.intro} />
       <AutomationsList
         templates={AUTOMATION_TEMPLATES.map((template) => ({

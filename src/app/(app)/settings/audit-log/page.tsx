@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -51,6 +52,7 @@ export default async function AuditLogPage({
   }
   return (
     <SettingsPage className="max-w-6xl">
+      <PageTitle title="Audit log" />
       <SettingsHeading title={S.title} description={S.intro} />
       <AuditLog
         rows={result.value.rows}

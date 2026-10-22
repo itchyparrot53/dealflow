@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -35,6 +36,7 @@ export default async function ApiSettingsPage({
   const sections = buildApiDocSections(API_ROUTES);
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="API tokens" />
       <SettingsHeading title={S.title} description={S.intro} />
       <Tabs defaultValue={params.tab === "docs" ? "docs" : "tokens"} className="space-y-4">
         <TabsList>

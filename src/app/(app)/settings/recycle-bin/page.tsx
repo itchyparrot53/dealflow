@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -39,6 +40,7 @@ export default async function RecycleBinPage({
 
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Recycle bin" />
       <SettingsHeading title={S.title} description={S.intro} />
       <RecycleBin rows={rows} filters={{ entity: params.entity, search: params.search }} />
     </SettingsPage>

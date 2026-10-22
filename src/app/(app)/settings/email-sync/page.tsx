@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { db } from "@/db/client";
 import { authMethods } from "@/features/auth/authMethods";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
@@ -18,13 +19,14 @@ export const metadata = { title: EMAIL_SYNC_STRINGS.title };
 export default async function EmailSyncPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null)
-    return <p className="text-sm text-red-600">{EMAIL_SYNC_STRINGS.requiresAuth}</p>;
+    return <p className="text-sm text-destructive">{EMAIL_SYNC_STRINGS.requiresAuth}</p>;
 
   const mailbox = await getActorMailboxStatus(db, actor.id, AbortSignal.timeout(5000));
   const googleEnabled = authMethods().google;
 
   return (
     <SettingsPage>
+      <PageTitle title="Email sync" />
       <SettingsHeading title={EMAIL_SYNC_STRINGS.title} description={EMAIL_SYNC_STRINGS.intro} />
       <EmailSyncClient
         googleEnabled={googleEnabled}

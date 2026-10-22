@@ -28,9 +28,10 @@ describe("SettingsNav", () => {
     render(<SettingsNav isAdmin={true} canManageCompany={true} canImport={true} />);
     const active = screen.getByRole("link", { name: /Users/ });
     expect(active.getAttribute("aria-current")).toBe("page");
-    // PD highlights the active settings item in blue (text + tinted background), not bg-accent gray.
-    expect(active.className).toMatch(/text-blue-700/);
-    expect(active.className).toMatch(/bg-blue-50/);
+    // 6.8.11: the active settings item is info-soft with blue text and a 3 px blue left bar.
+    expect(active.className).toMatch(/text-info/);
+    expect(active.className).toMatch(/bg-info-soft/);
+    expect(active.className).toMatch(/border-l-info/);
     expect(active.className).not.toContain("bg-accent");
   });
 

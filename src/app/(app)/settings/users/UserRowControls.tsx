@@ -127,7 +127,7 @@ export function UserRowControls({
         </DropdownMenuContent>
       </DropdownMenu>
       {error !== null && (
-        <span role="alert" className="text-xs text-red-600">
+        <span role="alert" className="text-xs text-destructive">
           {error}
         </span>
       )}

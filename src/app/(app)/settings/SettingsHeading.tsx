@@ -1,9 +1,7 @@
 import type React from "react";
-import { PageHeading } from "@/components/shell/PageHeading";
-import { STRINGS } from "@/constants/strings";
 
-// A settings page heading: the shared PageHeading with the "Settings / X" breadcrumb prepended, so
-// every settings subpage carries the Pipedrive breadcrumb + 25px title without repeating the crumb.
+// A settings page heading. The PAGE title now lives in the top bar (Task 3.1), so this is the
+// section heading at 16/600 with its 14 px description, keeping one copy of the name on screen.
 export function SettingsHeading({
   title,
   description,
@@ -14,11 +12,14 @@ export function SettingsHeading({
   actions?: React.ReactNode;
 }): React.ReactNode {
   return (
-    <PageHeading
-      crumbs={[{ label: STRINGS.nav.settings, href: "/settings" }, { label: title }]}
-      title={title}
-      description={description}
-      actions={actions}
-    />
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        {description !== undefined ? (
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+      {actions !== undefined ? <div className="shrink-0">{actions}</div> : null}
+    </div>
   );
 }

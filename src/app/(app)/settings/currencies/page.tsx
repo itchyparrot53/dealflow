@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { CURRENCY_STRINGS } from "@/constants/salesStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -17,12 +18,13 @@ export const metadata = { title: CURRENCY_STRINGS.title };
 export default async function CurrenciesSettingsPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null || !can(actor, "permissions.manage")) {
-    return <p className="text-sm text-red-600">{SETTINGS_STRINGS.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{SETTINGS_STRINGS.requiresAdmin}</p>;
   }
 
   const rates = await listRates(db, AbortSignal.timeout(5000));
   return (
     <SettingsPage>
+      <PageTitle title="Currencies" />
       <SettingsHeading title={CURRENCY_STRINGS.title} description={CURRENCY_STRINGS.intro} />
       <CurrenciesSettings base={rates.base} rates={rates.rates} codes={supportedCurrencyCodes()} />
     </SettingsPage>

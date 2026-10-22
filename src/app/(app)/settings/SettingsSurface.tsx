@@ -8,7 +8,7 @@ export function SettingsPage({
   children: React.ReactNode;
   className?: string;
 }): React.ReactElement {
-  return <section className={cn("max-w-2xl space-y-6", className)}>{children}</section>;
+  return <section className={cn("max-w-[800px] space-y-6 p-6", className)}>{children}</section>;
 }
 
 export function SettingsCard({
@@ -19,9 +19,7 @@ export function SettingsCard({
   className?: string;
 }): React.ReactElement {
   return (
-    <div className={cn("overflow-hidden rounded-lg border bg-card shadow-sm", className)}>
-      {children}
-    </div>
+    <div className={cn("overflow-hidden rounded-lg border bg-card", className)}>{children}</div>
   );
 }
 
@@ -39,7 +37,7 @@ export function SettingsCardHeader({
   className?: string;
 }): React.ReactElement {
   return (
-    <div className={cn("flex items-start justify-between gap-4 border-b px-5 py-4", className)}>
+    <div className={cn("flex items-start justify-between gap-4 border-b px-4 py-4", className)}>
       <div className="flex min-w-0 items-start gap-3">
         {icon !== undefined ? (
           <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent text-muted-foreground">
@@ -47,7 +45,7 @@ export function SettingsCardHeader({
           </div>
         ) : null}
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-balance">{title}</h2>
+          <h2 className="text-base font-semibold text-balance">{title}</h2>
           {description !== undefined ? (
             <p className="mt-0.5 text-sm text-pretty text-muted-foreground">{description}</p>
           ) : null}
@@ -65,7 +63,7 @@ export function SettingsCardBody({
   children: React.ReactNode;
   className?: string;
 }): React.ReactElement {
-  return <div className={cn("p-5", className)}>{children}</div>;
+  return <div className={cn("p-4", className)}>{children}</div>;
 }
 
 export function SettingsCardFooter({

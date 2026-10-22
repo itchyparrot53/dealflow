@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import { STRINGS } from "@/constants/strings";
@@ -49,6 +50,7 @@ export default function NotificationSettingsPage() {
 
   return (
     <SettingsPage>
+      <PageTitle title="Notifications" />
       <SettingsHeading title={pageTitle} description={STRINGS.settings.notificationsDescription} />
       {error !== null && <p className="mb-4 text-sm text-destructive">{error}</p>}
       <SettingsCard>

@@ -111,7 +111,7 @@ export function ActivityTypesClient({
 
   return (
     <div className="space-y-4">
-      <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+      <ul className="divide-y overflow-hidden rounded-lg border bg-card">
         {rows.map((row, i) => (
           <li key={row.id} className="flex items-center gap-3 px-3 py-2">
             <ActivityTypeIcon typeKey={row.icon ?? row.key} />
@@ -185,9 +185,9 @@ export function ActivityTypesClient({
           <li className="px-3 py-2 text-sm text-muted-foreground">{S.emptyList}</li>
         )}
       </ul>
-      {rowError && <p className="text-sm text-red-600">{rowError.msg}</p>}
+      {rowError && <p className="text-sm text-destructive">{rowError.msg}</p>}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
         <label htmlFor="new-activity-type" className="min-w-56 flex-1">
           <span className="mb-1 block text-sm font-medium">{S.activityTypeName}</span>
           <Input

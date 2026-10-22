@@ -53,7 +53,7 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
         </p>
       )}
       <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase text-muted-foreground">
+        <thead className="text-left text-meta font-semibold text-muted-foreground">
           <tr>
             <th className="px-3 py-2">{S.goalSubject}</th>
             <th className="px-3 py-2">{S.goalAssignee}</th>

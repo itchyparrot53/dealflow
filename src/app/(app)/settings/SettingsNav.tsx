@@ -175,11 +175,14 @@ export function SettingsNav({
       : [MY_ACCOUNT];
 
   return (
-    <nav aria-label="Settings sections" className="w-56 shrink-0 space-y-4">
+    <nav
+      aria-label="Settings sections"
+      className="w-[240px] shrink-0 space-y-5 border-r border-border bg-card pb-6"
+    >
       {sections.map((section) => (
         <div key={section.title}>
-          {/* PD section header: 13px uppercase, muted, no extra letter-spacing. */}
-          <p className="mb-1 px-2 text-[13px] font-semibold uppercase text-muted-foreground">
+          {/* 6.8.11: group headings are 13/600 secondary, with a 24 px top margin. */}
+          <p className="mb-1 mt-6 px-4 text-meta font-semibold text-muted-foreground">
             {section.title}
           </p>
           <ul className="space-y-0.5">

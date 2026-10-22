@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -19,7 +20,7 @@ export const metadata = { title: PRODUCTS_STRINGS.title };
 export default async function ProductsSettingsPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null) {
-    return <p className="text-sm text-red-600">{SETTINGS_STRINGS.requiresAuth}</p>;
+    return <p className="text-sm text-destructive">{SETTINGS_STRINGS.requiresAuth}</p>;
   }
 
   const signal = AbortSignal.timeout(5000);
@@ -40,6 +41,7 @@ export default async function ProductsSettingsPage(): Promise<ReactNode> {
 
   return (
     <SettingsPage>
+      <PageTitle title="Products" />
       <SettingsHeading
         title={PRODUCTS_STRINGS.title}
         description={PRODUCTS_STRINGS.intro}

@@ -169,7 +169,7 @@ export function TemplatesSettingsClient({
   }
 
   return (
-    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+    <section className="overflow-hidden rounded-lg border bg-card">
       <div className="flex items-center justify-between gap-2 border-b px-5 py-4">
         <h2 className="text-sm font-semibold">{S.templates}</h2>
         <Button

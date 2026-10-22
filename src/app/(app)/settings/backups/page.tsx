@@ -1,6 +1,7 @@
 import { desc } from "drizzle-orm";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { env } from "@/config/env";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -28,6 +29,7 @@ export default async function BackupsPage(): Promise<ReactNode> {
   const rows = await db.select().from(backupRuns).orderBy(desc(backupRuns.startedAt)).limit(50);
   return (
     <SettingsPage className="max-w-5xl">
+      <PageTitle title="Backups" />
       <SettingsHeading title={S.title} description={S.intro} />
       <BackupsSettings
         enabled={env.BACKUP_ENABLED}

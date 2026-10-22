@@ -108,7 +108,7 @@ export function DataFieldsClient({
       {builtinRows.length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-semibold">{S.builtinFields}</h2>
-          <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+          <ul className="divide-y overflow-hidden rounded-lg border bg-card">
             {builtinRows.map((row) => (
               <BuiltinFieldRow key={row.key} entity={target} row={row} />
             ))}
@@ -166,7 +166,7 @@ export function DataFieldsClient({
                   />
                 </label>
               )}
-              {error !== null && <p className="text-sm text-red-600">{error}</p>}
+              {error !== null && <p className="text-sm text-destructive">{error}</p>}
             </li>
           }
         />

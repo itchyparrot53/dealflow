@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
@@ -12,7 +13,7 @@ export const metadata = { title: STRINGS.settings.activities };
 export default async function ActivitiesPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
 
   const rows = await listTypes(db, { activeOnly: false }, AbortSignal.timeout(5000));
@@ -24,5 +25,10 @@ export default async function ActivitiesPage(): Promise<ReactNode> {
     isSystem: t.isSystem,
     active: t.archivedAt === null,
   }));
-  return <ActivityTypesClient rows={serializable} />;
+  return (
+    <>
+      <PageTitle title="Activity types" />
+      <ActivityTypesClient rows={serializable} />
+    </>
+  );
 }

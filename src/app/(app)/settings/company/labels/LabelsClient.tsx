@@ -85,14 +85,14 @@ export function LabelsClient({ rows: initial }: { rows: Row[] }): React.ReactNod
 
   return (
     <div className="space-y-6">
-      {error !== null && <p className="text-sm text-red-600">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
       {LABEL_TARGETS.map((target) => {
         const group = rows.filter((r) => r.target === target);
         const groupIds = group.map((r) => r.id);
         return (
           <section key={target} className="space-y-2">
             <h2 className="text-sm font-semibold">{TARGET_LABEL[target]}</h2>
-            <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+            <ul className="divide-y overflow-hidden rounded-lg border bg-card">
               {group.map((row, i) => (
                 <LabelRow
                   key={row.id}

@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { env } from "@/config/env";
 import { FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
@@ -46,6 +47,7 @@ export default async function FormEditorPage({
 
   return (
     <SettingsPage className="max-w-3xl">
+      <PageTitle title="Forms" />
       <SettingsHeading title={form.name} description={FORMS_STRINGS.intro} />
       <FormEditor
         baseUrl={env.BASE_URL}

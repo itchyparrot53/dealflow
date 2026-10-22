@@ -1,6 +1,7 @@
 import { asc, eq, isNull, or } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
@@ -55,6 +56,7 @@ export default async function AutomationEditorPage({
 
   return (
     <SettingsPage className="max-w-3xl">
+      <PageTitle title="Automations" />
       <SettingsHeading title={automation.name} description={AUTOMATIONS_STRINGS.intro} />
       <AutomationEditor
         reviewNote={drafted === "1"}

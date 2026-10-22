@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { ReactNode } from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { PERMISSION_FLAGS } from "@/constants/permissionFlags";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
@@ -14,7 +15,7 @@ export const metadata = { title: STRINGS.settings.companyGeneral };
 export default async function CompanyGeneralPage(): Promise<ReactNode> {
   const { actor } = await createContext();
   if (actor === null || (actor.type !== "admin" && !actor.flags.has(PERMISSION_FLAGS.MANAGE))) {
-    return <p className="text-sm text-red-600">{STRINGS.settings.requiresAdmin}</p>;
+    return <p className="text-sm text-destructive">{STRINGS.settings.requiresAdmin}</p>;
   }
 
   const [row] = await db
@@ -23,9 +24,12 @@ export default async function CompanyGeneralPage(): Promise<ReactNode> {
     .where(eq(settings.id, true));
 
   return (
-    <CompanyGeneralClient
-      companyName={row?.companyName ?? ""}
-      baseCurrency={row?.baseCurrency ?? "USD"}
-    />
+    <>
+      <PageTitle title="Company settings" />
+      <CompanyGeneralClient
+        companyName={row?.companyName ?? ""}
+        baseCurrency={row?.baseCurrency ?? "USD"}
+      />
+    </>
   );
 }
