@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-22 11:50
+Current: 4.1 · Last updated: 2026-10-22 12:00
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
 - Phase 1: 993185503417f6d74fcd36d46c446dd2e006f988
 - Phase 2: fc5eab66f691ad5ca160f8ea710cacb60704997a
 - Phase 3: 255b39848331d71337ce163461315f1689311e2e
+- Phase 4: e4c606fef2e1158db47a5b3b7d59de582bc243d9
 
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
@@ -30,7 +31,7 @@ Current: 3.5 · Last updated: 2026-10-22 11:50
 - [x] 3.2 Auth and public pages
 - [x] 3.3 Empty, loading and error states
 - [x] 3.4 Remaining worklist, wording and docs
-- [ ] 3.5 Phase 3 QA gate
+- [x] 3.5 Phase 3 QA gate
 - [ ] 4.1 Full e2e and the gallery
 - [ ] 4.2 Integration suite and smoke
 - [ ] 4.3 Independent review with a computed-style critique
@@ -38,6 +39,7 @@ Current: 3.5 · Last updated: 2026-10-22 11:50
 - [ ] 4.5 Final report and completion
 
 ## QA log
+- Phase 3 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 0 violations, 12 opt-outs · design 26/26, 73 screenshots
 - Phase 2 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design: 151 violation(s) in 92 file(s); 9 opt-out(s) · design 12/12
 - Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 203 violations in 130 files, 9 opt-outs · design 8/8 · existing e2e 4/4
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
@@ -102,6 +104,7 @@ Current: 3.5 · Last updated: 2026-10-22 11:50
 - 3.3: the last two plain loading lines are now content-shaped skeletons: the thread reader paints title + two message cards, and the booking slot grid paints six 32 px slot skeletons. The skeleton containers carry `role="status"` with `aria-busy`/`aria-label`. A new `ErrorRow` primitive renders 6.8.13's inline failure (3 px destructive left bar on the soft red fill, 14 text, optional action) and is used by the activities table and the thread's mark-unread error.
 - 3.4: `check-design` is now 0 violations in 0 files with 12 opt-outs (seven intercepted `@modal` routes whose underlying page owns the title, four redirect-only routes, and the drag bar's upper-case labels). The last 36 hits in 25 files were closed by tokenising the remaining palette steps and soft-red error rows, removing shadows from static cards, switching all-caps section labels to 13/600 sentence case, replacing the arbitrary 10/11 px sizes with `text-caption`, and the composer tab underline's raw `#2b74da` with `--info`.
 - 3.4: `docs/dealflow/DESIGN-WORKLIST.md` is rewritten as the final record (0 violations, every opt-out with file, line and reason, the 6.1 table with every row's closing task); `docs/dealflow/DESIGN.md` documents the parity statement, the full token table in both themes, type/spacing/radius/shadow/motion/focus, the component inventory, the opt-out policy and the commands; `UPSTREAM.md` has the Part 11 section by folder and the README has its design paragraph. 6.9 wording holds (search "Search Dealflow", sentence case, no "successfully" toasts).
+- 3.5 fixes: none needed. The full 26-screen design pass (parity checks on, axe light and dark, 1440/375) passed first time, `check-design` is 0, and the unit suite is 5346/5346. The gallery wrote the expected 73 PNGs.
 - 3.4: changed tests for the shared secondary-nav and notification tint: contacts nav asserts the info tokens, and the notification row asserts `bg-info-soft`. The full unit suite is 5346/5346 and lint/typecheck are green.
 - 3.3: `git grep -nE ">Loading[^<]*\.\.\.<" -- src` prints nothing; the changed files are at `check:design` 0; the thread and booking design screens pass 2/2 and the mail/activities/scheduling suites 1476/1476.
 
