@@ -220,6 +220,8 @@ describe("deliverWebhook", () => {
     expect(subscription?.enabled).toBe(false);
     expect(subscription?.disabledReason).toBe("Disabled after 10 failed deliveries");
     expect(sent).toHaveLength(1);
+    expect(sent[0]?.html).toContain('src="https://app.example.com/brand/email-logo@2x.png"');
+    expect(sent[0]?.text.startsWith("Dealflow\n\n")).toBe(true);
   });
 
   it("disables immediately on a 410", async () => {

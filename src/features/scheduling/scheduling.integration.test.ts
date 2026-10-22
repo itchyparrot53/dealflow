@@ -235,6 +235,8 @@ describe("booking", () => {
     expect(captured).toHaveLength(1);
     expect(captured[0]?.to).toBe("sam.ortiz@example.com");
     expect(captured[0]?.text).toContain("/book/cancel/");
+    expect(captured[0]?.text.startsWith("Dealflow\n\n")).toBe(true);
+    expect(captured[0]?.html).toContain('src="https://app.example.com/brand/email-logo@2x.png"');
   });
 
   it("lets exactly one of ten concurrent bookings win", async () => {

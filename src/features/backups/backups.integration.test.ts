@@ -10,6 +10,7 @@ import { backupRuns } from "@/db/schema";
 import { seedUser } from "@/db/testing/factories";
 import { FakeStorageClient } from "@/features/files/storageFake";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
+import type { SystemMail } from "@/features/mailer/types";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { ok } from "@/types/result";
@@ -21,7 +22,7 @@ let admin: PermSetUser;
 let regular: PermSetUser;
 let dir: string;
 let currentActor: PermSetUser | null = null;
-const sent: string[] = [];
+const sent: SystemMail[] = [];
 
 vi.mock("@/server/trpc/context", () => ({
   createContext: () => Promise.resolve({ actor: currentActor, session: { id: "test-session" } }),
@@ -73,7 +74,7 @@ beforeAll(async () => {
   setSystemMailerForTest({
     mode: "capture",
     send: (mail) => {
-      sent.push(mail.subject);
+      sent.push(mail);
       return Promise.resolve(ok({ messageId: "fake" }));
     },
   });
@@ -134,6 +135,8 @@ describe("runBackup", () => {
     expect(failed.some((run) => run.errorDetail?.includes("pg_dump") === true)).toBe(true);
     expect(row).toBeDefined();
     expect(sent.length).toBeGreaterThanOrEqual(1);
+    expect(sent[0]?.html).toContain('src="https://app.example.com/brand/email-logo@2x.png"');
+    expect(sent[0]?.text.startsWith("Dealflow\n\n")).toBe(true);
   });
 
   it("returns the running run to a second concurrent caller", async () => {

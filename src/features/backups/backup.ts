@@ -7,6 +7,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { type Db, pool } from "@/db/client";
 import { backupRuns, users } from "@/db/schema";
 import type { StorageClient } from "@/features/files/storage";
+import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
 import { err, ok, type Result } from "@/types/result";
 import { buildManifest } from "./manifest";
@@ -112,8 +113,8 @@ async function notifyFailure(db: Db, detail: string, signal: AbortSignal): Promi
         {
           to: admin.email,
           subject: "Dealflow backup failed",
-          text: `The scheduled backup failed: ${detail}`,
-          html: `<p>The scheduled backup failed:</p><pre>${detail}</pre>`,
+          text: `${emailBrandHeaderText()}The scheduled backup failed: ${detail}`,
+          html: `${emailBrandHeaderHtml()}<p>The scheduled backup failed:</p><pre>${detail}</pre>`,
         },
         signal,
       );

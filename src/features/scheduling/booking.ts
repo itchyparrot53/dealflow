@@ -10,6 +10,7 @@ import { loadContactActor } from "@/features/contacts/actorAdapters";
 import { createPerson } from "@/features/contacts/personsRepo";
 import { emitDomainEvent } from "@/features/events/emit";
 import { getPreferences } from "@/features/identity/preferencesRepo";
+import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
 import { createNotification } from "@/features/notifications/produce";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -221,7 +222,15 @@ async function sendVisitorEmail(
 ): Promise<void> {
   const mailer = getSystemMailer();
   const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const result = await mailer.send({ to, subject, text, html: `<pre>${escaped}</pre>` }, signal);
+  const result = await mailer.send(
+    {
+      to,
+      subject,
+      text: `${emailBrandHeaderText()}${text}`,
+      html: `${emailBrandHeaderHtml()}<pre>${escaped}</pre>`,
+    },
+    signal,
+  );
   if (!result.ok) console.warn(`booking confirmation email failed: ${result.error.id}`);
 }
 

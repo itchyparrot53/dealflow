@@ -106,6 +106,11 @@ describe("renderNotificationEmail", () => {
       expect(out.subject.length, `subject empty for type ${type}`).toBeGreaterThan(0);
       expect(out.text.length, `text empty for type ${type}`).toBeGreaterThan(0);
       expect(out.html, `html missing < for type ${type}`).toContain("<");
+      // Every system notification carries the same branded header.
+      expect(out.html, `logo missing for type ${type}`).toContain(
+        'src="https://app.example.com/brand/email-logo@2x.png"',
+      );
+      expect(out.text.startsWith("Dealflow\n\n"), `text fallback missing for ${type}`).toBe(true);
     }
   });
 });

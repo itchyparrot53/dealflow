@@ -16,6 +16,7 @@ import { PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { users, webhookDeliveries, webhookSubscriptions } from "@/db/schema";
 import { decryptToken } from "@/features/email/crypto";
+import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
 import { getBoss } from "@/jobs/boss";
 import { checkWebhookUrl, isBlockedAddress } from "./ipRanges";
@@ -171,8 +172,8 @@ async function disableSubscription(
       {
         to: user.email,
         subject: "A Dealflow webhook was disabled",
-        text: `Hello ${user.name},\n\nThe webhook subscription was disabled: ${reason}.\n\nRe-enable it in Settings > Webhooks after fixing the receiver.`,
-        html: `<p>Hello ${user.name},</p><p>The webhook subscription was disabled: ${reason}.</p><p>Re-enable it in Settings &gt; Webhooks after fixing the receiver.</p>`,
+        text: `${emailBrandHeaderText()}Hello ${user.name},\n\nThe webhook subscription was disabled: ${reason}.\n\nRe-enable it in Settings > Webhooks after fixing the receiver.`,
+        html: `${emailBrandHeaderHtml()}<p>Hello ${user.name},</p><p>The webhook subscription was disabled: ${reason}.</p><p>Re-enable it in Settings &gt; Webhooks after fixing the receiver.</p>`,
       },
       signal,
     );

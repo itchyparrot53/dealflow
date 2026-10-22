@@ -1,4 +1,5 @@
 import { env } from "@/config/env";
+import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
 import { entityHref, payloadHref } from "@/features/notifications/entityHref";
 import type { NotificationRow } from "@/types/notification";
 
@@ -16,8 +17,8 @@ function escapeHtml(s: string): string {
 }
 
 function wrap(line: string, link: string): { text: string; html: string } {
-  const text = `${line}\n\nOpen: ${link}`;
-  const html = `<p>${escapeHtml(line)}</p><p><a href="${escapeHtml(link)}">Open in Dealflow</a></p>`;
+  const text = `${emailBrandHeaderText()}${line}\n\nOpen: ${link}`;
+  const html = `${emailBrandHeaderHtml()}<p>${escapeHtml(line)}</p><p><a href="${escapeHtml(link)}">Open in Dealflow</a></p>`;
   return { text, html };
 }
 

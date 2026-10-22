@@ -1,3 +1,4 @@
+import { emailBrandHeaderHtml, emailBrandHeaderText } from "./branding";
 import type { MailContent } from "./types";
 
 // System-mail copy. Plain text is the source of truth; the HTML part is the same wording with the
@@ -25,8 +26,9 @@ function linkParagraph(url: string): string {
 export function magicLinkMail({ url }: { url: string }): MailContent {
   return {
     subject: "Your Dealflow sign-in link",
-    text: `Sign in to Dealflow with this link. It expires in 15 minutes and works once.\n\n${url}\n\nIf you didn't ask for it, ignore this email.`,
+    text: `${emailBrandHeaderText()}Sign in to Dealflow with this link. It expires in 15 minutes and works once.\n\n${url}\n\nIf you didn't ask for it, ignore this email.`,
     html: [
+      emailBrandHeaderHtml(),
       "<p>Sign in to Dealflow with this link. It expires in 15 minutes and works once.</p>",
       linkParagraph(url),
       "<p>If you didn't ask for it, ignore this email.</p>",
@@ -43,8 +45,9 @@ export function inviteMail({
 }): MailContent {
   return {
     subject: `${inviterName} invited you to Dealflow`,
-    text: `Set your password and sign in with this link. It expires in 7 days.\n\n${url}`,
+    text: `${emailBrandHeaderText()}Set your password and sign in with this link. It expires in 7 days.\n\n${url}`,
     html: [
+      emailBrandHeaderHtml(),
       "<p>Set your password and sign in with this link. It expires in 7 days.</p>",
       linkParagraph(url),
     ].join(""),
