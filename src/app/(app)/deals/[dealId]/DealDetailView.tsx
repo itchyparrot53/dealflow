@@ -14,6 +14,8 @@ import { listAssignableUsers } from "@/features/identity/users.service";
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
 import { listProjects } from "@/features/projects/projects";
+import { RememberRecord } from "@/features/pwa/offline/remember";
+import { toDealSnapshot } from "@/features/pwa/offline/snapshots";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { DealWorkspaceClient } from "./DealWorkspaceClient";
 
@@ -120,6 +122,24 @@ export async function DealDetailView({ dealId }: { dealId: string }): Promise<Re
 
   return (
     <CustomFieldRefLabelsProvider value={refLabels}>
+      <RememberRecord
+        userId={loaded.actor.id}
+        snapshot={toDealSnapshot({
+          id: loaded.value.deal.id,
+          title: loaded.value.deal.title,
+          value: loaded.value.deal.value ?? null,
+          currency: loaded.value.productSummary?.currency ?? baseCurrency,
+          stageName: loaded.value.stageProgress.chips.find((chip) => chip.current)?.name ?? "",
+          status: loaded.value.deal.status,
+          personName: loaded.value.person?.name ?? null,
+          orgName: loaded.value.org?.name ?? null,
+          ownerName: loaded.value.ownerName,
+          // The workspace does not load the deal's activity list, so the offline card starts
+          // without it; the person/org pages have the same limitation.
+          nextActivity: null,
+          recentActivities: [],
+        })}
+      />
       <DealWorkspaceClient
         workspace={loaded.value}
         selfActorId={loaded.actor.id}

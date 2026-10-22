@@ -14,6 +14,8 @@ import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Select } from "@/components/ui/Select";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
+import { RememberRecord } from "@/features/pwa/offline/remember";
+import { toTodaySnapshot } from "@/features/pwa/offline/snapshots";
 import { useRowCursor } from "@/features/shortcuts/useRowCursor";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -81,6 +83,20 @@ export function ActivitiesTable({
   usePersistColumns("activities", columns.order);
   const promptAfterDone = useFollowUpAfterDone();
   const rows = useMemo(() => rowsQ.data ?? [], [rowsQ.data]);
+  // The offline "Today" tab remembers the activities due today from whatever the list has loaded.
+  const todaySnapshot = useMemo(() => {
+    const today = new Date().toDateString();
+    const items = rows
+      .filter((row) => row.dueAtIso !== null && new Date(row.dueAtIso).toDateString() === today)
+      .map((row) => ({
+        id: row.id,
+        subject: row.subject,
+        dueAt: row.dueAtIso,
+        done: row.done,
+        dealTitle: row.dealTitle,
+      }));
+    return toTodaySnapshot({ items });
+  }, [rows]);
   // Cap how many rows are painted; the count header, select-all, and bulk actions all operate
   // over the full `rows` set, so this bounds render cost only. listRows is pagination-free, so
   // without this the default open-activities view mounts every row at once.
@@ -170,6 +186,7 @@ export function ActivitiesTable({
 
   return (
     <div className="flex h-full flex-col p-4">
+      <RememberRecord userId={currentUserId} snapshot={todaySnapshot} />
       <div className="mb-3 flex flex-wrap items-center gap-3">
         {/* View toggle: List (active) vs Calendar. */}
         <div className="inline-flex rounded-md border bg-card p-0.5 text-sm">

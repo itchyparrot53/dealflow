@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
+import { users } from "@/db/schema";
 import { toContactActor } from "@/features/contacts/actorAdapters";
 import { getContactFollowers } from "@/features/contacts/followers";
 import { getOrg } from "@/features/contacts/orgsRepo";
@@ -11,6 +13,8 @@ import { CustomFieldRefLabelsProvider } from "@/features/custom-fields/refLabels
 import { cachedDetailLoad } from "@/features/navigation/cachedDetailLoad";
 import { can } from "@/features/permissions/can";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
+import { RememberRecord } from "@/features/pwa/offline/remember";
+import { toPersonSnapshot } from "@/features/pwa/offline/snapshots";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { PersonDetailClient } from "./PersonDetailClient";
 
@@ -49,6 +53,12 @@ export async function PersonDetailView({
     getContactFollowers(ctx.db, actor, "person", person.id, AbortSignal.timeout(10_000)),
     listHiddenBuiltins(ctx.db, AbortSignal.timeout(10_000)),
   ]);
+  // The owner's name is the only extra read; the offline snapshot shows it and the detail page
+  // itself renders the owner through its own picker.
+  const [owner] = await ctx.db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, person.ownerId));
   const orgName = org !== null && org.ok === true ? org.value.name : null;
 
   const record: VisiblePersonOrOrg = {
@@ -71,6 +81,17 @@ export async function PersonDetailView({
 
   return (
     <CustomFieldRefLabelsProvider value={refLabels}>
+      <RememberRecord
+        userId={actor.id}
+        snapshot={toPersonSnapshot({
+          id: person.id,
+          name: person.name,
+          emails: person.emails.map((point) => point.value),
+          phones: person.phones.map((point) => point.value),
+          orgName,
+          ownerName: owner?.name ?? null,
+        })}
+      />
       <PersonDetailClient
         person={person}
         orgName={orgName}

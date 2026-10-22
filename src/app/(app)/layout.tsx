@@ -17,6 +17,7 @@ import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
 import { getPreferencesForActor } from "@/features/identity/preferencesForActor";
 import { IdentifyUser } from "@/features/observability/IdentifyUser";
 import { OfflineBanner } from "@/features/pwa/OfflineBanner";
+import { OfflineUserSync } from "@/features/pwa/offline/remember";
 import { ServiceWorkerRegistration } from "@/features/pwa/register";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
@@ -73,6 +74,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
               <main className="min-w-0 flex-1 overflow-auto bg-muted/70 p-6">{children}</main>
             </div>
             <CommandPalette actor={{ type: ctx.actor.type, flags: ctx.actor.flags }} />
+            <OfflineUserSync userId={ctx.actor.id} />
             <GlobalShortcuts />
             <ServiceWorkerRegistration production={env.NODE_ENV === "production"} />
             <Toaster />

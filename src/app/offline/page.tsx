@@ -1,20 +1,8 @@
-"use client";
 import type React from "react";
-import { Button } from "@/components/ui/Button";
+import { OfflineApp } from "@/features/pwa/offline/ui/OfflineApp";
 
-// The offline shell is served by the service worker when a navigation fails. It lives outside the
-// (app) group so it needs no session, and it is client rendered: Task 1.3 fills it from IndexedDB.
+// Outside the (app) group: the service worker can serve this page with no session, and it renders
+// statically. The data comes from IndexedDB, never from a cached server response.
 export default function OfflinePage(): React.ReactNode {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-xl font-semibold">You're offline</h1>
-      <p className="max-w-sm text-sm text-muted-foreground">
-        Dealflow can't reach the server. Records you opened while online will appear here once they
-        have been saved.
-      </p>
-      <Button type="button" onClick={() => window.location.reload()}>
-        Try again
-      </Button>
-    </main>
-  );
+  return <OfflineApp />;
 }

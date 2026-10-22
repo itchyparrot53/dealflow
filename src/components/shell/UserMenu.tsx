@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, Settings, User } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import {
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { InstallButton } from "@/features/pwa/InstallButton";
+import { SignOutLink } from "@/features/pwa/SignOutLink";
 import { AppearanceMenuSection } from "@/features/theme/AppearanceMenuSection";
 import { APPEARANCE_DEFAULT, type Appearance } from "@/features/theme/appearance";
 import { useAppearanceChoice } from "@/features/theme/useAppearanceChoice";
@@ -81,10 +82,7 @@ export function UserMenu({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="gap-2.5">
-          <a href="/auth/logout">
-            <LogOut aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-            Log out
-          </a>
+          <SignOutLink />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <AppearanceMenuSection choice={appearanceChoice} />
