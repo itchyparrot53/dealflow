@@ -172,7 +172,7 @@ export function InsertToolbar({
                   close();
                   setSaveOpen(true);
                 }}
-                className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-xs text-primary hover:bg-accent"
+                className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left text-xs text-link-record hover:bg-muted"
               >
                 <span aria-hidden="true">+</span> Save draft as a template
               </button>

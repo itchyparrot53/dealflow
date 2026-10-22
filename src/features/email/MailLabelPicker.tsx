@@ -96,7 +96,7 @@ export function MailLabelPicker({ value, onChange }: MailLabelPickerProps): Reac
               )}
             </CommandGroup>
           </CommandList>
-          {error !== null && <p className="px-2.5 pb-2 text-xs text-destructive">{error}</p>}
+          {error !== null && <p className="px-2.5 pb-2 text-xs text-next-red">{error}</p>}
         </Command>
       </PopoverContent>
     </Popover>

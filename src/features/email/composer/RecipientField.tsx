@@ -120,7 +120,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
         }}
       />
       {open && suggestions.length > 0 && (
-        <div className="absolute left-0 top-full z-10 mt-1 w-full rounded border border-border bg-background shadow-md">
+        <div className="absolute left-0 top-full z-10 mt-1 w-full rounded border border-border bg-background shadow-pop">
           {suggestions.map((p) => (
             <div key={p.id}>
               <button
@@ -140,7 +140,7 @@ export function RecipientField({ label, values, onChange }: RecipientFieldProps)
           ))}
         </div>
       )}
-      {error !== null && <p className="w-full text-xs text-destructive">{error}</p>}
+      {error !== null && <p className="w-full text-xs text-next-red">{error}</p>}
     </div>
   );
 }

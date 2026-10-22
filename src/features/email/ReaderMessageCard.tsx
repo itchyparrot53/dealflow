@@ -27,14 +27,14 @@ export function ReaderMessageCard({
   return (
     <article
       data-testid="reader-message-card"
-      className="rounded-md border border-border bg-card p-4"
+      className="rounded-lg border border-border bg-card p-4"
     >
       <div className="mb-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="flex min-w-0 items-center gap-2">
           {/* Per-message avatar (Pipedrive shows one beside each sender). */}
           <Avatar
             name={message.fromName ?? message.fromEmail}
-            className="h-7 w-7 shrink-0 text-[10px]"
+            className="size-7 shrink-0 text-caption"
           />
           <span className="min-w-0 truncate">
             {/* PD shows "Name <email>": name in the strong slot, address alongside. */}

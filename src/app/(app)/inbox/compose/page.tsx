@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { getActorMailbox } from "@/features/email/mailboxOwnership";
@@ -25,11 +26,14 @@ export default async function ComposePage({
   const sp = await searchParams;
   const draft = typeof sp.draft === "string" ? sp.draft : undefined;
   return (
-    <ComposePageClient
-      accountId={mailbox.id}
-      fromAddress={mailbox.emailAddress}
-      selfActorId={ctx.actor.id}
-      draftId={draft}
-    />
+    <>
+      <PageTitle title="Compose" />
+      <ComposePageClient
+        accountId={mailbox.id}
+        fromAddress={mailbox.emailAddress}
+        selfActorId={ctx.actor.id}
+        draftId={draft}
+      />
+    </>
   );
 }

@@ -27,7 +27,7 @@ interface ThreadLabelChipsProps {
 // key against the user-managed mail-label catalog for its display name + color, so custom labels
 // render (not just the three built-ins) and a legacy token still resolves via its seeded built-in.
 // Keys with no catalog entry are skipped so a stray token never renders an unstyled chip. A15:
-// chips render uppercase at 10px so they read as Pipedrive-style tags.
+// Label chips sit at the caption size; sentence case matches the rest of the UI.
 export function ThreadLabelChips({
   labels,
   onLabelsChange,
@@ -42,7 +42,7 @@ export function ThreadLabelChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className={`rounded border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${chip.classes}`}
+          className={`rounded-md border px-1.5 py-0.5 text-caption font-medium ${chip.classes}`}
         >
           {chip.name}
         </span>

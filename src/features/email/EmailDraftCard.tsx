@@ -48,7 +48,7 @@ export function EmailDraftCard({
       <div className="flex items-start justify-between gap-2 p-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className="rounded bg-muted px-1.5 py-0.5 text-caption font-medium text-muted-foreground">
               Draft
             </span>
             <h3 className="truncate text-sm font-semibold text-foreground">{subject}</h3>

@@ -30,7 +30,7 @@ export function AttachmentList({ attachments, onRemove }: AttachmentListProps): 
             type="button"
             aria-label={`Remove ${f.filename}`}
             onClick={() => onRemove(f.fileId)}
-            className="shrink-0 hover:text-destructive"
+            className="shrink-0 hover:text-next-red"
           >
             &times;
           </button>

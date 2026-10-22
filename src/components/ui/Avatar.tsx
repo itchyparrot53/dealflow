@@ -32,9 +32,12 @@ export function Avatar({ name, src, className }: AvatarProps): React.ReactNode {
       role="img"
       aria-label={name}
       className={cn(
-        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-avatar text-xs font-semibold text-avatar-foreground",
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-avatar text-xs font-semibold",
         className,
       )}
+      // Set as an inline colour so tailwind-merge cannot mistake the token for a font size when a
+      // caller passes `text-caption`/`text-xs` in its className.
+      style={{ color: "hsl(var(--avatar-foreground))" }}
     >
       {initials(name)}
     </span>

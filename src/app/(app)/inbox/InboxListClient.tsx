@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { STRINGS } from "@/constants/strings";
 import { DraftsList } from "@/features/email/DraftsList";
 import type { InboxFilter } from "@/features/email/emailReads";
 import { InboxSearchBar } from "@/features/email/InboxSearchBar";
@@ -40,7 +39,7 @@ export function InboxListClient({ selfActorId, folder }: InboxListClientProps): 
   const listPane =
     folder === "inbox" || folder === "sent" || folder === "archive" ? (
       <>
-        <div className="shrink-0 border-b p-2">
+        <div className="shrink-0 border-b border-border p-2">
           <InboxSearchBar onQuery={setSearchQuery} />
         </div>
         <div className="min-h-0 flex-1">
@@ -65,7 +64,6 @@ export function InboxListClient({ selfActorId, folder }: InboxListClientProps): 
   // no persistent reading pane; a row opens the thread on its own page inside the same shell.
   return (
     <main aria-label="Inbox" className="flex h-full min-h-0 flex-col">
-      <h1 className="shrink-0 border-b px-4 py-2 text-lg font-semibold">{STRINGS.inbox.title}</h1>
       <section aria-label="Conversations" className="flex min-h-0 min-w-0 flex-1 flex-col">
         {listPane}
       </section>

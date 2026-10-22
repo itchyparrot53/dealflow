@@ -105,9 +105,7 @@ export function ThreadPane({
             {inboxThread.subject ?? "(no subject)"}
           </h1>
           <div className="flex shrink-0 items-center gap-2">
-            {markUnreadError !== null && (
-              <p className="text-xs text-destructive">{markUnreadError}</p>
-            )}
+            {markUnreadError !== null && <p className="text-xs text-next-red">{markUnreadError}</p>}
             {/* Owner-only thread privacy (B2). Same canCompose gate as the follow-up controls: only
                 the mailbox owner may flip visibility, and the server re-checks ownership. Reuses the
                 shared ThreadPrivacyToggle (also used per-row in ThreadList), which surfaces a failed
@@ -174,7 +172,7 @@ export function ThreadPane({
               column), so it flows immediately under the last message instead of floating at the page
               bottom below a flex-1 spacer. B10: the column is width-constrained and centered, with
               each message + the reply footer as its own bordered card. */}
-          <div data-reader-scroll className="flex-1 overflow-y-auto">
+          <div data-reader-scroll className="flex-1 overflow-y-auto bg-canvas-subtle">
             <div
               data-reader-column
               className="mx-auto flex w-full max-w-[640px] flex-col gap-3 p-4"

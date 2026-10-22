@@ -49,7 +49,7 @@ export function OutboxList(): React.ReactNode {
             <p className="text-xs text-muted-foreground tabular-nums">
               {statusLabel(it.status, it.scheduledAt)}
             </p>
-            {it.errorId !== null && <p className="text-xs text-destructive">{it.errorId}</p>}
+            {it.errorId !== null && <p className="text-xs text-next-red">{it.errorId}</p>}
           </div>
           {isCancelable(it.status, it.scheduledAt) ? (
             <button

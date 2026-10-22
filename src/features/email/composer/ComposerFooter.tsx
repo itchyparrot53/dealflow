@@ -172,9 +172,7 @@ export function ComposerFooter({
                   Schedule
                 </button>
               </div>
-              {pickerError !== null && (
-                <span className="text-xs text-destructive">{pickerError}</span>
-              )}
+              {pickerError !== null && <span className="text-xs text-next-red">{pickerError}</span>}
             </div>
           )}
         </div>

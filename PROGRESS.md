@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-22 09:35
+Current: 2.2 · Last updated: 2026-10-22 09:55
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -19,7 +19,7 @@ Current: 2.1 · Last updated: 2026-10-22 09:35
 - [x] 1.3 Deal workspace and StageTrack
 - [x] 1.4 Lists and person/organization detail
 - [x] 1.5 Phase 1 QA gate
-- [ ] 2.1 Inbox, thread and mobile reply sheet
+- [x] 2.1 Inbox, thread and mobile reply sheet
 - [ ] 2.2 Calendar and forecast
 - [ ] 2.3 Documents and the public document page
 - [ ] 2.4 Insights and dashboards
@@ -82,6 +82,12 @@ Current: 2.1 · Last updated: 2026-10-22 09:35
 - 1.4: three more tab strips (ContactHistoryTabs, the contact detail tabs, LeadTimeline) got hidden `TabsContent forceMount` targets, like the deal ones, so Radix's `aria-controls` resolve; the activities list spec first switches to "To-do" and "All owners" because its default "Today for me" view is legitimately empty for the seeded admin.
 - 1.4: changed tests: the overdue activity row asserts `text-next-red`, and the date picker's fullness dots assert the success/warning/destructive tokens.
 - 1.4: `DESIGN_SCREENS=deals-list,people,person,organizations,leads,activities-list` passes 6/6 (axe light+dark, 375, activities parity).
+- 2.1: the inbox follows 6.8.5: a 220 px white folder column with 32 px items and an info-soft active row, the list pane keeping its full-width conversation column (Part 7 chose a standalone reader route, not a two-pane split), 72 px thread rows at 12/16 padding with an info-soft selected state, a canvas-subtle reading pane with rounded-lg white message cards, and the 32 px reply footer. The inbox, thread and compose routes publish their top-bar titles.
+- 2.1: the reply composer opens in a bottom `Sheet` on a phone (closing Part 10's open issue) and inline on desktop; the design spec now proves the 375 sheet opens and closes.
+- 2.1 CONTRACT CHANGE: the dark `--avatar-foreground` is #C7C9CE (the planned value) instead of the muted-grey step that had been copied, because initials on the dark avatar measured 4.38:1; text-level error/red links in mail use `--next-red` / `--link-record` for the same reason.
+- 2.1: the Avatar sets its ink with an inline `hsl(var(--avatar-foreground))` rather than a class, because tailwind-merge classified the custom colour token as a font size and dropped it when a caller passed `text-caption`.
+- 2.1: changed tests for the new mail contract: the reply footer and reader card assert `rounded-lg`, label chips assert the caption size and sentence case. The design spec excludes sandboxed email-body iframes from axe (third-party documents), otherwise the thread analysis hangs.
+- 2.1: `DESIGN_SCREENS=inbox,thread` passes 2/2 and the email/inbox unit suites 998/998.
 - 1.5 fixes: the gate's full unit run caught two contract assertions from the restyle. `Board.test` still expected a stage lane to be `flex-1` (the measured column is fixed at 248 px and the board scrolls), and `NotificationsBell.test` expected the old `hover:bg-accent`/`text-link` classes (now `hover:bg-muted`/`text-info`). Both tests were updated to the new contract; no assertion was dropped. The gate then passed: typecheck, lint (13 warnings), build, unit 5346/5346, the eight design screens 8/8, and the board/deal/list e2e specs 01, 07, 13, 14 4/4.
 
 - 1.3 CONTRACT CHANGE: the future-stage label uses a new `--track-foreground` token (#5E6066 light, #A3A6AD dark) because the measured #65686F on #E4E4E4 is 4.38:1 and axe AA needs 4.5; #5E6066 measures 4.98:1.

@@ -104,7 +104,7 @@ export function AttachButton({
   return (
     <div>
       {error !== null && (
-        <p role="alert" className="text-xs text-destructive mb-1">
+        <p role="alert" className="text-xs text-next-red mb-1">
           {error}
         </p>
       )}

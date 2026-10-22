@@ -55,9 +55,7 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
   return (
     <div className="space-y-4">
       <section className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {S.sidebarContactHeading}
-        </h3>
+        <h3 className="text-meta font-semibold text-muted-foreground">{S.sidebarContactHeading}</h3>
         {personId !== null ? (
           <>
             <LinkedRecordRow
@@ -90,9 +88,7 @@ export function SidebarLinkPanel(props: SidebarLinkPanelProps): React.ReactNode 
       </section>
 
       <section className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {S.sidebarDealHeading}
-        </h3>
+        <h3 className="text-meta font-semibold text-muted-foreground">{S.sidebarDealHeading}</h3>
         {dealId !== null ? (
           <>
             <LinkedRecordRow name={dealTitle} href={`/deals/${dealId}`} view={S.viewDeal} />
@@ -149,7 +145,7 @@ function LinkedRecordRow({
   return (
     <div className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1.5">
       <span className="min-w-0 truncate text-sm font-medium">{name ?? view}</span>
-      <a href={href} className="shrink-0 text-xs text-primary hover:underline">
+      <a href={href} className="shrink-0 text-xs text-link-record hover:underline">
         {view}
       </a>
     </div>

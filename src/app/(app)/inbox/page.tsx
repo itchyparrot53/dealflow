@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { parseFolder } from "@/features/email/inboxFolders";
 import { createContext } from "@/server/trpc/context";
@@ -19,5 +20,10 @@ export default async function InboxPage({
   }
   const sp = await searchParams;
   const folder = parseFolder(typeof sp.folder === "string" ? sp.folder : undefined);
-  return <InboxListClient selfActorId={ctx.actor.id} folder={folder} />;
+  return (
+    <>
+      <PageTitle title="Inbox" />
+      <InboxListClient selfActorId={ctx.actor.id} folder={folder} />
+    </>
+  );
 }

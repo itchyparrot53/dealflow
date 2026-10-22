@@ -97,7 +97,7 @@ export function InsertUrlDialog({
               placeholder={copy.placeholder}
             />
             {error !== null ? (
-              <p role="alert" className="mt-2 text-sm text-destructive">
+              <p role="alert" className="mt-2 text-sm text-next-red">
                 {error}
               </p>
             ) : null}

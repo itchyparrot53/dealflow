@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import type { RouterOutputs } from "@/lib/trpc-client";
 import { createContext } from "@/server/trpc/context";
@@ -27,10 +28,13 @@ export default async function InboxThreadPage({
     initialThread = undefined;
   }
   return (
-    <InboxThreadClient
-      threadId={threadId}
-      selfActorId={ctx.actor.id}
-      initialThread={initialThread}
-    />
+    <>
+      <PageTitle title="Inbox" />
+      <InboxThreadClient
+        threadId={threadId}
+        selfActorId={ctx.actor.id}
+        initialThread={initialThread}
+      />
+    </>
   );
 }

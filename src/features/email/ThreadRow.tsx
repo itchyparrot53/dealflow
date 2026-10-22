@@ -103,10 +103,10 @@ export function ThreadRow({
   // on the right (archive appears on hover). No persistent reading pane; the row opens the thread.
   return (
     <li
-      className={`group flex items-center gap-2 pr-2 [content-visibility:auto] [contain-intrinsic-size:auto_52px] ${active ? "bg-accent" : "hover:bg-muted/50"}`}
+      className={`group flex items-center gap-2 pr-2 min-h-[72px] [content-visibility:auto] [contain-intrinsic-size:auto_72px] ${active ? "bg-info-soft" : "hover:bg-muted"}`}
     >
       {canSelectInFolder(folder) && (
-        <div className="flex items-center px-2 py-2.5">
+        <div className="flex items-center px-4">
           <Checkbox
             label={`Select ${subject}`}
             checked={selected}
@@ -116,7 +116,7 @@ export function ThreadRow({
       )}
       <button
         type="button"
-        className={`flex min-w-0 flex-1 items-center gap-3 py-2.5 text-left ${canSelectInFolder(folder) ? "" : "pl-3"}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 py-3 text-left ${canSelectInFolder(folder) ? "" : "pl-3"}`}
         onClick={() => onOpen(thread.id)}
       >
         {/* Correspondent column (Pipedrive leads each row with the counterparty). Projected by the

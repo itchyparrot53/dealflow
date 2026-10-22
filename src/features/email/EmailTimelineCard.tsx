@@ -153,7 +153,7 @@ export function EmailTimelineCard({
           {/* An error must not read as an empty body: say it failed and offer the retry. */}
           {body.isError && (
             <div className="flex items-center gap-2">
-              <p role="alert" className="text-xs text-destructive">
+              <p role="alert" className="text-xs text-next-red">
                 {STRINGS.inbox.emailBodyFailed}
               </p>
               <button

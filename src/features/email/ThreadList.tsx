@@ -225,7 +225,7 @@ export function ThreadList({
       )}
 
       {bulkError !== null && (
-        <p role="alert" className="border-b px-3 py-1.5 text-xs text-destructive">
+        <p role="alert" className="border-b px-3 py-1.5 text-xs text-next-red">
           {bulkError}
         </p>
       )}

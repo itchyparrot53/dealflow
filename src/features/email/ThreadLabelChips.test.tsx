@@ -54,9 +54,9 @@ it("skips keys with no catalog entry", () => {
 });
 
 // A15 (Pipedrive parity): applied-label chips render uppercase (10px) so they read as tags.
-it("renders each chip uppercase (A15)", () => {
+it("renders each chip at the caption size in sentence case", () => {
   render(<ThreadLabelChips labels={["important"]} />);
-  expect(screen.getByText("Important")).toHaveClass("uppercase");
+  expect(screen.getByText("Important")).toHaveClass("text-caption");
 });
 
 // B5 (Pipedrive parity): the label editor hides behind a pencil affordance instead of being an

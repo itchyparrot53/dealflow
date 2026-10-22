@@ -12,7 +12,7 @@ export function ComposerErrorAlert({ error, onDismiss }: ComposerErrorAlertProps
   return (
     <div
       role="alert"
-      className="flex items-start justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+      className="flex items-start justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-next-red"
     >
       <span>{error}</span>
       <button

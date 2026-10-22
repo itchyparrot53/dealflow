@@ -149,7 +149,7 @@ export function ReaderTopBar({
           <AlertDialog>
             <AlertDialogTrigger
               disabled={busy}
-              className="rounded-md border border-border px-3 py-1 text-sm text-destructive transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
+              className="rounded-md border border-border px-3 py-1 text-sm text-next-red transition-transform hover:bg-destructive/10 active:scale-[0.96] disabled:opacity-50"
             >
               {STRINGS.inbox.delete}
             </AlertDialogTrigger>

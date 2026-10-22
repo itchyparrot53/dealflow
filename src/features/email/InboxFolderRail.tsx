@@ -32,7 +32,7 @@ const ICONS: Record<FolderKey, LucideIcon> = {
 };
 
 const NEW_EMAIL_BUTTON_CLASSES =
-  "mb-2 flex items-center justify-center gap-2 rounded-md bg-action px-3 py-2 text-sm font-medium text-action-foreground transition-transform active:scale-[0.96]";
+  "m-2 flex h-8 items-center justify-center gap-2 rounded-md bg-action px-3 text-sm font-semibold text-action-foreground transition-colors duration-100 hover:bg-primary-hover";
 
 export function InboxFolderRail({
   newEmailEnabled,
@@ -44,7 +44,10 @@ export function InboxFolderRail({
   const { folder: activeFolder, composeActive } = deriveActive(pathname, searchParams);
   const unreadCount = trpc.email.inbox.unreadCount.useQuery().data ?? 0;
   return (
-    <nav aria-label="Mail folders" className="flex w-60 shrink-0 flex-col gap-1 border-r p-3">
+    <nav
+      aria-label="Mail folders"
+      className="flex w-[220px] shrink-0 flex-col gap-0.5 border-r border-border bg-card p-0 pb-2"
+    >
       {/* A disabled Link has no real-world meaning (it would still be clickable), so the
           no-mailbox state renders a genuinely inert disabled button instead of a navigable
           link; only the enabled state navigates to the full-pane compose route. */}
@@ -81,16 +84,16 @@ export function InboxFolderRail({
             href={`/inbox?folder=${key}`}
             aria-current={activeFolder === key ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",
+              "mx-2 flex h-8 items-center gap-2 rounded-md px-2 text-sm",
               activeFolder === key
-                ? "bg-accent font-medium text-accent-foreground"
-                : "text-foreground hover:bg-accent",
+                ? "bg-info-soft font-medium text-info"
+                : "text-foreground hover:bg-muted",
             )}
           >
             <Glyph aria-hidden="true" className="h-4 w-4" />
             <span>{FOLDER_LABELS[key]}</span>
             {key === "inbox" && unreadCount > 0 && (
-              <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground tabular-nums">
+              <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-caption font-bold text-destructive-foreground tabular-nums">
                 {unreadCount}
               </span>
             )}

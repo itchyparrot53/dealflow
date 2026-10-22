@@ -30,7 +30,11 @@ async function settle(page: Page): Promise<void> {
 }
 
 async function expectNoSeriousAxeViolations(page: Page): Promise<void> {
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    // Sandboxed HTML-email bodies are third-party documents; axe cannot audit across them.
+    .exclude("iframe")
+    .analyze();
   const failing = results.violations
     .filter((violation) => violation.impact === "serious" || violation.impact === "critical")
     .map(
@@ -74,6 +78,17 @@ async function runScreen(page: Page, route: DesignRoute): Promise<void> {
   );
   expect(overflow, `${route.id} must not scroll horizontally at 375`).toBeLessThanOrEqual(1);
   await page.screenshot({ path: `${OUT}/${route.id}-375-light.png`, fullPage: true });
+
+  // Part 10's open issue: the reply composer must open in a sheet on a phone, not inline.
+  if (route.id === "thread") {
+    await page
+      .getByRole("button", { name: /^Reply$/ })
+      .first()
+      .click();
+    await expect(page.getByRole("dialog", { name: "Reply" })).toBeVisible();
+    await page.getByRole("dialog", { name: "Reply" }).locator("button.absolute.right-4").click();
+    await expect(page.getByRole("dialog", { name: "Reply" })).toBeHidden({ timeout: 10_000 });
+  }
 
   if (route.app) {
     await page.setViewportSize({ width: 1440, height: 900 });

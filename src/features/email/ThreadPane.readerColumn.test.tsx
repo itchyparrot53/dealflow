@@ -90,7 +90,7 @@ describe("ThreadPane reader reading column (U2)", () => {
     // Sender name lives inside the card; the enclosing article is a bordered, rounded card,
     // not a flat full-width article.
     expect(within(card).getByText("Ann Acme")).toBeInTheDocument();
-    expect(card).toHaveClass("border", "rounded-md");
+    expect(card).toHaveClass("border", "rounded-lg");
   });
 
   it("constrains the reader content column with a max-width, not the full pane (B10)", () => {

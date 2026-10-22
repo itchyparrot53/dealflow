@@ -86,7 +86,7 @@ describe("ReaderActions", () => {
     );
     const footer = screen.getByTestId("reader-reply-footer");
     // PD's reply affordance is a persistent bordered footer card, not a plain button row.
-    expect(footer).toHaveClass("border", "rounded-md");
+    expect(footer).toHaveClass("border", "rounded-lg");
     // The sender's avatar (initials from the from-address) sits at the footer's left, PD-style.
     expect(within(footer).getByRole("img", { name: "ann@acme.com" })).toBeInTheDocument();
   });

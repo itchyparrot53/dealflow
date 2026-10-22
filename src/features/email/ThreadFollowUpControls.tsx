@@ -70,7 +70,7 @@ export function ThreadFollowUpControls({
         <ThreadLabelChips labels={labels} />
         <MailLabelPicker value={labels} onChange={(next) => void handleLabelsChange(next)} />
       </div>
-      {error !== null && <p className="text-xs text-destructive">{error}</p>}
+      {error !== null && <p className="text-xs text-next-red">{error}</p>}
     </div>
   );
 }
