@@ -5,7 +5,7 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const PLAN_FILE = process.env.PLAN_FILE || "PLAN-PART10.md";
+const PLAN_FILE = process.env.PLAN_FILE || "PLAN-PART11.md";
 const final = process.argv.includes("--final");
 const plan = readFileSync(PLAN_FILE, "utf8");
 const progress = readFileSync("PROGRESS.md", "utf8");

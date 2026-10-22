@@ -29,6 +29,7 @@
     "db:seed:demo": "tsx --env-file .env scripts/seed-demo.ts",
     "email:sweep-spam": "tsx --env-file .env src/entrypoints/sweepSpam.ts",
     "check:progress": "node scripts/check-progress.mjs",
+    "check:design": "node scripts/dealflow/check-design.mjs",
     "env:sync": "node scripts/dealflow/env-sync.mjs",
     "dev:up": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres minio createbuckets",
     "db:migrate:dev": "tsx --env-file=.env src/entrypoints/migrate.ts",
