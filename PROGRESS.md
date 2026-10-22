@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-22 14:05
+Current: 4.5 · Last updated: 2026-10-22 14:20
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -36,7 +36,7 @@ Current: 4.4 · Last updated: 2026-10-22 14:05
 - [x] 4.2 Integration suite and smoke
 - [x] 4.3 Independent review with a computed-style critique
 - [ ] 4.3 Independent review with a computed-style critique
-- [ ] 4.4 Final checklist
+- [x] 4.4 Final checklist
 - [ ] 4.5 Final report and completion
 
 ## QA log
@@ -167,4 +167,25 @@ Current: 4.4 · Last updated: 2026-10-22 14:05
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
+
+### Checklist (section 11)
+
+1. PASS - `git --no-optional-locks status --porcelain` is empty at the task commit.
+2. PASS - `pnpm install --frozen-lockfile` exits 0; `@axe-core/playwright@4.14.0` (dev) is the only added dependency.
+3. PASS - `pnpm typecheck` exits 0.
+4. PASS - `pnpm lint` exits 0 (13 warnings, 1 info).
+5. PASS - `pnpm test:unit` 5346/5346 in 840 files.
+6. PASS - `pnpm test:integration` 2097/2097 in 412 files against the dev Postgres.
+7. PASS - `pnpm build` exits 0.
+8. PASS - `pnpm e2e` 50/50, specs 00 to 15.
+9. PASS - 73 design PNGs; the Part 1 to 10 screenshots are still present (85 PNGs under `e2e/screenshots`).
+10. PASS - smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)`, with no `dealflow-smoke` container or volume left.
+11. PASS - `pnpm check:design` prints `0 violation(s) in 0 file(s); 12 opt-out(s)`; `DESIGN-WORKLIST.md` lists all 12.
+12. PASS - the 6.10 parity checks pass on board, deal, activities-list and settings-profile in the 26/26 design run.
+13. PASS - no page lacks a title: 0 page-title violations, 12 documented opt-outs (redirect-only routes and intercepted modals).
+14. PASS - axe reports zero serious or critical violations on all 26 gallery screens.
+15. PASS - the em-dash scan over `18e1dff..HEAD` prints nothing (kit files excluded).
+16. PASS - `docs/dealflow/DESIGN.md` exists and `UPSTREAM.md` has the Part 11 section.
+17. PASS - `pnpm check:progress --final` exits 0.
+
 (written in Task 4.5)
