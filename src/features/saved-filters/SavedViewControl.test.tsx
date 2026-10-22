@@ -185,7 +185,10 @@ describe("SavedViewControl", () => {
     await openMenu(user);
     await user.click(screen.getByRole("menuitem", { name: /Save current view/ }));
 
-    expect(screen.getByLabelText("View name")).toHaveClass("focus-visible:ring-1", "focus-visible:ring-ring");
+    expect(screen.getByLabelText("View name")).toHaveClass(
+      "focus-visible:ring-1",
+      "focus-visible:ring-ring",
+    );
   });
 
   it("toggles the shared box by clicking its visible text", async () => {

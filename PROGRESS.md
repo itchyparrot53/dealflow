@@ -1,17 +1,18 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 0.5 · Last updated: 2026-10-22 08:12
+Current: 1.1 · Last updated: 2026-10-22 08:30
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
+- Phase 1: 993185503417f6d74fcd36d46c446dd2e006f988
 
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
 - [x] 0.2 Tokens and global styles
 - [x] 0.3 Primitives and layout components
 - [x] 0.4 Design e2e harness
-- [ ] 0.5 Phase 0 QA gate
+- [x] 0.5 Phase 0 QA gate
 - [ ] 1.1 Shell
 - [ ] 1.2 Pipeline board
 - [ ] 1.3 Deal workspace and StageTrack
@@ -36,6 +37,7 @@ Current: 0.5 · Last updated: 2026-10-22 08:12
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
+- Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5364/5364 in 840 files · check-design 285 violations in 182 files, 0 opt-outs · design login 1/1
 
 ## Decisions
 - 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p10-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P10.md` and starts Part 11 at Task 0.1.
@@ -61,6 +63,8 @@ Current: 0.5 · Last updated: 2026-10-22 08:12
 - 0.4: the gallery's `{id}` routes read one seeded record per detail screen, so `scripts/e2e/seed-session.ts` now also writes the pipeline, organization, lead, project, document (and its public id), dashboard, report, thread, automation, form public id and booking public id into `.e2e/fixtures.json`. Resolving them by clicking through lists would tie the harness to list markup that is about to be restyled.
 - 0.4: `e2e/design/styleChecks.ts` implements the 6.10 table from computed styles and is scoped to the four named screens. It reads test ids the screen tasks add (`app-rail`, `top-bar`, `page-title`, `primary-action`, `search-pill`, `board-column`, `deal-card`, `deal-card-title`, `stage-track`, `deal-sidebar`, `sidebar-row`, `deal-title`, `activity-side`, `table-row`), so the checks fail loudly rather than silently passing if a hook disappears.
 - 0.4: the task verify ran green: `DESIGN_SCREENS=login DESIGN_CHECKS=0 pnpm exec playwright test e2e/15-design.spec.ts` passed 1/1 and wrote `login-1440-light.png` and `login-375-light.png`.
+- 0.5 fixes: the gate's first unit run caught `Board.emptyState.test.tsx`, whose assertions scope to the empty state's title parent; my new EmptyState grouped the title and body in a wrapper div, which moved the action buttons outside that parent. The wrapper was removed (icon, title, body and action stay direct children of the role=status region), not the test. Lint's only error was an unnecessary `rows[0] as ...` assertion in `scripts/e2e/seed-session.ts` plus a Biome reflow in `SavedViewControl.test.tsx`; both fixed.
+
 
 
 

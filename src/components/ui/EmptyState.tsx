@@ -25,10 +25,8 @@ export function EmptyState({
       {icon !== undefined ? (
         <div className="text-muted-foreground [&>svg]:size-16">{icon}</div>
       ) : null}
-      <div className="flex flex-col gap-2">
-        <p className="text-base font-semibold text-foreground">{title}</p>
-        <p className="max-w-[48ch] text-sm text-muted-foreground">{body}</p>
-      </div>
+      <p className="text-base font-semibold text-foreground">{title}</p>
+      <p className="max-w-[48ch] text-sm text-muted-foreground">{body}</p>
       {action}
     </div>
   );

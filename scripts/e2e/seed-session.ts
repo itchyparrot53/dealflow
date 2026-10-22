@@ -138,7 +138,7 @@ async function main(): Promise<void> {
   // Part 11 design gallery: resolve one row per detail screen, so the design spec never has to
   // click through a list. Public ids are read where the screen needs a public URL.
   const first = async (query: SQL): Promise<Record<string, unknown> | undefined> =>
-    (await db.execute(query)).rows[0] as Record<string, unknown> | undefined;
+    (await db.execute(query)).rows[0];
   const firstString = async (query: SQL): Promise<string | null> => {
     const row = await first(query);
     return (row?.publicId as string | undefined) ?? null;
