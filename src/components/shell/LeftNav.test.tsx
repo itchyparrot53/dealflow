@@ -12,13 +12,20 @@ afterEach(cleanup);
 
 describe("LeftNav (Pipedrive rail)", () => {
   test("is a 56 px indigo rail with the app mark at the top", () => {
-    const { container } = render(<LeftNav />);
+    render(<LeftNav />);
     const nav = screen.getByRole("navigation", { name: "Primary" });
     expect(nav.getAttribute("data-testid")).toBe("app-rail");
     expect(nav.className).toContain("w-14");
     expect(nav.className).toContain("bg-rail");
     expect(nav.className).toContain("h-full");
-    expect(container.querySelector("img")).not.toBeNull();
+    const home = screen.getByRole("link", { name: "Dealflow home" });
+    expect(home.getAttribute("href")).toBe("/");
+    const mark = screen.getByRole("img", { name: "Dealflow" });
+    expect(mark.getAttribute("src")).toBe("/brand/dealflow-mark-reverse.svg");
+    expect(mark.getAttribute("width")).toBe("28");
+    expect(mark.getAttribute("height")).toBe("28");
+    // The old cell forced the raster icon white; the reverse SVG carries the brand colours.
+    expect(mark.className).not.toContain("brightness-0");
   });
 
   test("renders every destination as an icon-only 44 px link with its label as the name", () => {

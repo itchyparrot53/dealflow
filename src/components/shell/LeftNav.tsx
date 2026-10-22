@@ -1,12 +1,11 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import appIcon from "@/app/icon.png";
 import { Tip } from "@/components/ui/tooltip";
 import { NAV_ITEMS } from "@/constants/nav";
 import { STRINGS } from "@/constants/strings";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 import { cn } from "@/lib/utils";
 import { NAV_ICONS } from "./NavIcons";
 
@@ -37,12 +36,12 @@ export function LeftNav(): React.ReactNode {
       className="flex h-full w-14 shrink-0 flex-col items-center bg-rail"
     >
       <Link
-        href="/pipeline"
+        href="/"
         aria-label={`${STRINGS.app.name} home`}
         className="flex size-14 shrink-0 items-center justify-center"
       >
-        {/* The app mark, forced white so it reads on the indigo rail (28 px per 6.7). */}
-        <Image src={appIcon} alt="" width={28} height={28} className="size-7 brightness-0 invert" />
+        {/* The reverse leaf mark reads on the indigo rail (28 px per 6.7). */}
+        <BrandLogo variant="mark" tone="reverse" height={28} />
       </Link>
       <div className="flex flex-col items-center gap-2 pt-2">
         {ITEMS.map((item) => {

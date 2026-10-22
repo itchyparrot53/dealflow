@@ -5,6 +5,7 @@ import { NAV_ICONS } from "@/components/shell/NavIcons";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { NAV_ITEMS } from "@/constants/nav";
 import { STRINGS } from "@/constants/strings";
+import { BrandLogo } from "@/features/branding/BrandLogo";
 
 // Everything the bottom bar cannot fit, on the shadcn Sheet (focus trap, Escape, scroll lock).
 // Settings is included because it is one of the main nav items and would otherwise be unreachable
@@ -35,7 +36,8 @@ export function MoreSheet({
         aria-label="More navigation"
         className="max-w-xs border-l bg-card p-0 pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="bg-rail px-5 py-4">
+        <div className="flex items-center gap-3 bg-rail px-5 py-4">
+          <BrandLogo variant="logo" tone="reverse" height={24} />
           <SheetTitle className="text-base font-semibold text-rail-foreground">More</SheetTitle>
         </div>
         <nav className="flex flex-col gap-0.5 p-2 pb-6">
