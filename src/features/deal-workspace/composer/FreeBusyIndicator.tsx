@@ -14,7 +14,7 @@ export function FreeBusyIndicator({ busy }: Props): React.ReactNode {
       role="status"
       className={cn(
         "inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-xs font-medium",
-        busy ? "bg-warning-soft text-warning-foreground" : "bg-success/10 text-success",
+        busy ? "bg-warning-soft text-warning-soft-foreground" : "bg-success/10 text-success",
       )}
     >
       <span

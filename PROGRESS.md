@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-22 09:05
+Current: 1.5 · Last updated: 2026-10-22 09:30
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -16,7 +16,7 @@ Current: 1.4 · Last updated: 2026-10-22 09:05
 - [x] 1.1 Shell
 - [x] 1.2 Pipeline board
 - [x] 1.3 Deal workspace and StageTrack
-- [ ] 1.4 Lists and person/organization detail
+- [x] 1.4 Lists and person/organization detail
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Inbox, thread and mobile reply sheet
 - [ ] 2.2 Calendar and forecast
@@ -74,6 +74,12 @@ Current: 1.4 · Last updated: 2026-10-22 09:05
 - 1.3: the body is a 400 px white sidebar with a right border and flush 64 px section rows (`CollapsibleSection` no longer draws a card), and the activity side is `canvas-subtle` with the composer in a white card, so the sidebar-row, deal-title, deal-sidebar and activity-side parity checks all read the measured values. Record links and completed-activity text use `--link-record` instead of `--primary`, which is both the 6.1 rule and the reason the dark pass contrast now passes.
 - 1.3: the rail highlights the pipeline tile on `/deals/{id}` (`isNavActive`), so the deal page always has exactly one active rail tile, which the parity check requires.
 - 1.3: three tab strips render only a strip (the editor/list lives outside a `TabsContent`), so Radix's generated `aria-controls` dangled and axe failed `aria-valid-attr-value`; each now mounts a hidden `TabsContent forceMount` target per value. No behaviour changed.
+- 1.4: the six list/detail screens now publish `PageTitle` (Deals, People, Organizations, Leads, Activities, Calendar, Timeline), and the activities table uses `tableStyles` (33 px rows, strong header rule, light grid, green record links, sentence-case headers) with single-line cells so the measured 33 px row holds. `ActivityRow` carries `data-testid="table-row"` for the parity check.
+- 1.4: record and navigation links across deals, contacts, leads and activities moved from `text-primary` to `text-link-record` (or `text-info` for controls), which is the 6.1 rule and fixes the dark-pass contrast; the priority warning chip and overdue row text use the new `--warning-soft-foreground` and `--next-red` tokens; the generic `Badge` success text uses `--link-record`.
+- 1.4: the global `:focus-visible` outline is `!important` because Checkbox/Button-style primitives opt out with `outline-none` and rely on a ring; the design spec's focus check requires the 2 px blue outline on the first Tab target on every screen.
+- 1.4: three more tab strips (ContactHistoryTabs, the contact detail tabs, LeadTimeline) got hidden `TabsContent forceMount` targets, like the deal ones, so Radix's `aria-controls` resolve; the activities list spec first switches to "To-do" and "All owners" because its default "Today for me" view is legitimately empty for the seeded admin.
+- 1.4: changed tests: the overdue activity row asserts `text-next-red`, and the date picker's fullness dots assert the success/warning/destructive tokens.
+- 1.4: `DESIGN_SCREENS=deals-list,people,person,organizations,leads,activities-list` passes 6/6 (axe light+dark, 375, activities parity).
 - 1.3 CONTRACT CHANGE: the future-stage label uses a new `--track-foreground` token (#5E6066 light, #A3A6AD dark) because the measured #65686F on #E4E4E4 is 4.38:1 and axe AA needs 4.5; #5E6066 measures 4.98:1.
 - 1.3: changed tests for the contract: the OVERDUE chip is now the filled StatusBadge, the stage parity check reads the current segment (the seeded deal can sit in the first stage, so no passed segment exists), the deal workspace test asserts the stage track's `aria-current="step"` option, and an open deal no longer renders an OPEN status badge.
 - 1.2 CONTRACT CHANGE: the dark palette keeps the light action green `#2D8548` and destructive `#D73C38` instead of `#3FA864` / `#EE6461`: white on the lighter pair measures 3.0:1 and 3.1:1, and on the darker pair 4.6:1 (6.4's contrast note). The rot age text uses `--next-red` (dark `#EE6461`, 5.2:1 on the dark card) instead of `--destructive`.

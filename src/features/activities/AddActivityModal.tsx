@@ -224,7 +224,7 @@ export function AddActivityModal({
           {error !== null && (
             <p
               role="alert"
-              className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-red-700"
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive"
             >
               {error}
             </p>

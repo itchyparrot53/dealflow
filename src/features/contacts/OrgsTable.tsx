@@ -46,7 +46,7 @@ export interface OrgsTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ml-1 inline-block text-caption">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -96,7 +96,7 @@ function renderOrgCell(col: OrgColumn, row: OrgsListRow, currency: string): Reac
         <RecordLink
           href={`/contacts/orgs/${row.id}`}
           preview={{ id: row.id, title: row.name }}
-          className="flex items-center gap-2.5 font-medium text-primary hover:underline"
+          className="flex items-center gap-2.5 font-medium text-link-record hover:underline"
         >
           <Avatar name={row.name} className="h-6 w-6 rounded-md" />
           {row.name}

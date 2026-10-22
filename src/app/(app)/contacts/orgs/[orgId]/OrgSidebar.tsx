@@ -109,7 +109,7 @@ export function OrgSidebar({
             <li key={person.id}>
               <Link
                 href={`/contacts/people/${person.id}`}
-                className="block rounded px-1 py-1 text-sm text-primary transition-colors duration-150 hover:bg-accent hover:underline motion-reduce:transition-none"
+                className="block rounded px-1 py-1 text-sm text-link-record transition-colors duration-150 hover:bg-accent hover:underline motion-reduce:transition-none"
               >
                 {person.name}
               </Link>

@@ -4,7 +4,7 @@
 // the tab strip / placeholder copy cannot drift between the two pages.
 import type React from "react";
 import { bucketByType } from "@/app/(app)/deals/[dealId]/tabs";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
 import { countHistoryTabs } from "@/features/deal-workspace/historyTabCounts";
@@ -47,6 +47,9 @@ export function TabStrip<T extends string>({
           </TabsTrigger>
         ))}
       </TabsList>
+      {tabs.map((t) => (
+        <TabsContent key={t} forceMount value={t} className="hidden" />
+      ))}
     </Tabs>
   );
 }

@@ -100,7 +100,7 @@ export function MergeDialog({
         </div>
       </div>
 
-      {error !== null && <p className="text-sm text-red-600">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex justify-end gap-2">
         {onClose !== undefined && (

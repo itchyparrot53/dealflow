@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { PageHeading } from "@/components/shell/PageHeading";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { createContext } from "@/server/trpc/context";
 import { EngagementTimelineClient } from "./EngagementTimelineClient";
@@ -17,6 +18,7 @@ export default async function ContactsTimelinePage(): Promise<React.ReactNode> {
 
   return (
     <main aria-label={STRINGS.contacts.timelineHeading} className="flex flex-col gap-4">
+      <PageTitle title="Timeline" />
       <PageHeading
         crumbs={[
           { label: STRINGS.nav.contacts, href: "/contacts/people" },

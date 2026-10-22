@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
 import type { HistoryTab } from "@/features/deal-workspace/HistoryTypeTabs";
 import { historyTabLabel } from "@/features/deal-workspace/historyTabCounts";
@@ -70,6 +70,9 @@ export function ContactHistoryTabs({
           </TabsTrigger>
         ))}
       </TabsList>
+      {TABS.map((v) => (
+        <TabsContent key={v} forceMount value={v} className="hidden" />
+      ))}
 
       <div className="pt-4">
         {/* History is a view of what is attached, not a compose surface: read-only, mirroring

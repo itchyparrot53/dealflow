@@ -64,7 +64,7 @@ export function ContactFollowersButton({
         ) : (
           followers.map((f) => (
             <div key={f.id} className="flex items-center gap-2 px-2 py-1.5 text-sm">
-              <Avatar name={f.name} src={f.avatarUrl} className="h-6 w-6 text-[10px]" />
+              <Avatar name={f.name} src={f.avatarUrl} className="h-6 w-6 text-caption" />
               <span className="truncate">{f.name}</span>
             </div>
           ))

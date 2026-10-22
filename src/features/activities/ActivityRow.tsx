@@ -56,7 +56,11 @@ function textOrDash(value: string | null): React.ReactNode {
 function entityLink(href: string | null, label: string | null): React.ReactNode {
   if (href !== null && label !== null) {
     return (
-      <Link href={href} onClick={(e) => e.stopPropagation()}>
+      <Link
+        href={href}
+        onClick={(e) => e.stopPropagation()}
+        className="text-link-record hover:underline"
+      >
         {label}
       </Link>
     );
@@ -67,7 +71,11 @@ function entityLink(href: string | null, label: string | null): React.ReactNode 
 function anchorLink(href: string | null, label: string | null): React.ReactNode {
   if (href !== null && label !== null) {
     return (
-      <a href={href} onClick={(e) => e.stopPropagation()}>
+      <a
+        href={href}
+        onClick={(e) => e.stopPropagation()}
+        className="text-link-record hover:underline"
+      >
         {label}
       </a>
     );
@@ -79,10 +87,15 @@ function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
   switch (key) {
     case "subject":
       return (
-        <td className="px-3 py-2">
+        <td className="h-[33px] whitespace-nowrap px-3">
           <span className="flex items-center gap-2">
             <ActivityTypeIcon typeKey={row.typeKey} />
-            <span className={cn("font-medium", row.done && "text-muted-foreground line-through")}>
+            <span
+              className={cn(
+                "max-w-[28rem] truncate font-medium",
+                row.done && "text-muted-foreground line-through",
+              )}
+            >
               {row.subject}
             </span>
             <RecurrenceBadge rule={row.recurrenceRule} ended={row.recurrenceEnded} />
@@ -91,13 +104,13 @@ function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
       );
     case "deal":
       return (
-        <td className="px-3 py-2 text-muted-foreground">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground">
           {row.dealId === null ? "-" : entityLink(`/deals/${row.dealId}`, row.dealTitle ?? "Deal")}
         </td>
       );
     case "priority":
       return (
-        <td className="px-3 py-2">
+        <td className="h-[33px] whitespace-nowrap px-3">
           {row.priority !== null && isActivityPriorityKey(row.priority) ? (
             <span style={{ color: ACTIVITY_PRIORITIES[row.priority].color }}>
               {ACTIVITY_PRIORITIES[row.priority].name}
@@ -109,7 +122,7 @@ function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
       );
     case "contact":
       return (
-        <td className="px-3 py-2">
+        <td className="h-[33px] whitespace-nowrap px-3">
           {entityLink(
             row.personId === null ? null : `/contacts/people/${row.personId}`,
             row.personName,
@@ -118,7 +131,7 @@ function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
       );
     case "email":
       return (
-        <td className="px-3 py-2 text-muted-foreground">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground">
           {anchorLink(
             row.personEmail === null ? null : `mailto:${row.personEmail}`,
             row.personEmail,
@@ -127,13 +140,13 @@ function contactCellFor(key: string, row: ActivityTableRow): React.ReactNode {
       );
     case "phone":
       return (
-        <td className="px-3 py-2 text-muted-foreground">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground">
           {anchorLink(row.personPhone === null ? null : `tel:${row.personPhone}`, row.personPhone)}
         </td>
       );
     case "organization":
       return (
-        <td className="px-3 py-2 text-muted-foreground">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground">
           {entityLink(row.orgId === null ? null : `/contacts/orgs/${row.orgId}`, row.orgName)}
         </td>
       );
@@ -146,19 +159,19 @@ function scheduleCellFor(key: string, row: ActivityTableRow): React.ReactNode {
   switch (key) {
     case "due":
       return (
-        <td className="px-3 py-2 text-muted-foreground tabular-nums">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground tabular-nums">
           {fmtDue(row.dueAtIso, row.allDay)}
         </td>
       );
     case "duration":
       return (
-        <td className="px-3 py-2 text-muted-foreground tabular-nums">
+        <td className="h-[33px] whitespace-nowrap px-3 text-muted-foreground tabular-nums">
           {fmtDuration(row.durationMinutes)}
         </td>
       );
     case "assignee":
       return (
-        <td className="px-3 py-2">
+        <td className="h-[33px] whitespace-nowrap px-3">
           <OwnerBadge name={row.assigneeName} />
         </td>
       );
@@ -188,13 +201,14 @@ export function ActivityRow({
       ref={ref}
       onClick={() => onRowClick(row)}
       data-cursor={cursor ? "true" : undefined}
+      data-testid="table-row"
       className={cn(
-        "cursor-pointer border-t hover:bg-accent/40",
-        isOverdue(row) && "text-destructive",
-        cursor && "bg-accent/60 ring-1 ring-inset ring-ring",
+        "h-[33px] cursor-pointer border-b border-grid transition-colors duration-100 hover:bg-muted",
+        isOverdue(row) && "text-next-red",
+        cursor && "bg-info-soft",
       )}
     >
-      <td className="px-3 py-2">
+      <td className="h-[33px] whitespace-nowrap px-3">
         {/* Row is clickable (opens the editor); the span stops the checkbox click from
             bubbling to the row so selecting does not also open the modal. The Checkbox owns
             its own interaction, so the wrapper is a pure pointer-propagation guard. */}
@@ -208,7 +222,7 @@ export function ActivityRow({
           />
         </span>
       </td>
-      <td className="px-3 py-2">
+      <td className="h-[33px] whitespace-nowrap px-3">
         {/* biome-ignore lint/a11y/noStaticElementInteractions: propagation guard only */}
         {/* biome-ignore lint/a11y/useKeyWithClickEvents: propagation guard only */}
         <span className="inline-flex" onClick={(e) => e.stopPropagation()}>

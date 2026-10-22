@@ -178,7 +178,8 @@ describe("ActivitiesTable", () => {
       refetch,
     });
     render(<ActivitiesTable currentUserId="me" />);
-    expect(screen.getByText("Call Jane").closest("tr")).toHaveClass("text-destructive");
+    // Dark keeps the lighter overdue red, so the row uses the next-red token (AA on both themes).
+    expect(screen.getByText("Call Jane").closest("tr")).toHaveClass("text-next-red");
   });
 
   it("does not flag a done row as overdue, even with a past due date", () => {

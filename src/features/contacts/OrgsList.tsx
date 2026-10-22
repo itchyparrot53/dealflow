@@ -319,7 +319,7 @@ export function OrgsList({
       {isMobile ? (
         <OrgCards rows={rows} />
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+        <div className="overflow-hidden rounded-lg border bg-card">
           <CustomFieldRefLabelsProvider value={refLabels}>
             <OrgsTable
               rows={rows}
@@ -345,7 +345,7 @@ export function OrgsList({
         </div>
       )}
       {error !== null && (
-        <p role="alert" className="self-center text-sm text-red-600">
+        <p role="alert" className="self-center text-sm text-destructive">
           {error}
         </p>
       )}

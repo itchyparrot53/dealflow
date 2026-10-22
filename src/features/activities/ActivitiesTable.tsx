@@ -310,7 +310,7 @@ export function ActivitiesTable({
         </ul>
       )}
 
-      <div className="hidden min-h-0 flex-1 overflow-auto rounded-lg border md:block">
+      <div className="hidden min-h-0 flex-1 overflow-auto md:block">
         <table className="w-full text-sm">
           <ActivitiesTableHead
             effective={effective}
@@ -334,7 +334,7 @@ export function ActivitiesTable({
       </div>
 
       {error !== null && (
-        <p role="alert" className="mt-2 self-center text-sm text-red-600">
+        <p role="alert" className="mt-2 self-center text-sm text-destructive">
           {error}
         </p>
       )}

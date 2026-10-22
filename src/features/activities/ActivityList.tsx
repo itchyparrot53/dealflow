@@ -78,7 +78,7 @@ function Row({
         {a.subject}
       </span>
       {href !== null && (
-        <Link href={href} className="text-sm text-primary hover:underline">
+        <Link href={href} className="text-sm text-link-record hover:underline">
           Open
         </Link>
       )}
@@ -136,7 +136,7 @@ export function ActivityList({
           >
             {SECTION_LABEL[s.key]}
           </h2>
-          <ul className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+          <ul className="divide-y overflow-hidden rounded-lg border bg-card">
             {s.rows.map((a) => (
               <Row key={(a as ActivityRow).id} a={a as ActivityRow} onDone={onDone} />
             ))}

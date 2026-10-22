@@ -46,8 +46,21 @@ async function expectNoSeriousAxeViolations(page: Page): Promise<void> {
   expect(failing).toEqual([]);
 }
 
+// Screens whose default view can legitimately be empty (the activities list opens on "Today" for
+// the signed-in owner) are nudged to a populated view before axe and the screenshot.
+const PREPARE: Record<string, (page: Page) => Promise<void>> = {
+  "activities-list": async (page) => {
+    await page.getByRole("button", { name: "To-do" }).click();
+    await page.getByRole("button", { name: "Owner" }).click();
+    await page.getByRole("option", { name: "All owners" }).click();
+    await expect(page.getByTestId("table-row").first()).toBeVisible({ timeout: 30_000 });
+  },
+};
+
 async function runScreen(page: Page, route: DesignRoute): Promise<void> {
   await page.goto(route.path());
+  await settle(page);
+  await PREPARE[route.id]?.(page);
   await settle(page);
   if (route.app) await expect(page).not.toHaveURL(/\/login/);
   await expectNoSeriousAxeViolations(page);

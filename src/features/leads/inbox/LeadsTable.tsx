@@ -42,7 +42,7 @@ export interface LeadsTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ml-1 inline-block text-caption">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -67,7 +67,7 @@ export function LeadsTable({
   const colSpan = columns.length + 2;
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 bg-muted/60 text-left text-xs uppercase text-muted-foreground">
+      <thead className="sticky top-0 bg-card text-left text-sm font-semibold text-foreground">
         <tr>
           <th className="w-8 px-3 py-2">
             <Checkbox
@@ -82,7 +82,7 @@ export function LeadsTable({
                 <button
                   type="button"
                   onClick={() => onSort(col.sortField as LeadSortField)}
-                  className="inline-flex items-center uppercase hover:text-foreground"
+                  className="inline-flex items-center hover:text-foreground"
                 >
                   {col.header}
                   <SortGlyph dir={sort.field === col.sortField ? sort.dir : null} />

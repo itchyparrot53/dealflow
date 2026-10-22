@@ -40,7 +40,7 @@ export function ActivityTableBody({
           <button
             type="button"
             onClick={onRetry}
-            className="font-medium text-primary underline underline-offset-2 hover:opacity-90"
+            className="font-medium text-info underline underline-offset-2 hover:opacity-90"
           >
             Retry
           </button>

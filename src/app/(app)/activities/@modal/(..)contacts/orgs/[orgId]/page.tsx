@@ -1,3 +1,4 @@
+// design-ok: intercepted modal route; the page underneath owns the top-bar title.
 import type React from "react";
 import { Suspense } from "react";
 import { DetailDrawer } from "@/features/navigation/DetailDrawer";

@@ -59,7 +59,7 @@ export function PersonSidebar({
       {orgName !== null && person.orgId !== null && (
         <Link
           href={`/contacts/orgs/${person.orgId}`}
-          className="block rounded px-1 py-1 text-sm text-primary transition-colors duration-150 hover:bg-accent hover:underline motion-reduce:transition-none"
+          className="block rounded px-1 py-1 text-sm text-link-record transition-colors duration-150 hover:bg-accent hover:underline motion-reduce:transition-none"
         >
           View {orgName}
         </Link>

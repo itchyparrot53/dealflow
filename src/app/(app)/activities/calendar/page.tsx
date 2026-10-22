@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { calendarRange } from "@/features/activities/calendar";
 import { parseCalendarParams, selectWindow } from "@/features/activities/calendarView";
@@ -28,6 +29,7 @@ export default async function CalendarPage({
 
   return (
     <div className="p-4">
+      <PageTitle title="Calendar" />
       {/* The screen's own name. The toggle and the week label read as controls without it, and the
           page had no heading of any level for a screen reader to land on. */}
       <h1 className="sr-only">{STRINGS.nav.activities}</h1>

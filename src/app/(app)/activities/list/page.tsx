@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { ActivitiesTable } from "@/features/activities/ActivitiesTable";
@@ -21,6 +22,7 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
   const prefs = await getPreferences(db, ctx.actor.id, new AbortController().signal);
   return (
     <main aria-label="Activities" className="h-full">
+      <PageTitle title="Activities" />
       <div className="flex justify-end p-2">
         {can(ctx.actor, "data.export") && (
           <ExportButton

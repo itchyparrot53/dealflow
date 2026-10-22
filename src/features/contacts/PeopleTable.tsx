@@ -70,7 +70,7 @@ export interface PeopleTableProps {
 function SortGlyph({ dir }: { dir: "asc" | "desc" | null }): React.ReactNode {
   if (dir === null) return null;
   return (
-    <span aria-hidden="true" className="ml-1 inline-block text-[10px]">
+    <span aria-hidden="true" className="ml-1 inline-block text-caption">
       {dir === "asc" ? "▲" : "▼"}
     </span>
   );
@@ -131,7 +131,7 @@ function renderPersonCell(
                 ? { id: row.id, title: row.name, subtitle: row.orgName }
                 : { id: row.id, title: row.name }
             }
-            className="text-primary hover:underline"
+            className="text-link-record hover:underline"
           >
             {row.name}
           </RecordLink>
@@ -142,7 +142,7 @@ function renderPersonCell(
         <RecordLink
           href={`/contacts/orgs/${row.orgId}`}
           preview={{ id: row.orgId, title: row.orgName ?? "" }}
-          className="text-primary hover:underline"
+          className="text-link-record hover:underline"
         >
           {row.orgName}
         </RecordLink>

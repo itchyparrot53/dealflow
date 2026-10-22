@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { db } from "@/db/client";
 import { listDefs } from "@/features/custom-fields/defsRepo";
@@ -31,6 +32,7 @@ export default async function LeadsPage(): Promise<React.ReactNode> {
 
   return (
     <main aria-label="Leads" className="h-full">
+      <PageTitle title="Leads" />
       <LeadsInbox
         baseCurrency={baseCurrency}
         initialView={initialView}

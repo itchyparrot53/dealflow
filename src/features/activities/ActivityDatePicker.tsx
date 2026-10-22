@@ -10,9 +10,9 @@ import { activityLoadLevel } from "./activityLoad";
 import { addDaysUtc, monthGridRange } from "./monthGrid";
 
 const DOT_CLASS: Record<Exclude<ActivityLoadLevel, "none">, string> = {
-  light: "bg-emerald-500",
-  near: "bg-amber-500",
-  full: "bg-red-500",
+  light: "bg-success",
+  near: "bg-warning",
+  full: "bg-destructive",
 };
 
 const GRID_RANGE_SLACK_DAYS = 1;

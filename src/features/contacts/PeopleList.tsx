@@ -284,7 +284,7 @@ export function PeopleList({
       {isMobile ? (
         <PeopleCards rows={rows} />
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+        <div className="overflow-hidden rounded-lg border bg-card">
           <CustomFieldRefLabelsProvider value={refLabels}>
             <PeopleTable
               rows={rows}
@@ -310,7 +310,7 @@ export function PeopleList({
         </div>
       )}
       {error !== null && (
-        <p role="alert" className="self-center text-sm text-red-600">
+        <p role="alert" className="self-center text-sm text-destructive">
           {error}
         </p>
       )}

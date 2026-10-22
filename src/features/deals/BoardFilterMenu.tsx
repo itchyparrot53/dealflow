@@ -134,7 +134,7 @@ export function BoardFilterMenu(props: BoardFilterMenuProps): React.ReactNode {
         {onCreateFilter !== undefined && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onCreateFilter} className="font-medium text-primary">
+            <DropdownMenuItem onSelect={onCreateFilter} className="font-medium text-info">
               <span aria-hidden="true">+</span> {createEntryLabel}
             </DropdownMenuItem>
           </>

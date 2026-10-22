@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { ListSectionSkeleton } from "@/components/shell/skeletons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { STRINGS } from "@/constants/strings";
@@ -26,6 +27,7 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
   }
   return (
     <main aria-label={STRINGS.contacts.orgsHeading} className="flex flex-col gap-4">
+      <PageTitle title="Organizations" />
       <PageHeading
         crumbs={[
           { label: STRINGS.nav.contacts, href: "/contacts/people" },

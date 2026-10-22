@@ -38,9 +38,9 @@ function dayButton(dayOfMonth: string): HTMLElement | null {
 it("colors each day by how full it is against the target", async () => {
   loaded({ "2026-07-14": 2, "2026-07-15": 4, "2026-07-16": 6 });
   await openOn("2026-07-04");
-  expect(dayButton("14")?.querySelector(".bg-emerald-500")).not.toBeNull();
-  expect(dayButton("15")?.querySelector(".bg-amber-500")).not.toBeNull();
-  expect(dayButton("16")?.querySelector(".bg-red-500")).not.toBeNull();
+  expect(dayButton("14")?.querySelector(".bg-success")).not.toBeNull();
+  expect(dayButton("15")?.querySelector(".bg-warning")).not.toBeNull();
+  expect(dayButton("16")?.querySelector(".bg-destructive")).not.toBeNull();
 });
 
 it("leaves an empty day undecorated", async () => {

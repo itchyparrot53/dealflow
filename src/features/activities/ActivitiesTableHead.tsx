@@ -3,6 +3,7 @@ import type React from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import type { ColumnSort } from "@/components/data-table/useColumnSort";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { tableStyles } from "@/components/ui/table-styles";
 import { ActivitySortableTh } from "./ActivitySortableHeader";
 import type { ActivitySortField } from "./schemas";
 
@@ -32,20 +33,20 @@ export function ActivitiesTableHead({
   visibleColumns,
 }: ActivitiesTableHeadProps): React.ReactNode {
   return (
-    <thead className="sticky top-0 bg-muted/60 text-left text-xs uppercase text-muted-foreground">
+    <thead className={`${tableStyles.thead} sticky top-0 bg-card`}>
       <tr>
-        <th className="w-8 px-3 py-2">
+        <th className={tableStyles.checkboxCell}>
           <Checkbox
             label="Select all activities"
             checked={allSelected}
             onCheckedChange={onToggleAll}
           />
         </th>
-        <th className="px-3 py-2 font-semibold">Done</th>
+        <th className={tableStyles.th}>Done</th>
         {visibleColumns.map((column) => {
           const field = SORTABLE[column.key];
           return field === undefined ? (
-            <th key={column.key} className="px-3 py-2 font-semibold">
+            <th key={column.key} className={tableStyles.th}>
               {column.header}
             </th>
           ) : (

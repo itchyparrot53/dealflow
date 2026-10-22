@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { loadPerson, PersonDetailView } from "./PersonDetailView";
@@ -21,5 +22,10 @@ export default async function PersonPage({
   params: Promise<{ personId: string }>;
 }): Promise<React.ReactNode> {
   const { personId } = await params;
-  return <PersonDetailView personId={personId} />;
+  return (
+    <>
+      <PageTitle title="People" />
+      <PersonDetailView personId={personId} />
+    </>
+  );
 }

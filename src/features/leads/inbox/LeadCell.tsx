@@ -25,7 +25,7 @@ function NextActivity({
 }): React.ReactNode {
   if (at === null) {
     return (
-      <span className="flex items-center gap-1 text-warning">
+      <span className="inline-flex items-center gap-1 rounded-md bg-warning-soft px-1.5 text-warning-soft-foreground">
         <TriangleAlert aria-hidden="true" className="h-3.5 w-3.5" />
         No activity
       </span>

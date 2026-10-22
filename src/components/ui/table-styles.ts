@@ -8,7 +8,7 @@ export const tableStyles = {
   tbody: "text-sm",
   tr: "h-[33px] border-b border-grid transition-colors duration-100 hover:bg-muted data-[state=selected]:bg-info-soft",
   td: "h-[33px] border-r border-grid px-3 align-middle text-sm last:border-r-0",
-  checkboxCell: "w-12 px-3",
+  checkboxCell: "h-[33px] w-12 border-r border-grid px-3 text-left align-middle font-semibold",
   link: "text-link-record hover:underline",
   numeric: "text-right tabular",
 } as const;

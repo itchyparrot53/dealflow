@@ -43,6 +43,7 @@
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-warning-soft: hsl(var(--warning-soft));
+  --color-warning-soft-foreground: hsl(var(--warning-soft-foreground));
   --color-border: hsl(var(--border));
   --color-border-strong: hsl(var(--border-strong));
   --color-input: hsl(var(--input));
@@ -206,6 +207,7 @@
     --warning: 37.4 91.3% 54.9%;
     --warning-foreground: 229.1 14.3% 15.1%;
     --warning-soft: 47.1 100% 91.8%;
+    --warning-soft-foreground: 26.7 89.5% 26.3%;
     --border: 0 0% 89%;
     --border-strong: 0 0% 79.2%;
     --input: 0 0% 79.2%;
@@ -302,6 +304,7 @@
     --warning: 37.9 89.7% 62%;
     --warning-foreground: 222.9 11.5% 12%;
     --warning-soft: 43.8 28.9% 17.6%;
+    --warning-soft-foreground: 37.9 89.7% 62%;
     --border: 222.9 11.7% 23.5%;
     --border-strong: 221.3 9.8% 32.2%;
     --input: 221.3 9.8% 32.2%;
@@ -396,9 +399,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* The one focus treatment: a 2 px blue outline, offset 2. */
+  /* The one focus treatment: a 2 px blue outline, offset 2. !important because several
+     primitives opt out with `focus-visible:outline-none` and rely on a ring instead; the
+     contract is that every keyboard focus target shows this outline. */
   :focus-visible {
-    outline: 2px solid var(--ring-hex);
+    outline: 2px solid var(--ring-hex) !important;
     outline-offset: 2px;
   }
 }

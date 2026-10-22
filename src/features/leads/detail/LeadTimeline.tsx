@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { PILL_TAB, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryFeed } from "@/features/deal-workspace/HistoryFeed";
 import type { HistoryItem } from "@/features/deal-workspace/historyTimeline";
 import { partitionFocusHistory } from "@/features/deal-workspace/historyTimeline";
@@ -80,6 +80,9 @@ export function LeadTimeline({
                 </TabsTrigger>
               ))}
             </TabsList>
+            {TABS.map((t) => t.key).map((v) => (
+              <TabsContent key={v} forceMount value={v} className="hidden" />
+            ))}
 
             <div>
               {tab === "all" && (

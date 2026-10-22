@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
+import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { entityTitle } from "@/features/navigation/pageTitle";
 import { LeadDetailView, loadLead } from "./LeadDetailView";
@@ -21,5 +22,10 @@ export default async function LeadDetailPage({
   params: Promise<{ leadId: string }>;
 }): Promise<React.ReactNode> {
   const { leadId } = await params;
-  return <LeadDetailView leadId={leadId} />;
+  return (
+    <>
+      <PageTitle title="Leads" />
+      <LeadDetailView leadId={leadId} />
+    </>
+  );
 }
