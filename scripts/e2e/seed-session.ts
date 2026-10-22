@@ -158,8 +158,10 @@ async function main(): Promise<void> {
   const documentId = await firstString(
     sql`SELECT id AS "publicId" FROM documents ORDER BY created_at ASC LIMIT 1`,
   );
+  // The design gallery opens this URL directly, and drafts are not publicly visible, so pick the
+  // first issued quote. Otherwise /d/<draft> renders Next's 404 instead of the document page.
   const documentPublicId = await firstString(
-    sql`SELECT public_id AS "publicId" FROM documents WHERE public_id IS NOT NULL ORDER BY created_at ASC LIMIT 1`,
+    sql`SELECT public_id AS "publicId" FROM documents WHERE public_id IS NOT NULL AND kind = 'quote' AND status IN ('sent', 'accepted') ORDER BY created_at ASC LIMIT 1`,
   );
   const dashboardId = await firstString(
     sql`SELECT id AS "publicId" FROM dashboards ORDER BY created_at ASC LIMIT 1`,

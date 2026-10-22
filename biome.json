@@ -11,6 +11,7 @@
     "includes": [
       "**",
       "!**/.claude",
+      "!brand",
       "!site",
       "!docs-site",
       "!**/drizzle",

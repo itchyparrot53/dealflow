@@ -81,7 +81,7 @@ export function DocumentView({ document }: { document: DocumentViewData }): Reac
   const total = money(document.total, document.currency);
 
   return (
-    <article className="mx-auto w-full max-w-[860px] rounded-lg border border-border bg-background p-10 text-foreground">
+    <article className="mx-auto w-full max-w-[860px] rounded-lg border border-border bg-background p-6 text-foreground sm:p-10">
       <header className="flex items-start justify-between gap-6 border-b pb-6">
         <div className="min-w-0">
           {document.company.name !== null && (

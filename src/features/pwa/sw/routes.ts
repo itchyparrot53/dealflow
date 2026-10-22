@@ -20,9 +20,10 @@ const BYPASS_PREFIXES = [
   "/export/",
 ] as const;
 
-// The only paths that are safe to serve from a shared cache: immutable build assets, icons and
-// fonts. HTML is never cached (the /offline shell is precached separately by install).
-const CACHE_FIRST_PREFIXES = ["/_next/static/", "/icons/", "/fonts/"] as const;
+// The only paths that are safe to serve from a shared cache: immutable build assets, icons,
+// brand artwork and fonts. HTML is never cached (the /offline shell is precached separately by
+// install).
+const CACHE_FIRST_PREFIXES = ["/_next/static/", "/icons/", "/brand/", "/fonts/"] as const;
 
 const BYPASS: SwDecision = { kind: "bypass" };
 

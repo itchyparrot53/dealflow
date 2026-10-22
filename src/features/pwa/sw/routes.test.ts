@@ -51,6 +51,7 @@ describe("decide", () => {
     for (const path of [
       "/_next/static/chunks/app.js",
       "/icons/icon-192.png",
+      "/brand/dealflow-logo-horizontal-colour.svg",
       "/fonts/inter.woff2",
       "/manifest.webmanifest",
     ]) {

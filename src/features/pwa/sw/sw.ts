@@ -16,6 +16,11 @@ const PRECACHE = [
   "/icons/icon-maskable-192.png",
   "/icons/icon-maskable-512.png",
   "/icons/badge-128.png",
+  // The offline page renders the horizontal colour logo, so it must be available with no network.
+  "/brand/dealflow-logo-horizontal-colour.svg",
+  "/brand/dealflow-logo-horizontal-reverse.svg",
+  "/brand/dealflow-mark-colour.svg",
+  "/brand/dealflow-mark-reverse.svg",
   "/manifest.webmanifest",
 ] as const;
 const FETCH_TIMEOUT_MS = 30_000;

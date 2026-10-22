@@ -279,6 +279,13 @@ test("PWA install, offline records, push capture and mobile layouts", async ({
   await context.setOffline(true);
   await page.goto("/deals").catch(() => undefined);
   await expect(page.getByTestId("offline-app")).toBeVisible({ timeout: 60_000 });
+  // The offline shell must carry its brand mark too, so the logo is precached and loads with the
+  // network cut.
+  const offlineLogo = page.getByTestId("offline-app").getByRole("img", { name: "Dealflow" });
+  await expect(offlineLogo).toBeVisible();
+  await expect
+    .poll(() => offlineLogo.evaluate((image) => (image as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0);
   await expect(page.getByTestId("offline-record").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("offline-saved-at").first()).not.toBeEmpty();
   await shot(page, "p10-offline");

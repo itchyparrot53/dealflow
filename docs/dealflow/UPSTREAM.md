@@ -484,10 +484,11 @@ were edited for the rollout (new files are marked):
 - Metadata and icons: `src/app/icon.png`, `src/app/apple-icon.png`, `src/app/favicon.ico`,
   `src/app/icon.svg` (new, from the kit), `src/app/layout.tsx` (viewport theme colour and social
   metadata), `src/app/layout.test.tsx`.
-- PWA: `src/app/manifest.ts`, `src/features/pwa/sw/sw.ts`, `public/icons/icon-192.png`,
-  `public/icons/icon-512.png`, `public/icons/icon-maskable-192.png` (new),
-  `public/icons/icon-maskable-512.png`, `public/icons/badge-128.png` (new),
-  `e2e/14-pwa-mobile.spec.ts`.
+- PWA: `src/app/manifest.ts`, `src/features/pwa/sw/sw.ts`,
+  `src/features/pwa/sw/routes.ts` and `routes.test.ts` (brand assets are cache-first),
+  `public/icons/icon-192.png`, `public/icons/icon-512.png`,
+  `public/icons/icon-maskable-192.png` (new), `public/icons/icon-maskable-512.png`,
+  `public/icons/badge-128.png` (new), `e2e/14-pwa-mobile.spec.ts`.
 - Shared brand surface: `src/features/branding/BrandLogo.tsx` (new) and its test,
   `public/brand/dealflow-mark-colour.svg` (new), `public/brand/dealflow-mark-reverse.svg` (new),
   `public/brand/dealflow-logo-horizontal-colour.svg` (new),
@@ -499,6 +500,8 @@ were edited for the rollout (new files are marked):
   `src/features/pwa/offline/ui/OfflineApp.tsx`, `src/features/public/PoweredBy.tsx` (new test),
   `src/app/d/[publicId]/page.tsx`, `src/app/(app)/not-found.tsx`, `src/app/global-error.tsx`,
   `src/app/globalError.test.tsx`.
+- Documents: `src/features/documents/ui/DocumentView.tsx` and `MarkdownLite.tsx` (the line table
+  scrolls inside the sheet on a phone, which the newly visible public-quote gallery shot exposed).
 - System email: `public/brand/email-logo@2x.png` (new), `src/features/mailer/branding.ts` (new)
   and its test, `src/features/mailer/templates.ts` and its test,
   `src/features/notifications/email/render.ts` and its test, `src/features/scheduling/booking.ts`
@@ -506,5 +509,8 @@ were edited for the rollout (new files are marked):
   `src/features/webhooks/deliver.ts` and its integration test.
 - Social preview: `public/og/og-image-1200x630.png` (new),
   `public/og/x-card-1200x675.png` (new).
+- Test harness: `scripts/e2e/seed-session.ts` now points the design gallery at an issued quote
+  instead of a draft (a draft public URL renders a 404), and `biome.json` excludes the immutable
+  `brand/` kit from linting because its draft SVGs are artwork, not app code.
 - Docs: `README.md`, `docs/dealflow/DESIGN.md`, `docs/dealflow/BRAND-ROLLOUT.md` (new), this
   section.

@@ -58,30 +58,34 @@ function LinesTable({
   const money = (value: string): string =>
     currency === undefined ? value : formatMoney(parseCents(value), currency);
   return (
-    <table className="w-full border-collapse text-sm">
-      <thead>
-        <tr className="border-b text-left">
-          <th className="py-2 font-medium">Item</th>
-          <th className="py-2 font-medium">Qty</th>
-          <th className="py-2 text-right font-medium">Price</th>
-          <th className="py-2 text-right font-medium">Discount</th>
-          <th className="py-2 text-right font-medium">Tax</th>
-          <th className="py-2 text-right font-medium">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {lines.map((line) => (
-          <tr key={line.id} className="border-b">
-            <td className="py-2">{line.name}</td>
-            <td className="py-2">{trimZeros(line.quantity)}</td>
-            <td className="py-2 text-right">{money(line.itemPrice)}</td>
-            <td className="py-2 text-right">{trimZeros(line.discountPercent)}%</td>
-            <td className="py-2 text-right">{trimZeros(line.taxPercent)}%</td>
-            <td className="py-2 text-right">{money(line.gross)}</td>
+    // The six numeric columns cannot fit a phone's document width, so the table scrolls inside
+    // its own container instead of widening the page.
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] border-collapse text-sm">
+        <thead>
+          <tr className="border-b text-left">
+            <th className="py-2 font-medium">Item</th>
+            <th className="py-2 font-medium">Qty</th>
+            <th className="py-2 text-right font-medium">Price</th>
+            <th className="py-2 text-right font-medium">Discount</th>
+            <th className="py-2 text-right font-medium">Tax</th>
+            <th className="py-2 text-right font-medium">Amount</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {lines.map((line) => (
+            <tr key={line.id} className="border-b">
+              <td className="py-2">{line.name}</td>
+              <td className="py-2">{trimZeros(line.quantity)}</td>
+              <td className="py-2 text-right">{money(line.itemPrice)}</td>
+              <td className="py-2 text-right">{trimZeros(line.discountPercent)}%</td>
+              <td className="py-2 text-right">{trimZeros(line.taxPercent)}%</td>
+              <td className="py-2 text-right">{money(line.gross)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
