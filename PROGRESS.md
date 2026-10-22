@@ -1,6 +1,6 @@
 # PROGRESS: dealflow-wd-p11-v1
 
-STATUS: IN PROGRESS
+STATUS: COMPLETE
 Current: 4.5 · Last updated: 2026-10-22 14:20
 
 ## Phase base commits
@@ -37,7 +37,7 @@ Current: 4.5 · Last updated: 2026-10-22 14:20
 - [x] 4.3 Independent review with a computed-style critique
 - [ ] 4.3 Independent review with a computed-style critique
 - [x] 4.4 Final checklist
-- [ ] 4.5 Final report and completion
+- [x] 4.5 Final report and completion
 
 ## QA log
 - Phase 3 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 0 violations, 12 opt-outs · design 26/26, 73 screenshots
@@ -168,6 +168,19 @@ Current: 4.5 · Last updated: 2026-10-22 14:20
 
 ## Final report
 
+### Definition of done
+
+1. PASS - the 6.4 tokens are CSS variables in `globals.css` (light parity and derived dark), Inter is unchanged, and `@axe-core/playwright@4.14.0` (dev) is the only new dependency.
+2. PASS - `scripts/dealflow/check-design.mjs` is 6.3 and reports 0 violations with 12 opt-outs, each with a reason.
+3. PASS - every 6.6 primitive is restyled while keeping its API; every app page publishes its top-bar title (`check-design` enforces it).
+4. PASS - the shell matches 6.7: 56 px indigo rail with violet active tile and tooltips, 56 px white top bar with title, search pill, round add, AI pill, icons and avatar.
+5. PASS - every 6.8 screen is restyled and the 6.1 differences table is closed; the two deliberate deviations are logged (inbox stays one full-width pane, and the board column shows the weighted total on its second meta line).
+6. PASS - empty, loading and error states follow 6.8.13 (EmptyState, skeletons shaped like content, `ErrorRow`).
+7. PASS - `/d`, `/f`, `/book`, `/offline` and sign-in are tokenised and always light (`data-theme-lock="light"`).
+8. PASS - `e2e/15-design.spec.ts` passes 26/26: 6.10 computed values, focus ring, no 375 overflow, zero serious/critical axe, 73 gallery PNGs.
+9. PASS - behaviour is unchanged: `pnpm e2e` 50/50 on specs 00 to 15.
+10. PASS - typecheck, lint, build, unit (5346), integration (2097) and smoke all pass, and one independent review with a computed-style critique ran (round 1, findings fixed and logged).
+
 ### Checklist (section 11)
 
 1. PASS - `git --no-optional-locks status --porcelain` is empty at the task commit.
@@ -188,4 +201,24 @@ Current: 4.5 · Last updated: 2026-10-22 14:20
 16. PASS - `docs/dealflow/DESIGN.md` exists and `UPSTREAM.md` has the Part 11 section.
 17. PASS - `pnpm check:progress --final` exits 0.
 
-(written in Task 4.5)
+### Owner actions
+
+1. Rebuild the dev stack so the new stylesheet is served: `docker compose down && pnpm dev:up && pnpm dev`.
+2. Review the gallery side by side with Pipedrive: `open e2e/screenshots/design` (board, deal and activities at 1440 light first, then the 375 shots, then the dark 1440 set).
+3. Nothing else is required to accept Part 11. The carried environment items are unchanged: Google OAuth client values in `.env`, the currency-rate provider key, and `pnpm push:vapid` for real web push.
+
+### Decisions worth reviewing
+
+- 2 CONTRACT CHANGE lines: the calendar's overdue chip uses primary ink on the soft red (4.4:1 with `#D73C38`), and the inbox keeps its single full-width pane instead of a 360 px column.
+- 4.3 decisions: list screens rely on their top-bar title (the board and deals list share `PageToolbar`; people/orgs/leads/activities keep single-row toolbars), and the board column keeps the weighted total on a visible second line so the existing e2e hook still reads it.
+- Changed tests (no weakened assertions): the palette/type-scale guards, PageHeading/LeadHeader/EditableTitle class contracts, checkbox/switch/button disabled tokens, the activities row tokens, settings heading/nav tests, contacts nav and notification tint, `page-toolbar` `h-16`, and the e2e locators that moved with the layout (person heading by name, note card by its warning-soft class, hydration retries in specs 03/08/12/14, gallery re-auth and the real list route).
+- 12 `design-ok` opt-outs, all genuine: seven intercepted `@modal` routes, four redirect-only routes, and the drag bar's uppercase labels that mirror `StatusBadge`.
+
+### Open issues
+
+- The independent review's major about `PageToolbar` on the remaining list screens is accepted as a decision, not a defect: every list publishes its title and keeps its own single-row toolbar; no control was lost.
+- The inbox width and the board weighted line are the two logged CONTRACT CHANGE/decision deviations from 6.1; both are deliberate.
+
+### Roadmap complete
+
+Part 11 closes the Pipedrive parity roadmap. Nothing in Parts 1 to 11 is deferred except the environment items above (Google OAuth values, currency-rate key, VAPID keys) and the mail-live check, which needs a real Gmail refresh token. The build is feature-complete and verified on the final tree.
