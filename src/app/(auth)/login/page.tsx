@@ -18,8 +18,11 @@ export default async function LoginPage({
 }): Promise<React.ReactNode> {
   const params = await searchParams;
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-[400px] rounded-lg border bg-background p-6">
+    <main
+      data-theme-lock="light"
+      className="flex min-h-screen items-center justify-center bg-canvas-subtle p-6"
+    >
+      <div className="w-full max-w-[400px] rounded-lg border border-border bg-card p-8">
         <h1 className="text-balance text-xl font-semibold">{AUTH_STRINGS.signInTitle}</h1>
         <LoginPanel
           methods={authMethods()}

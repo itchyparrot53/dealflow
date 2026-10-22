@@ -201,7 +201,14 @@ const BY_SCREEN: Record<string, Array<(page: Page) => Promise<void>>> = {
     activitySideCheck,
     focusCheck,
   ],
-  "activities-list": [...COMMON, activeRailTileCheck, tableRowCheck, tableHeaderCheck, recordLinkCheck, focusCheck],
+  "activities-list": [
+    ...COMMON,
+    activeRailTileCheck,
+    tableRowCheck,
+    tableHeaderCheck,
+    recordLinkCheck,
+    focusCheck,
+  ],
   "settings-profile": [...COMMON, focusCheck],
 };
 

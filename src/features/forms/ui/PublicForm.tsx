@@ -101,101 +101,103 @@ export function PublicForm({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 bg-background px-6 py-12 text-foreground">
-      <header className="space-y-2">
-        <h1 className="text-title">{title}</h1>
-        {description === null || description.trim() === "" ? null : (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
-      </header>
-
-      {done ? (
-        <p
-          className="rounded-md bg-muted px-4 py-3 text-sm"
-          data-testid="public-form-success"
-          role="status"
-        >
-          {successMessage}
-        </p>
-      ) : (
-        <form
-          method="post"
-          action={`/api/public/forms/${publicId}/submit`}
-          onSubmit={(event) => void submit(event)}
-          className="space-y-4"
-          data-testid="public-form"
-        >
-          {fields.map((field) => (
-            <div
-              key={field.key}
-              className="space-y-1"
-              data-testid="public-form-field"
-              data-key={field.key}
-            >
-              <label htmlFor={`field-${field.key}`} className="block text-sm font-medium">
-                {field.label}
-                {field.required ? <span className="text-destructive"> *</span> : null}
-              </label>
-              {field.key === "message" ? (
-                <Textarea
-                  id={`field-${field.key}`}
-                  name={field.key}
-                  required={field.required}
-                  placeholder={field.placeholder ?? undefined}
-                  rows={4}
-                  maxLength={2000}
-                  value={values[field.key] ?? ""}
-                  onChange={(event) => setValue(field.key, event.target.value)}
-                />
-              ) : (
-                <Input
-                  id={`field-${field.key}`}
-                  name={field.key}
-                  type={INPUT_TYPES[field.key] ?? "text"}
-                  required={field.required}
-                  placeholder={field.placeholder ?? undefined}
-                  maxLength={field.key === "email" ? 320 : 2000}
-                  value={values[field.key] ?? ""}
-                  onChange={(event) => setValue(field.key, event.target.value)}
-                />
-              )}
-              {errors[field.key] === undefined ? null : (
-                <p className="text-xs text-destructive">{errors[field.key]}</p>
-              )}
-            </div>
-          ))}
-
-          <div aria-hidden="true" className="hidden">
-            <label htmlFor="public-form-website">
-              Website
-              <input
-                id="public-form-website"
-                name="website"
-                tabIndex={-1}
-                autoComplete="off"
-                value={website}
-                onChange={(event) => setWebsite(event.target.value)}
-              />
-            </label>
-          </div>
-          <input type="hidden" name="token" value={token} />
-
-          {message === null ? null : (
-            <p className="text-sm text-destructive" role="alert">
-              {message}
-            </p>
+    <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center gap-6 px-6 py-12 text-foreground">
+      <div className="rounded-lg border border-border bg-card p-8">
+        <header className="space-y-2">
+          <h1 className="text-title">{title}</h1>
+          {description === null || description.trim() === "" ? null : (
+            <p className="text-sm text-muted-foreground">{description}</p>
           )}
+        </header>
 
-          <Button
-            type="submit"
-            disabled={submitting}
-            data-testid="public-form-submit"
-            className="w-full"
+        {done ? (
+          <p
+            className="rounded-md bg-muted px-4 py-3 text-sm"
+            data-testid="public-form-success"
+            role="status"
           >
-            Submit
-          </Button>
-        </form>
-      )}
+            {successMessage}
+          </p>
+        ) : (
+          <form
+            method="post"
+            action={`/api/public/forms/${publicId}/submit`}
+            onSubmit={(event) => void submit(event)}
+            className="space-y-4"
+            data-testid="public-form"
+          >
+            {fields.map((field) => (
+              <div
+                key={field.key}
+                className="space-y-1"
+                data-testid="public-form-field"
+                data-key={field.key}
+              >
+                <label htmlFor={`field-${field.key}`} className="block text-sm font-medium">
+                  {field.label}
+                  {field.required ? <span className="text-destructive"> *</span> : null}
+                </label>
+                {field.key === "message" ? (
+                  <Textarea
+                    id={`field-${field.key}`}
+                    name={field.key}
+                    required={field.required}
+                    placeholder={field.placeholder ?? undefined}
+                    rows={4}
+                    maxLength={2000}
+                    value={values[field.key] ?? ""}
+                    onChange={(event) => setValue(field.key, event.target.value)}
+                  />
+                ) : (
+                  <Input
+                    id={`field-${field.key}`}
+                    name={field.key}
+                    type={INPUT_TYPES[field.key] ?? "text"}
+                    required={field.required}
+                    placeholder={field.placeholder ?? undefined}
+                    maxLength={field.key === "email" ? 320 : 2000}
+                    value={values[field.key] ?? ""}
+                    onChange={(event) => setValue(field.key, event.target.value)}
+                  />
+                )}
+                {errors[field.key] === undefined ? null : (
+                  <p className="text-xs text-destructive">{errors[field.key]}</p>
+                )}
+              </div>
+            ))}
+
+            <div aria-hidden="true" className="hidden">
+              <label htmlFor="public-form-website">
+                Website
+                <input
+                  id="public-form-website"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(event) => setWebsite(event.target.value)}
+                />
+              </label>
+            </div>
+            <input type="hidden" name="token" value={token} />
+
+            {message === null ? null : (
+              <p className="text-sm text-destructive" role="alert">
+                {message}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              data-testid="public-form-submit"
+              className="w-full"
+            >
+              Submit
+            </Button>
+          </form>
+        )}
+      </div>
     </main>
   );
 }

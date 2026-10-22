@@ -42,7 +42,7 @@ export default async function PublicFormPage({
   const form = publicForm.form;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div data-theme-lock="light" className="flex min-h-screen flex-col bg-canvas-subtle">
       <PublicForm
         publicId={publicId}
         title={form.title}

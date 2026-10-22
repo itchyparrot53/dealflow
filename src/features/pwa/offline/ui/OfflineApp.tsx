@@ -53,7 +53,8 @@ export function OfflineApp(): React.ReactNode {
   return (
     <main
       data-testid="offline-app"
-      className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-4 p-4 sm:p-6"
+      data-theme-lock="light"
+      className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-4 bg-canvas-subtle p-4 sm:p-6"
     >
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>

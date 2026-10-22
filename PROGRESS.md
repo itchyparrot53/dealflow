@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-22 11:10
+Current: 3.3 · Last updated: 2026-10-22 11:20
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -27,7 +27,7 @@ Current: 3.2 · Last updated: 2026-10-22 11:10
 - [x] 2.5 Projects
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Settings
-- [ ] 3.2 Auth and public pages
+- [x] 3.2 Auth and public pages
 - [ ] 3.3 Empty, loading and error states
 - [ ] 3.4 Remaining worklist, wording and docs
 - [ ] 3.5 Phase 3 QA gate
@@ -97,6 +97,8 @@ Current: 3.2 · Last updated: 2026-10-22 11:10
 - 2.5: `DESIGN_SCREENS=projects,project` passes 2/2 and the project suites 17/17.
 - 3.1: every one of the 37 settings pages now publishes its top-bar title through `PageTitle` (the index only redirects by role and carries a design-ok line). The settings menu is the measured 240 px white column with 13/600 group headings and 32 px rows whose active state is info-soft with blue text and a 3 px blue left bar; the content area is white, padded 24, max width 800; `SettingsHeading` is now the 16/600 section heading with its 14 px description (the page name no longer appears twice) and the card header/body use the 16/600 title and 16 px padding. The old palette/shadow/uppercase classes across the settings clients were replaced with tokens.
 - 3.1: the active-rail-tile parity check is scoped to board, deal and activities-list: 6.7 deliberately moves Settings out of the rail and into the avatar menu, so the settings screen has no rail destination to highlight. The rail itself is still checked on every screen.
+- 3.2: every public surface is light-locked (`data-theme-lock="light"`) on a canvas-subtle ground: the sign-in, magic-link and invite cards are 400 wide with 32 px padding; the public form card is 560 wide at 32 px; the booking page is 720 wide at 32 px with 40x40 day buttons (green when selected) and 32 px slot buttons; the cancel page and the offline shell are light-locked too; "Powered by Dealflow" stays 12 px secondary. Section-divider labels dropped their uppercase.
+- 3.2: `DESIGN_SCREENS=login,public-form,public-booking,offline` passes 4/4 and the auth/forms/scheduling/offline suites 101/101.
 - 3.1: changed tests for the new settings contract: `SettingsHeading` asserts the section h2 at 16/600 with no breadcrumb; `SettingsNav` asserts the info tokens and left bar; the email, import and enrichment page tests assert the h2 section heading. `DESIGN_SCREENS=settings-profile,settings-automation` passes 2/2 and the settings suites 325/325.
 - 2.6 fixes: no failures at this gate. The full unit suite (5346/5346) and all twelve Phase 2 design screens passed on the first run, and `check-design` is down to the number in the QA line; the remaining hits are the settings/auth/public/state work of Phase 3.
 

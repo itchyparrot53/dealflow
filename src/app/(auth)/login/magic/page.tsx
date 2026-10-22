@@ -29,8 +29,11 @@ export default async function MagicLinkPage({
       : await peekAuthToken(db, token, ["magic_link"], AbortSignal.timeout(10_000));
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-[400px] rounded-lg border bg-background p-6">
+    <main
+      data-theme-lock="light"
+      className="flex min-h-screen items-center justify-center bg-canvas-subtle p-6"
+    >
+      <div className="w-full max-w-[400px] rounded-lg border border-border bg-card p-8">
         {peek !== null && peek.ok ? (
           <>
             <h1 className="text-balance text-title">{AUTH_STRINGS.signInAs(peek.value.email)}</h1>

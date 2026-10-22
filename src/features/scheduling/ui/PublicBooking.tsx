@@ -116,7 +116,7 @@ function SlotGrid({
           data-testid="booking-slot"
           data-start={slot}
           onClick={() => onPick(slot)}
-          className="rounded-md border border-border px-3 py-2 text-center text-sm"
+          className="flex h-8 items-center justify-center rounded-md border border-border-strong px-3 text-center text-sm text-foreground hover:bg-muted"
         >
           {labelForSlot(slot, timezone)}
         </button>
@@ -343,7 +343,10 @@ export function PublicBooking({
     typeof confirmed.end === "string"
   ) {
     return (
-      <main className="mx-auto w-full max-w-[640px] bg-background px-6 py-10 text-foreground">
+      <main
+        data-theme-lock="light"
+        className="mx-auto w-full max-w-[720px] px-6 py-10 text-foreground"
+      >
         <BookingConfirmed
           start={confirmed.start}
           end={confirmed.end}
@@ -357,114 +360,116 @@ export function PublicBooking({
 
   return (
     <main
-      className="mx-auto w-full max-w-[640px] bg-background px-6 py-10 text-foreground"
+      className="mx-auto w-full max-w-[720px] bg-canvas-subtle px-6 py-10 text-foreground"
       data-testid="public-booking"
     >
-      <header className="space-y-2">
-        <p className="text-sm text-muted-foreground">{hostName}</p>
-        <h1 className="text-title">{title}</h1>
-        <p className="text-sm text-muted-foreground">
-          {durationMinutes} {S.editor.minutes}
-          {location === null ? "" : ` · ${location}`}
-        </p>
-        {description === null || description.trim() === "" ? null : (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
-        <p className="text-xs text-muted-foreground">Times shown in {displayTimezone}</p>
-      </header>
-
-      {chosenStart === null ? (
-        <>
-          <div className="mt-6 flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-testid="booking-days-prev"
-              disabled={windowStart === 0}
-              onClick={() => {
-                setWindowStart((current) => Math.max(0, current - 1));
-                setSelectedDay(null);
-                setNotice(null);
-              }}
-            >
-              Previous
-            </Button>
-            <nav className="flex flex-1 flex-wrap gap-2" aria-label="Pick a day">
-              {dayOptions.map(({ day, label }) => (
-                <button
-                  key={day}
-                  type="button"
-                  data-testid="booking-day"
-                  data-date={day}
-                  onClick={() => {
-                    setSelectedDay(day);
-                    setNotice(null);
-                  }}
-                  className={
-                    day === activeDay
-                      ? "rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground"
-                      : "rounded-md border border-border px-3 py-1 text-sm"
-                  }
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-testid="booking-days-next"
-              onClick={() => {
-                setWindowStart((current) => current + 1);
-                setSelectedDay(null);
-                setNotice(null);
-              }}
-            >
-              Next
-            </Button>
-          </div>
-
-          {notice === null ? null : (
-            <p
-              className="mt-4 rounded-md bg-muted px-3 py-2 text-sm text-destructive"
-              data-testid="booking-slot-taken"
-              role="alert"
-            >
-              {notice}
-            </p>
+      <div className="rounded-lg border border-border bg-card p-8">
+        <header className="space-y-2">
+          <p className="text-sm text-muted-foreground">{hostName}</p>
+          <h1 className="text-title">{title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {durationMinutes} {S.editor.minutes}
+            {location === null ? "" : ` · ${location}`}
+          </p>
+          {description === null || description.trim() === "" ? null : (
+            <p className="text-sm text-muted-foreground">{description}</p>
           )}
+          <p className="text-xs text-muted-foreground">Times shown in {displayTimezone}</p>
+        </header>
 
-          <section className="mt-6 grid grid-cols-3 gap-2" aria-label="Pick a time">
-            <SlotGrid
-              slots={slots}
-              loading={loading}
-              error={slotError}
-              timezone={displayTimezone}
-              onPick={setChosenStart}
-            />
-          </section>
-        </>
-      ) : (
-        <BookingForm
-          chosenStart={chosenStart}
-          displayTimezone={displayTimezone}
-          name={name}
-          setName={setName}
-          email={email}
-          setEmail={setEmail}
-          note={note}
-          setNote={setNote}
-          website={website}
-          setWebsite={setWebsite}
-          submitError={submitError}
-          submitting={submitting}
-          onSubmit={() => void book()}
-          onBack={() => setChosenStart(null)}
-        />
-      )}
-      <PoweredBy />
+        {chosenStart === null ? (
+          <>
+            <div className="mt-6 flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="booking-days-prev"
+                disabled={windowStart === 0}
+                onClick={() => {
+                  setWindowStart((current) => Math.max(0, current - 1));
+                  setSelectedDay(null);
+                  setNotice(null);
+                }}
+              >
+                Previous
+              </Button>
+              <nav className="flex flex-1 flex-wrap gap-2" aria-label="Pick a day">
+                {dayOptions.map(({ day, label }) => (
+                  <button
+                    key={day}
+                    type="button"
+                    data-testid="booking-day"
+                    data-date={day}
+                    onClick={() => {
+                      setSelectedDay(day);
+                      setNotice(null);
+                    }}
+                    className={
+                      day === activeDay
+                        ? "flex size-10 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground"
+                        : "flex size-10 items-center justify-center rounded-md border border-border-strong text-sm text-foreground hover:bg-muted"
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="booking-days-next"
+                onClick={() => {
+                  setWindowStart((current) => current + 1);
+                  setSelectedDay(null);
+                  setNotice(null);
+                }}
+              >
+                Next
+              </Button>
+            </div>
+
+            {notice === null ? null : (
+              <p
+                className="mt-4 rounded-md bg-muted px-3 py-2 text-sm text-destructive"
+                data-testid="booking-slot-taken"
+                role="alert"
+              >
+                {notice}
+              </p>
+            )}
+
+            <section className="mt-6 grid grid-cols-3 gap-2" aria-label="Pick a time">
+              <SlotGrid
+                slots={slots}
+                loading={loading}
+                error={slotError}
+                timezone={displayTimezone}
+                onPick={setChosenStart}
+              />
+            </section>
+          </>
+        ) : (
+          <BookingForm
+            chosenStart={chosenStart}
+            displayTimezone={displayTimezone}
+            name={name}
+            setName={setName}
+            email={email}
+            setEmail={setEmail}
+            note={note}
+            setNote={setNote}
+            website={website}
+            setWebsite={setWebsite}
+            submitError={submitError}
+            submitting={submitting}
+            onSubmit={() => void book()}
+            onBack={() => setChosenStart(null)}
+          />
+        )}
+        <PoweredBy />
+      </div>
     </main>
   );
 }

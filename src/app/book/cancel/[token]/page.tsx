@@ -36,7 +36,10 @@ export default async function CancelBookingPage({
 
   if (info === null) {
     return (
-      <main className="mx-auto w-full max-w-[560px] bg-background px-6 py-12 text-foreground">
+      <main
+        data-theme-lock="light"
+        className="mx-auto w-full max-w-[560px] px-6 py-12 text-foreground"
+      >
         <h1 className="text-title">Booking not found</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           This booking was already cancelled or the link is invalid.
@@ -48,7 +51,10 @@ export default async function CancelBookingPage({
 
   const done = cancelled === "1" || info.status === "cancelled";
   return (
-    <main className="mx-auto w-full max-w-[560px] bg-background px-6 py-12 text-foreground">
+    <main
+      data-theme-lock="light"
+      className="mx-auto w-full max-w-[560px] px-6 py-12 text-foreground"
+    >
       <h1 className="text-title">{info.pageTitle}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {formatWhen(info.startAt, info.timezone)} ({info.timezone})

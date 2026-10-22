@@ -8,9 +8,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }): React
   if (value === null || value === undefined || value === "") return <></>;
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-      <dt className="w-40 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="w-40 shrink-0 text-meta font-semibold text-muted-foreground">{label}</dt>
       <dd className="min-w-0 text-sm">{value}</dd>
     </div>
   );
