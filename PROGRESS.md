@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 0.4 · Last updated: 2026-10-22 07:58
+Current: 0.5 · Last updated: 2026-10-22 08:12
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
@@ -10,7 +10,7 @@ Current: 0.4 · Last updated: 2026-10-22 07:58
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
 - [x] 0.2 Tokens and global styles
 - [x] 0.3 Primitives and layout components
-- [ ] 0.4 Design e2e harness
+- [x] 0.4 Design e2e harness
 - [ ] 0.5 Phase 0 QA gate
 - [ ] 1.1 Shell
 - [ ] 1.2 Pipeline board
@@ -56,6 +56,12 @@ Current: 0.4 · Last updated: 2026-10-22 07:58
 - 0.3: `Avatar` now uses the measured `--avatar` / `--avatar-foreground` neutral pair instead of a per-name colour swatch; initials stay 600 and the 20/32/40 sizes come from the caller's size classes.
 - 0.3: new `Panel`, `Kbd`, `StatusBadge`, `ViewSwitcher`, `PageToolbar`, `tableStyles` and `shell/pageTitle.tsx`, each with a unit test. The switcher is a `fieldset` of `aria-pressed` buttons because no Radix toggle-group is installed and Part 11 allows only `@axe-core/playwright` as a new dependency.
 - 0.3: changed tests for the new primitive contract: Input focus ring (ConditionRows, SavedViewControl), the disabled neutral pair on every Button variant, the Checkbox strong border, and the Switch track/on tokens. No assertion was loosened.
+- 0.4: `@axe-core/playwright@4.14.0` is installed as a dev dependency, the only new package this part adds.
+- 0.4: `e2e/15-design.spec.ts` splits the gallery into public and app groups (the login screen must run signed out, the other 21 with the seeded admin), writes the fixed `{screen}-{width}-{theme}.png` names to `e2e/screenshots/design/`, runs axe at `wcag2a`/`wcag2aa` with zero serious or critical violations, checks `scrollWidth <= innerWidth + 1` at 375, and switches to night through the real appearance path: the seeded users default to `system`, so `emulateMedia({ colorScheme: "dark" })` plus a reload goes through `AppearanceSync` rather than faking the class.
+- 0.4: the gallery's `{id}` routes read one seeded record per detail screen, so `scripts/e2e/seed-session.ts` now also writes the pipeline, organization, lead, project, document (and its public id), dashboard, report, thread, automation, form public id and booking public id into `.e2e/fixtures.json`. Resolving them by clicking through lists would tie the harness to list markup that is about to be restyled.
+- 0.4: `e2e/design/styleChecks.ts` implements the 6.10 table from computed styles and is scoped to the four named screens. It reads test ids the screen tasks add (`app-rail`, `top-bar`, `page-title`, `primary-action`, `search-pill`, `board-column`, `deal-card`, `deal-card-title`, `stage-track`, `deal-sidebar`, `sidebar-row`, `deal-title`, `activity-side`, `table-row`), so the checks fail loudly rather than silently passing if a hook disappears.
+- 0.4: the task verify ran green: `DESIGN_SCREENS=login DESIGN_CHECKS=0 pnpm exec playwright test e2e/15-design.spec.ts` passed 1/1 and wrote `login-1440-light.png` and `login-375-light.png`.
+
 
 
 

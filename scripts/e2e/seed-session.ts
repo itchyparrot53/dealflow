@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { writeFileSync } from "node:fs";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, type SQL, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "@/db/schema";
@@ -135,6 +135,51 @@ async function main(): Promise<void> {
     `)
   ).rows as { id: string; title: string }[];
 
+  // Part 11 design gallery: resolve one row per detail screen, so the design spec never has to
+  // click through a list. Public ids are read where the screen needs a public URL.
+  const first = async (query: SQL): Promise<Record<string, unknown> | undefined> =>
+    (await db.execute(query)).rows[0] as Record<string, unknown> | undefined;
+  const firstString = async (query: SQL): Promise<string | null> => {
+    const row = await first(query);
+    return (row?.publicId as string | undefined) ?? null;
+  };
+  const pipelineId = await firstString(
+    sql`SELECT id AS "publicId" FROM pipelines WHERE is_archived = false ORDER BY created_at ASC LIMIT 1`,
+  );
+  const orgId = await firstString(
+    sql`SELECT id AS "publicId" FROM organizations ORDER BY created_at ASC LIMIT 1`,
+  );
+  const leadId = await firstString(
+    sql`SELECT id AS "publicId" FROM leads ORDER BY created_at ASC LIMIT 1`,
+  );
+  const projectId = await firstString(
+    sql`SELECT id AS "publicId" FROM projects ORDER BY created_at ASC LIMIT 1`,
+  );
+  const documentId = await firstString(
+    sql`SELECT id AS "publicId" FROM documents ORDER BY created_at ASC LIMIT 1`,
+  );
+  const documentPublicId = await firstString(
+    sql`SELECT public_id AS "publicId" FROM documents WHERE public_id IS NOT NULL ORDER BY created_at ASC LIMIT 1`,
+  );
+  const dashboardId = await firstString(
+    sql`SELECT id AS "publicId" FROM dashboards ORDER BY created_at ASC LIMIT 1`,
+  );
+  const reportId = await firstString(
+    sql`SELECT id AS "publicId" FROM reports ORDER BY created_at ASC LIMIT 1`,
+  );
+  const threadId = await firstString(
+    sql`SELECT id AS "publicId" FROM email_threads ORDER BY last_message_at DESC NULLS LAST LIMIT 1`,
+  );
+  const automationId = await firstString(
+    sql`SELECT id AS "publicId" FROM automations ORDER BY created_at ASC LIMIT 1`,
+  );
+  const formPublicId = await firstString(
+    sql`SELECT public_id AS "publicId" FROM web_forms WHERE public_id IS NOT NULL ORDER BY created_at ASC LIMIT 1`,
+  );
+  const bookingPublicId = await firstString(
+    sql`SELECT public_id AS "publicId" FROM booking_pages WHERE public_id IS NOT NULL ORDER BY created_at ASC LIMIT 1`,
+  );
+
   writeFileSync(
     ".e2e/fixtures.json",
     JSON.stringify({
@@ -150,6 +195,18 @@ async function main(): Promise<void> {
       salesDealTitle: salesDeal?.title ?? null,
       documentsDealId: documentsDeals[0]?.id ?? null,
       documentsDealTitle: documentsDeals[0]?.title ?? null,
+      pipelineId,
+      orgId,
+      leadId,
+      projectId,
+      documentId,
+      documentPublicId,
+      dashboardId,
+      reportId,
+      threadId,
+      automationId,
+      formPublicId,
+      bookingPublicId,
     }),
   );
   await pool.end();

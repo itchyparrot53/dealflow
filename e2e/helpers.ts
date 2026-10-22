@@ -23,6 +23,20 @@ export interface Fixtures {
   // The deal with product lines the documents spec builds a quote from.
   documentsDealId: string | null;
   documentsDealTitle: string | null;
+  // Part 11 design gallery: one seeded record per detail screen, so the 26 design routes resolve
+  // without clicking through a list first. Null means the demo data did not provide one.
+  pipelineId: string | null;
+  orgId: string | null;
+  leadId: string | null;
+  projectId: string | null;
+  documentId: string | null;
+  documentPublicId: string | null;
+  dashboardId: string | null;
+  reportId: string | null;
+  threadId: string | null;
+  automationId: string | null;
+  formPublicId: string | null;
+  bookingPublicId: string | null;
 }
 
 export interface CapturedMail {
