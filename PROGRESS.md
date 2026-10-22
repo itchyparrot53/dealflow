@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p11-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-22 09:30
+Current: 2.1 · Last updated: 2026-10-22 09:35
 
 ## Phase base commits
 - Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
 - Phase 1: 993185503417f6d74fcd36d46c446dd2e006f988
+- Phase 2: fc5eab66f691ad5ca160f8ea710cacb60704997a
 
 ## Tasks
 - [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
@@ -17,7 +18,7 @@ Current: 1.5 · Last updated: 2026-10-22 09:30
 - [x] 1.2 Pipeline board
 - [x] 1.3 Deal workspace and StageTrack
 - [x] 1.4 Lists and person/organization detail
-- [ ] 1.5 Phase 1 QA gate
+- [x] 1.5 Phase 1 QA gate
 - [ ] 2.1 Inbox, thread and mobile reply sheet
 - [ ] 2.2 Calendar and forecast
 - [ ] 2.3 Documents and the public document page
@@ -36,6 +37,7 @@ Current: 1.5 · Last updated: 2026-10-22 09:30
 - [ ] 4.5 Final report and completion
 
 ## QA log
+- Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 203 violations in 130 files, 9 opt-outs · design 8/8 · existing e2e 4/4
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5364/5364 in 840 files · check-design 285 violations in 182 files, 0 opt-outs · design login 1/1
 
@@ -80,6 +82,8 @@ Current: 1.5 · Last updated: 2026-10-22 09:30
 - 1.4: three more tab strips (ContactHistoryTabs, the contact detail tabs, LeadTimeline) got hidden `TabsContent forceMount` targets, like the deal ones, so Radix's `aria-controls` resolve; the activities list spec first switches to "To-do" and "All owners" because its default "Today for me" view is legitimately empty for the seeded admin.
 - 1.4: changed tests: the overdue activity row asserts `text-next-red`, and the date picker's fullness dots assert the success/warning/destructive tokens.
 - 1.4: `DESIGN_SCREENS=deals-list,people,person,organizations,leads,activities-list` passes 6/6 (axe light+dark, 375, activities parity).
+- 1.5 fixes: the gate's full unit run caught two contract assertions from the restyle. `Board.test` still expected a stage lane to be `flex-1` (the measured column is fixed at 248 px and the board scrolls), and `NotificationsBell.test` expected the old `hover:bg-accent`/`text-link` classes (now `hover:bg-muted`/`text-info`). Both tests were updated to the new contract; no assertion was dropped. The gate then passed: typecheck, lint (13 warnings), build, unit 5346/5346, the eight design screens 8/8, and the board/deal/list e2e specs 01, 07, 13, 14 4/4.
+
 - 1.3 CONTRACT CHANGE: the future-stage label uses a new `--track-foreground` token (#5E6066 light, #A3A6AD dark) because the measured #65686F on #E4E4E4 is 4.38:1 and axe AA needs 4.5; #5E6066 measures 4.98:1.
 - 1.3: changed tests for the contract: the OVERDUE chip is now the filled StatusBadge, the stage parity check reads the current segment (the seeded deal can sit in the first stage, so no passed segment exists), the deal workspace test asserts the stage track's `aria-current="step"` option, and an open deal no longer renders an OPEN status badge.
 - 1.2 CONTRACT CHANGE: the dark palette keeps the light action green `#2D8548` and destructive `#D73C38` instead of `#3FA864` / `#EE6461`: white on the lighter pair measures 3.0:1 and 3.1:1, and on the darker pair 4.6:1 (6.4's contrast note). The rot age text uses `--next-red` (dark `#EE6461`, 5.2:1 on the dark card) instead of `--destructive`.

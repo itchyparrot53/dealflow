@@ -64,10 +64,10 @@ describe("NotificationsBell", () => {
     const user = userEvent.setup();
     render(<NotificationsBell userId="u1" />);
     const trigger = screen.getByRole("button", { name: /notifications/i });
-    expect(trigger).toHaveClass("hover:bg-accent");
+    expect(trigger).toHaveClass("hover:bg-muted");
     expect(trigger.className).not.toMatch(/-gray-/);
     await user.click(trigger);
     expect(await screen.findByText(/no notifications/i)).toHaveClass("text-muted-foreground");
-    expect(screen.getByRole("button", { name: /mark all/i })).toHaveClass("text-link");
+    expect(screen.getByRole("button", { name: /mark all/i })).toHaveClass("text-info");
   });
 });

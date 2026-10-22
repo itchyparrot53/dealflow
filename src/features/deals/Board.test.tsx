@@ -116,11 +116,11 @@ describe("Board stage lanes", () => {
   // With only a few stages the board should fill the width (columns grow) rather than leaving a
   // large empty right half. The GROWING element must be the flex item itself (the <li> that wraps
   // each column), not the inner section, or flex-grow has no effect and columns sit at min-width.
-  test("stage columns grow to fill the board width", () => {
+  test("stage columns keep the measured 248 px width and the board scrolls", () => {
     renderBoard([]);
     const alpha = screen.getByRole("region", { name: "Alpha" });
     const flexItem = alpha.parentElement;
-    expect(flexItem?.className).toMatch(/flex-1\b/);
+    expect(flexItem?.className).toContain("md:w-[248px]");
     expect(flexItem?.className).toMatch(/min-w-/);
   });
 });
