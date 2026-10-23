@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-23 13:00
+Current: 1.5 · Last updated: 2026-10-23 13:05
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -14,7 +14,7 @@ Current: 1.4 · Last updated: 2026-10-23 13:00
 - [x] 1.1 Variables and escaping
 - [x] 1.2 The layout renderer
 - [x] 1.3 Data model, design service, logo and the public route
-- [ ] 1.4 Registry, overrides and sendSystemEmail
+- [x] 1.4 Registry, overrides and sendSystemEmail
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Product emails migrated
 - [ ] 2.2 Customer email wrapping in the send path, automations and booking

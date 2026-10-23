@@ -24,6 +24,12 @@ export function smtpMailer(): SystemMailer {
           subject: mail.subject,
           text: mail.text,
           html: mail.html,
+          headers: mail.headers,
+          attachments: mail.attachments?.map((attachment) => ({
+            filename: attachment.filename,
+            contentType: attachment.contentType,
+            content: attachment.content,
+          })),
         });
         signal.throwIfAborted();
         return ok({ messageId: info.messageId });
