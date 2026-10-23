@@ -86,6 +86,18 @@ You need an **app password** from your mail provider. This is a separate passwor
 
 Open the conversation and use the follow-up control under the subject to mark it (for example **To do** or **Later**). Use the follow-up filter in the inbox to see everything you still need to chase.
 
+## How to choose a layout or preview an email
+
+When you write an email, Dealflow wraps it in your company design. The **Layout** control in the composer footer shows the current choice:
+
+- **Branded**: your logo, colours and footer, on a card.
+- **Minimal**: a light reply layout with no card.
+- **Plain**: exactly what you typed, with no layout.
+
+The default for a new email and for replies is set in **Settings › Email design**. Your choice here applies to this message only.
+
+To see exactly what the recipient will get, select **Preview**. The preview uses the same renderer as the send, including your signature, at 600 or 375 pixels wide.
+
 ## How to manage templates and signatures
 
 ![Email templates and signatures](images/email-templates.png)

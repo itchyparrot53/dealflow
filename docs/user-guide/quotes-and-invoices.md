@@ -41,6 +41,8 @@ A draft's header has **Send** as the main button, then **Save draft**, **Issue**
 
 ## How to send a quote
 
+The subject and message start from your **Quote sent** email template and can be edited for this document. The email also carries a summary (number, total and valid-until date) and a **View quote** button that opens the public page. Change the template under **Settings › Email design › Templates**.
+
 1. Open the draft quote.
 2. Select **Send**.
 

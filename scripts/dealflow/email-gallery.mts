@@ -1,8 +1,9 @@
 // Part 13 email gallery: render every registry template with sample data and screenshot it at
 // 600 and 375 px. No database is needed; a tiny static server serves public/brand so the logo
 // resolves inside the browser. Run with `pnpm email:gallery`.
-import { createServer } from "node:http";
+
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "@playwright/test";
 
@@ -36,13 +37,10 @@ await new Promise<void>((resolve) => server.listen(PORT, "127.0.0.1", resolve));
 const { EMAIL_TEMPLATE_KEYS, sampleVariables } = await import(
   "../../src/features/email-design/registry"
 );
-const { renderDefaultTemplate } = await import(
-  "../../src/features/email-design/sendSystemEmail"
-);
-const { wrapCustomerEmail } = await import(
-  "../../src/features/email-design/wrapCustomerEmail"
-);
+const { renderDefaultTemplate } = await import("../../src/features/email-design/sendSystemEmail");
+const { wrapCustomerEmail } = await import("../../src/features/email-design/wrapCustomerEmail");
 const { htmlToText } = await import("../../src/features/email-design/layout");
+
 import type { EmailDesign } from "../../src/features/email-design/tokens";
 
 const customer: EmailDesign = {
@@ -58,9 +56,6 @@ const customer: EmailDesign = {
   footerOnReplies: false,
 };
 
-const docsBody =
-  "<p>Hi Aria Reyes,</p><p>Thank you for your interest. Your quote for Website redesign is ready to view.</p><p>Best regards,<br>Demo Admin</p>";
-
 interface Sample {
   name: string;
   html: string;
@@ -74,7 +69,8 @@ for (const key of EMAIL_TEMPLATE_KEYS) {
 }
 
 const newEmail = wrapCustomerEmail({
-  bodyHtml: "<p>Hi Aria,</p><p>Here is the summary we discussed. Let me know what you think.</p><p>Best,<br>Demo Admin</p>",
+  bodyHtml:
+    "<p>Hi Aria,</p><p>Here is the summary we discussed. Let me know what you think.</p><p>Best,<br>Demo Admin</p>",
   mode: "new",
   design: customer,
 });

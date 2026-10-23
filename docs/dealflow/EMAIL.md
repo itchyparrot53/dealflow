@@ -1,86 +1,92 @@
-# Outbound email inventory
+# Email system: one renderer, editable copy
 
-Task 0.2 of Part 13. Every place Dealflow sends email, what it says today, and which registry key it
-will use. Produced by reading the senders named in section 4 and grepping
-`getSystemMailer|sendSystem|sendEmail(|sendDocument(` in `src`; no runtime was used.
+Part 13 routes every outbound email through `src/features/email-design/`. Product email keeps the
+Dealflow identity; customer email uses the company design from Settings › Email design. No sender
+builds HTML and no template is edited in code.
 
-## System and customer senders
+## The renderer
 
-| Key | Family | Sent by | Trigger (unchanged) | Recipients | Current subject | Current HTML source |
-|---|---|---|---|---|---|---|
-| `sign_in_link` | product | `src/app/auth/magic-link/route.ts` POST -> `requestMagicLink` (`features/auth/magicLink.ts`) | a sign-in link request | the address in the form, only when the account exists; the route answers the same either way | `Your Dealflow sign-in link` | `magicLinkMail` in `src/features/mailer/templates.ts`: brand header image, two paragraphs, the link as an anchor |
-| `invite` | product | `src/features/identity/actions/invite.ts` `inviteUserAction` | an admin invites a user | the invited address | `{inviterName} invited you to Dealflow` | `inviteMail` in `mailer/templates.ts`: brand header, two paragraphs, the link |
-| `notification` | product | `src/features/notifications/email/job.ts` `runEmailNotificationJob` | a notification row with email enabled | the notification's user; visibility and the email preference are rechecked at send time | per type from `renderNotificationEmail` (`Somebody mentioned you in Dealflow`, `Deal won!`, `Task assigned: {task}`, ...) | `notifications/email/render.ts` `wrap()`: brand header, one escaped line, a link labelled `Open in Dealflow` |
-| `backup_failed` | product | `src/features/backups/backup.ts` `notifyFailure` | a scheduled backup fails | every active admin | `Dealflow backup failed` | brand header plus `<p>The scheduled backup failed:</p><pre>{detail}</pre>`; `detail` is interpolated raw |
-| `webhook_disabled` | product | `src/features/webhooks/deliver.ts` `disableSubscription` | a webhook is auto-disabled after repeated failures | the subscription creator | `A Dealflow webhook was disabled` | brand header plus paragraphs with `user.name` and `reason` interpolated raw |
-| `booking_confirmed` | customer | `src/features/scheduling/booking.ts` `bookSlot` -> `sendVisitorEmail` | a guest books a slot | the guest's address | `Booked: {page.title} with {host.name}` | brand header plus `<pre>{escaped text}</pre>`; the text carries the when, duration, location and cancel URL. No `.ics` attachment today |
-| `booking_cancelled` | customer | **missing** (`src/features/scheduling/cancel.ts` notifies the host only) | a guest cancels | the guest, once implemented | will be `Cancelled: {booking.title} with {host.name}` | none today; the host gets the `notification` key |
-| `quote_sent` | customer | `src/features/documents/send.ts` `sendDocument` -> `composeMail` | Send on a quote | the document's customer email | `Quote {number} from {companyName}` | plain text turned into paragraphs by `toBodyHtml`, with `View it here: {publicUrl}` and the owner's name |
-| `invoice_sent` | customer | same | Send on an invoice | the document's customer email | `Invoice {number} from {companyName}` | same as the quote |
-| `customer_message` | customer | `src/features/email/send.ts` `sendEmail` (composer, reply, scheduled, automation, documents) | a user or automation sends an email | the To/Cc/Bcc the user chose | the user's subject, after merge fields | sanitized author HTML, then tracking rewrites and the signature (`sendHelpers.ts`); no layout |
+| File | Responsibility |
+|---|---|
+| `layout.ts` | Table-based, inline-styled, 600 px HTML with an Outlook (MSO/VML) wrapper, a plain-text alternative, a hidden preheader, a summary card, a button with a fallback link, and the 90 KB guard (product throws `E_EMAIL_DESIGN_001`, customer warns and sends). |
+| `tokens.ts` | Colour and type tokens, the Dealflow design (`#2D8548`, logo `/brand/email-logo@2x.png` at 160x33), and the `EmailDesign` view shape. |
+| `variables.ts` | `{{name}}` substitution: escaped in HTML mode, raw in text mode, unknown tokens empty; `stripHeaderBreaks` for subjects. |
+| `registry.ts` | The 10 keys, their default copy, variables with samples, CTA URL variables, summary rows and audience. |
+| `templates.ts` | Resolves an override or the default, saves (sanitises the body), resets, lists. An override replaces every field. |
+| `sendSystemEmail.ts` | The one send entry point: resolve, render variables, render the layout, send through the system mailer, add `List-Unsubscribe` for notifications, pass attachments. |
+| `design.ts` | The company design singleton, the logo upload/remove (magic-byte sniff, 256 KB and 2000 px limits) and `getEmailLogo` for the public route. |
+| `wrapCustomerEmail.ts` | Wraps a customer body once, using the design's new/reply layout or the per-message choice; the `data-df-layout` marker makes a second pass a no-op. |
 
-## Current HTML builders outside `src/features/email-design/`
+## The registry
 
-These are the files Task 2.1 and 2.2 must drain. The final checklist greps for them.
+| Key | Family | Audience | Sender (trigger unchanged) | Current subject |
+|---|---|---|---|---|
+| `sign_in_link` | product | Your team | magic-link route | `Your Dealflow sign-in link` |
+| `invite` | product | Your team | invite action | `{inviter} invited you to Dealflow` |
+| `notification` | product | Your team | notification email job | per type (`Deal won!`, `Reminder: ...`) |
+| `backup_failed` | product | Your team | backup job, to active admins | `Dealflow backup failed` |
+| `webhook_disabled` | product | Your team | webhook auto-disable | `A Dealflow webhook was disabled` |
+| `booking_confirmed` | customer | Customers | `bookSlot` | `Booked: {title} with {host}` |
+| `booking_cancelled` | customer | Customers | cancel flow (guest) | `Cancelled: {title} with {host}` |
+| `quote_sent` | customer | Customers | document send | `Quote {number} from {company}` |
+| `invoice_sent` | customer | Customers | document send | `Invoice {number} from {company}` |
+| `customer_message` | customer | Customers | composer, reply, automation, documents | the author's subject |
 
-| File | Builds | Registry key |
-|---|---|---|
-| `src/features/mailer/templates.ts` | magic link and invite fragments, and `linkParagraph` | `sign_in_link`, `invite` |
-| `src/features/mailer/branding.ts` | `emailBrandHeaderHtml` / `emailBrandHeaderText` | product families |
-| `src/features/notifications/email/render.ts` | notification HTML and its `Open in Dealflow` link | `notification` |
-| `src/features/scheduling/booking.ts` `sendVisitorEmail` | booking confirmation `<pre>` block | `booking_confirmed` |
-| `src/features/backups/backup.ts` `notifyFailure` | backup failure paragraphs | `backup_failed` |
-| `src/features/webhooks/deliver.ts` `disableSubscription` | webhook disabled paragraphs | `webhook_disabled` |
-| `src/features/documents/send.ts` `toBodyHtml` | quote and invoice body paragraphs | `quote_sent`, `invoice_sent` |
+The composer and reply path uses `customer_message`, which is not editable in the Templates tab. A
+new email resolves `design.newEmailLayout`; a reply resolves `design.replyLayout`; documents and
+automations wrap before the mailbox path; `plain` sends the author HTML unchanged.
 
-## The customer send path and where the wrap goes
+## Variables and overrides
 
-`sendEmail` (`src/features/email/send.ts`) does, in order: merge fields, `sanitizeAuthorHtml`,
-`enqueueSend` (the payload row holds the sanitized HTML), `applyTrackingAndSignature` (rewrites links,
-mints the open token, appends the signature, and persists the result back into the payload row), an
-early return for a future scheduled send after that preparation, then `processSendAttempt` and
-`storeOutboundCopy` with the prepared body. The MIME builder already accepts an optional text part
-(`SendPayload.text`, passed through in `outbox.ts`), so the layout's text output belongs in the
-payload next to the HTML.
+- Common variables: `company.name`, `app.url`, `recipient.name`, `recipient.email`. Each key adds the
+  values it needs (`link.url`, `notification.line`, `document.total`, `booking.when`, and so on).
+- HTML mode escapes every value, so a contact name cannot inject markup. Subjects and preheaders run
+  through `stripHeaderBreaks` (CR, LF and other control characters removed, then cut to 200/140).
+- An override is a full replacement: clearing the preheader clears it. Reset deletes the row and
+  restores the default. Button URLs never come from the edit form; they are structural.
 
-The wrap point is therefore inside/after `applyTrackingAndSignature`, before the scheduled early
-return: the stored payload and the Sent/CRM copy then hold exactly what went on the wire, a scheduled
-send is wrapped once, and the `data-df-layout` marker makes a second pass a no-op. Documents wrap
-before calling `sendEmail` (they add the summary and button themselves, as 6.6 requires), and
-automations wrap in their action; the marker guard keeps the generic path from wrapping either again.
+## Security
 
-## What differs from the plan's assumptions
+- Template bodies and composer HTML go through `sanitizeAuthorHtml` before rendering; layout
+  variables are escaped, never interpolated raw.
+- The logo route (`/email-assets/logo/{hash}.{png|jpg}`) matches the stored hash and serves the
+  stored bytes and type for that hash only. It never reads a path from the request, and it still
+  serves the logo when the public rate limit is hit.
+- Preview iframes use `sandbox=""` and `srcdoc`, so no script can run.
+- Saves are admin only, CSRF-checked, Zod-validated and audited (`email_design.updated`,
+  `email_template.updated`, target type `settings`). Test sends go only to the signed-in admin.
+- No email content or variable values are logged. The notification email carries a
+  `List-Unsubscribe` header.
 
-- **`booking_cancelled` has no sender.** The cancel flow (`scheduling/cancel.ts`) soft-deletes the
-  activity, emits `booking.cancelled` and notifies the host, but emails the guest nothing. Part 13
-  adds the guest email in Task 2.2 through the registry, on the same trigger and to the same
-  recipient the flow already has; it is the listed template, not a new email type.
-- **The booking confirmation has no calendar attachment.** The `.ics` is built and returned to the
-  HTTP caller, never attached. Task 2.2 adds it through the `SystemMail.attachments` support 6.4
-  requires, so the template's "A calendar invite is attached." is true.
-- **There is no HTML-to-text helper.** No `plainTextBody`, `htmlToText` or equivalent exists. Per
-  section 10 the builder writes a small converter in `layout.ts` with tests and reuses it for the
-  text part; the inventory records that rather than inventing a path.
-- **Notification CTAs are all `Open in Dealflow`.** The per-type labels in 6.4 (`Open deal`,
-  `Open activity`, `Open quote`, `Open conversation`, `Open form`, `Open booking`, or
-  `Open Dealflow`) do not exist yet; Task 2.1 derives the label from the same `NotificationRow`
-  switch in `render.ts` and passes it as `notification.cta`.
-- **Two current senders interpolate unescaped values into HTML.** `backup_failed` puts the failure
-  detail into `<pre>` and `webhook_disabled` puts `user.name` and the reason into paragraphs without
-  escaping. The new renderer escapes every variable, so Task 2.1 closes this while it moves the copy.
-- **Document subjects and messages are code defaults,** not editable templates. Task 2.3 resolves
-  `quote_sent` and `invoice_sent` from the registry and pre-fills the dialog, keeping spec 08's labels.
-- **There is no notification digest.** The email job sends exactly one message per notification row
-  and the enqueue path creates one job per row, so no `notification_digest` key is needed.
+## Testing and gallery
 
-## Not wrapped (6.3)
+- Unit: variable escaping and header stripping, layout contracts, contrast, image sniffing, the
+  registry defaults rendering under 90 KB with no tokens left, wrap resolution, the editor.
+- Integration: design save/upload/logo route/fetch, non-admin refusals, accent contrast, template
+  override/reset and length limits, `sendSystemEmail` with capture mail, and the send path wrap with
+  the signature and tracking inside the layout.
+- E2E `e2e/17-email.spec.ts`: sign-in link, invite template edit/reset, branding with a logo and
+  accent, reply minimal, quote summary and button, preview parity, contrast guard.
+- Gallery: `pnpm email:gallery` renders 13 emails at 600 and 375 px (26 PNGs) into
+  `e2e/screenshots/email/`, each under 90 KB. It serves `public/` on a temporary port so the logo
+  loads without a running app.
 
-Inbound mail, mail that already carries a `data-df-layout` marker, a send whose layout resolves to
-`plain`, and the `.ics` attachment payload.
+## Adding a template
+
+1. Add the key and default copy to `registry.ts` (subject, preheader, body, CTA label, variables
+   with samples). Keep button URLs in code as a `cta.urlVariable`.
+2. Call `sendSystemEmail` (product) or `wrapCustomerEmail` (customer) from the existing sender; do
+   not build HTML.
+3. Add the key to the tests' loops: the registry test and the gallery render every key, so a missing
+   variable or an oversized email fails fast.
+
+## Not wrapped
+
+Inbound mail, a body that already carries `data-df-layout`, a `plain` send, and the `.ics`
+attachment payload.
 
 ## Reused building blocks
 
-`sanitizeAuthorHtml` for every authored or variable-rendered body, `RichTextBody` (TipTap 3.27.1) for
-the composer and the document send dialog, `formatMoney(..., 2)` for document totals, `formatCalendarDate`
-for document dates, `SystemMailer` and its three modes, and `SendPayload.text` for the plain-text
-alternative.
+`sanitizeAuthorHtml`, `RichTextBody` (TipTap 3.27.1) for the composer and both email editors,
+`formatMoney(..., 2)` for document totals, `formatCalendarDate` for document dates, the system
+mailer's three modes, and `SendPayload.text` for the plain-text alternative.

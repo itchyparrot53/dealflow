@@ -58,6 +58,7 @@ export default tseslint.config(
             "*.mjs",
             "scripts/*.mjs",
             "scripts/dealflow/*.mjs",
+            "scripts/dealflow/*.mts",
             "scripts/e2e/*.mjs",
             ".env.example.test.ts",
             "src/features/demo/*.ts",
@@ -65,7 +66,7 @@ export default tseslint.config(
           // Tooling scripts now include the env-sync and e2e helpers (2026-10). The default cap is
           // 8 matched files, which this list exceeds; raise it rather than pull non-app .mjs files
           // into the app's tsconfig.
-          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 20,
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 24,
         },
       },
     },
@@ -236,6 +237,23 @@ export default tseslint.config(
   // stdout IS the product (parity gate reports) may use console.log.
   {
     files: ["scripts/**/*.mjs"],
+    rules: {
+      "no-restricted-properties": "off",
+      "no-restricted-syntax": "off",
+      "no-console": "off",
+      "@typescript-eslint/strict-boolean-expressions": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+    },
+  },
+
+  {
+    // The email gallery is .mts so it can use the app's exported types; it is a build-time tool
+    // like the other scripts, not app code.
+    files: ["scripts/**/*.mts"],
     rules: {
       "no-restricted-properties": "off",
       "no-restricted-syntax": "off",

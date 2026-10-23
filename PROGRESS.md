@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-10-23 14:20
+Current: 4.3 · Last updated: 2026-10-23 14:24
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -27,7 +27,7 @@ Current: 4.2 · Last updated: 2026-10-23 14:20
 - [x] 3.3 Composer layout control and preview
 - [x] 3.4 Phase 3 QA gate
 - [x] 4.1 Email e2e spec and gallery
-- [ ] 4.2 Docs
+- [x] 4.2 Docs
 - [ ] 4.3 End-to-end, integration suite and smoke
 - [ ] 4.4 Independent review
 - [ ] 4.5 Final checklist
@@ -41,6 +41,8 @@ Current: 4.2 · Last updated: 2026-10-23 14:20
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 4.2: `docs/dealflow/EMAIL.md` is now the architecture and operations guide (renderer, registry, variables, security, testing, adding a template); the user guide gained "How to brand the emails Dealflow sends" and "How to edit an email template" (admin), "How to choose a layout or preview an email" (email), and the quote template note. All 15 PDFs were rebuilt and checked with pdftotext.
+- 4.2: the gallery script stays `.mts` (the plan's path) and ESLint's default project now includes `scripts/dealflow/*.mts`, with the same script overrides as `.mjs`.
 - 4.1: the gallery renders 13 emails: the 10 registry keys, plus customer_message new, reply and plain samples, at 600 and 375 px (26 PNGs). The document sample is left to quote_sent/invoice_sent, which already show the summary and button.
 - 4.1: the gallery starts a temporary static server for public/ on 127.0.0.1:3410 and points BASE_URL at it, so the product logo loads with no running app; screenshots use @playwright/test's chromium (DOCS_CHROME can override it).
 - 3.4: e2e 17 was written for this gate (as the plan allows) and passes its six tests; the send tests connect the fake IMAP mailbox themselves, read the decoded MIME from the fake Sent folder, and the invite test types into TipTap instead of filling the contenteditable so ProseMirror updates its document.

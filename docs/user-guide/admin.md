@@ -17,6 +17,29 @@ This section is for admins: the people who set Dealflow up for the company. Most
 - Use the row's menu in the list to change a user's permission set or to deactivate them. A deactivated user cannot sign in, but their records stay.
 - The filters above the list show **All**, **Active**, **Invited** or **Deactivated** users.
 
+## How to brand the emails Dealflow sends
+
+Dealflow sends two kinds of email: product email to your team (sign-in links, invites, notifications, backup and webhook warnings) and customer email from your company. Both go through one design.
+
+1. Go to **Settings › Email design**, then the **Branding** tab.
+2. Select **Upload logo** and choose a PNG or JPEG up to 256 KB. A wide logo on a transparent or white background works best.
+3. Set the **Display name**, the **Accent colour** (buttons and links; the editor refuses a colour whose white button text would be hard to read), whether to show your company address, optional footer text, and whether to show "Powered by Dealflow".
+4. Choose the **New emails** and **Replies** layouts. **Branded** puts the message in your card, **Minimal** keeps a reply plain, and **Plain** sends what the author wrote without a layout.
+5. Select **Save**, then **Send test to me** to check the result in your own inbox. The preview on the right updates as you edit.
+
+## How to edit an email template
+
+1. Go to **Settings › Email design**, then the **Templates** tab.
+2. Select **Edit** on the email you want to change.
+3. Edit the **Subject**, **Preview line** and **Body**. Select **Insert variable** to place a value such as the recipient's name, a document total or a sign-in link. The button label is editable; the link itself always comes from Dealflow.
+4. Select **Save template**. Select **Send test to me** to see it, or **Reset to default** to restore the original copy.
+
+**Tips:**
+
+- Template changes apply to email sent after you save. Already-sent mail does not change.
+- Product emails keep the Dealflow mark and the "Sent by Dealflow for {company}" footer. Customer emails use your logo, colours and footer.
+- The quote and invoice dialogs start with the template's subject and message, and you can edit them per document.
+
 ## How to control what people can do
 
 **Permission sets** decide what users can do. Dealflow comes with **Regular** (create deals, contacts and activities, and edit their own) and **Admin** (everything).

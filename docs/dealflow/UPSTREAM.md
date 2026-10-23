@@ -569,3 +569,28 @@ Upstream files changed, by area:
 
 Tests updated for the changed contracts are listed in the Part 12 Decisions; no assertion was
 weakened or deleted.
+
+## Part 13: branded, editable email for everything Dealflow sends
+
+New feature folder `src/features/email-design/` (layout, tokens, variables, registry, templates,
+sendSystemEmail, design, imageSize, wrapCustomerEmail, preview, schemas, router, actions, UI). New
+tables `email_design` and `email_template_overrides` (`src/db/schema/emailDesign.ts`, migration
+`0093_dealflow_email_design.sql`). New public route `src/app/email-assets/logo/[file]/route.ts`.
+New settings page `src/app/(app)/settings/email-design/`, plus `docs/user-guide` sections, the
+`e2e/17-email.spec.ts` spec and `scripts/dealflow/email-gallery.mts` (`pnpm email:gallery`).
+
+Upstream files changed: the five system senders (`app/auth/magic-link/route.ts`,
+`features/identity/actions/invite.ts`, `features/notifications/email/{render,job}.ts`,
+`features/backups/backup.ts`, `features/webhooks/deliver.ts`), the scheduling pair
+(`booking.ts`, `cancel.ts`), the customer path (`features/email/{send,sendHelpers}.ts`),
+documents (`documents/{send,actions}.ts`, `ui/SendDialog.tsx`), automations
+(`actions/sendEmail.ts`), the mailer types/SMTP path, the composer (footer, send handler,
+Composer), `src/app/(app)/settings/SettingsNav.tsx`, `src/server/trpc/root.ts`, and
+`src/constants/errorIds.ts` (`E_EMAIL_DESIGN_001` to `006`). The old hand-built headers
+(`features/mailer/templates.ts`, `features/mailer/branding.ts`) are deleted.
+
+Test-harness notes: the composer suites' trpc mocks gained `emailDesign.get`/`previewCustomer`; the
+scheduled and signature MIME decoders handle the new text part; the booking integration asserts the
+customer marker and the `.ics` attachment. No assertion was weakened; the changes track the deliberate
+contract in the Part 13 Decisions.
+
