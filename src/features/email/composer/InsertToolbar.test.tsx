@@ -416,7 +416,7 @@ describe("InsertToolbar – refetch after reset does not re-apply stale template
 
     render(<InsertToolbar onSubjectChange={onSubjectChange} onBodyChange={onBodyChange} />);
 
-    // Neither callback should have fired — no template was explicitly selected.
+    // Neither callback should have fired: no template was explicitly selected.
     expect(onSubjectChange).not.toHaveBeenCalled();
     expect(onBodyChange).not.toHaveBeenCalled();
   });
@@ -428,7 +428,7 @@ describe("InsertToolbar – refetch after reset does not re-apply stale template
     const onSubjectChange = vi.fn();
     const onBodyChange = vi.fn();
 
-    // Stale data in the mock — but enabled=false short-circuits to {data:undefined}.
+    // Stale data in the mock, but enabled=false short-circuits to {data:undefined}.
     getTemplateMock.mockReturnValue({
       data: { id: "t1", subject: "Stale subject", bodyHtml: "<p>Stale body</p>" },
     });

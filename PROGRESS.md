@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-23 14:24
+Current: 4.4 · Last updated: 2026-10-23 14:38
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -28,12 +28,13 @@ Current: 4.3 · Last updated: 2026-10-23 14:24
 - [x] 3.4 Phase 3 QA gate
 - [x] 4.1 Email e2e spec and gallery
 - [x] 4.2 Docs
-- [ ] 4.3 End-to-end, integration suite and smoke
+- [x] 4.3 End-to-end, integration suite and smoke
 - [ ] 4.4 Independent review
 - [ ] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Full: e2e 66/66 (specs 00 to 17) · integration 2106/2106 in 415 files · smoke PASS with backup round trip ok (3 deals), no containers or volumes left
 - Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings) · build ok · unit 5484/5484 in 861 files · check:design 0 violations, 17 opt-outs · e2e/17-email.spec.ts 6/6
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5479/5479 in 859 files · email, email-design, documents, notifications, scheduling, automations integration 467/467 in 96 files · e2e 01, 02, 06, 08, 09, 10 7/7
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5480/5480 in 860 files · src/features/email-design/*.integration.test.ts 7/7
@@ -41,6 +42,7 @@ Current: 4.3 · Last updated: 2026-10-23 14:24
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 4.3: the full suite is 66 tests now (60 from Part 12 plus the six in `17-email`), all passing; integration is 2106/2106 in 415 files; smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)` and left no `dealflow-smoke` container or volume.
 - 4.2: `docs/dealflow/EMAIL.md` is now the architecture and operations guide (renderer, registry, variables, security, testing, adding a template); the user guide gained "How to brand the emails Dealflow sends" and "How to edit an email template" (admin), "How to choose a layout or preview an email" (email), and the quote template note. All 15 PDFs were rebuilt and checked with pdftotext.
 - 4.2: the gallery script stays `.mts` (the plan's path) and ESLint's default project now includes `scripts/dealflow/*.mts`, with the same script overrides as `.mjs`.
 - 4.1: the gallery renders 13 emails: the 10 registry keys, plus customer_message new, reply and plain samples, at 600 and 375 px (26 PNGs). The document sample is left to quote_sent/invoice_sent, which already show the summary and button.
