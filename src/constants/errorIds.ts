@@ -342,6 +342,14 @@ export const ERROR_IDS = {
   PUSH_SUBSCRIPTION_INVALID: "E_PUSH_002", // endpoint not https, or subscription keys missing
   PUSH_DELIVERY_FAILED: "E_PUSH_003", // push service rejected the send (context: status code)
   PUSH_INPUT_INVALID: "E_PUSH_004", // push action input failed Zod validation
+
+  // EMAIL DESIGN (Part 13 branded outbound email)
+  EMAIL_DESIGN_TOO_LARGE: "E_EMAIL_DESIGN_001", // rendered product email exceeds the 90 KB clip guard
+  EMAIL_DESIGN_LOGO_INVALID: "E_EMAIL_DESIGN_002", // logo is not a PNG or JPEG, or the bytes are corrupt
+  EMAIL_DESIGN_LOGO_TOO_LARGE: "E_EMAIL_DESIGN_003", // logo is over 256 KB, or over 2000 px on a side
+  EMAIL_DESIGN_ACCENT_CONTRAST: "E_EMAIL_DESIGN_004", // accent is under 4.5:1 against white button text
+  EMAIL_DESIGN_TEMPLATE_UNKNOWN: "E_EMAIL_DESIGN_005", // template key is not in the registry
+  EMAIL_DESIGN_INPUT_INVALID: "E_EMAIL_DESIGN_006", // design or template input failed Zod validation
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];
