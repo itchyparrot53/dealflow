@@ -42,7 +42,8 @@
     "smoke": "node scripts/dealflow/smoke.mjs",
     "docs:pdf": "node scripts/dealflow/build-user-guide-pdf.mjs",
     "docs:screenshots": "node scripts/dealflow/capture-user-guide.mjs",
-    "site:build": "node scripts/dealflow/build-site.mjs"
+    "site:build": "node scripts/dealflow/build-site.mjs",
+    "email:gallery": "GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN= tsx --env-file=.env scripts/dealflow/email-gallery.mts"
   },
   "keywords": [],
   "author": "Nikita Sawinyh",

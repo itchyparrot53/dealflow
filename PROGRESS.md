@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-10-23 14:12
+Current: 4.2 · Last updated: 2026-10-23 14:20
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -26,7 +26,7 @@ Current: 4.1 · Last updated: 2026-10-23 14:12
 - [x] 3.2 Templates tab and the template editor
 - [x] 3.3 Composer layout control and preview
 - [x] 3.4 Phase 3 QA gate
-- [ ] 4.1 Email e2e spec and gallery
+- [x] 4.1 Email e2e spec and gallery
 - [ ] 4.2 Docs
 - [ ] 4.3 End-to-end, integration suite and smoke
 - [ ] 4.4 Independent review
@@ -41,6 +41,8 @@ Current: 4.1 · Last updated: 2026-10-23 14:12
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 4.1: the gallery renders 13 emails: the 10 registry keys, plus customer_message new, reply and plain samples, at 600 and 375 px (26 PNGs). The document sample is left to quote_sent/invoice_sent, which already show the summary and button.
+- 4.1: the gallery starts a temporary static server for public/ on 127.0.0.1:3410 and points BASE_URL at it, so the product logo loads with no running app; screenshots use @playwright/test's chromium (DOCS_CHROME can override it).
 - 3.4: e2e 17 was written for this gate (as the plan allows) and passes its six tests; the send tests connect the fake IMAP mailbox themselves, read the decoded MIME from the fake Sent folder, and the invite test types into TipTap instead of filling the contenteditable so ProseMirror updates its document.
 - 3.4: the branding test reads the accent from the live quote preview (the composer's own new email has no button to colour) and the wire assertions cover the marker, the public logo URL with a 200 image/png response, and the body.
 - 3.4: changed tests: the inbox compose page's trpc mock gained `emailDesign`, and the email list test mocks were reformatted after the same insertion.
