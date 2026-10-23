@@ -157,13 +157,14 @@ export function TaskDialog({
         <DialogBody>
           <div className="space-y-3">
             {errorId !== null && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-danger">
                 {projectsErrorMessage(errorId)}
               </p>
             )}
             <FormField label={S.task.title} htmlFor="task-title">
               <Input
                 id="task-title"
+                autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 disabled={!canEdit || pending}
@@ -242,7 +243,12 @@ export function TaskDialog({
             {S.cancel}
           </Button>
           {canEdit && (
-            <Button type="button" size="sm" disabled={pending} onClick={() => void save()}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={pending || title.trim() === ""}
+              onClick={() => void save()}
+            >
               {pending ? S.saving : task === null ? S.task.create : S.save}
             </Button>
           )}
@@ -255,6 +261,7 @@ export function TaskDialog({
         description={S.task.confirmDeleteBody}
         confirmLabel={S.task.delete}
         destructive
+        pending={pending}
         onConfirm={() => void remove()}
       />
     </Dialog>

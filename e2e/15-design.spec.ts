@@ -12,7 +12,7 @@ const OUT = "e2e/screenshots/design";
 mkdirSync(OUT, { recursive: true });
 
 const CHECKS = process.env.DESIGN_CHECKS !== "0";
-const ALL = designRoutes(fixtures());
+const ALL = designRoutes(() => fixtures());
 const SELECTED = selectedScreens(ALL, process.env.DESIGN_SCREENS);
 
 // The host machine may be in dark mode; the light pass must be deterministic. The dark pass
@@ -64,6 +64,11 @@ const PREPARE: Record<string, (page: Page) => Promise<void>> = {
 async function runScreen(page: Page, route: DesignRoute): Promise<void> {
   await page.goto(route.path());
   await settle(page);
+  // A stale gallery fixture used to turn a detail screen into the app-level 404, which still
+  // passed axe and shipped a screenshot of the wrong page. Surface that as a failure instead.
+  await expect(
+    page.getByText("That record does not exist, or you do not have access to it."),
+  ).toHaveCount(0);
   await PREPARE[route.id]?.(page);
   await settle(page);
   if (route.app) await expect(page).not.toHaveURL(/\/login/);

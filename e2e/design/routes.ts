@@ -16,43 +16,58 @@ function id(value: string | null, screen: string): string {
   return value;
 }
 
-export function designRoutes(f: Fixtures): DesignRoute[] {
-  return [
-    { id: "login", path: () => "/login", app: false },
-    { id: "board", path: () => `/pipeline/${id(f.pipelineId, "board")}`, app: true },
-    { id: "deal", path: () => `/deals/${id(f.dealId, "deal")}`, app: true },
-    { id: "deals-list", path: () => `/pipeline/${id(f.pipelineId, "deals-list")}/list`, app: true },
-    { id: "people", path: () => "/contacts/people", app: true },
-    { id: "person", path: () => `/contacts/people/${id(f.personId, "person")}`, app: true },
-    { id: "organizations", path: () => "/contacts/orgs", app: true },
-    { id: "leads", path: () => "/leads", app: true },
-    { id: "activities-list", path: () => "/activities/list", app: true },
-    { id: "calendar", path: () => "/activities/calendar", app: true },
-    { id: "inbox", path: () => "/inbox", app: true },
-    { id: "thread", path: () => `/inbox/${id(f.threadId, "thread")}`, app: true },
-    { id: "forecast", path: () => "/forecast", app: true },
-    { id: "documents", path: () => "/documents", app: true },
-    { id: "document", path: () => `/documents/${id(f.documentId, "document")}`, app: true },
-    { id: "insights", path: () => "/insights", app: true },
+export function designRoutes(getFixtures: () => Fixtures): DesignRoute[] {
+  // Resolve the fixture file on every navigation, not once at module load: Playwright can load a
+  // spec before the e2e server has re-seeded, and a stale id turns a detail screen into the 404.
+  const routes: Array<Omit<DesignRoute, "path"> & { build: (f: Fixtures) => string }> = [
+    { id: "login", build: () => "/login", app: false },
+    { id: "board", build: (f) => `/pipeline/${id(f.pipelineId, "board")}`, app: true },
+    { id: "deal", build: (f) => `/deals/${id(f.dealId, "deal")}`, app: true },
     {
-      id: "dashboard",
-      path: () => `/insights/dashboards/${id(f.dashboardId, "dashboard")}`,
+      id: "deals-list",
+      build: (f) => `/pipeline/${id(f.pipelineId, "deals-list")}/list`,
       app: true,
     },
-    { id: "report", path: () => `/insights/reports/${id(f.reportId, "report")}`, app: true },
-    { id: "projects", path: () => "/projects", app: true },
-    { id: "project", path: () => `/projects/${id(f.projectId, "project")}`, app: true },
-    { id: "settings-profile", path: () => "/settings/profile", app: true },
-    { id: "settings-automation", path: () => "/settings/automations", app: true },
-    { id: "public-quote", path: () => `/d/${id(f.documentPublicId, "public-quote")}`, app: false },
-    { id: "public-form", path: () => `/f/${id(f.formPublicId, "public-form")}`, app: false },
+    { id: "people", build: () => "/contacts/people", app: true },
+    { id: "person", build: (f) => `/contacts/people/${id(f.personId, "person")}`, app: true },
+    { id: "organizations", build: () => "/contacts/orgs", app: true },
+    { id: "leads", build: () => "/leads", app: true },
+    { id: "activities-list", build: () => "/activities/list", app: true },
+    { id: "calendar", build: () => "/activities/calendar", app: true },
+    { id: "inbox", build: () => "/inbox", app: true },
+    { id: "thread", build: (f) => `/inbox/${id(f.threadId, "thread")}`, app: true },
+    { id: "forecast", build: () => "/forecast", app: true },
+    { id: "documents", build: () => "/documents", app: true },
+    { id: "document", build: (f) => `/documents/${id(f.documentId, "document")}`, app: true },
+    { id: "insights", build: () => "/insights", app: true },
     {
-      id: "public-booking",
-      path: () => `/book/${id(f.bookingPublicId, "public-booking")}`,
+      id: "dashboard",
+      build: (f) => `/insights/dashboards/${id(f.dashboardId, "dashboard")}`,
+      app: true,
+    },
+    { id: "report", build: (f) => `/insights/reports/${id(f.reportId, "report")}`, app: true },
+    { id: "projects", build: () => "/projects", app: true },
+    { id: "project", build: (f) => `/projects/${id(f.projectId, "project")}`, app: true },
+    { id: "settings-profile", build: () => "/settings/profile", app: true },
+    { id: "settings-automation", build: () => "/settings/automations", app: true },
+    {
+      id: "public-quote",
+      build: (f) => `/d/${id(f.documentPublicId, "public-quote")}`,
       app: false,
     },
-    { id: "offline", path: () => "/offline", app: false },
+    { id: "public-form", build: (f) => `/f/${id(f.formPublicId, "public-form")}`, app: false },
+    {
+      id: "public-booking",
+      build: (f) => `/book/${id(f.bookingPublicId, "public-booking")}`,
+      app: false,
+    },
+    { id: "offline", build: () => "/offline", app: false },
   ];
+  return routes.map((route) => ({
+    id: route.id,
+    app: route.app,
+    path: () => route.build(getFixtures()),
+  }));
 }
 
 // DESIGN_SCREENS=board,deal narrows a run (used while the restyle is still in progress).

@@ -37,10 +37,12 @@ export default async function ProjectPage({
   );
   const canEdit = canEditProject(ctx.actor, project.value.ownerId, assigneeIds);
 
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
     <main aria-label={project.value.name} className="space-y-4 p-4">
       <PageTitle title="Projects" />
-      <ProjectBoard project={project.value} users={users} canEdit={canEdit} />
+      <ProjectBoard project={project.value} users={users} canEdit={canEdit} today={today} />
     </main>
   );
 }

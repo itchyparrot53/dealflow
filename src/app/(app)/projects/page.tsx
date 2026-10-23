@@ -45,6 +45,9 @@ export default async function ProjectsPage({
     listAssignableUsers(db, signal),
     listProjectDealOptions(db, actor, signal),
   ]);
+  // One calendar date for both the stats and the relative due labels, so they cannot disagree
+  // between the server render and hydration.
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <main aria-label={S.title} className="space-y-4 p-4">
@@ -54,6 +57,7 @@ export default async function ProjectsPage({
         users={users}
         dealOptions={dealOptions}
         filters={{ status: params.status, ownerId: params.ownerId, search: params.search }}
+        today={today}
       />
     </main>
   );

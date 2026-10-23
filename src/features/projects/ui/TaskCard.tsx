@@ -8,18 +8,21 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import { cn } from "@/lib/utils";
 import type { TaskView } from "../types";
+import { ProjectDueDate } from "./ProjectChrome";
 
 const S = PROJECTS_API_STRINGS.projects.task;
 
 export function TaskCard({
   task,
   canEdit,
+  now,
   onOpen,
   onToggleDone,
   overlay = false,
 }: {
   task: TaskView;
   canEdit: boolean;
+  now: Date;
   onOpen: () => void;
   onToggleDone: (done: boolean) => void;
   overlay?: boolean;
@@ -38,10 +41,11 @@ export function TaskCard({
       data-testid={overlay ? undefined : "task-card"}
       data-task-id={overlay ? undefined : task.id}
       className={cn(
-        "rounded-md border border-border bg-card p-2 transition-shadow duration-100",
-        canEdit && "cursor-grab touch-none",
+        "rounded-md border border-border bg-card p-2.5 transition-[border-color,box-shadow] duration-100",
+        // No touch-none: the board uses a delayed TouchSensor so a swipe still scrolls the page.
+        canEdit && "cursor-grab focus-within:ring-1 focus-within:ring-ring",
         isDragging && "opacity-40",
-        !overlay && "hover:shadow-card-hover",
+        !overlay && "hover:border-border-strong hover:shadow-card-hover",
         overlay && "w-64 rotate-2 shadow-drag",
       )}
       // Listeners only: the dnd attributes add role=button around the checkbox and title button
@@ -52,14 +56,14 @@ export function TaskCard({
         <Checkbox
           checked={task.done}
           onCheckedChange={onToggleDone}
-          label={task.done ? S.reopen : S.markDone}
+          label={task.done ? `Reopen ${task.title}` : `Mark ${task.title} done`}
           disabled={!canEdit}
         />
         <button
           type="button"
           onClick={onOpen}
           className={cn(
-            "min-w-0 flex-1 text-left text-sm font-semibold hover:underline",
+            "min-w-0 flex-1 text-left text-sm font-medium text-foreground hover:underline",
             task.done && "text-muted-foreground line-through",
           )}
         >
@@ -68,14 +72,20 @@ export function TaskCard({
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-meta text-muted-foreground">
         {task.assigneeName !== null ? (
-          <span className="flex items-center gap-1">
-            <Avatar name={task.assigneeName} className="size-5 text-caption" />
+          <span className="flex min-w-0 items-center gap-1">
+            <Avatar name={task.assigneeName} className="size-5 shrink-0 text-caption" />
             <span className="truncate">{task.assigneeName}</span>
           </span>
         ) : (
           <span>{S.unassigned}</span>
         )}
-        {task.dueDate !== null && <span>{task.dueDate}</span>}
+        {task.dueDate !== null && task.dueDate !== "" && (
+          <ProjectDueDate
+            value={task.dueDate}
+            now={now}
+            className="shrink-0 items-end text-right"
+          />
+        )}
       </div>
     </div>
   );

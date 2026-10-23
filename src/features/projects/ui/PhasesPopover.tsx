@@ -3,6 +3,7 @@
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
@@ -18,6 +19,7 @@ function PhaseRow({
   phase,
   index,
   count,
+  taskCount,
   canEdit,
   onChanged,
 }: {
@@ -25,11 +27,14 @@ function PhaseRow({
   phase: PhaseView;
   index: number;
   count: number;
+  taskCount: number;
   canEdit: boolean;
   onChanged: (phases: PhaseView[]) => void;
 }): React.ReactNode {
   const [name, setName] = useState(phase.name);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pending, setPending] = useState(false);
 
   async function rename(): Promise<void> {
     if (name.trim() === "" || name.trim() === phase.name) {
@@ -62,7 +67,9 @@ function PhaseRow({
   }
 
   async function remove(): Promise<void> {
+    setPending(true);
     const response = await deletePhaseAction(projectId, { phaseId: phase.id }, readCsrfToken());
+    setPending(false);
     if (!response.ok) {
       setErrorId(response.error.id);
       return;
@@ -110,13 +117,27 @@ function PhaseRow({
             variant="ghost"
             size="icon"
             aria-label={`${S.removePhase} ${phase.name}`}
-            onClick={() => void remove()}
+            onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
           </Button>
         </>
       )}
       {errorId !== null && <span className="sr-only">{projectsErrorMessage(errorId)}</span>}
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={`Delete ${phase.name}?`}
+        description={
+          taskCount === 0
+            ? "This phase is empty."
+            : `${taskCount} ${taskCount === 1 ? "task" : "tasks"} will move to No phase.`
+        }
+        confirmLabel={S.removePhase}
+        destructive
+        pending={pending}
+        onConfirm={() => void remove()}
+      />
     </li>
   );
 }
@@ -124,11 +145,13 @@ function PhaseRow({
 export function PhasesPopover({
   projectId,
   phases,
+  taskCounts,
   canEdit,
   onChanged,
 }: {
   projectId: string;
   phases: PhaseView[];
+  taskCounts: Record<string, number>;
   canEdit: boolean;
   onChanged: (phases: PhaseView[]) => void;
 }): React.ReactNode {
@@ -172,6 +195,7 @@ export function PhasesPopover({
                 phase={phase}
                 index={index}
                 count={phases.length}
+                taskCount={taskCounts[phase.id] ?? 0}
                 canEdit={canEdit}
                 onChanged={onChanged}
               />
