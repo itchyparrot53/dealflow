@@ -23,7 +23,9 @@ export function EmptyState({
       className={cn("flex flex-col items-center justify-center gap-4 p-12 text-center", className)}
     >
       {icon !== undefined ? (
-        <div className="text-muted-foreground [&>svg]:size-16">{icon}</div>
+        <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground [&>svg]:size-5">
+          {icon}
+        </div>
       ) : null}
       <p className="text-base font-semibold text-foreground">{title}</p>
       <p className="max-w-[48ch] text-sm text-muted-foreground">{body}</p>

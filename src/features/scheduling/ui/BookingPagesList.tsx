@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { CalendarClock, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Switch } from "@/components/ui/Switch";
 import { BOOKING_STRINGS } from "@/constants/formsBookingStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -108,6 +109,23 @@ export function BookingPagesList({
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={showHost ? 6 : 5}>
+                <EmptyState
+                  title={S.emptyTitle}
+                  body={S.emptyBody}
+                  icon={<CalendarClock aria-hidden="true" />}
+                  action={
+                    <Button size="sm" disabled={creating} onClick={() => void createPage()}>
+                      {S.newPage}
+                    </Button>
+                  }
+                  className="py-10"
+                />
+              </td>
+            </tr>
+          ) : null}
           {rows.map((row) => (
             <tr
               key={row.id}

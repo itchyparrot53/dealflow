@@ -137,10 +137,7 @@ export function AddActivityModal({
         if (!o) onClose();
       }}
     >
-      <DialogContent
-        aria-describedby={undefined}
-        className="max-w-md bg-card"
-      >
+      <DialogContent aria-describedby={undefined} className="max-w-md bg-card">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">Add activity</DialogTitle>
         </DialogHeader>

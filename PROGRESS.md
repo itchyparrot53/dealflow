@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-23 02:34
+Current: 1.6 · Last updated: 2026-10-23 02:40
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -15,7 +15,7 @@ Current: 1.5 · Last updated: 2026-10-23 02:34
 - [x] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
 - [x] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
 - [x] 1.4 Number and money formatting (U10)
-- [ ] 1.5 Tables, empty states and the bell badge (U29, U30)
+- [x] 1.5 Tables, empty states and the bell badge (U29, U30)
 - [ ] 1.6 AI JSON reliability and the humane error (U7)
 - [ ] 1.7 Phase 1 QA gate
 - [ ] 2.1 Expandable rail with labels (U4)
@@ -81,6 +81,12 @@ Current: 1.5 · Last updated: 2026-10-23 02:34
 - 1.4: applied to the board/list totals (`formatCurrency` now delegates to auto), the forecast month totals, the products settings price (native decimals), chart axes (compact in the trend, goal and report charts) and tooltips (auto), plain numbers (custom numeric fields, AI caps) and report/tooltip counts.
 - 1.4: the editable organization revenue/employee inline fields keep the raw stored string while editing; Task 3.4 renders the read-only record rows through `formatNumber`, which is where U10's 18500000.00 display lives.
 - 1.4: changed test: `formatCurrency` used to round a fractional amount to whole dollars; it now keeps the cents, which is the 6.5 auto rule, so `1234567.89` expects `$1,234,567.89` instead of `$1,234,568`.
+
+- 1.5: `tableStyles.th` is sticky inside its scroll container with an opaque `bg-background`, and `tableStyles` gains the `footer` bar and `emptyCell` classes. New `EmptyCell` (muted dash plus an sr-only "Empty") and `TableFooter` (count left, paging control right) live in `src/components/ui/table-parts.tsx`. The deals list's "Showing n filtered deals" moved from above the table into that footer row, keeping its `role="status"` and `aria-label` hook.
+- 1.5: `EmptyState` now renders the icon in a 40 px muted circle (`size-10`, 20 px glyph) with the title, one sentence and the action it describes. The 13 U30 surfaces all use it: activities (with the toolbar's "+ Activity" repeated in the empty state), inbox, Insights, goals, recycle bin, audit log, webhooks, API tokens, connected apps, projects, documents, forms and booking pages (the last one gained its missing empty state).
+- 1.5: empty table cells use `EmptyCell` in the activities table, the leads value cell and the participants dialog; read-only detail rows keep the field-row/muted convention that Task 3.4's grid finishes.
+- 1.5: the notification badge reads `9+` above nine through `notificationBadgeText`, is a 16 px minimum circle at `text-[10px] font-semibold` with the `design-ok: badge digit` opt-out, and sits at `-right-1 -top-1` so it cannot cover the bell's centre.
+- 1.5: changed test: `ActivitiesTable` now sees two "+ Activity" buttons (toolbar and empty state) when the view is empty; it asserts both and clicks the toolbar one, which is the same action.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

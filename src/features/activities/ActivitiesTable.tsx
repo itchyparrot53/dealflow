@@ -1,4 +1,5 @@
 "use client";
+import { ListTodo } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -12,6 +13,8 @@ import { usePersistColumns } from "@/components/data-table/usePersistColumns";
 import { RENDER_WINDOW_STEP, useRenderWindow } from "@/components/data-table/useRenderWindow";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { useIsMobile } from "@/features/navigation/mobile/useIsMobile";
 import { useRecordPreview } from "@/features/navigation/recordPreviewStore";
@@ -303,8 +306,22 @@ export function ActivitiesTable({
             </li>
           ))}
           {rows.length === 0 && !loadPending && !loadFailed && (
-            <li className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-              No activities for these filters.
+            <li>
+              <EmptyState
+                title="No activities for these filters."
+                body="Add an activity to plan the next step with a contact or deal."
+                icon={<ListTodo aria-hidden="true" />}
+                action={
+                  <Button
+                    size="sm"
+                    data-testid="empty-add-activity"
+                    onClick={() => setModalOpen(true)}
+                  >
+                    + Activity
+                  </Button>
+                }
+                className="rounded-lg border border-dashed py-8"
+              />
             </li>
           )}
         </ul>
@@ -328,6 +345,7 @@ export function ActivitiesTable({
               renderRow={renderRow}
               columnCount={2 + columns.visibleColumns.length}
               onRetry={() => void rowsQ.refetch()}
+              onAddActivity={() => setModalOpen(true)}
             />
           </tbody>
         </table>

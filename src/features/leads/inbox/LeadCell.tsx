@@ -2,6 +2,7 @@
 import { TriangleAlert } from "lucide-react";
 import type React from "react";
 import { CustomFieldCell } from "@/components/data-table/CustomFieldCell";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
 import type { ResolvedLabel } from "@/features/labels/resolveLabels";
 import { useLabelChipResolver } from "@/features/labels/useLabelChipResolver";
@@ -88,7 +89,7 @@ export function LeadCell({
     case "value":
       return (
         <span className="tabular-nums text-muted-foreground">
-          {row.value !== null ? formatCurrency(row.value, currency) : "-"}
+          {row.value !== null ? formatCurrency(row.value, currency) : <EmptyCell />}
         </span>
       );
     case "createdAt":

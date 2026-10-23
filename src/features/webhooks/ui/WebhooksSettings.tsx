@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Webhook } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -139,7 +140,17 @@ export function WebhooksSettings({ rows }: { rows: WebhookRowView[] }): React.Re
       )}
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.empty}</p>
+        <EmptyState
+          title={S.empty}
+          body="A webhook sends an event to a URL you choose when something changes."
+          icon={<Webhook aria-hidden="true" />}
+          action={
+            <Button size="sm" onClick={openNew}>
+              {S.newWebhook}
+            </Button>
+          }
+          className="py-10"
+        />
       ) : (
         <table className="w-full text-sm" data-testid="webhooks-table">
           <thead>

@@ -1,10 +1,12 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
@@ -93,7 +95,12 @@ export function RecycleBin({
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.empty}</p>
+        <EmptyState
+          title={S.empty}
+          body="Deleted records wait here for 30 days before the daily purge removes them."
+          icon={<Trash2 aria-hidden="true" />}
+          className="py-10"
+        />
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table data-testid="recycle-table" className="w-full text-sm">

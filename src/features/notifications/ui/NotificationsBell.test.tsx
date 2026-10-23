@@ -33,12 +33,21 @@ vi.mock("@/lib/trpc-client", () => ({
   },
 }));
 
-import { NotificationsBell } from "./NotificationsBell";
+import { NotificationsBell, notificationBadgeText } from "./NotificationsBell";
 
 afterEach(() => {
   cleanup();
   reportError.mockClear();
   markAllReadAction.mockClear();
+});
+
+describe("notificationBadgeText", () => {
+  it("caps the badge at 9+", () => {
+    expect(notificationBadgeText(3)).toBe("3");
+    expect(notificationBadgeText(9)).toBe("9");
+    expect(notificationBadgeText(10)).toBe("9+");
+    expect(notificationBadgeText(16)).toBe("9+");
+  });
 });
 
 describe("NotificationsBell", () => {

@@ -1,6 +1,9 @@
+import { ListTodo } from "lucide-react";
 import type React from "react";
 import type { RenderWindow } from "@/components/data-table/useRenderWindow";
 import { TableRowsSkeleton } from "@/components/shell/skeletons";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ActivityDayGroups } from "./ActivityDayGroups";
 import type { ActivityTableRow } from "./activityRows";
 
@@ -14,6 +17,8 @@ interface Props {
   renderRow: (row: ActivityTableRow) => React.ReactNode;
   columnCount: number;
   onRetry: () => void;
+  // The toolbar's + Activity, so the empty state offers the same control instead of a second one.
+  onAddActivity?: () => void;
 }
 
 // The activities table body: the load-error / loading / empty branch, the (optionally
@@ -27,6 +32,7 @@ export function ActivityTableBody({
   renderRow,
   columnCount,
   onRetry,
+  onAddActivity,
 }: Props): React.ReactNode {
   if (loadFailed) {
     return (
@@ -55,8 +61,20 @@ export function ActivityTableBody({
   if (rowWindow.visible.length === 0) {
     return (
       <tr>
-        <td colSpan={columnCount} className="px-3 py-10 text-center text-muted-foreground">
-          No activities in this view.
+        <td colSpan={columnCount}>
+          <EmptyState
+            title="No activities in this view."
+            body="Add an activity to plan the next step with a contact or deal."
+            icon={<ListTodo aria-hidden="true" />}
+            action={
+              onAddActivity === undefined ? undefined : (
+                <Button size="sm" data-testid="empty-add-activity" onClick={onAddActivity}>
+                  + Activity
+                </Button>
+              )
+            }
+            className="py-10"
+          />
         </td>
       </tr>
     );

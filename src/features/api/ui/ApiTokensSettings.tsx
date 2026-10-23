@@ -1,11 +1,13 @@
 "use client";
 
+import { KeyRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { revokeTokenAction } from "../actions";
@@ -54,7 +56,17 @@ export function ApiTokensSettings({ tokens }: { tokens: TokenView[] }): React.Re
       </div>
 
       {tokens.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.empty}</p>
+        <EmptyState
+          title="No tokens yet."
+          body="Create one to call the API."
+          icon={<KeyRound aria-hidden="true" />}
+          action={
+            <Button size="sm" onClick={() => setNewOpen(true)}>
+              {S.newToken}
+            </Button>
+          }
+          className="py-10"
+        />
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table data-testid="api-tokens-table" className="w-full text-sm">

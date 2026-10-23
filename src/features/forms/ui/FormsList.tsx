@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { ClipboardList, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Switch } from "@/components/ui/Switch";
 import { FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -127,6 +128,23 @@ export function FormsList({
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={6}>
+                <EmptyState
+                  title={S.emptyTitle}
+                  body={S.emptyBody}
+                  icon={<ClipboardList aria-hidden="true" />}
+                  action={
+                    <Button size="sm" disabled={creating} onClick={() => void createForm()}>
+                      {S.newForm}
+                    </Button>
+                  }
+                  className="py-10"
+                />
+              </td>
+            </tr>
+          ) : null}
           {rows.map((row) => (
             <tr key={row.id} className="border-b" data-testid="form-row" data-form-id={row.id}>
               <td className="py-2">

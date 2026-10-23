@@ -1,9 +1,11 @@
 "use client";
 
+import { ScrollText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import type { AuditRow } from "../auditLog";
@@ -82,7 +84,12 @@ export function AuditLog({
       <p className="text-xs text-muted-foreground">{S.redacted}</p>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.empty}</p>
+        <EmptyState
+          title={S.empty}
+          body="Security-relevant changes to users, groups and settings appear here."
+          icon={<ScrollText aria-hidden="true" />}
+          className="py-10"
+        />
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table data-testid="audit-table" className="w-full text-sm">

@@ -26,10 +26,7 @@ export function FollowUpActivityDialog({
         if (!o) onClose();
       }}
     >
-      <DialogContent
-        aria-describedby={undefined}
-        className="max-w-2xl bg-card"
-      >
+      <DialogContent aria-describedby={undefined} className="max-w-2xl bg-card">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">Add activity</DialogTitle>
         </DialogHeader>

@@ -1,11 +1,13 @@
 "use client";
 
+import { FolderKanban } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Progress } from "@/components/ui/Progress";
 import { Select } from "@/components/ui/Select";
@@ -98,7 +100,17 @@ export function ProjectsList({
       </div>
 
       {projects.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.empty}</p>
+        <EmptyState
+          title="No projects yet."
+          body="Create one, or start from a won deal."
+          icon={<FolderKanban aria-hidden="true" />}
+          action={
+            <Button size="sm" onClick={() => setNewOpen(true)}>
+              {S.newProject}
+            </Button>
+          }
+          className="py-10"
+        />
       ) : (
         <div className="overflow-x-auto">
           <table data-testid="projects-table" className={tableStyles.table}>

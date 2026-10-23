@@ -1,11 +1,13 @@
 "use client";
 
+import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BulkActionBar } from "@/components/data-table/BulkActionBar";
 import { useRowSelection } from "@/components/data-table/useRowSelection";
 import { ThreadRowsSkeleton } from "@/components/shell/skeletons";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { STRINGS } from "@/constants/strings";
 import { trpc } from "@/lib/trpc-client";
@@ -233,7 +235,14 @@ export function ThreadList({
       <ul className="flex-1 divide-y overflow-y-auto">
         {showSkeleton && <ThreadRowsSkeleton />}
         {!pending && threads.length === 0 && (
-          <li className="p-4 text-sm text-muted-foreground">{STRINGS.inbox.noThreads}</li>
+          <li>
+            <EmptyState
+              title={STRINGS.inbox.noThreads}
+              body="Messages you send and receive will appear here."
+              icon={<Mail aria-hidden="true" />}
+              className="py-10"
+            />
+          </li>
         )}
         {threads.map((thread) => (
           <ThreadRow

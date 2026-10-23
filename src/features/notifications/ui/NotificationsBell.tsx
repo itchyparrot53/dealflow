@@ -14,6 +14,11 @@ import { notificationHref } from "./deepLink";
 import { NotificationItem } from "./NotificationItem";
 import { useNotificationStream } from "./useNotificationStream";
 
+// 6.8: the bell never renders a three-digit badge; above nine it reads 9+.
+export function notificationBadgeText(count: number): string {
+  return count > 9 ? "9+" : String(count);
+}
+
 export function NotificationsBell({ userId }: { userId: string }): React.ReactNode {
   useNotificationStream(userId);
   const router = useRouter();
@@ -62,8 +67,9 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
       >
         <Bell aria-hidden className="size-5" strokeWidth={1.75} />
         {unreadCount > 0 ? (
-          <span className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold tabular-nums text-destructive-foreground ring-2 ring-background">
-            {unreadCount}
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold tabular-nums text-destructive-foreground ring-2 ring-background">
+            {/* design-ok: badge digit */}
+            {notificationBadgeText(unreadCount)}
           </span>
         ) : null}
       </PopoverTrigger>

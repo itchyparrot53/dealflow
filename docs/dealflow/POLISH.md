@@ -43,5 +43,5 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U26 | Insights index | A bare two-line list under a duplicate H1 | table plus empty state (6.7.7) | 3.7 | | | |
 | U27 | Person and organization | The follower count wraps under "0 followers"; detail labels are right-aligned; numbers are raw | 6.7.4 | 3.4 | | | |
 | U28 | Projects | Full-width filter selects; "Start date" label with "Start date" placeholder | 6.7.7 | 3.7 | | | |
-| U29 | Tables | "Showing 50 of 107" floats top-left; empty cells mix "-" and blanks; headers do not stick | 6.8 | 1.5 | | | |
-| U30 | Empty states and top bar | Empty pages show bare text; the bell badge shows "16" at full width | 6.8 | 1.5 | | | |
+| U29 | Tables | "Showing 50 of 107" floats top-left; empty cells mix "-" and blanks; headers do not stick | 6.8 | 1.5 | 1.5 | | |
+| U30 | Empty states and top bar | Empty pages show bare text; the bell badge shows "16" at full width | 6.8 | 1.5 | 1.5 | | |

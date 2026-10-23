@@ -218,7 +218,12 @@ describe("ActivitiesTable", () => {
   it("opens the Add activity modal from + Activity", () => {
     useQuery.mockReturnValue({ data: [], refetch });
     render(<ActivitiesTable currentUserId="me" />);
-    fireEvent.click(screen.getByRole("button", { name: "+ Activity" }));
+    // The empty state offers the same + Activity as the toolbar, so both are present and both
+    // must open the modal. The toolbar button is first in the DOM.
+    const addButtons = screen.getAllByRole("button", { name: "+ Activity" });
+    expect(addButtons).toHaveLength(2);
+    expect(screen.getByTestId("empty-add-activity")).toBeInTheDocument();
+    fireEvent.click(addButtons[0] as HTMLElement);
     expect(screen.getByTestId("activity-modal")).toBeInTheDocument();
   });
 

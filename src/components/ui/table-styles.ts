@@ -4,11 +4,15 @@
 export const tableStyles = {
   table: "w-full border-collapse text-sm",
   thead: "border-b border-border-strong",
-  th: "h-[33px] border-r border-grid px-3 text-left align-middle text-sm font-semibold text-foreground last:border-r-0",
+  // Sticky inside the table's scroll container, with an opaque fill so rows cannot show through.
+  th: "sticky top-0 z-10 h-[33px] border-r border-grid bg-background px-3 text-left align-middle text-sm font-semibold text-foreground last:border-r-0",
   tbody: "text-sm",
   tr: "h-[33px] border-b border-grid transition-colors duration-100 hover:bg-muted data-[state=selected]:bg-info-soft",
   td: "h-[33px] border-r border-grid px-3 align-middle text-sm last:border-r-0",
   checkboxCell: "h-[33px] w-12 border-r border-grid px-3 text-left align-middle font-semibold",
   link: "text-link-record hover:underline",
   numeric: "text-right tabular",
+  // 6.8: the count lives in a footer row, not above the table.
+  footer: "flex h-10 items-center justify-between border-t px-4 text-meta text-muted-foreground",
+  emptyCell: "text-muted-foreground",
 } as const;

@@ -1,9 +1,11 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { tableStyles } from "@/components/ui/table-styles";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -112,7 +114,12 @@ export function DocumentsList({
       )}
 
       {visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{S.noMatches}</p>
+        <EmptyState
+          title={S.noMatches}
+          body="Quotes and invoices you create on a deal appear here."
+          icon={<FileText aria-hidden="true" />}
+          className="py-10"
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className={`${tableStyles.table} text-left`}>

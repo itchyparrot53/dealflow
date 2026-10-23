@@ -4,6 +4,7 @@ import { Plug } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { STRINGS } from "@/constants/strings";
 import { revokeConnectionAction } from "@/features/oauth/revokeAction";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -59,7 +60,12 @@ export function ConnectionsClient({
       />
       <SettingsCardBody className="p-0">
         {connections.length === 0 ? (
-          <p className="p-5 text-sm text-muted-foreground">{S.connectedAppsEmpty}</p>
+          <EmptyState
+            title={S.connectedAppsEmpty}
+            body="Apps you authorize appear here. You can revoke access at any time."
+            icon={<Plug aria-hidden="true" />}
+            className="py-10"
+          />
         ) : (
           <ul className="divide-y">
             {connections.map((connection) => (

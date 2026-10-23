@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { ParticipantLinkField } from "./ParticipantLinkField";
 import type { useParticipants } from "./useParticipants";
@@ -77,9 +78,9 @@ export function ParticipantsDialog({
                         {p.name}
                       </Link>
                     </td>
-                    <td className="py-2 pr-3">{p.orgName ?? "-"}</td>
-                    <td className="py-2 pr-3">{p.primaryEmail ?? "-"}</td>
-                    <td className="py-2 pr-3">{p.phone ?? "-"}</td>
+                    <td className="py-2 pr-3">{p.orgName ?? <EmptyCell />}</td>
+                    <td className="py-2 pr-3">{p.primaryEmail ?? <EmptyCell />}</td>
+                    <td className="py-2 pr-3">{p.phone ?? <EmptyCell />}</td>
                     <td className="py-2 pr-3 tabular-nums">{p.closedDeals}</td>
                     <td className="py-2 pr-3 tabular-nums">{p.openDeals}</td>
                     <td className="py-2 pr-3">

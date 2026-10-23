@@ -4,6 +4,7 @@ import type React from "react";
 import { Fragment, useEffect, useRef } from "react";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { ACTIVITY_PRIORITIES, isActivityPriorityKey } from "@/constants/activityPriorities";
 import { RecurrenceBadge } from "@/features/activities/recurrence/ui/RecurrenceBadge";
 import { OwnerBadge } from "@/features/identity/OwnerBadge";
@@ -50,7 +51,7 @@ function cellFor(key: string, row: ActivityTableRow): React.ReactNode {
 }
 
 function textOrDash(value: string | null): React.ReactNode {
-  return value ?? "-";
+  return value ?? <EmptyCell />;
 }
 
 function entityLink(href: string | null, label: string | null): React.ReactNode {

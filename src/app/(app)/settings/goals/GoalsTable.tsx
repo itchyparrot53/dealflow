@@ -1,9 +1,12 @@
 "use client";
 
+import { Target } from "lucide-react";
 import { useState, useTransition } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
+import { STRINGS } from "@/constants/strings";
 import type { Goal } from "@/db/schema/goals";
 import { deleteGoalAction } from "@/features/goals/actions";
 import { goalLabel } from "@/features/goals/goalLabel";
@@ -42,7 +45,14 @@ export function GoalsTable({ goals, assigneeNames, onChanged, onEdit }: Props): 
   }
 
   if (goals.length === 0) {
-    return <p className="text-sm text-muted-foreground">{S.goalsEmpty}</p>;
+    return (
+      <EmptyState
+        title={S.goalsEmpty}
+        body={STRINGS.dashboard.emptyGoalsBody}
+        icon={<Target aria-hidden="true" />}
+        className="py-10"
+      />
+    );
   }
 
   return (

@@ -31,6 +31,8 @@ export const FORMS_STRINGS = {
   intro: "Public forms that create a lead or a deal.",
   adminOnly: "Only admins can manage forms.",
   newForm: "New form",
+  emptyTitle: "No forms yet.",
+  emptyBody: "A form creates a lead or a deal from a public page.",
   table: {
     name: "Name",
     creates: "Creates",
@@ -97,6 +99,8 @@ export const BOOKING_STRINGS = {
   deleteTitle: "Delete this booking page?",
   deleteBody: "The public link and its future bookings stop working.",
   newPage: "New booking page",
+  emptyTitle: "No booking pages yet.",
+  emptyBody: "A booking page gives visitors a slot on your calendar.",
   editor: {
     title: "Title",
     description: "Description",

@@ -1,11 +1,13 @@
 "use client";
 
+import { BarChart3, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -109,7 +111,17 @@ export function InsightsHome({
             </Button>
           </div>
           {dashboards.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{S.ui.noDashboards}</p>
+            <EmptyState
+              title={S.ui.noDashboards}
+              body="A dashboard gathers the numbers you check most."
+              icon={<LayoutDashboard aria-hidden="true" />}
+              action={
+                <Button size="sm" disabled={creating} onClick={() => void newDashboard()}>
+                  {S.ui.newDashboard}
+                </Button>
+              }
+              className="py-10"
+            />
           ) : (
             <ul className="divide-y rounded-lg border">
               {dashboards.map((dashboard) => (
@@ -147,7 +159,17 @@ export function InsightsHome({
             </Button>
           </div>
           {reports.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{S.ui.noReports}</p>
+            <EmptyState
+              title={S.ui.noReports}
+              body="A report answers one question about your pipeline."
+              icon={<BarChart3 aria-hidden="true" />}
+              action={
+                <Button size="sm" disabled={creating} onClick={() => void newReport()}>
+                  {S.ui.newReport}
+                </Button>
+              }
+              className="py-10"
+            />
           ) : (
             <ul className="divide-y rounded-lg border">
               {reports.map((report) => (

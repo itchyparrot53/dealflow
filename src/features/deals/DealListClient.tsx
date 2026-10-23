@@ -6,6 +6,7 @@ import { ColumnsMenu } from "@/components/data-table/ColumnsMenu";
 import type { ColumnDef } from "@/components/data-table/columnModel";
 import { useColumns } from "@/components/data-table/useColumns";
 import { usePersistColumns } from "@/components/data-table/usePersistColumns";
+import { tableStyles } from "@/components/ui/table-styles";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { formatCents, parseRate } from "@/features/currency/money";
 import { type RateMap, summarize } from "@/features/currency/totals";
@@ -302,15 +303,6 @@ export function DealListClient({
           </>
         }
       />
-      {footer.filtered ? (
-        <p
-          role="status"
-          aria-label="filtered count"
-          className="px-1 py-2 text-sm text-muted-foreground"
-        >
-          Showing {footer.total} filtered {footer.total === 1 ? "deal" : "deals"}
-        </p>
-      ) : null}
       <CustomFieldRefLabelsProvider value={refLabels}>
         <DealList
           pipelineId={pipelineId}
@@ -348,6 +340,13 @@ export function DealListClient({
           }
         />
       </CustomFieldRefLabelsProvider>
+      {footer.filtered ? (
+        <div className={tableStyles.footer}>
+          <p role="status" aria-label="filtered count">
+            Showing {footer.total} filtered {footer.total === 1 ? "deal" : "deals"}
+          </p>
+        </div>
+      ) : null}
     </>
   );
 }
