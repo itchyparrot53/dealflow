@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -137,65 +138,67 @@ export function ProductDialog({
         <DialogHeader>
           <DialogTitle>{product === null ? S.newProduct : S.editProduct}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2" htmlFor="product-name">
-            <span className="mb-1.5 block text-sm font-medium">{S.name}</span>
-            <Input
-              id="product-name"
-              value={form.name}
-              onChange={(event) => update("name", event.target.value)}
-              autoFocus
-            />
-          </label>
-          <label className="block" htmlFor="product-code">
-            <span className="mb-1.5 block text-sm font-medium">{S.code}</span>
-            <Input
-              id="product-code"
-              value={form.code}
-              onChange={(event) => update("code", event.target.value)}
-            />
-          </label>
-          <label className="block" htmlFor="product-unit">
-            <span className="mb-1.5 block text-sm font-medium">{S.unit}</span>
-            <Input
-              id="product-unit"
-              value={form.unit}
-              onChange={(event) => update("unit", event.target.value)}
-            />
-          </label>
-          <label className="block" htmlFor="product-price">
-            <span className="mb-1.5 block text-sm font-medium">{S.price}</span>
-            <Input
-              id="product-price"
-              inputMode="decimal"
-              value={form.price}
-              onChange={(event) => update("price", event.target.value)}
-            />
-          </label>
-          <div className="block">
-            <span className="mb-1.5 block text-sm font-medium">{S.currency}</span>
-            <Select
-              value={form.currency}
-              onChange={(value) => update("currency", value)}
-              options={currencyOptions(codes)}
-              ariaLabel={S.currency}
-            />
+        <DialogBody>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block sm:col-span-2" htmlFor="product-name">
+              <span className="mb-1.5 block text-sm font-medium">{S.name}</span>
+              <Input
+                id="product-name"
+                value={form.name}
+                onChange={(event) => update("name", event.target.value)}
+                autoFocus
+              />
+            </label>
+            <label className="block" htmlFor="product-code">
+              <span className="mb-1.5 block text-sm font-medium">{S.code}</span>
+              <Input
+                id="product-code"
+                value={form.code}
+                onChange={(event) => update("code", event.target.value)}
+              />
+            </label>
+            <label className="block" htmlFor="product-unit">
+              <span className="mb-1.5 block text-sm font-medium">{S.unit}</span>
+              <Input
+                id="product-unit"
+                value={form.unit}
+                onChange={(event) => update("unit", event.target.value)}
+              />
+            </label>
+            <label className="block" htmlFor="product-price">
+              <span className="mb-1.5 block text-sm font-medium">{S.price}</span>
+              <Input
+                id="product-price"
+                inputMode="decimal"
+                value={form.price}
+                onChange={(event) => update("price", event.target.value)}
+              />
+            </label>
+            <div className="block">
+              <span className="mb-1.5 block text-sm font-medium">{S.currency}</span>
+              <Select
+                value={form.currency}
+                onChange={(value) => update("currency", value)}
+                options={currencyOptions(codes)}
+                ariaLabel={S.currency}
+              />
+            </div>
+            <label className="block" htmlFor="product-tax">
+              <span className="mb-1.5 block text-sm font-medium">{S.taxPercent}</span>
+              <Input
+                id="product-tax"
+                inputMode="decimal"
+                value={form.taxPercent}
+                onChange={(event) => update("taxPercent", event.target.value)}
+              />
+            </label>
           </div>
-          <label className="block" htmlFor="product-tax">
-            <span className="mb-1.5 block text-sm font-medium">{S.taxPercent}</span>
-            <Input
-              id="product-tax"
-              inputMode="decimal"
-              value={form.taxPercent}
-              onChange={(event) => update("taxPercent", event.target.value)}
-            />
-          </label>
-        </div>
-        {error !== null && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+          {error !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

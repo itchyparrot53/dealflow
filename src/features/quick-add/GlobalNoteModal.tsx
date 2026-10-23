@@ -2,7 +2,13 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ComposeNoteTab } from "@/features/compose/ComposeNoteTab";
 import { trpc } from "@/lib/trpc-client";
 
@@ -30,25 +36,27 @@ export function GlobalNoteModal({
         <DialogHeader>
           <DialogTitle>New note</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <Combobox
-            value={personId}
-            onChange={setPersonId}
-            options={options}
-            ariaLabel="Note target person"
-            placeholder="Select a person"
-          />
-          {personId !== "" && (
-            <ComposeNoteTab
-              entityType="person"
-              entityId={personId}
-              onNoteCreated={() => {
-                onCreated();
-                onClose();
-              }}
+        <DialogBody>
+          <div className="space-y-3">
+            <Combobox
+              value={personId}
+              onChange={setPersonId}
+              options={options}
+              ariaLabel="Note target person"
+              placeholder="Select a person"
             />
-          )}
-        </div>
+            {personId !== "" && (
+              <ComposeNoteTab
+                entityType="person"
+                entityId={personId}
+                onNoteCreated={() => {
+                  onCreated();
+                  onClose();
+                }}
+              />
+            )}
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -72,43 +73,45 @@ export function InsertUrlDialog({
           <DialogTitle>{copy.title}</DialogTitle>
           <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            submit();
-          }}
-        >
-          <div>
-            <label htmlFor={inputId} className="mb-1 block text-sm font-medium">
-              {copy.label}
-            </label>
-            <Input
-              id={inputId}
-              name={`${kind}Url`}
-              value={value}
-              onChange={(event) => {
-                setValue(event.target.value);
-                if (error !== null) setError(null);
-              }}
-              inputMode="url"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder={copy.placeholder}
-            />
-            {error !== null ? (
-              <p role="alert" className="mt-2 text-sm text-next-red">
-                {error}
-              </p>
-            ) : null}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit">{copy.action}</Button>
-          </DialogFooter>
-        </form>
+        <DialogBody>
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+          >
+            <div>
+              <label htmlFor={inputId} className="mb-1 block text-sm font-medium">
+                {copy.label}
+              </label>
+              <Input
+                id={inputId}
+                name={`${kind}Url`}
+                value={value}
+                onChange={(event) => {
+                  setValue(event.target.value);
+                  if (error !== null) setError(null);
+                }}
+                inputMode="url"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={copy.placeholder}
+              />
+              {error !== null ? (
+                <p role="alert" className="mt-2 text-sm text-next-red">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button type="submit">{copy.action}</Button>
+            </DialogFooter>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

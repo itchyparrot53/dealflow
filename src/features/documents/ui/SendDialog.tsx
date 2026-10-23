@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -85,42 +86,44 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
         <DialogHeader>
           <DialogTitle>{document.status === "draft" ? S.send : S.sendAgain}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <label className="block" htmlFor="document-send-to">
-            <span className="mb-1.5 block text-sm font-medium">{S.to}</span>
-            <Input
-              id="document-send-to"
-              type="email"
-              value={to}
-              onChange={(event) => setTo(event.target.value)}
-              disabled={pending}
-            />
-          </label>
-          <label className="block" htmlFor="document-send-subject">
-            <span className="mb-1.5 block text-sm font-medium">{S.subject}</span>
-            <Input
-              id="document-send-subject"
-              value={subject}
-              onChange={(event) => setSubject(event.target.value)}
-              placeholder={`${document.kind === "quote" ? "Quote" : "Invoice"} ${document.number ?? ""}`}
-              disabled={pending}
-            />
-          </label>
-          <label className="block" htmlFor="document-send-message">
-            <span className="mb-1.5 block text-sm font-medium">{S.message}</span>
-            <Textarea
-              id="document-send-message"
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              disabled={pending}
-            />
-          </label>
-        </div>
-        {error !== null && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        <DialogBody>
+          <div className="space-y-4">
+            <label className="block" htmlFor="document-send-to">
+              <span className="mb-1.5 block text-sm font-medium">{S.to}</span>
+              <Input
+                id="document-send-to"
+                type="email"
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+                disabled={pending}
+              />
+            </label>
+            <label className="block" htmlFor="document-send-subject">
+              <span className="mb-1.5 block text-sm font-medium">{S.subject}</span>
+              <Input
+                id="document-send-subject"
+                value={subject}
+                onChange={(event) => setSubject(event.target.value)}
+                placeholder={`${document.kind === "quote" ? "Quote" : "Invoice"} ${document.number ?? ""}`}
+                disabled={pending}
+              />
+            </label>
+            <label className="block" htmlFor="document-send-message">
+              <span className="mb-1.5 block text-sm font-medium">{S.message}</span>
+              <Textarea
+                id="document-send-message"
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                disabled={pending}
+              />
+            </label>
+          </div>
+          {error !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

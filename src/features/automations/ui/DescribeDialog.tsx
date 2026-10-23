@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -68,27 +69,29 @@ export function DescribeDialog({
           <DialogTitle>{S.describe}</DialogTitle>
           <DialogDescription>{S.intro}</DialogDescription>
         </DialogHeader>
-        <Textarea
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          rows={3}
-          placeholder="When a deal is won, create a follow-up call tomorrow"
-          data-testid="automation-describe-input"
-        />
-        {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {S.actions.close}
-          </Button>
-          <Button
-            type="button"
-            data-testid="automation-describe-submit"
-            disabled={busy || text.trim() === ""}
-            onClick={() => void draft()}
-          >
-            {busy ? S.editor.saving : "Draft it"}
-          </Button>
-        </div>
+        <DialogBody>
+          <Textarea
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            rows={3}
+            placeholder="When a deal is won, create a follow-up call tomorrow"
+            data-testid="automation-describe-input"
+          />
+          {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {S.actions.close}
+            </Button>
+            <Button
+              type="button"
+              data-testid="automation-describe-submit"
+              disabled={busy || text.trim() === ""}
+              onClick={() => void draft()}
+            >
+              {busy ? S.editor.saving : "Draft it"}
+            </Button>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

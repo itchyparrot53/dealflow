@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-23 01:52
+Current: 1.2 · Last updated: 2026-10-23 02:16
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -11,7 +11,7 @@ Current: 1.1 · Last updated: 2026-10-23 01:52
 - [x] 0.1 Start Part 12: progress files, kit, baseline and environment
 - [x] 0.2 Polish e2e spec and the two check-design rules
 - [x] 0.3 Phase 0 QA gate
-- [ ] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
+- [x] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
 - [ ] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
 - [ ] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
 - [ ] 1.4 Number and money formatting (U10)
@@ -56,6 +56,13 @@ Current: 1.1 · Last updated: 2026-10-23 01:52
 - 0.2: the two 6.10 rules are file-level checks beside `page-title` (they need the whole file); a `design-ok` marker opts one out only when it sits within a few lines of the construct. The long-list matcher adds the local names the code actually uses (`codeOptions`, `rateOptions`, `TIMEZONES`, `zoneOptions`) to 6.10's examples, so the rule catches the five current long Selects. Baseline recorded in POLISH.md: 9 violations, `dialog-anatomy` 4, `select-long-list` 5, 12 opt-outs.
 - 0.2: the `long list` test opens the quarter-hour booking time picker as its Select (`e2e/polish/routes.ts` LONG_LIST_SELECT): currency and time zone pickers become Comboboxes in Task 1.2, and the 96-entry time picker is the one long list that stays a Select, so it is what proves the new viewport scrolling.
 - 0.2: `e2e/16-polish.spec.ts` identifies the dialog header, body and footer through `data-slot="dialog-header|body|footer"`, which Task 1.1 adds to the primitives (6.2 already uses `data-slot="start"` for the footer slot); the gallery captures both themes through the real appearance path, like spec 15.
+
+- 1.1: the 6.2 anatomy is in the three primitives. `DialogContent` is a flex column with `p-0` and `max-h-[calc(100dvh-48px)]`, `DialogHeader` owns the close button (`data-testid="dialog-close"`) inside the header rule, `DialogBody` (`data-slot="dialog-body"`) is the only scroll container, and `DialogFooter` owns its border and the optional `data-slot="start"` left slot. The 40 body-wrapping migrations were made with a TypeScript-AST codemod and then formatted; `EntityCreateDialogShell` is now header, body (`bodyClassName` still applies) and footer on `size="lg"`.
+- 1.1: `SheetContent` keeps the corner close by default (its existing custom sheets: the mobile reply sheet, the assistant panel, the detail drawer) and gains `SheetHeader`/`SheetBody`/`SheetFooter` with `closeButton="header"`; Part 10's mobile reply-sheet locator (`button.absolute.right-4`) and spec 15 still work, and the sheet contract is available without rebuilding layouts that are deliberately custom.
+- 1.1: `AlertDialogContent` gains `closeButton` defaulting to `"none"` and the same header/body/footer parts; the six existing confirm dialogs keep their header-and-footer shape because their body is a single sentence that 6.2 puts in the header.
+- 1.1: `MoveDealDialog` and `CommandPalette` are the two headerless dialogs, so both pass `closeButton="corner"` (the command palette's own comment already relied on the dialog's close X).
+- 1.1: POLISH.md's "Closed in task" is filled per task; the Commit column is filled once in Task 4.5 from `git log --grep`, because a commit cannot contain its own hash.
+- 1.1: changed tests (no weakened assertions): `QuickAddContact` and `GlobalContactModal` asserted the retired `max-w-3xl p-0` class pair on the entity shell; they now assert `data-size="lg"` plus `p-0`, which is the same width and padding contract through the new primitive.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

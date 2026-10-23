@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -209,42 +210,44 @@ export function EnrichDialog({
           </div>
         </DialogHeader>
 
-        {applyError !== null ? (
-          <p
-            role="alert"
-            className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            {applyError.message}
-          </p>
-        ) : null}
+        <DialogBody>
+          {applyError !== null ? (
+            <p
+              role="alert"
+              className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {applyError.message}
+            </p>
+          ) : null}
 
-        {state.kind === "loading" ? <EnrichLoading /> : null}
+          {state.kind === "loading" ? <EnrichLoading /> : null}
 
-        {state.kind === "error" ? (
-          <p role="alert" className="text-sm text-destructive">
-            {state.message}
-          </p>
-        ) : null}
+          {state.kind === "error" ? (
+            <p role="alert" className="text-sm text-destructive">
+              {state.message}
+            </p>
+          ) : null}
 
-        {run !== null && run.fields.length === 0 ? (
-          <>
-            <p className="text-sm text-muted-foreground">{S.nothingFound}</p>
-            <OutcomeFooter outcomes={run.outcomes} />
-          </>
-        ) : null}
+          {run !== null && run.fields.length === 0 ? (
+            <>
+              <p className="text-sm text-muted-foreground">{S.nothingFound}</p>
+              <OutcomeFooter outcomes={run.outcomes} />
+            </>
+          ) : null}
 
-        {run !== null && run.fields.length > 0 ? (
-          // Keyed on the run alone. A partial apply keeps the run and only drops the rows it
-          // committed, and a pick for a row that is gone is inert, so remounting on the record
-          // version would only undo the choices the user made about the rows that remain.
-          <RunPanel
-            key={run.runId}
-            run={run}
-            applyBusy={applyBusy}
-            onApply={onApply}
-            onCancel={() => onOpenChange(false)}
-          />
-        ) : null}
+          {run !== null && run.fields.length > 0 ? (
+            // Keyed on the run alone. A partial apply keeps the run and only drops the rows it
+            // committed, and a pick for a row that is gone is inert, so remounting on the record
+            // version would only undo the choices the user made about the rows that remain.
+            <RunPanel
+              key={run.runId}
+              run={run}
+              applyBusy={applyBusy}
+              onApply={onApply}
+              onCancel={() => onOpenChange(false)}
+            />
+          ) : null}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

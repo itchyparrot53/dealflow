@@ -9,6 +9,7 @@ import { Combobox } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -152,81 +153,83 @@ export function TaskDialog({
           <DialogTitle>{task === null ? S.task.newTitle : S.task.title}</DialogTitle>
           <DialogDescription>{S.task.dialogDescription}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          {errorId !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {projectsErrorMessage(errorId)}
-            </p>
-          )}
-          <label className="block text-sm font-medium" htmlFor="task-title">
-            {S.task.title}
-            <Input
-              id="task-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              disabled={!canEdit || pending}
-              aria-label={S.task.title}
-            />
-          </label>
-          <label className="block text-sm font-medium" htmlFor="task-description">
-            {S.task.description}
-            <Textarea
-              id="task-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              disabled={!canEdit || pending}
-              aria-label={S.task.description}
-            />
-          </label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.task.assignee}</span>
-              <Combobox
-                value={assigneeId}
-                onChange={setAssigneeId}
-                options={[
-                  { value: "", label: S.task.unassigned },
-                  ...users.map((user) => ({ value: user.id, label: user.name })),
-                ]}
-                ariaLabel={S.task.assignee}
+        <DialogBody>
+          <div className="space-y-3">
+            {errorId !== null && (
+              <p role="alert" className="text-sm text-destructive">
+                {projectsErrorMessage(errorId)}
+              </p>
+            )}
+            <label className="block text-sm font-medium" htmlFor="task-title">
+              {S.task.title}
+              <Input
+                id="task-title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
                 disabled={!canEdit || pending}
+                aria-label={S.task.title}
               />
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.task.phase}</span>
-              <Select
-                value={phaseId ?? ""}
-                onChange={(next) => setPhaseId(next === "" ? null : next)}
-                options={[
-                  { value: "", label: S.task.noPhase },
-                  ...phases.map((phase) => ({ value: phase.id, label: phase.name })),
-                ]}
-                ariaLabel={S.task.phase}
+            </label>
+            <label className="block text-sm font-medium" htmlFor="task-description">
+              {S.task.description}
+              <Textarea
+                id="task-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
                 disabled={!canEdit || pending}
+                aria-label={S.task.description}
               />
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.task.dueDate}</span>
-              <DatePicker
-                value={dueDate}
-                onChange={setDueDate}
-                ariaLabel={S.task.dueDate}
-                placeholder={S.task.dueDate}
-              />
-            </div>
-            {task !== null && (
-              <div className="flex items-end pb-2">
-                <Checkbox
-                  checked={task.done}
-                  onCheckedChange={(done) => void setDone(done)}
-                  label={S.task.done}
+            </label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.task.assignee}</span>
+                <Combobox
+                  value={assigneeId}
+                  onChange={setAssigneeId}
+                  options={[
+                    { value: "", label: S.task.unassigned },
+                    ...users.map((user) => ({ value: user.id, label: user.name })),
+                  ]}
+                  ariaLabel={S.task.assignee}
                   disabled={!canEdit || pending}
                 />
-                <span className="ml-2 text-sm">{S.task.done}</span>
               </div>
-            )}
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.task.phase}</span>
+                <Select
+                  value={phaseId ?? ""}
+                  onChange={(next) => setPhaseId(next === "" ? null : next)}
+                  options={[
+                    { value: "", label: S.task.noPhase },
+                    ...phases.map((phase) => ({ value: phase.id, label: phase.name })),
+                  ]}
+                  ariaLabel={S.task.phase}
+                  disabled={!canEdit || pending}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.task.dueDate}</span>
+                <DatePicker
+                  value={dueDate}
+                  onChange={setDueDate}
+                  ariaLabel={S.task.dueDate}
+                  placeholder={S.task.dueDate}
+                />
+              </div>
+              {task !== null && (
+                <div className="flex items-end pb-2">
+                  <Checkbox
+                    checked={task.done}
+                    onCheckedChange={(done) => void setDone(done)}
+                    label={S.task.done}
+                    disabled={!canEdit || pending}
+                  />
+                  <span className="ml-2 text-sm">{S.task.done}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </DialogBody>
         <DialogFooter>
           {task !== null && canEdit && (
             <Button

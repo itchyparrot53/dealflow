@@ -142,7 +142,11 @@ describe("GlobalContactModal person (rich create, M1)", () => {
   it("uses the same full-width entity-create shell as Add lead", () => {
     render(<GlobalContactModal kind="person" onClose={noop} onCreated={noop} />);
     expect(screen.getByRole("heading", { name: "Add person" })).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toHaveClass("max-w-3xl", "p-0");
+    const shell = screen.getByRole("dialog");
+    // Part 12: the shell is the 6.2 anatomy, so its width comes from the lg size and the primitive
+    // owns the zero padding; assert both contracts instead of the retired max-w-3xl utility.
+    expect(shell).toHaveAttribute("data-size", "lg");
+    expect(shell).toHaveClass("p-0");
     expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
   });
 

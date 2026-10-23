@@ -2,7 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import type { Goal } from "@/db/schema/goals";
 import { createGoalAction, updateGoalAction } from "@/features/goals/actions";
@@ -73,21 +79,23 @@ export function GoalsClient({
           <DialogHeader>
             <DialogTitle>{S.goalEdit}</DialogTitle>
           </DialogHeader>
-          {editing !== null && (
-            <GoalForm
-              users={users}
-              teams={teams}
-              pipelines={pipelines}
-              activityTypes={activityTypes}
-              initial={editing}
-              submitLabel={S.goalSave}
-              onSubmit={(draft) => update(editing.id, draft)}
-              onDone={() => {
-                setEditing(null);
-                refresh();
-              }}
-            />
-          )}
+          <DialogBody>
+            {editing !== null && (
+              <GoalForm
+                users={users}
+                teams={teams}
+                pipelines={pipelines}
+                activityTypes={activityTypes}
+                initial={editing}
+                submitLabel={S.goalSave}
+                onSubmit={(draft) => update(editing.id, draft)}
+                onDone={() => {
+                  setEditing(null);
+                  refresh();
+                }}
+              />
+            )}
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </>

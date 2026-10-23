@@ -3,7 +3,13 @@ import { Building2, CalendarClock, Clock, User } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
@@ -133,121 +139,123 @@ export function AddActivityModal({
     >
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-md gap-0 overflow-hidden bg-card p-0"
+        className="max-w-md bg-card"
       >
-        <DialogHeader className="border-b px-5 py-3">
+        <DialogHeader>
           <DialogTitle className="text-base font-semibold">Add activity</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 px-5 py-4 text-sm">
-          {/* Composer parity (deal page): a large subject, the type icon rail, then icon-gutter
+        <DialogBody>
+          <div className="flex flex-col gap-3 px-5 py-4 text-sm">
+            {/* Composer parity (deal page): a large subject, the type icon rail, then icon-gutter
               field rows via ComposerFieldRow. Kept the standalone Contact person / Organization
               pickers (the Activities page has no deal/lead context to anchor to). */}
-          <input
-            aria-label="Subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Subject"
-            className="w-full rounded-md border px-3 py-2 text-sm font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
-          />
-          <TypeIconRail types={types} value={effectiveTypeId} onChange={setTypeId} />
+            <input
+              aria-label="Subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Subject"
+              className="w-full rounded-md border px-3 py-2 text-sm font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+            />
+            <TypeIconRail types={types} value={effectiveTypeId} onChange={setTypeId} />
 
-          <ComposerFieldRow icon={<Clock className={ICON} />}>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="w-40">
-                <ActivityDatePicker
-                  ariaLabel="Due date"
-                  value={due === "" ? null : due}
-                  placeholder="Due date"
-                  onChange={(v) => setDue(v ?? "")}
+            <ComposerFieldRow icon={<Clock className={ICON} />}>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="w-40">
+                  <ActivityDatePicker
+                    ariaLabel="Due date"
+                    value={due === "" ? null : due}
+                    placeholder="Due date"
+                    onChange={(v) => setDue(v ?? "")}
+                  />
+                </div>
+                <div className="w-28">
+                  <TimePicker ariaLabel="Start time" value={startTime} onChange={setStartTime} />
+                </div>
+              </div>
+            </ComposerFieldRow>
+
+            <ComposerFieldRow icon={<CalendarClock className={ICON} />}>
+              <div className="w-48">
+                <Select
+                  ariaLabel="Priority"
+                  value={priority}
+                  onChange={setPriority}
+                  placeholder="No priority"
+                  options={[
+                    { value: "", label: "No priority" },
+                    ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
+                      value: k,
+                      label: ACTIVITY_PRIORITIES[k].name,
+                    })),
+                  ]}
                 />
               </div>
-              <div className="w-28">
-                <TimePicker ariaLabel="Start time" value={startTime} onChange={setStartTime} />
-              </div>
-            </div>
-          </ComposerFieldRow>
+            </ComposerFieldRow>
 
-          <ComposerFieldRow icon={<CalendarClock className={ICON} />}>
-            <div className="w-48">
-              <Select
-                ariaLabel="Priority"
-                value={priority}
-                onChange={setPriority}
-                placeholder="No priority"
+            <RecurrenceField value={recurrence} onChange={setRecurrence} />
+
+            <ComposerFieldRow icon={<User className={ICON} />}>
+              <Combobox
+                ariaLabel="Contact person"
+                value={personId}
+                onChange={setPersonId}
+                placeholder="Contact person"
                 options={[
-                  { value: "", label: "No priority" },
-                  ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
-                    value: k,
-                    label: ACTIVITY_PRIORITIES[k].name,
+                  { value: "", label: "None" },
+                  ...(peopleQ.data?.rows ?? []).map<ComboboxOption>((p) => ({
+                    value: p.id,
+                    label: p.name,
+                    avatarName: p.name,
                   })),
                 ]}
               />
-            </div>
-          </ComposerFieldRow>
+            </ComposerFieldRow>
 
-          <RecurrenceField value={recurrence} onChange={setRecurrence} />
+            <ComposerFieldRow icon={<Building2 className={ICON} />}>
+              <Combobox
+                ariaLabel="Organization"
+                value={orgId}
+                onChange={setOrgId}
+                placeholder="Organization"
+                options={[
+                  { value: "", label: "None" },
+                  ...(orgsQ.data?.rows ?? []).map<ComboboxOption>((o) => ({
+                    value: o.id,
+                    label: o.name,
+                  })),
+                ]}
+              />
+            </ComposerFieldRow>
 
-          <ComposerFieldRow icon={<User className={ICON} />}>
-            <Combobox
-              ariaLabel="Contact person"
-              value={personId}
-              onChange={setPersonId}
-              placeholder="Contact person"
-              options={[
-                { value: "", label: "None" },
-                ...(peopleQ.data?.rows ?? []).map<ComboboxOption>((p) => ({
-                  value: p.id,
-                  label: p.name,
-                  avatarName: p.name,
-                })),
-              ]}
-            />
-          </ComposerFieldRow>
+            {error !== null && (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive"
+              >
+                {error}
+              </p>
+            )}
+          </div>
 
-          <ComposerFieldRow icon={<Building2 className={ICON} />}>
-            <Combobox
-              ariaLabel="Organization"
-              value={orgId}
-              onChange={setOrgId}
-              placeholder="Organization"
-              options={[
-                { value: "", label: "None" },
-                ...(orgsQ.data?.rows ?? []).map<ComboboxOption>((o) => ({
-                  value: o.id,
-                  label: o.name,
-                })),
-              ]}
-            />
-          </ComposerFieldRow>
-
-          {error !== null && (
-            <p
-              role="alert"
-              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive"
+          <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
             >
-              {error}
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void submit()}
-            disabled={pending || (dueRequired && due === "")}
-            className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
-          >
-            {pending ? "Saving..." : "Save"}
-          </button>
-        </div>
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void submit()}
+              disabled={pending || (dueRequired && due === "")}
+              className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+            >
+              {pending ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

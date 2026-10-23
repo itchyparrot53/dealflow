@@ -44,7 +44,11 @@ describe("QuickAddContact", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Person" }));
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Jane Roe" } });
     expect(screen.getByRole("heading", { name: "Add person" })).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toHaveClass("max-w-3xl", "p-0");
+    const shell = screen.getByRole("dialog");
+    // Part 12: the shell is the 6.2 anatomy, so its width comes from the lg size and the primitive
+    // owns the zero padding; assert both contracts instead of the retired max-w-3xl utility.
+    expect(shell).toHaveAttribute("data-size", "lg");
+    expect(shell).toHaveClass("p-0");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(createPerson).toHaveBeenCalledWith(expect.objectContaining({ name: "Jane Roe" }));
   });

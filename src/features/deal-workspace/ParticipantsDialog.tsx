@@ -3,7 +3,13 @@ import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatUserName } from "@/features/identity/formatUserName";
 import { ParticipantLinkField } from "./ParticipantLinkField";
 import type { useParticipants } from "./useParticipants";
@@ -31,89 +37,91 @@ export function ParticipantsDialog({
           <DialogTitle>Participants ({title})</DialogTitle>
         </DialogHeader>
 
-        {open && (
-          <ParticipantLinkField
-            linked={participants.map((p) => ({ id: p.personId, name: p.name }))}
-            orgId={orgId}
-            onPick={(pick) => (pick.kind === "existing" ? add(pick.id) : createAndAdd(pick.name))}
-          />
-        )}
-        {removeError !== null && (
-          <p role="alert" className="text-xs text-destructive">
-            {removeError}
-          </p>
-        )}
+        <DialogBody>
+          {open && (
+            <ParticipantLinkField
+              linked={participants.map((p) => ({ id: p.personId, name: p.name }))}
+              orgId={orgId}
+              onPick={(pick) => (pick.kind === "existing" ? add(pick.id) : createAndAdd(pick.name))}
+            />
+          )}
+          {removeError !== null && (
+            <p role="alert" className="text-xs text-destructive">
+              {removeError}
+            </p>
+          )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-xs text-muted-foreground">
-                <th className="py-2 pr-3 font-medium">Name</th>
-                <th className="py-2 pr-3 font-medium">Organization</th>
-                <th className="py-2 pr-3 font-medium">Email</th>
-                <th className="py-2 pr-3 font-medium">Phone</th>
-                <th className="py-2 pr-3 font-medium">Closed deals</th>
-                <th className="py-2 pr-3 font-medium">Open deals</th>
-                <th className="py-2 pr-3 font-medium">Next activity date</th>
-                <th className="py-2 pr-3 font-medium">Owner</th>
-                <th className="py-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {participants.map((p) => (
-                <tr key={p.personId} className="border-b last:border-b-0">
-                  <td className="py-2 pr-3">
-                    <Link
-                      href={`/contacts/people/${p.personId}`}
-                      className="font-semibold text-link-record hover:underline"
-                    >
-                      {p.name}
-                    </Link>
-                  </td>
-                  <td className="py-2 pr-3">{p.orgName ?? "-"}</td>
-                  <td className="py-2 pr-3">{p.primaryEmail ?? "-"}</td>
-                  <td className="py-2 pr-3">{p.phone ?? "-"}</td>
-                  <td className="py-2 pr-3 tabular-nums">{p.closedDeals}</td>
-                  <td className="py-2 pr-3 tabular-nums">{p.openDeals}</td>
-                  <td className="py-2 pr-3">
-                    {p.nextActivityAt !== null
-                      ? new Date(p.nextActivityAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "-"}
-                  </td>
-                  {/* formatUserName: demo/seed users carry their email as name; render "Demo2", not the email. */}
-                  <td className="py-2 pr-3">
-                    {p.ownerName !== null ? formatUserName(p.ownerName) : "-"}
-                  </td>
-                  <td className="py-2 text-right">
-                    {p.isPrimary && !p.isExplicit ? (
-                      <span className="text-xs text-muted-foreground">Deal contact</span>
-                    ) : (
-                      <button
-                        type="button"
-                        aria-label={`Remove ${p.name}`}
-                        onClick={() => void remove(p.personId).then(setRemoveError)}
-                        className="rounded p-1 text-muted-foreground hover:text-destructive"
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted-foreground">
+                  <th className="py-2 pr-3 font-medium">Name</th>
+                  <th className="py-2 pr-3 font-medium">Organization</th>
+                  <th className="py-2 pr-3 font-medium">Email</th>
+                  <th className="py-2 pr-3 font-medium">Phone</th>
+                  <th className="py-2 pr-3 font-medium">Closed deals</th>
+                  <th className="py-2 pr-3 font-medium">Open deals</th>
+                  <th className="py-2 pr-3 font-medium">Next activity date</th>
+                  <th className="py-2 pr-3 font-medium">Owner</th>
+                  <th className="py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {participants.map((p) => (
+                  <tr key={p.personId} className="border-b last:border-b-0">
+                    <td className="py-2 pr-3">
+                      <Link
+                        href={`/contacts/people/${p.personId}`}
+                        className="font-semibold text-link-record hover:underline"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {participants.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="py-4 text-center text-muted-foreground">
-                    No participants yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                        {p.name}
+                      </Link>
+                    </td>
+                    <td className="py-2 pr-3">{p.orgName ?? "-"}</td>
+                    <td className="py-2 pr-3">{p.primaryEmail ?? "-"}</td>
+                    <td className="py-2 pr-3">{p.phone ?? "-"}</td>
+                    <td className="py-2 pr-3 tabular-nums">{p.closedDeals}</td>
+                    <td className="py-2 pr-3 tabular-nums">{p.openDeals}</td>
+                    <td className="py-2 pr-3">
+                      {p.nextActivityAt !== null
+                        ? new Date(p.nextActivityAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                    {/* formatUserName: demo/seed users carry their email as name; render "Demo2", not the email. */}
+                    <td className="py-2 pr-3">
+                      {p.ownerName !== null ? formatUserName(p.ownerName) : "-"}
+                    </td>
+                    <td className="py-2 text-right">
+                      {p.isPrimary && !p.isExplicit ? (
+                        <span className="text-xs text-muted-foreground">Deal contact</span>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={`Remove ${p.name}`}
+                          onClick={() => void remove(p.personId).then(setRemoveError)}
+                          className="rounded p-1 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {participants.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="py-4 text-center text-muted-foreground">
+                      No participants yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

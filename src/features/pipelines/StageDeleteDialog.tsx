@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -50,16 +51,18 @@ export function StageDeleteDialog({
             {s.deleteStageDescription(dealCountLabel(request.dealCount, request.closedDealCount))}
           </DialogDescription>
         </DialogHeader>
-        <div className="text-sm">
-          <span className="mb-1 block font-medium">{s.moveDealsTo}</span>
-          <Select
-            ariaLabel={s.moveDealsTo}
-            value={destination}
-            onChange={setDestination}
-            options={request.destinations.map((d) => ({ value: d.id, label: d.name }))}
-          />
-        </div>
-        <DialogFooter className="mt-2">
+        <DialogBody>
+          <div className="text-sm">
+            <span className="mb-1 block font-medium">{s.moveDealsTo}</span>
+            <Select
+              ariaLabel={s.moveDealsTo}
+              value={destination}
+              onChange={setDestination}
+              options={request.destinations.map((d) => ({ value: d.id, label: d.name }))}
+            />
+          </div>
+        </DialogBody>
+        <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>
             {s.cancel}
           </Button>

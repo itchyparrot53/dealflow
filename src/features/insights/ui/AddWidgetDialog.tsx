@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -75,32 +76,34 @@ export function AddWidgetDialog({
         <DialogHeader>
           <DialogTitle>{S.ui.addWidget}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <Select
-            ariaLabel={S.ui.addWidget}
-            value={kind}
-            onChange={(value) => {
-              setKind(value === "goal" ? "goal" : "report");
-              setTargetId("");
-            }}
-            options={[
-              { value: "report", label: S.ui.tabReports },
-              { value: "goal", label: S.ui.goals },
-            ]}
-          />
-          <Select
-            ariaLabel={S.ui.addWidget}
-            value={targetId}
-            placeholder={S.none}
-            onChange={setTargetId}
-            options={options}
-          />
-          {error !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {insightErrorMessage(error)}
-            </p>
-          )}
-        </div>
+        <DialogBody>
+          <div className="space-y-3">
+            <Select
+              ariaLabel={S.ui.addWidget}
+              value={kind}
+              onChange={(value) => {
+                setKind(value === "goal" ? "goal" : "report");
+                setTargetId("");
+              }}
+              options={[
+                { value: "report", label: S.ui.tabReports },
+                { value: "goal", label: S.ui.goals },
+              ]}
+            />
+            <Select
+              ariaLabel={S.ui.addWidget}
+              value={targetId}
+              placeholder={S.none}
+              onChange={setTargetId}
+              options={options}
+            />
+            {error !== null && (
+              <p role="alert" className="text-sm text-destructive">
+                {insightErrorMessage(error)}
+              </p>
+            )}
+          </div>
+        </DialogBody>
         <DialogFooter>
           <Button type="button" onClick={() => void add()} disabled={pending || targetId === ""}>
             {S.ui.add}

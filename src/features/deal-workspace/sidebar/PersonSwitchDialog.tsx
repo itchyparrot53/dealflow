@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -56,22 +57,24 @@ export function PersonSwitchDialog({
         <DialogHeader>
           <DialogTitle>{strings.title}</DialogTitle>
         </DialogHeader>
-        {people === undefined ? (
-          <Input aria-label={strings.person} placeholder={strings.person} disabled readOnly />
-        ) : (
-          <Combobox
-            ariaLabel={strings.person}
-            value={personId}
-            options={options}
-            onChange={setPersonId}
-            placeholder={strings.person}
-          />
-        )}
-        {peopleQ.isError === true && (
-          <p role="alert" className="text-xs text-destructive">
-            {strings.loadFailed}
-          </p>
-        )}
+        <DialogBody>
+          {people === undefined ? (
+            <Input aria-label={strings.person} placeholder={strings.person} disabled readOnly />
+          ) : (
+            <Combobox
+              ariaLabel={strings.person}
+              value={personId}
+              options={options}
+              onChange={setPersonId}
+              placeholder={strings.person}
+            />
+          )}
+          {peopleQ.isError === true && (
+            <p role="alert" className="text-xs text-destructive">
+              {strings.loadFailed}
+            </p>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             {strings.cancel}

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -158,23 +159,25 @@ export function ManageSectionsDialog({
         <DialogHeader>
           <DialogTitle>{STRINGS.dealSidebar.menu.manageSections}</DialogTitle>
         </DialogHeader>
-        <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-          <SortableContext
-            items={draft.map((section) => section.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {draft.map((section, index) => (
-              <SectionRow
-                key={section.id}
-                section={section}
-                index={index}
-                count={draft.length}
-                onMove={move}
-                onToggle={toggle}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+        <DialogBody>
+          <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+            <SortableContext
+              items={draft.map((section) => section.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {draft.map((section, index) => (
+                <SectionRow
+                  key={section.id}
+                  section={section}
+                  index={index}
+                  count={draft.length}
+                  onMove={move}
+                  onToggle={toggle}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {STRINGS.dealSidebar.orgDialog.cancel}

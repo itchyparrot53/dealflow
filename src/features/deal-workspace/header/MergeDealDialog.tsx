@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -115,14 +116,16 @@ export function MergeDealDialog({
             cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        <Combobox
-          value={picked?.id ?? ""}
-          onChange={pick}
-          options={options}
-          search={{ value: query, onChange: setQuery }}
-          ariaLabel="Deal to merge in"
-          placeholder="Merge into"
-        />
+        <DialogBody>
+          <Combobox
+            value={picked?.id ?? ""}
+            onChange={pick}
+            options={options}
+            search={{ value: query, onChange: setQuery }}
+            ariaLabel="Deal to merge in"
+            placeholder="Merge into"
+          />
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             Cancel

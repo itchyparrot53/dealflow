@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -97,69 +98,71 @@ export function WebhookDialog({
           <DialogTitle>{subscription === null ? S.newWebhook : S.actions.edit}</DialogTitle>
           <DialogDescription>{S.intro}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <label className="block" htmlFor="webhook-name">
-            <span className="mb-1.5 block text-sm font-medium">{S.dialog.name}</span>
-            <Input
-              id="webhook-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </label>
-          <label className="block" htmlFor="webhook-url">
-            <span className="mb-1.5 block text-sm font-medium">{S.dialog.url}</span>
-            <Input
-              id="webhook-url"
-              data-testid="webhook-url"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://example.com/hooks/dealflow"
-            />
-          </label>
-          <div>
-            <span className="mb-1.5 block text-sm font-medium">{S.dialog.events}</span>
-            <div className="space-y-2">
-              {GROUPS.map((group) => {
-                const groupEvents = DOMAIN_EVENT_TYPES.filter((type) =>
-                  group.prefixes.some((prefix) => type.startsWith(prefix)),
-                );
-                return (
-                  <div key={group.title}>
-                    <p className="text-meta font-semibold text-muted-foreground">{group.title}</p>
-                    <div className="mt-1 grid gap-1 sm:grid-cols-2">
-                      {groupEvents.map((type) => (
-                        <div key={type} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={events.includes(type)}
-                            onCheckedChange={(checked) => toggleEvent(type, checked)}
-                            label={type}
-                            id={`webhook-event-${type}`}
-                          />
-                          <label htmlFor={`webhook-event-${type}`} className="text-sm">
-                            {type}
-                          </label>
-                        </div>
-                      ))}
+        <DialogBody>
+          <div className="space-y-3">
+            <label className="block" htmlFor="webhook-name">
+              <span className="mb-1.5 block text-sm font-medium">{S.dialog.name}</span>
+              <Input
+                id="webhook-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </label>
+            <label className="block" htmlFor="webhook-url">
+              <span className="mb-1.5 block text-sm font-medium">{S.dialog.url}</span>
+              <Input
+                id="webhook-url"
+                data-testid="webhook-url"
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="https://example.com/hooks/dealflow"
+              />
+            </label>
+            <div>
+              <span className="mb-1.5 block text-sm font-medium">{S.dialog.events}</span>
+              <div className="space-y-2">
+                {GROUPS.map((group) => {
+                  const groupEvents = DOMAIN_EVENT_TYPES.filter((type) =>
+                    group.prefixes.some((prefix) => type.startsWith(prefix)),
+                  );
+                  return (
+                    <div key={group.title}>
+                      <p className="text-meta font-semibold text-muted-foreground">{group.title}</p>
+                      <div className="mt-1 grid gap-1 sm:grid-cols-2">
+                        {groupEvents.map((type) => (
+                          <div key={type} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={events.includes(type)}
+                              onCheckedChange={(checked) => toggleEvent(type, checked)}
+                              label={type}
+                              id={`webhook-event-${type}`}
+                            />
+                            <label htmlFor={`webhook-event-${type}`} className="text-sm">
+                              {type}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+            {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
           </div>
-          {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {S.actions.cancel}
-          </Button>
-          <Button
-            type="button"
-            disabled={busy || name.trim() === "" || url.trim() === "" || events.length === 0}
-            onClick={() => void submit()}
-          >
-            {subscription === null ? S.dialog.create : S.dialog.save}
-          </Button>
-        </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {S.actions.cancel}
+            </Button>
+            <Button
+              type="button"
+              disabled={busy || name.trim() === "" || url.trim() === "" || events.length === 0}
+              onClick={() => void submit()}
+            >
+              {subscription === null ? S.dialog.create : S.dialog.save}
+            </Button>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

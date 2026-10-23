@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -148,71 +149,73 @@ export function TemplateDialog({
         <DialogHeader>
           <DialogTitle>{template === null ? S.newTemplate : S.editTemplate}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-4">
-            <label className="block" htmlFor="document-template-name">
-              <span className="mb-1.5 block text-sm font-medium">{S.templateName}</span>
-              <Input
-                id="document-template-name"
-                value={form.name}
-                onChange={(event) => update("name", event.target.value)}
-                autoFocus
-              />
-            </label>
-            <label className="block" htmlFor="document-template-body">
-              <span className="mb-1.5 block text-sm font-medium">{S.templateBody}</span>
-              <Textarea
-                id="document-template-body"
-                className="min-h-48 font-mono text-xs"
-                value={form.body}
-                onChange={(event) => update("body", event.target.value)}
-              />
-            </label>
-            <label className="block" htmlFor="document-template-terms">
-              <span className="mb-1.5 block text-sm font-medium">{S.templateTerms}</span>
-              <Textarea
-                id="document-template-terms"
-                className="min-h-20"
-                value={form.terms}
-                onChange={(event) => update("terms", event.target.value)}
-              />
-            </label>
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="document-template-products" className="text-sm font-medium">
-                {S.includeProducts}
+        <DialogBody>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4">
+              <label className="block" htmlFor="document-template-name">
+                <span className="mb-1.5 block text-sm font-medium">{S.templateName}</span>
+                <Input
+                  id="document-template-name"
+                  value={form.name}
+                  onChange={(event) => update("name", event.target.value)}
+                  autoFocus
+                />
               </label>
-              <Switch
-                id="document-template-products"
-                label={S.includeProducts}
-                checked={form.includeProducts}
-                onCheckedChange={(checked) => update("includeProducts", checked)}
-              />
+              <label className="block" htmlFor="document-template-body">
+                <span className="mb-1.5 block text-sm font-medium">{S.templateBody}</span>
+                <Textarea
+                  id="document-template-body"
+                  className="min-h-48 font-mono text-xs"
+                  value={form.body}
+                  onChange={(event) => update("body", event.target.value)}
+                />
+              </label>
+              <label className="block" htmlFor="document-template-terms">
+                <span className="mb-1.5 block text-sm font-medium">{S.templateTerms}</span>
+                <Textarea
+                  id="document-template-terms"
+                  className="min-h-20"
+                  value={form.terms}
+                  onChange={(event) => update("terms", event.target.value)}
+                />
+              </label>
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="document-template-products" className="text-sm font-medium">
+                  {S.includeProducts}
+                </label>
+                <Switch
+                  id="document-template-products"
+                  label={S.includeProducts}
+                  checked={form.includeProducts}
+                  onCheckedChange={(checked) => update("includeProducts", checked)}
+                />
+              </div>
+              <div>
+                <p className="mb-1.5 text-sm font-medium">{S.variables}</p>
+                <p className="mb-2 text-xs text-muted-foreground">{S.variablesHelp}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DOCUMENT_VARIABLE_KEYS.map((key) => (
+                    <code key={key} className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                      {`{{${key}}}`}
+                    </code>
+                  ))}
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{"{{products}}"}</code>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="mb-1.5 text-sm font-medium">{S.variables}</p>
-              <p className="mb-2 text-xs text-muted-foreground">{S.variablesHelp}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {DOCUMENT_VARIABLE_KEYS.map((key) => (
-                  <code key={key} className="rounded bg-muted px-1.5 py-0.5 text-xs">
-                    {`{{${key}}}`}
-                  </code>
-                ))}
-                <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{"{{products}}"}</code>
+            <div className="rounded-lg border bg-card p-4">
+              <p className="mb-3 text-meta font-semibold text-muted-foreground">{S.preview}</p>
+              <div data-testid="document-template-preview">
+                <MarkdownLite source={preview} />
               </div>
             </div>
           </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="mb-3 text-meta font-semibold text-muted-foreground">{S.preview}</p>
-            <div data-testid="document-template-preview">
-              <MarkdownLite source={preview} />
-            </div>
-          </div>
-        </div>
-        {error !== null && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+          {error !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

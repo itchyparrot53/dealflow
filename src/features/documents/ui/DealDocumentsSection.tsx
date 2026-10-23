@@ -8,6 +8,7 @@ import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -204,18 +205,22 @@ export function DealDocumentsSection({ dealId, canEdit }: Props): React.ReactNod
           <DialogHeader>
             <DialogTitle>{dialogKind === "invoice" ? S.newInvoice : S.newQuote}</DialogTitle>
           </DialogHeader>
-          <div className="block">
-            <span className="mb-1.5 block text-sm font-medium">{S.template}</span>
-            <Select
-              value={templateId}
-              onChange={setTemplateId}
-              options={templates.map((template) => ({
-                value: template.id,
-                label: template.isDefault ? `${template.name} (${S.defaultBadge})` : template.name,
-              }))}
-              ariaLabel={S.template}
-            />
-          </div>
+          <DialogBody>
+            <div className="block">
+              <span className="mb-1.5 block text-sm font-medium">{S.template}</span>
+              <Select
+                value={templateId}
+                onChange={setTemplateId}
+                options={templates.map((template) => ({
+                  value: template.id,
+                  label: template.isDefault
+                    ? `${template.name} (${S.defaultBadge})`
+                    : template.name,
+                }))}
+                ariaLabel={S.template}
+              />
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button
               type="button"

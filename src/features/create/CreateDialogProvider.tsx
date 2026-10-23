@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -80,15 +81,17 @@ function CallTargetPicker({
           <DialogTitle>Log a call</DialogTitle>
           <DialogDescription>Choose the person the call was with.</DialogDescription>
         </DialogHeader>
-        <Select
-          ariaLabel="Person"
-          value={personId}
-          onChange={setPersonId}
-          options={[
-            { value: "", label: "Choose a person" },
-            ...people.map((person) => ({ value: person.id, label: person.name })),
-          ]}
-        />
+        <DialogBody>
+          <Select
+            ariaLabel="Person"
+            value={personId}
+            onChange={setPersonId}
+            options={[
+              { value: "", label: "Choose a person" },
+              ...people.map((person) => ({ value: person.id, label: person.name })),
+            ]}
+          />
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

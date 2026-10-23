@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { STRINGS } from "@/constants/strings";
 import { useCreateDialog } from "@/features/create/CreateDialogProvider";
 import {
@@ -246,57 +246,59 @@ export function CommandPalette({
     >
       <DialogContent
         aria-describedby={undefined}
-        className="top-[12%] max-w-lg translate-y-0 gap-0 overflow-hidden p-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
+        closeButton="corner" className="top-[12%] max-w-lg translate-y-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
       >
-        <DialogTitle className="sr-only">{STRINGS.search.placeholder}</DialogTitle>
-        <div className="border-b px-3 py-2 pr-9">
-          <input
-            ref={inputRef}
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                close();
-                return;
-              }
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                moveDown();
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                moveUp();
-              } else if (e.key === "Enter") {
-                e.preventDefault();
-                // `flat` still holds the last resolved query while a refinement is in flight, and
-                // those rows are behind the skeleton. Acting on one navigates somewhere unseen.
-                const sel = pending || failed ? undefined : flat[active];
-                if (sel !== undefined) handleSelect(sel.kind, sel.r);
-              }
-            }}
-            placeholder={STRINGS.search.placeholder}
-            // Suppress the native type=search clear "x": the Dialog already renders a close X, so
-            // the browser's clear button made two X's cluster at the top-right (keep one).
-            className="w-full bg-transparent text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
-            aria-label="Search"
-          />
-        </div>
-        <div className="max-h-96 overflow-y-auto">
-          {commands.length > 0 && <CommandGroups commands={commands} onRun={runCommand} />}
-          {!typed && !searched ? (
-            commands.length === 0 ? (
-              <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
-            ) : null
-          ) : failed ? (
-            <p role="alert" className="px-3 py-4 text-sm text-destructive">
-              {SEARCH_ERROR}
-            </p>
-          ) : pending ? (
-            <SearchResultsSkeleton />
-          ) : (
-            <SearchResultsList results={results} activeId={activeId} onSelect={handleSelect} />
-          )}
-        </div>
+        <DialogBody>
+          <DialogTitle className="sr-only">{STRINGS.search.placeholder}</DialogTitle>
+          <div className="border-b px-3 py-2 pr-9">
+            <input
+              ref={inputRef}
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  close();
+                  return;
+                }
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  moveDown();
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  moveUp();
+                } else if (e.key === "Enter") {
+                  e.preventDefault();
+                  // `flat` still holds the last resolved query while a refinement is in flight, and
+                  // those rows are behind the skeleton. Acting on one navigates somewhere unseen.
+                  const sel = pending || failed ? undefined : flat[active];
+                  if (sel !== undefined) handleSelect(sel.kind, sel.r);
+                }
+              }}
+              placeholder={STRINGS.search.placeholder}
+              // Suppress the native type=search clear "x": the Dialog already renders a close X, so
+              // the browser's clear button made two X's cluster at the top-right (keep one).
+              className="w-full bg-transparent text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
+              aria-label="Search"
+            />
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {commands.length > 0 && <CommandGroups commands={commands} onRun={runCommand} />}
+            {!typed && !searched ? (
+              commands.length === 0 ? (
+                <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
+              ) : null
+            ) : failed ? (
+              <p role="alert" className="px-3 py-4 text-sm text-destructive">
+                {SEARCH_ERROR}
+              </p>
+            ) : pending ? (
+              <SearchResultsSkeleton />
+            ) : (
+              <SearchResultsList results={results} activeId={activeId} onSelect={handleSelect} />
+            )}
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

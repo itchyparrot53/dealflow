@@ -2,6 +2,7 @@
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -30,27 +31,31 @@ export function ShortcutHelp({
           <DialogTitle>Keyboard shortcuts</DialogTitle>
           <DialogDescription>Press Escape to close this sheet.</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {SHORTCUT_HELP_GROUPS.map((group) => (
-            <section key={group.title}>
-              <h2 className="mb-1 text-meta font-semibold text-muted-foreground">{group.title}</h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {group.items.map((item) => (
-                    <tr key={item.keys}>
-                      <td className="py-0.5 pr-3 align-top">
-                        <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
-                          {item.keys}
-                        </kbd>
-                      </td>
-                      <td className="py-0.5 text-muted-foreground">{item.label}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          ))}
-        </div>
+        <DialogBody>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {SHORTCUT_HELP_GROUPS.map((group) => (
+              <section key={group.title}>
+                <h2 className="mb-1 text-meta font-semibold text-muted-foreground">
+                  {group.title}
+                </h2>
+                <table className="w-full text-sm">
+                  <tbody>
+                    {group.items.map((item) => (
+                      <tr key={item.keys}>
+                        <td className="py-0.5 pr-3 align-top">
+                          <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">
+                            {item.keys}
+                          </kbd>
+                        </td>
+                        <td className="py-0.5 text-muted-foreground">{item.label}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ))}
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

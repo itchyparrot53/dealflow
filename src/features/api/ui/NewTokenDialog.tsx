@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -94,63 +95,65 @@ export function NewTokenDialog({
           <DialogTitle>{S.newToken}</DialogTitle>
           <DialogDescription>{S.newTokenDescription}</DialogDescription>
         </DialogHeader>
-        {token === null ? (
-          <div className="space-y-3">
-            {errorId !== null && (
-              <p role="alert" className="text-sm text-destructive">
-                {projectsErrorMessage(errorId)}
-              </p>
-            )}
-            <label className="block text-sm font-medium" htmlFor="token-name">
-              {S.tokenName}
-              <Input
-                id="token-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder={S.tokenNamePlaceholder}
-                aria-label={S.tokenName}
-              />
-            </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.scope}</span>
-                <Select
-                  value={scope}
-                  onChange={setScope}
-                  options={[
-                    { value: "read", label: S.scopeRead },
-                    { value: "write", label: S.scopeWrite },
-                  ]}
-                  ariaLabel={S.scope}
+        <DialogBody>
+          {token === null ? (
+            <div className="space-y-3">
+              {errorId !== null && (
+                <p role="alert" className="text-sm text-destructive">
+                  {projectsErrorMessage(errorId)}
+                </p>
+              )}
+              <label className="block text-sm font-medium" htmlFor="token-name">
+                {S.tokenName}
+                <Input
+                  id="token-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder={S.tokenNamePlaceholder}
+                  aria-label={S.tokenName}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.expires}</span>
-                <Select
-                  value={expiry}
-                  onChange={setExpiry}
-                  options={EXPIRY_OPTIONS}
-                  ariaLabel={S.expires}
-                />
+              </label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div>
+                  <span className="mb-1 block text-sm font-medium">{S.scope}</span>
+                  <Select
+                    value={scope}
+                    onChange={setScope}
+                    options={[
+                      { value: "read", label: S.scopeRead },
+                      { value: "write", label: S.scopeWrite },
+                    ]}
+                    ariaLabel={S.scope}
+                  />
+                </div>
+                <div>
+                  <span className="mb-1 block text-sm font-medium">{S.expires}</span>
+                  <Select
+                    value={expiry}
+                    onChange={setExpiry}
+                    options={EXPIRY_OPTIONS}
+                    ariaLabel={S.expires}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm font-medium">{S.tokenOnce}</p>
-            <div className="flex items-center gap-2">
-              <code
-                data-testid="api-token-secret"
-                className="min-w-0 flex-1 break-all rounded-md border bg-muted px-2 py-1 text-xs"
-              >
-                {token}
-              </code>
-              <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
-                {copied ? S.copied : S.copy}
-              </Button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{S.tokenOnce}</p>
+              <div className="flex items-center gap-2">
+                <code
+                  data-testid="api-token-secret"
+                  className="min-w-0 flex-1 break-all rounded-md border bg-muted px-2 py-1 text-xs"
+                >
+                  {token}
+                </code>
+                <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
+                  {copied ? S.copied : S.copy}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </DialogBody>
         <DialogFooter>
           {token === null ? (
             <>

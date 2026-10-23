@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -53,13 +54,15 @@ export function OrgSwitchDialog({
         <DialogHeader>
           <DialogTitle>{STRINGS.dealSidebar.orgDialog.title}</DialogTitle>
         </DialogHeader>
-        <Combobox
-          ariaLabel={STRINGS.dealSidebar.orgDialog.organization}
-          value={orgId}
-          options={comboOptions}
-          onChange={setOrgId}
-          placeholder={STRINGS.dealSidebar.orgDialog.organization}
-        />
+        <DialogBody>
+          <Combobox
+            ariaLabel={STRINGS.dealSidebar.orgDialog.organization}
+            value={orgId}
+            options={comboOptions}
+            onChange={setOrgId}
+            placeholder={STRINGS.dealSidebar.orgDialog.organization}
+          />
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             {STRINGS.dealSidebar.orgDialog.cancel}

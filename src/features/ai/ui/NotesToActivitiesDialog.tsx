@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -129,58 +130,60 @@ export function NotesToActivitiesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {pending && rows === null && (
-          <p className="text-sm text-muted-foreground">Reading the note...</p>
-        )}
+        <DialogBody>
+          {pending && rows === null && (
+            <p className="text-sm text-muted-foreground">Reading the note...</p>
+          )}
 
-        {rows !== null && rows.length === 0 && (
-          <p className="text-sm text-muted-foreground">No follow-ups found in this note.</p>
-        )}
+          {rows !== null && rows.length === 0 && (
+            <p className="text-sm text-muted-foreground">No follow-ups found in this note.</p>
+          )}
 
-        {rows !== null && rows.length > 0 && (
-          <ul className="space-y-3">
-            {rows.map((row, index) => (
-              <li
-                key={`${row.subject}-${row.dueDate}-${row.typeKey}`}
-                data-testid="ai-proposal"
-                className="space-y-2 rounded-md border p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={row.checked}
-                    onCheckedChange={(checked) => update(index, { checked })}
-                    label={`Include ${row.subject}`}
-                  />
-                  <Input
-                    aria-label="Subject"
-                    value={row.subject}
-                    onChange={(event) => update(index, { subject: event.target.value })}
-                    maxLength={255}
-                  />
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <Select
-                    value={row.typeKey}
-                    onChange={(value) => update(index, { typeKey: value })}
-                    options={types.map((type) => ({ value: type.key, label: type.name }))}
-                    ariaLabel="Type"
-                  />
-                  <DatePicker
-                    value={row.dueDate}
-                    onChange={(value) => update(index, { dueDate: value ?? row.dueDate })}
-                    ariaLabel="Due date"
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          {rows !== null && rows.length > 0 && (
+            <ul className="space-y-3">
+              {rows.map((row, index) => (
+                <li
+                  key={`${row.subject}-${row.dueDate}-${row.typeKey}`}
+                  data-testid="ai-proposal"
+                  className="space-y-2 rounded-md border p-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={row.checked}
+                      onCheckedChange={(checked) => update(index, { checked })}
+                      label={`Include ${row.subject}`}
+                    />
+                    <Input
+                      aria-label="Subject"
+                      value={row.subject}
+                      onChange={(event) => update(index, { subject: event.target.value })}
+                      maxLength={255}
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Select
+                      value={row.typeKey}
+                      onChange={(value) => update(index, { typeKey: value })}
+                      options={types.map((type) => ({ value: type.key, label: type.name }))}
+                      ariaLabel="Type"
+                    />
+                    <DatePicker
+                      value={row.dueDate}
+                      onChange={(value) => update(index, { dueDate: value ?? row.dueDate })}
+                      ariaLabel="Due date"
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
 
-        {errorId !== null && (
-          <p role="alert" className="text-sm text-destructive">
-            {aiErrorMessage(errorId)}
-          </p>
-        )}
+          {errorId !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {aiErrorMessage(errorId)}
+            </p>
+          )}
+        </DialogBody>
 
         <DialogFooter>
           <Button

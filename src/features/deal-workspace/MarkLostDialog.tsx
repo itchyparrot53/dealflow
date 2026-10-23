@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Combobox } from "@/components/ui/Combobox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -79,50 +80,52 @@ export function MarkLostDialog({
         <DialogHeader>
           <DialogTitle>Mark as Lost</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          {lostReasonOptions.length > 0 && (
+        <DialogBody>
+          <div className="flex flex-col gap-4">
+            {lostReasonOptions.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Lost reason</span>
+                <Combobox
+                  ariaLabel="Lost reason"
+                  value={reasonId}
+                  onChange={setReasonId}
+                  placeholder={NO_PRESET_REASON_LABEL}
+                  options={[
+                    { value: "", label: NO_PRESET_REASON_LABEL },
+                    ...lostReasonOptions.map((r) => ({ value: r.id, label: r.name })),
+                  ]}
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Lost reason</span>
-              <Combobox
-                ariaLabel="Lost reason"
-                value={reasonId}
-                onChange={setReasonId}
-                placeholder={NO_PRESET_REASON_LABEL}
-                options={[
-                  { value: "", label: NO_PRESET_REASON_LABEL },
-                  ...lostReasonOptions.map((r) => ({ value: r.id, label: r.name })),
-                ]}
+              <label htmlFor={COMMENT_ID} className="text-sm font-medium">
+                Comments (optional)
+              </label>
+              <Textarea
+                id={COMMENT_ID}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
               />
             </div>
-          )}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={COMMENT_ID} className="text-sm font-medium">
-              Comments (optional)
-            </label>
-            <Textarea
-              id={COMMENT_ID}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
+            <p className="text-sm text-muted-foreground">
+              Manage lost reasons on the{" "}
+              <a
+                href="/settings/company/lost-reasons"
+                className="text-primary underline underline-offset-2 hover:opacity-90"
+              >
+                company settings page
+              </a>
+              .
+            </p>
+            <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
+              <GraduationCap className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>
+                Providing a lost reason can help you better understand trends or circumstances when
+                you look back on your deal history.
+              </span>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Manage lost reasons on the{" "}
-            <a
-              href="/settings/company/lost-reasons"
-              className="text-primary underline underline-offset-2 hover:opacity-90"
-            >
-              company settings page
-            </a>
-            .
-          </p>
-          <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
-            <GraduationCap className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>
-              Providing a lost reason can help you better understand trends or circumstances when
-              you look back on your deal history.
-            </span>
-          </div>
-        </div>
+        </DialogBody>
         <DialogFooter>
           <button
             type="button"

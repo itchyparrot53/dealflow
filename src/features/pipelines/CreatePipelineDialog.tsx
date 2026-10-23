@@ -5,6 +5,7 @@ import { type RefObject, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -73,37 +74,39 @@ export function CreatePipelineDialog(props: CreatePipelineDialogProps): React.Re
           <DialogTitle>{STRINGS.settings.createPipeline}</DialogTitle>
           <DialogDescription>{STRINGS.settings.createPipelineDescription}</DialogDescription>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void submit();
-          }}
-        >
-          <label htmlFor={nameId} className="mb-1 block text-sm font-medium">
-            {STRINGS.settings.pipelineNameLabel}
-          </label>
-          <Input
-            id={nameId}
-            aria-label={STRINGS.settings.pipelineNameLabel}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={STRINGS.settings.pipelineNamePlaceholder}
-            maxLength={255}
-          />
-          {error !== null && (
-            <p
-              role="alert"
-              className="mt-3 rounded-md border border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive text-pretty"
-            >
-              {error}
-            </p>
-          )}
-          <DialogFooter className="mt-4">
-            <Button type="submit" disabled={saving || trimmed === ""}>
-              {saving ? STRINGS.settings.creating : STRINGS.settings.createPipeline}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogBody>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit();
+            }}
+          >
+            <label htmlFor={nameId} className="mb-1 block text-sm font-medium">
+              {STRINGS.settings.pipelineNameLabel}
+            </label>
+            <Input
+              id={nameId}
+              aria-label={STRINGS.settings.pipelineNameLabel}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={STRINGS.settings.pipelineNamePlaceholder}
+              maxLength={255}
+            />
+            {error !== null && (
+              <p
+                role="alert"
+                className="mt-3 rounded-md border border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive text-pretty"
+              >
+                {error}
+              </p>
+            )}
+            <DialogFooter>
+              <Button type="submit" disabled={saving || trimmed === ""}>
+                {saving ? STRINGS.settings.creating : STRINGS.settings.createPipeline}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

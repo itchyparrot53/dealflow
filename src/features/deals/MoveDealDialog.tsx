@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface StageOption {
   id: string;
@@ -26,28 +26,30 @@ export function MoveDealDialog(props: MoveDealDialogProps): React.ReactNode {
         if (!o) onClose();
       }}
     >
-      <DialogContent aria-describedby={undefined} className="max-w-sm gap-0 bg-card p-4">
-        <DialogTitle className="mb-3 text-sm font-semibold">Move deal to stage</DialogTitle>
-        <ul className="flex flex-col gap-1">
-          {stages.map((s) => (
-            <li key={s.id}>
-              <button
-                type="button"
-                onClick={() => onPick(s.id)}
-                className="block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-accent"
-              >
-                {s.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-3 w-full rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
-        >
-          Cancel
-        </button>
+      <DialogContent aria-describedby={undefined} closeButton="corner" className="max-w-sm bg-card">
+        <DialogBody>
+          <DialogTitle className="mb-3 text-sm font-semibold">Move deal to stage</DialogTitle>
+          <ul className="flex flex-col gap-1">
+            {stages.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => onPick(s.id)}
+                  className="block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-accent"
+                >
+                  {s.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-3 w-full rounded-md border px-3 py-1.5 text-sm hover:bg-accent"
+          >
+            Cancel
+          </button>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

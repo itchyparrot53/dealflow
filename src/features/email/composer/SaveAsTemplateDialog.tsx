@@ -8,6 +8,7 @@ import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -79,12 +80,14 @@ export function SaveAsTemplateDialog({
         <DialogHeader>
           <DialogTitle>Save as template</DialogTitle>
         </DialogHeader>
-        <Input
-          aria-label="Template name"
-          placeholder="Template name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <DialogBody>
+          <Input
+            aria-label="Template name"
+            placeholder="Template name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </DialogBody>
         <DialogFooter>
           <Button type="button" disabled={!canSave} onClick={() => void save()}>
             Save

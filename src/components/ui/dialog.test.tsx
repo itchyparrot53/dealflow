@@ -4,7 +4,14 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./dialog";
 import { Select } from "./Select";
 
 beforeAll(() => {
@@ -107,5 +114,69 @@ describe("Dialog", () => {
     await tick();
 
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+// Part 12, 6.2: the close button belongs to the header, the body is the only scroll container, and
+// a headerless dialog must ask for the corner button or none at all.
+describe("Dialog anatomy", () => {
+  function renderDialog(closeButton?: "header" | "corner" | "none"): void {
+    render(
+      <Dialog open>
+        <DialogContent aria-describedby={undefined} closeButton={closeButton}>
+          <DialogHeader>
+            <DialogTitle>Add deal</DialogTitle>
+          </DialogHeader>
+          <DialogBody>fields</DialogBody>
+          <DialogFooter>
+            <button type="button">Save</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>,
+    );
+  }
+
+  it("renders the close button inside the header, not on the dialog corner", () => {
+    renderDialog();
+    const header = document.querySelector('[data-slot="dialog-header"]');
+    const close = screen.getByTestId("dialog-close");
+    expect(header).toContainElement(close);
+    expect(close.className).not.toContain("absolute");
+  });
+
+  it("makes DialogBody the only scroll container", () => {
+    renderDialog();
+    const header = document.querySelector('[data-slot="dialog-header"]');
+    const body = document.querySelector('[data-slot="dialog-body"]');
+    const footer = document.querySelector('[data-slot="dialog-footer"]');
+    expect(body?.className).toContain("overflow-y-auto");
+    expect(header?.className).not.toContain("overflow-y-auto");
+    expect(footer?.className).not.toContain("overflow-y-auto");
+    // The dialog itself clips, so the header and footer can never be scrolled away.
+    expect(header?.parentElement?.className).toContain("overflow-hidden");
+  });
+
+  it("renders a corner close for a dialog without a header", () => {
+    render(
+      <Dialog open>
+        <DialogContent aria-describedby={undefined} closeButton="corner">
+          <DialogTitle>Preview</DialogTitle>
+        </DialogContent>
+      </Dialog>,
+    );
+    const close = screen.getByTestId("dialog-close");
+    expect(close.className).toContain("absolute");
+    expect(document.querySelector('[data-slot="dialog-header"]')).toBeNull();
+  });
+
+  it("renders no close button with closeButton=none", () => {
+    render(
+      <Dialog open>
+        <DialogContent aria-describedby={undefined} closeButton="none">
+          <DialogTitle>Must be answered</DialogTitle>
+        </DialogContent>
+      </Dialog>,
+    );
+    expect(screen.queryByTestId("dialog-close")).not.toBeInTheDocument();
   });
 });

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -50,28 +51,30 @@ export function TemplateGallery({
           <DialogTitle>{S.templates}</DialogTitle>
           <DialogDescription>{S.intro}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {templates.map((template) => (
-            <button
-              key={template.key}
-              type="button"
-              className="rounded-md border p-3 text-left transition-colors hover:bg-accent"
-              data-testid="automation-template-card"
-              disabled={busyKey !== null}
-              onClick={() => void pick(template.key)}
-            >
-              <span className="block text-sm font-medium">{template.name}</span>
-              <span className="mt-1 block text-sm text-muted-foreground">
-                {template.description}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className="flex justify-end">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {S.actions.close}
-          </Button>
-        </div>
+        <DialogBody>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {templates.map((template) => (
+              <button
+                key={template.key}
+                type="button"
+                className="rounded-md border p-3 text-left transition-colors hover:bg-accent"
+                data-testid="automation-template-card"
+                disabled={busyKey !== null}
+                onClick={() => void pick(template.key)}
+              >
+                <span className="block text-sm font-medium">{template.name}</span>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  {template.description}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {S.actions.close}
+            </Button>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

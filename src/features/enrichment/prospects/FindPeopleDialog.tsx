@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -142,54 +143,56 @@ export function FindPeopleDialog({
           <DialogDescription>{S.subtitle}</DialogDescription>
         </DialogHeader>
 
-        {noProvider ? (
-          <EmptyState title={S.noProviderTitle} body={S.noProviderBody} />
-        ) : step === "search" ? (
-          <ProspectSearchPane
-            flow={flow}
-            orgName={orgName}
-            providers={providers}
-            loading={searchQuery.isFetching && flow.page === 1}
-            loadingMore={searchQuery.isFetching && flow.page > 1}
-            errorId={searchErrorId}
-            resumable={resumable}
-            onRerun={() => {
-              void searchQuery.refetch();
-            }}
-          />
-        ) : step === "reveal" ? (
-          <ProspectRevealStep
-            status={queueStatus}
-            processed={flow.queue.processed}
-            total={flow.queue.total}
-            stopping={flow.queue.stopping}
-            failures={flow.failures.length}
-            error={flow.queue.error}
-            onStop={() => {
-              flow.queue.abort();
-            }}
-          />
-        ) : (
-          <ProspectReviewStep
-            revealed={revealed}
-            failures={flow.failures}
-            outcomes={flow.outcomes}
-            applying={flow.applying}
-            error={reviewError(flow.applyError, flow.mappingsMismatch, queueStatus)}
-            onApply={(submissions) => {
-              const applied = session.current;
-              void flow.apply(submissions).then((summary) => {
-                if (summary === "failed") return;
-                refreshAfterApply();
-                if (summary !== "applied") return;
-                if (!live.current || applied !== session.current) return;
-                session.current += 1;
-                flow.reset();
-                onOpenChange(false);
-              });
-            }}
-          />
-        )}
+        <DialogBody>
+          {noProvider ? (
+            <EmptyState title={S.noProviderTitle} body={S.noProviderBody} />
+          ) : step === "search" ? (
+            <ProspectSearchPane
+              flow={flow}
+              orgName={orgName}
+              providers={providers}
+              loading={searchQuery.isFetching && flow.page === 1}
+              loadingMore={searchQuery.isFetching && flow.page > 1}
+              errorId={searchErrorId}
+              resumable={resumable}
+              onRerun={() => {
+                void searchQuery.refetch();
+              }}
+            />
+          ) : step === "reveal" ? (
+            <ProspectRevealStep
+              status={queueStatus}
+              processed={flow.queue.processed}
+              total={flow.queue.total}
+              stopping={flow.queue.stopping}
+              failures={flow.failures.length}
+              error={flow.queue.error}
+              onStop={() => {
+                flow.queue.abort();
+              }}
+            />
+          ) : (
+            <ProspectReviewStep
+              revealed={revealed}
+              failures={flow.failures}
+              outcomes={flow.outcomes}
+              applying={flow.applying}
+              error={reviewError(flow.applyError, flow.mappingsMismatch, queueStatus)}
+              onApply={(submissions) => {
+                const applied = session.current;
+                void flow.apply(submissions).then((summary) => {
+                  if (summary === "failed") return;
+                  refreshAfterApply();
+                  if (summary !== "applied") return;
+                  if (!live.current || applied !== session.current) return;
+                  session.current += 1;
+                  flow.reset();
+                  onOpenChange(false);
+                });
+              }}
+            />
+          )}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

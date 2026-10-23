@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -76,30 +77,32 @@ export function SaveViewDialog({
         <DialogHeader>
           <DialogTitle>Save current view</DialogTitle>
         </DialogHeader>
-        <label className="block text-sm" htmlFor={nameId}>
-          <span className="mb-1 block font-medium">View name</span>
-          <Input
-            id={nameId}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name this view"
-          />
-        </label>
-        <div className="flex items-center gap-2 text-sm">
-          <Checkbox
-            id={sharedId}
-            label={SHARED_LABEL}
-            checked={isShared}
-            onCheckedChange={setIsShared}
-          />
-          <label htmlFor={sharedId}>{SHARED_LABEL}</label>
-        </div>
-        {error !== null && (
-          <div role="alert" className="text-sm text-destructive">
-            <p className="font-medium">{error.title}</p>
-            <p>{error.body}</p>
+        <DialogBody>
+          <label className="block text-sm" htmlFor={nameId}>
+            <span className="mb-1 block font-medium">View name</span>
+            <Input
+              id={nameId}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name this view"
+            />
+          </label>
+          <div className="flex items-center gap-2 text-sm">
+            <Checkbox
+              id={sharedId}
+              label={SHARED_LABEL}
+              checked={isShared}
+              onCheckedChange={setIsShared}
+            />
+            <label htmlFor={sharedId}>{SHARED_LABEL}</label>
           </div>
-        )}
+          {error !== null && (
+            <div role="alert" className="text-sm text-destructive">
+              <p className="font-medium">{error.title}</p>
+              <p>{error.body}</p>
+            </div>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={onClose}>
             Cancel

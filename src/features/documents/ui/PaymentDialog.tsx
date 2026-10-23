@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -102,50 +103,52 @@ export function PaymentDialog({
         <DialogHeader>
           <DialogTitle>{S.recordPayment}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <label className="block" htmlFor="document-payment-amount">
-            <span className="mb-1.5 block text-sm font-medium">{S.amount}</span>
-            <Input
-              id="document-payment-amount"
-              inputMode="decimal"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              disabled={pending}
-            />
-          </label>
-          <div className="block">
-            <span className="mb-1.5 block text-sm font-medium">{S.paidOn}</span>
-            <DatePicker
-              value={paidOn}
-              onChange={setPaidOn}
-              ariaLabel={S.paidOn}
-              placeholder={S.paidOn}
-            />
+        <DialogBody>
+          <div className="space-y-4">
+            <label className="block" htmlFor="document-payment-amount">
+              <span className="mb-1.5 block text-sm font-medium">{S.amount}</span>
+              <Input
+                id="document-payment-amount"
+                inputMode="decimal"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                disabled={pending}
+              />
+            </label>
+            <div className="block">
+              <span className="mb-1.5 block text-sm font-medium">{S.paidOn}</span>
+              <DatePicker
+                value={paidOn}
+                onChange={setPaidOn}
+                ariaLabel={S.paidOn}
+                placeholder={S.paidOn}
+              />
+            </div>
+            <div className="block">
+              <span className="mb-1.5 block text-sm font-medium">{S.method}</span>
+              <Select
+                value={method}
+                onChange={(value) => setMethod(value as Method)}
+                options={METHODS.map((item) => ({ value: item.value, label: item.label }))}
+                ariaLabel={S.method}
+              />
+            </div>
+            <label className="block" htmlFor="document-payment-reference">
+              <span className="mb-1.5 block text-sm font-medium">{S.reference}</span>
+              <Input
+                id="document-payment-reference"
+                value={reference}
+                onChange={(event) => setReference(event.target.value)}
+                disabled={pending}
+              />
+            </label>
           </div>
-          <div className="block">
-            <span className="mb-1.5 block text-sm font-medium">{S.method}</span>
-            <Select
-              value={method}
-              onChange={(value) => setMethod(value as Method)}
-              options={METHODS.map((item) => ({ value: item.value, label: item.label }))}
-              ariaLabel={S.method}
-            />
-          </div>
-          <label className="block" htmlFor="document-payment-reference">
-            <span className="mb-1.5 block text-sm font-medium">{S.reference}</span>
-            <Input
-              id="document-payment-reference"
-              value={reference}
-              onChange={(event) => setReference(event.target.value)}
-              disabled={pending}
-            />
-          </label>
-        </div>
-        {error !== null && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+          {error !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

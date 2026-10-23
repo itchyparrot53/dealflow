@@ -1,7 +1,13 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { ACTIVITY_PRIORITIES, ACTIVITY_PRIORITY_KEYS } from "@/constants/activityPriorities";
@@ -162,123 +168,125 @@ export function ActivityEditModal({
     >
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-md gap-0 overflow-hidden bg-card p-0"
+        className="max-w-md bg-card"
       >
-        <DialogHeader className="border-b px-5 py-3">
+        <DialogHeader>
           <DialogTitle className="text-base font-semibold">Edit activity</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 px-5 py-4 text-sm">
-          <div className="block">
-            <span className="mb-1 block font-medium">Type</span>
-            <Select
-              ariaLabel="Activity type"
-              value={effectiveTypeId}
-              onChange={setTypeId}
-              options={types.map<SelectOption>((t) => ({
-                value: t.id,
-                label: t.name,
-                icon: <ActivityTypeIcon typeKey={t.key} />,
-              }))}
-            />
-          </div>
-          <label className="block">
-            <span className="mb-1 block font-medium">Subject</span>
-            <input
-              aria-label="Subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className={FIELD}
-            />
-          </label>
-          <div className="block">
-            <span className="mb-1 block font-medium">Priority</span>
-            <Select
-              ariaLabel="Priority"
-              value={priority}
-              onChange={setPriority}
-              placeholder={NO_PRIORITY_LABEL}
-              options={[
-                { value: "", label: NO_PRIORITY_LABEL },
-                ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
-                  value: k,
-                  label: ACTIVITY_PRIORITIES[k].name,
-                })),
-              ]}
-            />
-          </div>
-          <div className="block">
-            <span className="mb-1 block font-medium">Due date</span>
-            <ActivityDatePicker
-              ariaLabel="Due date"
-              value={date === "" ? null : date}
-              onChange={(v) => setDate(v ?? "")}
-              assigneeId={activity.assigneeId ?? null}
-            />
-          </div>
-          <div className="block">
-            <span className="mb-1 block font-medium">Start time</span>
-            <TimePicker ariaLabel="Start time" value={time} onChange={setTime} />
-          </div>
-          <RecurrenceField value={recurrence} onChange={setRecurrence} />
-          <label className="block">
-            <span className="mb-1 block font-medium">Location</span>
-            <input
-              aria-label="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Add location"
-              className={FIELD}
-            />
-          </label>
+        <DialogBody>
+          <div className="flex flex-col gap-3 px-5 py-4 text-sm">
+            <div className="block">
+              <span className="mb-1 block font-medium">Type</span>
+              <Select
+                ariaLabel="Activity type"
+                value={effectiveTypeId}
+                onChange={setTypeId}
+                options={types.map<SelectOption>((t) => ({
+                  value: t.id,
+                  label: t.name,
+                  icon: <ActivityTypeIcon typeKey={t.key} />,
+                }))}
+              />
+            </div>
+            <label className="block">
+              <span className="mb-1 block font-medium">Subject</span>
+              <input
+                aria-label="Subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className={FIELD}
+              />
+            </label>
+            <div className="block">
+              <span className="mb-1 block font-medium">Priority</span>
+              <Select
+                ariaLabel="Priority"
+                value={priority}
+                onChange={setPriority}
+                placeholder={NO_PRIORITY_LABEL}
+                options={[
+                  { value: "", label: NO_PRIORITY_LABEL },
+                  ...ACTIVITY_PRIORITY_KEYS.map<SelectOption>((k) => ({
+                    value: k,
+                    label: ACTIVITY_PRIORITIES[k].name,
+                  })),
+                ]}
+              />
+            </div>
+            <div className="block">
+              <span className="mb-1 block font-medium">Due date</span>
+              <ActivityDatePicker
+                ariaLabel="Due date"
+                value={date === "" ? null : date}
+                onChange={(v) => setDate(v ?? "")}
+                assigneeId={activity.assigneeId ?? null}
+              />
+            </div>
+            <div className="block">
+              <span className="mb-1 block font-medium">Start time</span>
+              <TimePicker ariaLabel="Start time" value={time} onChange={setTime} />
+            </div>
+            <RecurrenceField value={recurrence} onChange={setRecurrence} />
+            <label className="block">
+              <span className="mb-1 block font-medium">Location</span>
+              <input
+                aria-label="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Add location"
+                className={FIELD}
+              />
+            </label>
 
-          {error !== null && (
-            <p
-              role="alert"
-              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive"
-            >
-              {error}
-            </p>
-          )}
-        </div>
+            {error !== null && (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive"
+              >
+                {error}
+              </p>
+            )}
+          </div>
 
-        <div className="flex items-center justify-between border-t px-5 py-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void remove()}
-              disabled={pending}
-              className="rounded-md border px-3 py-1.5 text-sm text-destructive transition-transform hover:bg-destructive/10 active:not-disabled:scale-[0.96] disabled:opacity-50"
-            >
-              Delete
-            </button>
-            <button
-              type="button"
-              onClick={() => void toggleDone()}
-              disabled={pending}
-              className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-50"
-            >
-              {doneNow ? "Reopen" : "Mark as done"}
-            </button>
+          <div className="flex items-center justify-between border-t px-5 py-3">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void remove()}
+                disabled={pending}
+                className="rounded-md border px-3 py-1.5 text-sm text-destructive transition-transform hover:bg-destructive/10 active:not-disabled:scale-[0.96] disabled:opacity-50"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={() => void toggleDone()}
+                disabled={pending}
+                className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:not-disabled:scale-[0.96] disabled:opacity-50"
+              >
+                {doneNow ? "Reopen" : "Mark as done"}
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={pending}
+                className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
+              >
+                {pending ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md border px-3 py-1.5 text-sm transition-transform hover:bg-accent active:scale-[0.96]"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => void save()}
-              disabled={pending}
-              className="rounded-md bg-action px-4 py-1.5 text-sm font-medium text-action-foreground transition-transform hover:opacity-90 active:not-disabled:scale-[0.96] disabled:opacity-50"
-            >
-              {pending ? "Saving..." : "Save"}
-            </button>
-          </div>
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

@@ -2,7 +2,16 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import type React from "react";
-import { forwardRef, useEffect, useRef } from "react";
+import {
+  Children,
+  cloneElement,
+  createContext,
+  forwardRef,
+  isValidElement,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { capture, currentRoute } from "@/features/observability/capture";
 import { EVENTS } from "@/features/observability/events";
 import { cn } from "@/lib/utils";
@@ -12,6 +21,9 @@ import { cn } from "@/lib/utils";
 // lock, Escape-to-close, and portal for free. See CLAUDE.md "Use the design system, never
 // reinvent". A lint rule bans new hand-rolled `fixed inset-0` overlays; this file is exempt
 // because it IS the sanctioned overlay implementation.
+//
+// Part 12 anatomy (PLAN-PART12.md 6.2): the content is a flex column with no padding, the header
+// owns the close button and never scrolls away, and DialogBody is the only scroll container.
 // Records why the last dialog dismissal was requested, for the modal_closed `reason`. Reset to
 // "programmatic" whenever a dialog opens, so a suppressed dismissal (e.g. an outside-press that did
 // not actually close the dialog) cannot mislabel a later close. Single dialog at a time is the norm
@@ -92,10 +104,36 @@ const DialogOverlay = forwardRef<
 ));
 DialogOverlay.displayName = "DialogOverlay";
 
+type CloseButton = "header" | "corner" | "none";
+
+// Tells DialogHeader whether it owns the close button (6.2). Default "header" means a dialog
+// without a DialogHeader must ask for "corner" or "none"; check-design's dialog-anatomy enforces it.
+const DialogCloseContext = createContext<CloseButton>("header");
+
+function DialogCloseButton({ className }: { className?: string }): React.ReactNode {
+  return (
+    <DialogPrimitive.Close
+      aria-label="Close"
+      data-testid="dialog-close"
+      onClick={() => setLastCloseReason("user")}
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
+        className,
+      )}
+    >
+      <X className="size-4" strokeWidth={2.25} />
+    </DialogPrimitive.Close>
+  );
+}
+
 export const DialogContent = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { size?: "sm" | "md" | "lg" }
->(({ className, children, size = "md", ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    size?: "sm" | "md" | "lg";
+    // 6.2: "header" (the header renders it), "corner" (no header), "none" (must not dismiss).
+    closeButton?: CloseButton;
+  }
+>(({ className, children, size = "md", closeButton = "header", ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -105,56 +143,99 @@ export const DialogContent = forwardRef<
       onPointerDownOutside={() => setLastCloseReason("outside")}
       onInteractOutside={() => setLastCloseReason("outside")}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 flex w-full flex-col gap-4 rounded-lg border bg-popover p-6 shadow-dialog translate-x-[-50%] translate-y-[-50%] data-[size=sm]:max-w-[480px] data-[size=md]:max-w-[600px] data-[size=lg]:max-w-[800px]",
+        "fixed left-[50%] top-[50%] z-50 flex max-h-[calc(100dvh-48px)] w-full flex-col gap-0 overflow-hidden rounded-lg border bg-popover p-0 shadow-dialog translate-x-[-50%] translate-y-[-50%] data-[size=sm]:max-w-[480px] data-[size=md]:max-w-[600px] data-[size=lg]:max-w-[800px]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 data-[state=open]:slide-in-from-left-1/2 data-[state=closed]:slide-out-to-left-1/2 data-[state=open]:slide-in-from-top-[48%] data-[state=closed]:slide-out-to-top-[48%] motion-reduce:animate-none",
         className,
       )}
       {...props}
     >
-      {children}
-      <DialogPrimitive.Close
-        onClick={() => setLastCloseReason("user")}
-        className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none"
-      >
-        <X className="size-4" strokeWidth={2.25} />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
+      <DialogCloseContext.Provider value={closeButton}>
+        {children}
+        {closeButton === "corner" ? <DialogCloseButton className="absolute right-3 top-3" /> : null}
+      </DialogCloseContext.Provider>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));
 DialogContent.displayName = "DialogContent";
 
-export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function DialogHeader({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
+  const closeButton = useContext(DialogCloseContext);
   return (
     <div
-      className={cn("-mx-6 -mt-6 flex flex-col gap-1.5 border-b px-6 py-4 text-left", className)}
+      data-slot="dialog-header"
+      className={cn(
+        "flex min-h-14 shrink-0 items-center justify-between gap-4 border-b px-6 py-3",
+        className,
+      )}
+      {...props}
+    >
+      <div className="min-w-0 flex-1">{children}</div>
+      {closeButton === "header" ? <DialogCloseButton className="-mr-2" /> : null}
+    </div>
+  );
+}
+
+// The only scroll container in the dialog (6.2): the header and footer never scroll away.
+export function DialogBody({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn("min-h-0 flex-1 overflow-y-auto px-6 py-5", className)}
       {...props}
     />
   );
 }
 
-export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+// Footer, with 6.2's optional start slot: a child carrying data-slot="start" is pushed left.
+export function DialogFooter({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
   return (
     <div
-      className={cn(
-        "-mx-6 -mb-6 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end",
-        className,
-      )}
+      data-slot="dialog-footer"
+      className={cn("flex shrink-0 items-center justify-end gap-2 border-t px-6 py-4", className)}
       {...props}
-    />
+    >
+      {Children.map(children, (child) => {
+        if (!isValidElement(child)) return child;
+        const slot = (child.props as { "data-slot"?: string })["data-slot"];
+        if (slot !== "start") return child;
+        const childClassName = (child.props as { className?: string }).className;
+        return cloneElement(child as React.ReactElement<{ className?: string }>, {
+          className: cn("mr-auto", childClassName),
+        });
+      })}
+    </div>
   );
 }
 
 export const DialogTitle = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn("text-base font-semibold", className)}
-    {...props}
-  />
-));
+>(({ className, children, title, ...props }, ref) => {
+  // The header truncates the title instead of wrapping it (6.2), so keep the full text available
+  // through the native tooltip when the visible line is clipped.
+  const titleAttr = title ?? (typeof children === "string" ? children : undefined);
+  return (
+    <DialogPrimitive.Title
+      ref={ref}
+      title={titleAttr}
+      className={cn("truncate text-base font-semibold", className)}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Title>
+  );
+});
 DialogTitle.displayName = "DialogTitle";
 
 export const DialogDescription = forwardRef<

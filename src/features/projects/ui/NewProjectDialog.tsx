@@ -8,6 +8,7 @@ import { Combobox } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -97,108 +98,110 @@ export function NewProjectDialog({
           <DialogTitle>{S.newProject}</DialogTitle>
           <DialogDescription>{S.newProjectDescription}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          {errorId !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {projectsErrorMessage(errorId)}
-            </p>
-          )}
-          <label className="block text-sm font-medium" htmlFor="project-name">
-            {S.name}
-            <Input
-              id="project-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              aria-label={S.name}
-            />
-          </label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.linkedDeal}</span>
-              <Combobox
-                value={dealId}
-                onChange={setDealId}
-                options={[
-                  { value: "", label: S.noDeal },
-                  ...dealOptions.map((deal) => ({ value: deal.id, label: deal.title })),
-                ]}
-                ariaLabel={S.linkedDeal}
+        <DialogBody>
+          <div className="space-y-3">
+            {errorId !== null && (
+              <p role="alert" className="text-sm text-destructive">
+                {projectsErrorMessage(errorId)}
+              </p>
+            )}
+            <label className="block text-sm font-medium" htmlFor="project-name">
+              {S.name}
+              <Input
+                id="project-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                aria-label={S.name}
               />
+            </label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.linkedDeal}</span>
+                <Combobox
+                  value={dealId}
+                  onChange={setDealId}
+                  options={[
+                    { value: "", label: S.noDeal },
+                    ...dealOptions.map((deal) => ({ value: deal.id, label: deal.title })),
+                  ]}
+                  ariaLabel={S.linkedDeal}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.owner}</span>
+                <Combobox
+                  value={ownerId}
+                  onChange={setOwnerId}
+                  options={[
+                    { value: "", label: S.allOwners },
+                    ...users.map((user) => ({ value: user.id, label: user.name })),
+                  ]}
+                  ariaLabel={S.owner}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.startDate}</span>
+                <DatePicker
+                  value={startDate}
+                  onChange={setStartDate}
+                  ariaLabel={S.startDate}
+                  placeholder={S.startDate}
+                />
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium">{S.dueDate}</span>
+                <DatePicker
+                  value={dueDate}
+                  onChange={setDueDate}
+                  ariaLabel={S.dueDate}
+                  placeholder={S.dueDate}
+                />
+              </div>
             </div>
             <div>
-              <span className="mb-1 block text-sm font-medium">{S.owner}</span>
-              <Combobox
-                value={ownerId}
-                onChange={setOwnerId}
-                options={[
-                  { value: "", label: S.allOwners },
-                  ...users.map((user) => ({ value: user.id, label: user.name })),
-                ]}
-                ariaLabel={S.owner}
-              />
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.startDate}</span>
-              <DatePicker
-                value={startDate}
-                onChange={setStartDate}
-                ariaLabel={S.startDate}
-                placeholder={S.startDate}
-              />
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.dueDate}</span>
-              <DatePicker
-                value={dueDate}
-                onChange={setDueDate}
-                ariaLabel={S.dueDate}
-                placeholder={S.dueDate}
-              />
+              <span className="mb-1 block text-sm font-medium">{S.phases}</span>
+              <ul className="space-y-1">
+                {phases.map((phase, index) => (
+                  <li key={phase.id} className="flex items-center gap-2">
+                    <Input
+                      value={phase.name}
+                      onChange={(event) =>
+                        setPhases((current) =>
+                          current.map((row) =>
+                            row.id === phase.id ? { ...row, name: event.target.value } : row,
+                          ),
+                        )
+                      }
+                      aria-label={`${S.phases} ${index + 1}`}
+                      className="h-8"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setPhases((current) => current.filter((row) => row.id !== phase.id))
+                      }
+                    >
+                      {S.removePhase}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-1"
+                onClick={() =>
+                  setPhases((current) => [...current, { id: nextPhaseId.current++, name: "" }])
+                }
+              >
+                {S.addPhase}
+              </Button>
             </div>
           </div>
-          <div>
-            <span className="mb-1 block text-sm font-medium">{S.phases}</span>
-            <ul className="space-y-1">
-              {phases.map((phase, index) => (
-                <li key={phase.id} className="flex items-center gap-2">
-                  <Input
-                    value={phase.name}
-                    onChange={(event) =>
-                      setPhases((current) =>
-                        current.map((row) =>
-                          row.id === phase.id ? { ...row, name: event.target.value } : row,
-                        ),
-                      )
-                    }
-                    aria-label={`${S.phases} ${index + 1}`}
-                    className="h-8"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setPhases((current) => current.filter((row) => row.id !== phase.id))
-                    }
-                  >
-                    {S.removePhase}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-1"
-              onClick={() =>
-                setPhases((current) => [...current, { id: nextPhaseId.current++, name: "" }])
-              }
-            >
-              {S.addPhase}
-            </Button>
-          </div>
-        </div>
+        </DialogBody>
         <DialogFooter>
           <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             {S.cancel}

@@ -3,7 +3,13 @@ import type React from "react";
 import { useState } from "react";
 import { type ConditionRow, ConditionRows } from "@/components/filters/ConditionRows";
 import { type ActionErrorContent, actionErrorContent } from "@/components/shell/actionError";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
 import { mergeLabelOptions } from "@/features/labels/mergeLabelOptions";
 import type { FilterDefinition } from "@/features/saved-filters/schemas";
@@ -141,65 +147,69 @@ export function CreateFilterModal({
     >
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-2xl gap-0 overflow-hidden bg-card p-0"
+        className="max-w-2xl bg-card"
       >
-        <DialogHeader className="border-b px-5 py-3">
+        <DialogHeader>
           <DialogTitle className="text-base font-semibold">{copy.title}</DialogTitle>
         </DialogHeader>
-        <div className="max-h-[70vh] space-y-2 overflow-y-auto px-5 py-4">
-          <AiFilterBox
-            entity="deal"
-            onDefinition={(definition) => {
-              const def = definition as FilterDefinition;
-              setRows(definitionToRows(def));
-              setCombinator(def.combinator ?? "and");
-            }}
+        <DialogBody>
+          <div className="max-h-[70vh] space-y-2 overflow-y-auto px-5 py-4">
+            <AiFilterBox
+              entity="deal"
+              onDefinition={(definition) => {
+                const def = definition as FilterDefinition;
+                setRows(definitionToRows(def));
+                setCombinator(def.combinator ?? "and");
+              }}
+            />
+            {copy.note !== null ? (
+              <p className="text-sm text-muted-foreground">{copy.note}</p>
+            ) : null}
+            <ConditionRows
+              fields={fields}
+              opLabels={OP_LABELS}
+              rows={rows}
+              onRowsChange={(next) => {
+                setRows(next);
+                // The rejected conditions are gone; keeping the old message would misread as current.
+                setSaveError(null);
+              }}
+              combinator={combinator}
+              onCombinatorChange={setCombinator}
+            />
+            {issue !== null ? <p className="text-sm text-destructive">{issue}</p> : null}
+            {saveError !== null ? (
+              <div className="text-sm text-destructive">
+                <p className="font-medium">{saveError.title}</p>
+                <p>{saveError.body}</p>
+              </div>
+            ) : null}
+            <CreateFilterModalNameRow
+              name={effectiveName}
+              onNameChange={(next) => {
+                setNameEdited(true);
+                setName(next);
+              }}
+              isShared={isShared}
+              onSharedChange={setIsShared}
+            />
+          </div>
+          <CreateFilterModalFooter
+            disabled={issue !== null || saving}
+            onPreview={onPreview === undefined ? undefined : () => onPreview(buildDefinition())}
+            onCancel={onClose}
+            onApply={
+              onApply === undefined
+                ? undefined
+                : () => {
+                    onApply(buildDefinition());
+                    onClose();
+                  }
+            }
+            onSave={() => void save()}
+            saveLabel={copy.saveLabel}
           />
-          {copy.note !== null ? <p className="text-sm text-muted-foreground">{copy.note}</p> : null}
-          <ConditionRows
-            fields={fields}
-            opLabels={OP_LABELS}
-            rows={rows}
-            onRowsChange={(next) => {
-              setRows(next);
-              // The rejected conditions are gone; keeping the old message would misread as current.
-              setSaveError(null);
-            }}
-            combinator={combinator}
-            onCombinatorChange={setCombinator}
-          />
-          {issue !== null ? <p className="text-sm text-destructive">{issue}</p> : null}
-          {saveError !== null ? (
-            <div className="text-sm text-destructive">
-              <p className="font-medium">{saveError.title}</p>
-              <p>{saveError.body}</p>
-            </div>
-          ) : null}
-          <CreateFilterModalNameRow
-            name={effectiveName}
-            onNameChange={(next) => {
-              setNameEdited(true);
-              setName(next);
-            }}
-            isShared={isShared}
-            onSharedChange={setIsShared}
-          />
-        </div>
-        <CreateFilterModalFooter
-          disabled={issue !== null || saving}
-          onPreview={onPreview === undefined ? undefined : () => onPreview(buildDefinition())}
-          onCancel={onClose}
-          onApply={
-            onApply === undefined
-              ? undefined
-              : () => {
-                  onApply(buildDefinition());
-                  onClose();
-                }
-          }
-          onSave={() => void save()}
-          saveLabel={copy.saveLabel}
-        />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );
