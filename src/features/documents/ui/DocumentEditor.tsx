@@ -1,5 +1,6 @@
 "use client";
 
+import { Ellipsis } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -8,6 +9,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
@@ -225,18 +233,46 @@ export function DocumentEditor({
   const previewTitle = draft ? title : document.title;
   const previewBody = renderDocumentBody(draft ? body : document.body, document);
 
+  const PAPER_PANEL_CLASS = "hidden rounded-md border bg-white p-4 text-neutral-900 xl:block"; // design-ok: paper panel
+
+  const previewDocument = {
+    kind: document.kind,
+    number: document.number,
+    title: previewTitle,
+    body: previewBody,
+    currency: document.currency,
+    subtotal: document.subtotal,
+    tax: document.tax,
+    total: document.total,
+    status: document.status,
+    customerName: draft ? (customerName === "" ? null : customerName) : document.customerName,
+    customerAddress: draft
+      ? customerAddress === ""
+        ? null
+        : customerAddress
+      : document.customerAddress,
+    issueDate: document.issueDate,
+    validUntil: draft ? validUntil : document.validUntil,
+    dueDate: draft ? dueDate : document.dueDate,
+    paidAt: document.paidAt,
+    outstanding: document.outstanding,
+    lines: document.lines,
+    company,
+    paymentInstructions,
+    footer,
+  };
+
   return (
     <div className="mx-auto max-w-[1200px] space-y-6" data-testid="document-editor">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-meta font-semibold text-muted-foreground">
-            {isInvoice ? "Invoice" : "Quote"}
-          </p>
-          <h1 className="truncate text-title">{previewTitle}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <h1 className="truncate text-title">{previewTitle}</h1>
             <Badge variant={statusVariant(document.status)} data-testid="document-status">
               {STATUS_LABEL[document.status]}
             </Badge>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {document.number ?? S.statusDraft}
             </span>
@@ -251,215 +287,266 @@ export function DocumentEditor({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2" data-print-hide>
-          {draft && canIssue && (
-            <Button
-              type="button"
-              size="sm"
-              data-testid="document-issue"
-              disabled={pending}
-              onClick={() => void issue("issue")}
-            >
-              {S.issue}
-            </Button>
+          {draft ? (
+            <>
+              {/* 6.7.5: Send is the one filled action for a draft. */}
+              <Button
+                type="button"
+                size="sm"
+                data-testid="document-send"
+                disabled={pending}
+                onClick={() => setSendOpen(true)}
+              >
+                {S.send}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="document-save-draft"
+                disabled={pending}
+                onClick={() => void saveDraft()}
+              >
+                {S.saveDraft}
+              </Button>
+              {canIssue && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid="document-issue"
+                  disabled={pending}
+                  onClick={() => void issue("issue")}
+                >
+                  {S.issue}
+                </Button>
+              )}
+              {canMarkSent && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid="document-mark-sent"
+                  disabled={pending}
+                  onClick={() => void issue("markSent")}
+                >
+                  {S.markSent}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="document-copy-link"
+                data-public-url={document.publicUrl}
+                disabled={pending}
+                onClick={() => void copyLink()}
+              >
+                {copied ? S.copied : S.copyLink}
+              </Button>
+              <Link
+                href={`/documents/${document.id}/print`}
+                target="_blank"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                {S.printPreview}
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button type="button" variant="ghost" size="sm" aria-label="More actions">
+                    <Ellipsis aria-hidden="true" className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    data-testid="document-delete-draft"
+                    className="text-destructive focus:text-destructive"
+                    onSelect={() => setDeleteOpen(true)}
+                  >
+                    {S.deleteDraft}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                data-testid="document-send"
+                disabled={pending}
+                onClick={() => setSendOpen(true)}
+              >
+                {S.sendAgain}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="document-copy-link"
+                data-public-url={document.publicUrl}
+                disabled={pending}
+                onClick={() => void copyLink()}
+              >
+                {copied ? S.copied : S.copyLink}
+              </Button>
+              {document.status === "accepted" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid="document-create-invoice"
+                  disabled={pending}
+                  onClick={() => void createInvoice()}
+                >
+                  {S.createInvoice}
+                </Button>
+              )}
+              {canPay && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid="document-record-payment"
+                  disabled={pending}
+                  onClick={() => setPaymentOpen(true)}
+                >
+                  {S.recordPayment}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => void duplicate()}
+              >
+                {S.duplicate}
+              </Button>
+              <Link
+                href={`/documents/${document.id}/print`}
+                target="_blank"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                {S.printPreview}
+              </Link>
+              {canVoid && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" variant="ghost" size="sm" aria-label="More actions">
+                      <Ellipsis aria-hidden="true" className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      data-testid="document-void"
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => setVoidOpen(true)}
+                    >
+                      {S.voidInvoice}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
           )}
-          {draft && canMarkSent && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-testid="document-mark-sent"
-              disabled={pending}
-              onClick={() => void issue("markSent")}
-            >
-              {S.markSent}
-            </Button>
-          )}
-          {!draft && (
-            <Button
-              type="button"
-              size="sm"
-              data-testid="document-send"
-              disabled={pending}
-              onClick={() => setSendOpen(true)}
-            >
-              {S.sendAgain}
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            data-testid="document-copy-link"
-            data-public-url={document.publicUrl}
-            disabled={pending}
-            onClick={() => void copyLink()}
-          >
-            {copied ? S.copied : S.copyLink}
-          </Button>
-          {document.status === "accepted" && (
-            <Button
-              type="button"
-              size="sm"
-              data-testid="document-create-invoice"
-              disabled={pending}
-              onClick={() => void createInvoice()}
-            >
-              {S.createInvoice}
-            </Button>
-          )}
-          {canPay && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-testid="document-record-payment"
-              disabled={pending}
-              onClick={() => setPaymentOpen(true)}
-            >
-              {S.recordPayment}
-            </Button>
-          )}
-          {canVoid && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              data-testid="document-void"
-              disabled={pending}
-              onClick={() => setVoidOpen(true)}
-            >
-              {S.voidInvoice}
-            </Button>
-          )}
-          {!draft && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => void duplicate()}
-            >
-              {S.duplicate}
-            </Button>
-          )}
-          {draft && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => setDeleteOpen(true)}
-            >
-              {S.deleteDraft}
-            </Button>
-          )}
-          <Link
-            href={`/documents/${document.id}/print`}
-            target="_blank"
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            {S.printPreview}
-          </Link>
         </div>
       </header>
 
       {draft && (
         <section className="rounded-lg border bg-card p-4" data-print-hide>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block sm:col-span-2" htmlFor="document-title">
-              <span className="mb-1.5 block text-sm font-medium">{S.documentTitle}</span>
-              <Input
-                id="document-title"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-            {!isInvoice && (
-              <div className="block">
-                <span className="mb-1.5 block text-sm font-medium">{S.validUntil}</span>
-                <DatePicker
-                  value={validUntil}
-                  onChange={setValidUntil}
-                  ariaLabel={S.validUntil}
-                  placeholder={S.validUntil}
-                />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <div className="space-y-4">
+              <FormGrid columns={2}>
+                <FormField label={S.documentTitle} htmlFor="document-title" span="full">
+                  <Input
+                    id="document-title"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    disabled={pending}
+                  />
+                </FormField>
+                {!isInvoice && (
+                  <FormField label={S.validUntil}>
+                    <DatePicker
+                      value={validUntil}
+                      onChange={setValidUntil}
+                      ariaLabel={S.validUntil}
+                      placeholder={S.validUntil}
+                    />
+                  </FormField>
+                )}
+                {isInvoice && (
+                  <FormField label={S.dueDate}>
+                    <DatePicker
+                      value={dueDate}
+                      onChange={setDueDate}
+                      ariaLabel={S.dueDate}
+                      placeholder={S.dueDate}
+                    />
+                  </FormField>
+                )}
+                <FormField label={S.customerName} htmlFor="document-customer-name">
+                  <Input
+                    id="document-customer-name"
+                    value={customerName}
+                    onChange={(event) => setCustomerName(event.target.value)}
+                    disabled={pending}
+                  />
+                </FormField>
+                <FormField label={S.customerEmail} htmlFor="document-customer-email">
+                  <Input
+                    id="document-customer-email"
+                    type="email"
+                    value={customerEmail}
+                    onChange={(event) => setCustomerEmail(event.target.value)}
+                    disabled={pending}
+                  />
+                </FormField>
+                <FormField
+                  label={S.customerAddress}
+                  htmlFor="document-customer-address"
+                  span="full"
+                >
+                  <Textarea
+                    id="document-customer-address"
+                    value={customerAddress}
+                    onChange={(event) => setCustomerAddress(event.target.value)}
+                    disabled={pending}
+                  />
+                </FormField>
+                <FormField
+                  label="Template text"
+                  htmlFor="document-body"
+                  hint="Use {{variables}} from the list. The preview updates as you type."
+                  span="full"
+                >
+                  <Textarea
+                    id="document-body"
+                    className="min-h-48 font-mono text-xs"
+                    value={body}
+                    onChange={(event) => setBody(event.target.value)}
+                    disabled={pending}
+                  />
+                </FormField>
+              </FormGrid>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={pending}
+                  onClick={() => void refreshLines()}
+                >
+                  {S.refreshFromDeal}
+                </Button>
+                {saved && <span className="text-sm text-muted-foreground">{S.saved}</span>}
               </div>
-            )}
-            {isInvoice && (
-              <div className="block">
-                <span className="mb-1.5 block text-sm font-medium">{S.dueDate}</span>
-                <DatePicker
-                  value={dueDate}
-                  onChange={setDueDate}
-                  ariaLabel={S.dueDate}
-                  placeholder={S.dueDate}
-                />
-              </div>
-            )}
-            <label className="block" htmlFor="document-customer-name">
-              <span className="mb-1.5 block text-sm font-medium">{S.customerName}</span>
-              <Input
-                id="document-customer-name"
-                value={customerName}
-                onChange={(event) => setCustomerName(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-            <label className="block" htmlFor="document-customer-email">
-              <span className="mb-1.5 block text-sm font-medium">{S.customerEmail}</span>
-              <Input
-                id="document-customer-email"
-                type="email"
-                value={customerEmail}
-                onChange={(event) => setCustomerEmail(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-            <label className="block sm:col-span-2" htmlFor="document-customer-address">
-              <span className="mb-1.5 block text-sm font-medium">{S.customerAddress}</span>
-              <Textarea
-                id="document-customer-address"
-                value={customerAddress}
-                onChange={(event) => setCustomerAddress(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-            <label className="block sm:col-span-2" htmlFor="document-body">
-              <span className="mb-1.5 block text-sm font-medium">{S.body}</span>
-              <Textarea
-                id="document-body"
-                className="min-h-48 font-mono text-xs"
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                disabled={pending}
-              />
-            </label>
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => void refreshLines()}
-            >
-              {S.refreshFromDeal}
-            </Button>
-            <Button type="button" size="sm" disabled={pending} onClick={() => void saveDraft()}>
-              {S.saveDraft}
-            </Button>
-            {saved && <span className="text-sm text-muted-foreground">{S.saved}</span>}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              data-testid="document-send"
-              disabled={pending}
-              onClick={() => setSendOpen(true)}
-            >
-              {S.send}
-            </Button>
+            </div>
+            {/* 6.7.5: the same renderer as Print preview, on paper in both themes. */}
+            <div className={PAPER_PANEL_CLASS}>
+              <DocumentView document={previewDocument} />
+            </div>
           </div>
         </section>
       )}
@@ -527,39 +614,8 @@ export function DocumentEditor({
         </p>
       )}
 
-      <div className="rounded-lg bg-canvas-subtle p-6">
-        <DocumentView
-          document={{
-            kind: document.kind,
-            number: document.number,
-            title: previewTitle,
-            body: previewBody,
-            currency: document.currency,
-            subtotal: document.subtotal,
-            tax: document.tax,
-            total: document.total,
-            status: document.status,
-            customerName: draft
-              ? customerName === ""
-                ? null
-                : customerName
-              : document.customerName,
-            customerAddress: draft
-              ? customerAddress === ""
-                ? null
-                : customerAddress
-              : document.customerAddress,
-            issueDate: document.issueDate,
-            validUntil: draft ? validUntil : document.validUntil,
-            dueDate: draft ? dueDate : document.dueDate,
-            paidAt: document.paidAt,
-            outstanding: document.outstanding,
-            lines: document.lines,
-            company,
-            paymentInstructions,
-            footer,
-          }}
-        />
+      <div className="rounded-lg bg-canvas-subtle p-6 xl:hidden">
+        <DocumentView document={previewDocument} />
       </div>
 
       <SendDialog

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-10-23 03:20
+Current: 3.6 · Last updated: 2026-10-23 03:25
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -30,7 +30,7 @@ Current: 3.5 · Last updated: 2026-10-23 03:20
 - [x] 3.2 Board column header and card score (U16, U17)
 - [x] 3.3 Forecast header and calendar (U18, U19)
 - [x] 3.4 Stage track, person and organization records (U20, U27)
-- [ ] 3.5 Document editor (U21)
+- [x] 3.5 Document editor (U21)
 - [ ] 3.6 Inbox list and thread reader (U22, U23)
 - [ ] 3.7 Leads, dashboard, Insights index and projects (U24, U25, U26, U28)
 - [ ] 3.8 Phase 3 QA gate
@@ -143,6 +143,10 @@ Current: 3.5 · Last updated: 2026-10-23 03:20
 - 3.4: the stage track shows `{n} day(s)` only on passed and current segments; every segment's tooltip is `{stage name} · {n} day(s)`, and the aria-label keeps the count on future stages for screen readers.
 - 3.4: person and organization detail rows use `ContactFieldRow` (the shared `FieldRow` with the 6.7.4 left alignment): a `grid-cols-[120px_1fr]` label/value grid with `text-meta` muted labels and `text-sm` values. The deal sidebar keeps its Part 11 right-aligned rows. The contact header already had the record name as its H1 with labels under it and the followers pill plus overflow menu on the right, so it needed no restructuring. Numeric detail fields stay editable text while editing; the feature's typed fields use the 6.5 helpers where they render values.
 - 3.4: changed test: `StageTrack.test` asserts a future segment has no visible text while its accessible name keeps the day count.
+
+- 3.5: the document header has one filled primary (draft "Send", issued "Send again") and the rest as outlined secondaries (Save draft, Issue, Mark as sent, Copy link, Print preview, Create invoice, Duplicate, Record payment); Delete draft and Void moved into an overflow menu (both still open their existing confirm dialogs). Every Part 8 button name and test id is unchanged. The duplicate "Quote"/"Invoice" eyebrow is gone and the status badge sits beside the H1.
+- 3.5: the fields are a `FormGrid columns={2}` with Title and Customer address full-span, and the raw template is a `FormField` "Template text" (monospace, hint "Use {{variables}} from the list. The preview updates as you type."). At 1280 px and wider the draft section is two panes: the fields/actions on the left and the same `DocumentView` renderer as Print preview on a white paper panel on the right (the below-xl preview is hidden so there is only one preview in view). The section footer no longer repeats Save draft or Send.
+- 3.5: the white paper panel uses `bg-white text-neutral-900` with the `design-ok: paper panel` opt-out 6.7.5 asks for; it is one of the part's allowed opt-outs.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
