@@ -201,6 +201,7 @@ export const ERROR_IDS = {
   AI_ACTION_NOT_FOUND: "E_AI_009", // pending action missing, decided, or owned by another user
   AI_TOOL_FAILED: "E_AI_010", // confirmed write tool returned an error
   AI_RATE_LIMITED: "E_AI_011", // more than 20 AI requests per minute for this user
+  AI_EMPTY_OR_TRUNCATED: "E_AI_012", // empty reply, or finishReason "length" (reasoning ate the budget)
 
   // MAIL (system mail)
   MAIL_SEND_FAILED: "E_MAIL_001", // SMTP send rejected or failed

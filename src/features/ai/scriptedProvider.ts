@@ -34,6 +34,7 @@ export class ScriptedAiProvider implements AiProvider {
         toolCalls: next.toolCalls ?? [],
         usage: next.usage ?? { promptTokens: 100, completionTokens: 50 },
         model: next.model ?? "test/model",
+        finishReason: next.finishReason ?? null,
       }),
     );
   }

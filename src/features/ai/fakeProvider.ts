@@ -181,6 +181,7 @@ export function fakeProvider(): AiProvider {
           toolCalls,
           usage: { promptTokens: 10, completionTokens: 5 },
           model: "fake/dealflow",
+          finishReason: "stop",
         },
       });
     },

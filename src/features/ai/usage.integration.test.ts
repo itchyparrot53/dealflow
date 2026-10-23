@@ -152,6 +152,7 @@ describe("getUsage and recordAiUsage", () => {
           toolCalls: [],
           usage: { promptTokens: 12, completionTokens: 3 },
           model: "test/model",
+          finishReason: "stop",
         },
       },
       SIG(),

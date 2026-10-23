@@ -7,7 +7,10 @@ const MESSAGES: Record<string, string> = {
   [ERROR_IDS.AI_DISABLED]: "AI is turned off for this company.",
   [ERROR_IDS.AI_COMPANY_LIMIT]: "The company has used its AI allowance for this month.",
   [ERROR_IDS.AI_USER_LIMIT]: "You have used your AI allowance for this month.",
-  [ERROR_IDS.AI_BAD_OUTPUT]: "The AI reply could not be understood. Try again.",
+  [ERROR_IDS.AI_BAD_OUTPUT]:
+    "The AI couldn't finish that reply. Try again, or shorten your request.",
+  [ERROR_IDS.AI_EMPTY_OR_TRUNCATED]:
+    "The AI couldn't finish that reply. Try again, or shorten your request.",
   [ERROR_IDS.AI_PROVIDER_FAILED]: "The AI service did not answer. Try again in a minute.",
   [ERROR_IDS.AI_RATE_LIMITED]: "Too many AI requests. Wait a minute and try again.",
 };

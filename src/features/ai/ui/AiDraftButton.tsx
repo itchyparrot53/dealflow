@@ -100,9 +100,21 @@ export function AiDraftButton({
           />
         </div>
         {errorId !== null && (
-          <p data-testid="ai-draft-error" className="text-sm text-destructive">
-            {aiErrorMessage(errorId)}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <p data-testid="ai-draft-error" className="text-sm text-destructive">
+              {aiErrorMessage(errorId)}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="ai-draft-retry"
+              onClick={() => void draft()}
+              disabled={pending || instruction.trim() === ""}
+            >
+              Try again
+            </Button>
+          </div>
         )}
         <div className="flex justify-end">
           <Button

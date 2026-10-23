@@ -63,9 +63,21 @@ export function AiFilterBox({ entity, onDefinition }: Props): React.ReactNode {
         </p>
       )}
       {errorId !== null && (
-        <p data-testid="ai-filter-error" className="text-sm text-destructive">
-          {aiErrorMessage(errorId)}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p data-testid="ai-filter-error" className="text-sm text-destructive">
+            {aiErrorMessage(errorId)}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="ai-filter-retry"
+            onClick={() => void generate()}
+            disabled={pending || text.trim() === ""}
+          >
+            Try again
+          </Button>
+        </div>
       )}
       <div className="flex justify-end">
         <Button

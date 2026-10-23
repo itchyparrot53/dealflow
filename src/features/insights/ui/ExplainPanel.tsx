@@ -58,9 +58,21 @@ export function ExplainPanel({
           <SheetTitle className="mb-4 text-lg font-medium">{S.ui.explain}</SheetTitle>
           {loading && <p className="text-sm text-muted-foreground">{S.ui.explaining}</p>}
           {failed && (
-            <p role="alert" className="text-sm text-destructive">
-              {S.errors.explainUnavailable}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <p role="alert" className="text-sm text-destructive">
+                {S.errors.explainUnavailable}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="report-explain-retry"
+                onClick={() => void launch()}
+                disabled={loading}
+              >
+                Try again
+              </Button>
+            </div>
           )}
           {insights.length > 0 && (
             <>

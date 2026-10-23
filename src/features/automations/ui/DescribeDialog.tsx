@@ -77,7 +77,21 @@ export function DescribeDialog({
             placeholder="When a deal is won, create a follow-up call tomorrow"
             data-testid="automation-describe-input"
           />
-          {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
+          {error === null ? null : (
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="automation-describe-retry"
+                onClick={() => void draft()}
+                disabled={busy}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {S.actions.close}

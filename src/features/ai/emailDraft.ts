@@ -185,7 +185,7 @@ export async function draftEmail(
       system: emailDraftPrompt(actor.name, companyName, input.tone),
       user,
       schema: draftSchema,
-      maxTokens: 800,
+      maxTokens: 1500,
     },
     signal,
   );

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.6 · Last updated: 2026-10-23 02:40
+Current: 1.7 · Last updated: 2026-10-23 02:41
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -16,7 +16,7 @@ Current: 1.6 · Last updated: 2026-10-23 02:40
 - [x] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
 - [x] 1.4 Number and money formatting (U10)
 - [x] 1.5 Tables, empty states and the bell badge (U29, U30)
-- [ ] 1.6 AI JSON reliability and the humane error (U7)
+- [x] 1.6 AI JSON reliability and the humane error (U7)
 - [ ] 1.7 Phase 1 QA gate
 - [ ] 2.1 Expandable rail with labels (U4)
 - [ ] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
@@ -87,6 +87,13 @@ Current: 1.6 · Last updated: 2026-10-23 02:40
 - 1.5: empty table cells use `EmptyCell` in the activities table, the leads value cell and the participants dialog; read-only detail rows keep the field-row/muted convention that Task 3.4's grid finishes.
 - 1.5: the notification badge reads `9+` above nine through `notificationBadgeText`, is a 16 px minimum circle at `text-[10px] font-semibold` with the `design-ok: badge digit` opt-out, and sits at `-right-1 -top-1` so it cannot cover the bell's centre.
 - 1.5: changed test: `ActivitiesTable` now sees two "+ Activity" buttons (toolbar and empty state) when the view is empty; it asserts both and clicks the toolbar one, which is the same action.
+
+- 1.6: `extractJson` (new `src/features/ai/extractJson.ts`) parses bare JSON, then a fenced block anywhere in the reply, then the first object to its matching brace with braces inside strings skipped; it never evaluates the text. `chatJson` uses it and treats `finishReason: "length"` or an empty reply as the new `E_AI_012`, then retries once with the token budget doubled (capped at 4000) and the JSON-only nudge; a schema mismatch keeps the existing single retry.
+- 1.6: the plan suggested `E_AI_014` but asked for the next free id; `errorIds.ts` was at `E_AI_011`, so the truncation error is `E_AI_012` (`AI_EMPTY_OR_TRUNCATED`).
+- 1.6: `AiChatResult.finishReason` is filled by the OpenRouter provider from `choice.finish_reason` (fake reports "stop", the scripted provider takes it from its queued item). JSON requests send OpenRouter's `reasoning: { effort: "low", exclude: true }`, and a JSON reply that is empty or cut off logs `{ feature, finishReason, contentLength }` at `warn`, never the content. `emailDraft` defaults to `maxTokens: 1500`.
+- 1.6: there is no logger module in this repo, so the provider's metadata-only failure uses `console.warn` (the lint-allowed warn channel); the feature travels on `AiChatRequest.feature` so the log line names it.
+- 1.6: the five AI surfaces (email draft, AI filter, notes to activities, automation describe, report explain) show "The AI couldn't finish that reply. Try again, or shorten your request." (explain keeps its specific line) and a "Try again" button that resubmits the same input.
+- 1.6: changed tests: the `chatJson` suite gains prose-wrapped JSON, the doubled-budget retry, the two-truncation `E_AI_012` failure, the schema-mismatch retry and the feature passthrough; the usage integration literal gained `finishReason`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

@@ -47,6 +47,7 @@ export function NotesToActivitiesDialog({
   const [dealId, setDealId] = useState<string | null>(null);
   const [pending, setPending] = useState(true);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const types = trpc.activities.listTypes.useQuery().data ?? [];
   const utils = trpc.useUtils();
 
@@ -70,7 +71,7 @@ export function NotesToActivitiesDialog({
     return () => {
       cancelled.current = true;
     };
-  }, [noteId]);
+  }, [noteId, retryKey]);
 
   function update(index: number, patch: Partial<Row>): void {
     setRows((current) =>
@@ -179,9 +180,24 @@ export function NotesToActivitiesDialog({
           )}
 
           {errorId !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {aiErrorMessage(errorId)}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <p role="alert" className="text-sm text-destructive">
+                {aiErrorMessage(errorId)}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="ai-proposals-retry"
+                onClick={() => {
+                  setErrorId(null);
+                  setPending(true);
+                  setRetryKey((key) => key + 1);
+                }}
+              >
+                Try again
+              </Button>
+            </div>
           )}
         </DialogBody>
 

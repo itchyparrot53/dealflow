@@ -31,6 +31,8 @@ export interface AiChatRequest {
   json?: boolean;
   maxTokens?: number;
   temperature?: number;
+  // Which feature is calling, for the provider's metadata-only JSON failure log.
+  feature?: AiFeature;
 }
 
 export interface AiChatResult {
@@ -38,6 +40,9 @@ export interface AiChatResult {
   toolCalls: AiToolCall[];
   usage: { promptTokens: number; completionTokens: number };
   model: string;
+  // "stop", "length", "tool_calls", ... Straight from the provider; "length" means the token
+  // budget ran out, which is what a reasoning model does when it never reaches the JSON.
+  finishReason: string | null;
 }
 
 export interface AiProvider {
