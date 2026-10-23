@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
-STATUS: IN PROGRESS
-Current: 4.6 · Last updated: 2026-10-23 15:30
+STATUS: COMPLETE
+Current: 4.6 / COMPLETE · Last updated: 2026-10-23 15:40
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -31,7 +31,7 @@ Current: 4.6 · Last updated: 2026-10-23 15:30
 - [x] 4.3 End-to-end, integration suite and smoke
 - [x] 4.4 Independent review
 - [x] 4.5 Final checklist
-- [ ] 4.6 Final report and completion
+- [x] 4.6 Final report and completion
 
 ## QA log
 - Independent review (4.4): QA RESULT: FAIL, 1 blocker (documents/automations were wrapped before sendEmail, whose sanitizer stripped the marker and tables, then wrapped again), 3 majors (subject lost the number until issue, weak e2e assertions, missing reply/automation wrap tests), 12 minors. All were fixed or answered in the 4.4 Decisions; the fixed tree was re-verified.
@@ -142,5 +142,58 @@ Current: 4.6 · Last updated: 2026-10-23 15:30
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 - Document PDFs: `DOCS_CHROME=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome pnpm docs:pdf` if the default browser path is not found.
 
-## Final report
-(written in Task 4.5)
+## Final report back
+
+**Shipped.** One branded, email-safe renderer now builds every outbound email. Ten registry keys (five product, five customer) resolve editable copy and variables; the company design (logo, accent, address, footer, layouts) lives in Settings › Email design with a Branding tab and a Templates tab. System senders, documents, automations, booking and the composer all go through it; a customer email is wrapped exactly once, after tracking and the signature, so the stored copy is the wire copy. A hash-addressed logo route serves uploaded logos, a 90 KB guard protects the layout, and the composer exposes a Layout pick and a scriptless Preview iframe. Docs, 26 gallery screenshots and a six-test e2e spec cover the part.
+
+**Verification (final tree).**
+
+| Check | Result |
+|---|---|
+| `pnpm typecheck` | 0 errors |
+| `pnpm lint` | 0 errors, 16 pre-existing warnings |
+| `pnpm build` | compiled successfully |
+| `pnpm test:unit` | 5485/5485 in 861 files |
+| `pnpm test:integration` | 2107/2107 in 415 files |
+| `pnpm e2e` (00 to 17) | 66/66 |
+| `pnpm smoke` | SMOKE PASS, `backup round trip ok (3 deals)` |
+| `pnpm check:design` | 0 violations, 17 opt-outs |
+| `pnpm email:gallery` | 13 emails, 26 PNGs, every HTML at most 5,049 bytes |
+| Independent review | first pass FAIL; blocker, 3 majors and 12 minors fixed; final tree re-verified |
+
+**Task commits.**
+
+```
+44fae0e 0.1: Start Part 13: progress files, kit, baseline and environment
+8ec54f5 0.2: Outbound email inventory
+a6c9c79 0.3: Phase 0 QA gate
+c2448a3 1.1: Variables and escaping
+8ace7e3 1.2: The layout renderer
+1e23c21 1.3: Data model, design service, logo and the public route
+7da8993 1.4: Registry, overrides and sendSystemEmail
+64a3cf2 1.5: Phase 1 QA gate
+0be1f34 2.1: Product emails migrated
+74d7261 2.2: Customer email wrapping in the send path, automations and booking
+d78e2af 2.3: Quote and invoice emails
+949d4dc 2.4: Phase 2 QA gate
+1e1dabd 3.1: Settings › Email design: Branding tab
+a3725a3 3.2: Templates tab and the template editor
+8402d7d 3.3: Composer layout control and preview
+4583206 3.4: Phase 3 QA gate
+d9d5830 4.1: Email e2e spec and gallery
+6395338 4.2: Docs
+04204e5 4.3: End-to-end, integration suite and smoke
+1ca09de 4.4: Independent review and fixes
+e89fff4 4.5: Final checklist
+4.6: Final report and completion (this commit)
+```
+
+**Owner actions.**
+
+1. Rebuild the live Docker install (`docker compose ... up -d --build`) so migration `0093_dealflow_email_design` and the new renderer are live; the local dev stack was used for verification, `dealflow-prod` was not touched.
+2. In Settings › Email design, upload the real logo (PNG/JPEG, at most 256 KB and 2000 px; the committed 240x60 fixture is only for e2e), set the accent, check both layouts and the address/footer, then Send test to me.
+3. Open Templates and check each customer template; edit the subject/preview/body if wanted, then Send test to me. The quote and invoice dialogs start from those templates and still allow a per-document edit.
+4. Review `e2e/screenshots/email/` (26 PNGs) and the live previews; the gallery is the fastest way to spot spacing or contrast problems.
+5. Set `BASE_URL` for the deployment: logo and public document links in email use it, so a wrong value produces links to the wrong host.
+
+**Residual notes.** The e2e preview test asserts the marker and body parity but not the signature inside the iframe (the wire assertion covers the signature); the reply path's integration coverage is the wrap-level test plus the e2e reply that asserts `customer-minimal`; the unscoped item-10 grep still finds three test fixtures (sanitizer/HTTP bodies), and the item-15 scan flags a PDF byte sequence by chance, not an em dash in a text file.
