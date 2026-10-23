@@ -78,7 +78,6 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
     totalValue,
     weightedValue,
     excludedCount,
-    excludedCurrencies,
     density,
     now,
   } = props;
@@ -138,7 +137,10 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
             data-testid="board-column-weighted"
             className="truncate text-meta text-muted-foreground tabular"
           >
-            {weightedLine}
+            Weighted {formatCurrency(weightedValue, baseCurrency)}
+            {excludedCount > 0 ? (
+              <span data-testid="totals-excluded"> · {excludedCount} excluded</span>
+            ) : null}
           </p>
         </Tip>
       </header>

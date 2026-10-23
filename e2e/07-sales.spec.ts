@@ -7,7 +7,7 @@ test.setTimeout(240_000);
 async function selectEuro(page: Page): Promise<void> {
   // Common currencies lead the add-rate picker, so the first option is EUR (USD is
   // the base and excluded). Enter selects the focused first option.
-  const trigger = page.getByRole("combobox", { name: "Currency", exact: true });
+  const trigger = page.getByRole("button", { name: "Currency", exact: true });
   await trigger.click();
   await page.keyboard.press("Enter");
   await expect(trigger).toContainText("EUR");

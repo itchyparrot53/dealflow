@@ -10,7 +10,7 @@ afterEach(cleanup);
 it("renders a small medium label and a left-aligned value", () => {
   render(<FieldRow label="Value">$10,000</FieldRow>);
   const label = screen.getByText("Value");
-  expect(label.className).toContain("text-xs");
+  expect(label.className).toContain("text-meta");
   expect(label.className).toContain("font-medium");
   expect(label.className).toContain("text-right");
   expect(label.className).toContain("text-muted-foreground");

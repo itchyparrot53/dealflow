@@ -233,7 +233,7 @@ export function DocumentEditor({
   const previewTitle = draft ? title : document.title;
   const previewBody = renderDocumentBody(draft ? body : document.body, document);
 
-  const PAPER_PANEL_CLASS = "hidden rounded-md border bg-white p-4 text-neutral-900 xl:block"; // design-ok: paper panel
+  const PAPER_PANEL_CLASS = "rounded-md border bg-white p-4 text-neutral-900"; // design-ok: paper panel
 
   const previewDocument = {
     kind: document.kind,
@@ -262,6 +262,176 @@ export function DocumentEditor({
     footer,
   };
 
+  // The action hierarchy is its own function so the editor component stays readable (and under
+  // the cognitive-complexity budget).
+  const renderActions = (): React.ReactNode => (
+    <div className="flex flex-wrap items-center gap-2" data-print-hide>
+      {draft ? (
+        <>
+          {/* 6.7.5: Send is the one filled action for a draft. */}
+          <Button
+            type="button"
+            size="sm"
+            data-testid="document-send"
+            disabled={pending}
+            onClick={() => setSendOpen(true)}
+          >
+            {S.send}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="document-save-draft"
+            disabled={pending}
+            onClick={() => void saveDraft()}
+          >
+            {S.saveDraft}
+          </Button>
+          {canIssue && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="document-issue"
+              disabled={pending}
+              onClick={() => void issue("issue")}
+            >
+              {S.issue}
+            </Button>
+          )}
+          {canMarkSent && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="document-mark-sent"
+              disabled={pending}
+              onClick={() => void issue("markSent")}
+            >
+              {S.markSent}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="document-copy-link"
+            data-public-url={document.publicUrl}
+            disabled={pending}
+            onClick={() => void copyLink()}
+          >
+            {copied ? S.copied : S.copyLink}
+          </Button>
+          <Link
+            href={`/documents/${document.id}/print`}
+            target="_blank"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            {S.printPreview}
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" size="sm" aria-label="More actions">
+                <Ellipsis aria-hidden="true" className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                data-testid="document-delete-draft"
+                className="text-destructive focus:text-destructive"
+                onSelect={() => setDeleteOpen(true)}
+              >
+                {S.deleteDraft}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      ) : (
+        <>
+          <Button
+            type="button"
+            size="sm"
+            data-testid="document-send"
+            disabled={pending}
+            onClick={() => setSendOpen(true)}
+          >
+            {S.sendAgain}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="document-copy-link"
+            data-public-url={document.publicUrl}
+            disabled={pending}
+            onClick={() => void copyLink()}
+          >
+            {copied ? S.copied : S.copyLink}
+          </Button>
+          {document.status === "accepted" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="document-create-invoice"
+              disabled={pending}
+              onClick={() => void createInvoice()}
+            >
+              {S.createInvoice}
+            </Button>
+          )}
+          {canPay && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="document-record-payment"
+              disabled={pending}
+              onClick={() => setPaymentOpen(true)}
+            >
+              {S.recordPayment}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() => void duplicate()}
+          >
+            {S.duplicate}
+          </Button>
+          <Link
+            href={`/documents/${document.id}/print`}
+            target="_blank"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            {S.printPreview}
+          </Link>
+          {canVoid && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="ghost" size="sm" aria-label="More actions">
+                  <Ellipsis aria-hidden="true" className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  data-testid="document-void"
+                  className="text-destructive focus:text-destructive"
+                  onSelect={() => setVoidOpen(true)}
+                >
+                  {S.voidInvoice}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </>
+      )}
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-[1200px] space-y-6" data-testid="document-editor">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -286,171 +456,7 @@ export function DocumentEditor({
             )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2" data-print-hide>
-          {draft ? (
-            <>
-              {/* 6.7.5: Send is the one filled action for a draft. */}
-              <Button
-                type="button"
-                size="sm"
-                data-testid="document-send"
-                disabled={pending}
-                onClick={() => setSendOpen(true)}
-              >
-                {S.send}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                data-testid="document-save-draft"
-                disabled={pending}
-                onClick={() => void saveDraft()}
-              >
-                {S.saveDraft}
-              </Button>
-              {canIssue && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-testid="document-issue"
-                  disabled={pending}
-                  onClick={() => void issue("issue")}
-                >
-                  {S.issue}
-                </Button>
-              )}
-              {canMarkSent && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-testid="document-mark-sent"
-                  disabled={pending}
-                  onClick={() => void issue("markSent")}
-                >
-                  {S.markSent}
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                data-testid="document-copy-link"
-                data-public-url={document.publicUrl}
-                disabled={pending}
-                onClick={() => void copyLink()}
-              >
-                {copied ? S.copied : S.copyLink}
-              </Button>
-              <Link
-                href={`/documents/${document.id}/print`}
-                target="_blank"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-              >
-                {S.printPreview}
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button type="button" variant="ghost" size="sm" aria-label="More actions">
-                    <Ellipsis aria-hidden="true" className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    data-testid="document-delete-draft"
-                    className="text-destructive focus:text-destructive"
-                    onSelect={() => setDeleteOpen(true)}
-                  >
-                    {S.deleteDraft}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                data-testid="document-send"
-                disabled={pending}
-                onClick={() => setSendOpen(true)}
-              >
-                {S.sendAgain}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                data-testid="document-copy-link"
-                data-public-url={document.publicUrl}
-                disabled={pending}
-                onClick={() => void copyLink()}
-              >
-                {copied ? S.copied : S.copyLink}
-              </Button>
-              {document.status === "accepted" && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-testid="document-create-invoice"
-                  disabled={pending}
-                  onClick={() => void createInvoice()}
-                >
-                  {S.createInvoice}
-                </Button>
-              )}
-              {canPay && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  data-testid="document-record-payment"
-                  disabled={pending}
-                  onClick={() => setPaymentOpen(true)}
-                >
-                  {S.recordPayment}
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={pending}
-                onClick={() => void duplicate()}
-              >
-                {S.duplicate}
-              </Button>
-              <Link
-                href={`/documents/${document.id}/print`}
-                target="_blank"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-              >
-                {S.printPreview}
-              </Link>
-              {canVoid && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button type="button" variant="ghost" size="sm" aria-label="More actions">
-                      <Ellipsis aria-hidden="true" className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      data-testid="document-void"
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => setVoidOpen(true)}
-                    >
-                      {S.voidInvoice}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
-          )}
-        </div>
+        {renderActions()}
       </header>
 
       {draft && (
@@ -614,9 +620,11 @@ export function DocumentEditor({
         </p>
       )}
 
-      <div className="rounded-lg bg-canvas-subtle p-6 xl:hidden">
-        <DocumentView document={previewDocument} />
-      </div>
+      {draft ? null : (
+        <div className="rounded-lg bg-canvas-subtle p-6">
+          <DocumentView document={previewDocument} />
+        </div>
+      )}
 
       <SendDialog
         open={sendOpen}

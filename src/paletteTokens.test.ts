@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 
 const SRC_DIR = fileURLToPath(new URL("./", import.meta.url));
 
-// The rail now uses the rail tokens, so no file needs a fixed-palette exemption. Part 11 removed
-// the last one (components/shell/LeftNav.tsx) rather than widening the allow-list.
+// Paper surfaces are the one deliberate exception: email HTML and the document preview assume a
+// white sheet, so those two files may set the dark ink that reads on paper (PLAN-PART12.md 6.7.5
+// and 6.7.6, each also opted out in check-design). No other file gets a fixed-palette exemption;
+// Part 11 removed the last general one (components/shell/LeftNav.tsx).
 
 // A fixed gray-family step that does not follow the theme, captured with its whole variant chain
 // so a `dark:` anywhere in that chain reads as the deliberate escape hatch.
@@ -29,8 +31,16 @@ function relative(path: string): string {
   return path.replace(SRC_DIR, "");
 }
 
+const PAPER_PANEL_FILES = new Set([
+  "features/documents/ui/DocumentEditor.tsx",
+  "features/email/MessageBodyFrame.tsx",
+]);
+
 function offenders(path: string): string[] {
-  return lightOnly(readFileSync(path, "utf8"));
+  const found = lightOnly(readFileSync(path, "utf8"));
+  if (!PAPER_PANEL_FILES.has(relative(path))) return found;
+  // Only the paper ink is excused; any other palette step in these files still fails.
+  return found.filter((cls) => !cls.endsWith("text-neutral-900"));
 }
 
 describe("theme palette tokens", () => {

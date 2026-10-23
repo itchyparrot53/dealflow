@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.8 · Last updated: 2026-10-23 03:30
+Current: 4.1 · Last updated: 2026-10-23 04:02
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
 - Phase 1: d6cd01e746f13095fa09b221f12d140414296ae6
 - Phase 2: fae8ad915127f39b5171ed80a91cb599d659f9eb
 - Phase 3: d041757a05254e742125e808c24449bf1a434c43
+- Phase 4: 450f88df3a3ae208281520af063b13f200603bf8
 
 ## Tasks
 - [x] 0.1 Start Part 12: progress files, kit, baseline and environment
@@ -33,7 +34,7 @@ Current: 3.8 · Last updated: 2026-10-23 03:30
 - [x] 3.5 Document editor (U21)
 - [x] 3.6 Inbox list and thread reader (U22, U23)
 - [x] 3.7 Leads, dashboard, Insights index and projects (U24, U25, U26, U28)
-- [ ] 3.8 Phase 3 QA gate
+- [x] 3.8 Phase 3 QA gate
 - [ ] 4.1 User guide update and PDFs
 - [ ] 4.2 End-to-end and gallery
 - [ ] 4.3 Integration suite and smoke
@@ -43,6 +44,7 @@ Current: 3.8 · Last updated: 2026-10-23 03:30
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
+- Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5428/5428 · check:design 0 violations, 17 opt-outs · polish subset "forecast|calendar|board header" 3/3 · specs 06, 07, 08, 11, 12 pass
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5409/5409 · check:design 0 violations, 14 opt-outs · polish subset "rail|hidden ui|headings|settings scroll" 4/4 · specs 14 and 15 27/27
 - Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5392/5392 · check:design 0 violations, 13 opt-outs · polish subset "dialog anatomy|long list" 2/2 · AI integration 26/26 in 4 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5356/5356 in 843 files · check:design 9 violation(s) in 7 file(s): dialog-anatomy 4 (the two primitive margins and two headerless dialogs), select-long-list 5, 12 opt-outs, and no other rule reports · check:progress ok
@@ -156,6 +158,8 @@ Current: 3.8 · Last updated: 2026-10-23 03:30
 - 3.7: the dashboard name is an inline-editable H1 (click or pencil, Enter/blur saves through the existing action, Escape cancels); the toolbar's right side holds the labelled Shared switch, "Add widget" (secondary) and "Save" (primary, disabled until dirty); widget cards are 320 px tall with a 14/600 title row and the overflow menu, and chart axes use the 6.5 compact formatters.
 - 3.7: the Insights index is a Name/Type/Owner/Shared/Updated table under the existing Dashboards/Reports tabs and EmptyState; projects keep their 6.6 toolbar, the project-page date pickers read "Not set" and the status select is `w-40`.
 - 3.7: one stale test assertion from 3.4 (`LeadSidebar` label size `text-xs` to `text-meta`) was corrected; no assertion was weakened.
+
+- 3.8: gate fixes: the inbox row's hidden sr-only open button was removed (a text click now lands on the subject button, and a hidden 1x1 button was intercepting `getByText`), the board's weighted line carries `data-testid="totals-excluded"` again, the document preview renders once (the draft preview is the two-pane cell, so `document-number` is unique), e2e 07 opens the currency Combobox by its button role, and the palette guard allows the two documented paper panels' `text-neutral-900` only.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

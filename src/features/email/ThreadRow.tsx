@@ -117,18 +117,6 @@ export function ThreadRow({
         active ? "bg-info-soft" : "hover:bg-muted",
       )}
     >
-      {/* Keyboard path to the row action: hidden until focused, so the row itself never becomes a
-          tab stop with a bogus role (the grid contains its own buttons). */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpen(thread.id);
-        }}
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-1 focus:z-10 focus:rounded-md focus:bg-card focus:px-2 focus:py-1 focus:text-sm focus:font-medium focus:ring-2 focus:ring-ring"
-      >
-        Open {subject}
-      </button>
       {/* The checkbox column is always present so every folder lines up; chrome-less views
           render an empty cell instead of shifting the sender into column one. The wrapper is a
           pure propagation guard: selecting must not also open the thread. */}
@@ -158,8 +146,16 @@ export function ThreadRow({
         {sender !== null && <span className="truncate">{sender}</span>}
       </div>
 
-      {/* Subject then the snippet on one line, truncated together. */}
-      <div className="min-w-0 truncate text-sm">
+      {/* Subject then the snippet on one line, truncated together. The cell is a button so a
+          click on the subject text always opens the thread, not only a click on empty row space. */}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpen(thread.id);
+        }}
+        className="min-w-0 truncate text-left text-sm"
+      >
         <span className="text-sm font-medium text-foreground">{subject}</span>
         {thread.snippet !== null && thread.snippet !== "" && (
           <>
@@ -169,7 +165,7 @@ export function ThreadRow({
             </span>
           </>
         )}
-      </div>
+      </button>
 
       {/* Icons: attachment, labels, unlinked, privacy, then the hover-only archive action. */}
       <div className="flex items-center justify-end gap-1.5">
