@@ -4,6 +4,7 @@ import type React from "react";
 import { useEffect, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/Button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { clientEnv } from "@/config/clientEnv";
 import {
   getInstallPrompt,
   getIosSnapshot,
@@ -38,6 +39,8 @@ export function InstallButton({
     startInstallPromptCapture();
   }, []);
 
+  // 6.4: hidden while NEXT_PUBLIC_PWA_UI is off (the default); nothing else about install changes.
+  if (!clientEnv.PWA_UI) return null;
   // An installed app has nothing to install, so the entry disappears.
   if (standalone) return null;
   if (variant === "menu" && !promptReady) return null;

@@ -8,6 +8,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select, type SelectOption } from "@/components/ui/Select";
+import { clientEnv } from "@/config/clientEnv";
 import { STRINGS } from "@/constants/strings";
 import { AvatarUpload } from "@/features/identity/avatar/AvatarUpload";
 import { updateProfilePreferencesAction } from "@/features/identity/preferencesActions";
@@ -176,15 +177,17 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           </Button>
         </SettingsCardFooter>
       </SettingsCard>
-      <SettingsCard>
-        <SettingsCardHeader
-          title="Install app"
-          description="Use Dealflow offline and open it from your home screen or dock."
-        />
-        <SettingsCardBody>
-          <InstallButton />
-        </SettingsCardBody>
-      </SettingsCard>
+      {clientEnv.PWA_UI ? (
+        <SettingsCard>
+          <SettingsCardHeader
+            title="Install app"
+            description="Use Dealflow offline and open it from your home screen or dock."
+          />
+          <SettingsCardBody>
+            <InstallButton />
+          </SettingsCardBody>
+        </SettingsCard>
+      ) : null}
     </>
   );
 }

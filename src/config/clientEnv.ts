@@ -6,4 +6,7 @@
 export const clientEnv = {
   // WebSocket server URL visible to the browser. Set NEXT_PUBLIC_WS_URL in .env.
   WS_PUBLIC_URL: process.env.NEXT_PUBLIC_WS_URL ?? "",
+  // Part 12, 6.4: install, offline and push mentions are hidden by default. The code, the service
+  // worker, the routes and the tests all stay; only the user-facing surfaces are gated.
+  PWA_UI: process.env.NEXT_PUBLIC_PWA_UI === "true",
 } as const;

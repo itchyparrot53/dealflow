@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { clientEnv } from "@/config/clientEnv";
 import {
   getIosSnapshot,
   getStandaloneSnapshot,
@@ -62,6 +63,8 @@ export function PushSettings(): React.ReactNode {
     };
   }, [config.data]);
 
+  // 6.4: the push card is hidden with NEXT_PUBLIC_PWA_UI off; the push code and routes stay.
+  if (!clientEnv.PWA_UI) return null;
   const publicKey = config.data?.publicKey ?? "";
   return (
     <div data-testid="push-settings" className="space-y-3 p-5">

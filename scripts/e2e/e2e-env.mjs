@@ -59,6 +59,8 @@ export function e2eEnv(secrets) {
     WS_TICKET_SECRET: secrets.ws,
     WS_PUBLIC_URL: "ws://localhost:3211",
     NEXT_PUBLIC_WS_URL: "ws://localhost:3211",
+    // 6.4: the e2e build keeps the install/offline/push UI visible so spec 14 still tests it.
+    NEXT_PUBLIC_PWA_UI: "true",
     WS_PORT: "3211",
     MINIO_ENDPOINT: `http://localhost:${process.env.MINIO_PORT ?? "9000"}`,
     MINIO_BUCKET: "warpdrive",

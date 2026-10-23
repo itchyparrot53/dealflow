@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useSyncExternalStore } from "react";
+import { clientEnv } from "@/config/clientEnv";
 
 const MESSAGE = "You're offline. Changes can't be saved until you reconnect.";
 
@@ -50,6 +51,9 @@ const getServerSnapshot = (): boolean => true;
 
 export function OfflineBanner(): React.ReactNode {
   const online = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // 6.4: the banner is a user-facing mention of offline mode, so the flag hides it. The offline
+  // store and the /offline fallback page keep working.
+  if (!clientEnv.PWA_UI) return null;
   if (online) return null;
   return (
     <div

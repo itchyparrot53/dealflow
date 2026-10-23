@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-23 02:54
+Current: 2.3 · Last updated: 2026-10-23 02:56
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -20,7 +20,7 @@ Current: 2.2 · Last updated: 2026-10-23 02:54
 - [x] 1.6 AI JSON reliability and the humane error (U7)
 - [x] 1.7 Phase 1 QA gate
 - [x] 2.1 Expandable rail with labels (U4)
-- [ ] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
+- [x] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
 - [ ] 2.3 One heading per page and the settings layout (U11, U12)
 - [ ] 2.4 Contacts view switcher (U13)
 - [ ] 2.5 Toolbar order and the Ask AI popover (U14, U15)
@@ -105,6 +105,10 @@ Current: 2.2 · Last updated: 2026-10-23 02:54
 - 2.1: the toggle is the last rail row, 40 px: `ChevronsLeft` + "Collapse" expanded, `ChevronsRight` with the "Expand sidebar" tooltip collapsed, `aria-expanded` and `aria-controls="app-nav"` on both. `[` is in the shortcut registry (Navigation group, "Toggle sidebar"), handled by GlobalShortcuts and ignored while typing or in an overlay, and it toggles through the same `warpdrive:toggle-rail` event as the button.
 - 2.1: `e2e/design/styleChecks.ts` `railCheck` is now the new contract: fill unchanged, 232 expanded, 56 after the toggle, 232 again so the rest of the gallery keeps the default; the Decision is logged here because the Part 11 check expected a fixed 56.
 - 2.1: changed tests: `LeftNav.test` is rewritten for the two states (widths, logo/mark, visible labels, toggle ARIA, cookie write, server-provided initial state); `railState.test` covers parsing and the cookie; `GlobalShortcuts.test` gains the `[` key and its typing guard.
+
+- 2.2: `clientEnv.PWA_UI` is `process.env.NEXT_PUBLIC_PWA_UI === "true"` (default false), `.env.example` documents `NEXT_PUBLIC_PWA_UI=false`, and the e2e env sets it true so spec 14 keeps testing the real feature.
+- 2.2: the 6.4 grep found four user-visible surfaces and all are gated: the account-menu Install app item and the Profile "Install app" card (`InstallButton` itself returns null), the Settings > Notifications "Push notifications" card and its Push column (`PushSettings` and `PreferencesForm`'s `showPush`), and the `OfflineBanner`. Other hits are the offline store (`RememberRecord`, snapshots) and code comments, which are not user-facing and stay.
+- 2.2: the service worker, the `/offline` page, the offline store, push code, routes and tests are untouched; only rendering is gated.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

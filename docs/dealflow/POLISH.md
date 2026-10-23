@@ -19,7 +19,7 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U2 | Every Select (Owner: currencies) | `Select` content is `position="popper"` with `overflow-hidden` and no max height, so long lists run off screen and cannot scroll | 6.3 Select | 1.2 | 1.2 | | |
 | U3 | Currency and time zone pickers | 160 currencies and 400+ zones in a plain list | searchable `Combobox` (6.3) | 1.2 | 1.2 | | |
 | U4 | Rail (Owner) | Icons only, with no way to see labels | expandable rail, 6.4 | 2.1 | 2.1 | | |
-| U5 | Install, offline, push (Owner) | The owner does not use install, offline or push, and wants every mention hidden | `NEXT_PUBLIC_PWA_UI` flag, 6.4 | 2.2 | | | |
+| U5 | Install, offline, push (Owner) | The owner does not use install, offline or push, and wants every mention hidden | `NEXT_PUBLIC_PWA_UI` flag, 6.4 | 2.2 | 2.2 | | |
 | U6 | Add deal dialog (Owner) | Stage chevrons truncate to "Qual…", "Cont…"; the right "Person" column is unbalanced; the currency and owner pickers use different chevrons | 6.7.1 | 3.1 | | | |
 | U7 | AI drafts (Owner) | "The AI reply could not be understood". Reasoning models spend the 800-token budget thinking (empty or cut content), and the fence regex only accepts a whole-string fence | 6.9 | 1.6 | 1.6 | | |
 | U8 | Forms everywhere | Label sizes, gaps and widths differ per dialog and settings page | `FormField` + `FormGrid` (6.3) | 1.3 | 1.3 | | |

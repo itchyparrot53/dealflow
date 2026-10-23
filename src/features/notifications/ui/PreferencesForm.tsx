@@ -35,9 +35,12 @@ function Toggle({ label, checked, onChange, testId, dataType }: ToggleProps) {
 export function PreferencesForm({
   prefs,
   onChange,
+  showPush = true,
 }: {
   prefs: Prefs;
   onChange: (type: NotificationType, next: Prefs[NotificationType]) => void;
+  // 6.4: the Push column disappears with NEXT_PUBLIC_PWA_UI off; In-app and Email stay.
+  showPush?: boolean;
 }) {
   const { columnInApp, columnEmail, columnPush, typeLabels } = STRINGS.notifications.preferences;
 
@@ -57,13 +60,15 @@ export function PreferencesForm({
               checked={prefs[type].email}
               onChange={(next) => onChange(type, { ...prefs[type], email: next })}
             />
-            <Toggle
-              label={columnPush}
-              checked={prefs[type].push}
-              testId="push-pref"
-              dataType={type}
-              onChange={(next) => onChange(type, { ...prefs[type], push: next })}
-            />
+            {showPush ? (
+              <Toggle
+                label={columnPush}
+                checked={prefs[type].push}
+                testId="push-pref"
+                dataType={type}
+                onChange={(next) => onChange(type, { ...prefs[type], push: next })}
+              />
+            ) : null}
           </div>
         </div>
       ))}

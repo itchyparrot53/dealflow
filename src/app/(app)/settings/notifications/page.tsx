@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageTitle } from "@/components/shell/pageTitle";
+import { clientEnv } from "@/config/clientEnv";
 import type { NotificationType } from "@/constants/notificationTypes";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
 import { STRINGS } from "@/constants/strings";
@@ -53,13 +54,15 @@ export default function NotificationSettingsPage() {
       <PageTitle title="Notifications" />
       <SettingsHeading title={pageTitle} description={STRINGS.settings.notificationsDescription} />
       {error !== null && <p className="mb-4 text-sm text-destructive">{error}</p>}
-      <SettingsCard>
-        <SettingsCardHeader
-          title="Push notifications"
-          description="Send notifications to this browser or device, even when the app is closed."
-        />
-        <PushSettings />
-      </SettingsCard>
+      {clientEnv.PWA_UI ? (
+        <SettingsCard>
+          <SettingsCardHeader
+            title="Push notifications"
+            description="Send notifications to this browser or device, even when the app is closed."
+          />
+          <PushSettings />
+        </SettingsCard>
+      ) : null}
       <SettingsCard>
         <SettingsCardHeader
           title="Notification channels"
@@ -68,6 +71,7 @@ export default function NotificationSettingsPage() {
         <div className="px-5">
           <PreferencesForm
             prefs={merged}
+            showPush={clientEnv.PWA_UI}
             onChange={(type, next) => void handleChange(type, next)}
           />
         </div>
