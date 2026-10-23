@@ -84,7 +84,10 @@ export function StageTrack({
         const last = index === chips.length - 1;
         const single = chips.length === 1;
         return (
-          <Tip key={chip.id} label={chip.name}>
+          <Tip
+            key={chip.id}
+            label={`${chip.name} · ${chip.days} ${chip.days === 1 ? "day" : "days"}`}
+          >
             <button
               type="button"
               role="option"
@@ -106,9 +109,11 @@ export function StageTrack({
                   : "bg-primary text-primary-foreground",
               )}
             >
-              <span className="truncate px-2">
-                {chip.days} {chip.days === 1 ? "day" : "days"}
-              </span>
+              {state === "future" ? null : (
+                <span className="truncate px-2">
+                  {chip.days} {chip.days === 1 ? "day" : "days"}
+                </span>
+              )}
             </button>
           </Tip>
         );

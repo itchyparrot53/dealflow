@@ -8,7 +8,7 @@ import type { DealStatus } from "@/constants/dealStatus";
 import { STRINGS } from "@/constants/strings";
 import type { OrgDetail } from "@/features/contacts/orgsRepo";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
-import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { ContactFieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { OrganizationSection } from "@/features/deal-workspace/sidebar/OrganizationSection";
 import { SectionHeaderMenu } from "@/features/deal-workspace/sidebar/SectionHeaderMenu";
 import { FindPeopleButton } from "@/features/enrichment/prospects/FindPeopleButton";
@@ -82,9 +82,9 @@ export function OrgSidebar({
       </CollapsibleSection>
 
       <CollapsibleSection title={sections.stats}>
-        <FieldRow label="Open deals">
+        <ContactFieldRow label="Open deals">
           <span className="tabular-nums">{openDealsCount}</span>
-        </FieldRow>
+        </ContactFieldRow>
       </CollapsibleSection>
 
       {/* CO-2 / spec B2: PD shows an activity Overview on org detail too, not just person. */}

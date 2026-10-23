@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { updateOrgAction } from "@/features/contacts/actions";
-import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { ContactFieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { InlineTextField } from "@/features/inline-edit/InlineTextField";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -54,34 +54,37 @@ export function OrgFirmographicsPanel({
   return (
     <>
       {!hidden.has("domain") && (
-        <FieldRow label="Website" empty={org.domain === null || org.domain === ""}>
+        <ContactFieldRow label="Website" empty={org.domain === null || org.domain === ""}>
           <InlineTextField
             label="Website"
             value={org.domain ?? ""}
             onSave={(v) => saveText("domain", v)}
           />
-        </FieldRow>
+        </ContactFieldRow>
       )}
       {!hidden.has("linkedinUrl") && (
-        <FieldRow label="LinkedIn" empty={org.linkedinUrl === null || org.linkedinUrl === ""}>
+        <ContactFieldRow
+          label="LinkedIn"
+          empty={org.linkedinUrl === null || org.linkedinUrl === ""}
+        >
           <InlineTextField
             label="LinkedIn"
             value={org.linkedinUrl ?? ""}
             onSave={(v) => saveText("linkedinUrl", v)}
           />
-        </FieldRow>
+        </ContactFieldRow>
       )}
       {!hidden.has("industry") && (
-        <FieldRow label="Industry" empty={org.industry === null || org.industry === ""}>
+        <ContactFieldRow label="Industry" empty={org.industry === null || org.industry === ""}>
           <InlineTextField
             label="Industry"
             value={org.industry ?? ""}
             onSave={(v) => saveText("industry", v)}
           />
-        </FieldRow>
+        </ContactFieldRow>
       )}
       {!hidden.has("annualRevenue") && (
-        <FieldRow
+        <ContactFieldRow
           label="Annual revenue"
           empty={org.annualRevenue === null || org.annualRevenue === ""}
         >
@@ -94,10 +97,10 @@ export function OrgFirmographicsPanel({
               return save({ annualRevenue: trimmed === "" ? null : trimmed });
             }}
           />
-        </FieldRow>
+        </ContactFieldRow>
       )}
       {!hidden.has("employeeCount") && (
-        <FieldRow label="Employees" empty={org.employeeCount == null}>
+        <ContactFieldRow label="Employees" empty={org.employeeCount == null}>
           <InlineTextField
             label="Employees"
             value={org.employeeCount == null ? "" : String(org.employeeCount)}
@@ -107,7 +110,7 @@ export function OrgFirmographicsPanel({
               return save({ employeeCount: trimmed === "" ? null : Number(trimmed) });
             }}
           />
-        </FieldRow>
+        </ContactFieldRow>
       )}
     </>
   );

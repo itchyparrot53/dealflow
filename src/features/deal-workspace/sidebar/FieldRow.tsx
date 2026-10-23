@@ -28,13 +28,13 @@ export function FieldRow({
       data-testid="field-row"
       // py-1.5 + 20px value line = PD's 32px field-row pitch (values are plain spans now;
       // the old whole-value edit buttons carried 4px of their own padding).
-      className="grid grid-cols-[minmax(0,7rem)_1fr] items-baseline gap-3 py-1.5"
+      className="grid grid-cols-[120px_1fr] items-baseline gap-x-3 py-1.5"
     >
       <span
         className={
           labelAlign === "left"
-            ? "flex items-center justify-start gap-1 text-left text-xs font-medium leading-[18px] text-muted-foreground"
-            : "flex items-center justify-end gap-1 text-right text-xs font-medium leading-[18px] text-muted-foreground"
+            ? "flex items-center justify-start gap-1 text-left text-meta font-medium leading-[18px] text-muted-foreground"
+            : "flex items-center justify-end gap-1 text-right text-meta font-medium leading-[18px] text-muted-foreground"
         }
       >
         {icon}
@@ -48,4 +48,12 @@ export function FieldRow({
       </span>
     </div>
   );
+}
+
+// Person and organization records use the left-aligned 120 px label column (PLAN-PART12.md 6.7.4);
+// the deal sidebar keeps its Part 11 right-aligned rows.
+export function ContactFieldRow(
+  props: Omit<React.ComponentProps<typeof FieldRow>, "labelAlign">,
+): React.ReactNode {
+  return <FieldRow {...props} labelAlign="left" />;
 }

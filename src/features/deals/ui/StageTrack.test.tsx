@@ -38,6 +38,8 @@ describe("StageTrack", () => {
     const passed = screen.getByRole("option", { name: "Qualified, 4 days" });
     const current = screen.getByRole("option", { name: "Proposal, 3 days" });
     const future = screen.getByRole("option", { name: "Negotiation, 0 days" });
+    // 6.7.4: a future stage has no visible day count; its aria-label still carries it.
+    expect(future).toHaveTextContent("");
     for (const segment of [passed, current]) {
       expect(segment.getAttribute("data-state")).toMatch(/passed|current/);
       expect(segment.className).toContain("bg-primary");

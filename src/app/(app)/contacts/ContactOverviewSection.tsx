@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
-import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { ContactFieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { trpc } from "@/lib/trpc-client";
 
 function capitalize(key: string): string {
@@ -28,27 +28,27 @@ export function ContactOverviewSection({
 
   return (
     <CollapsibleSection title="Overview">
-      <FieldRow label="Total activities">
+      <ContactFieldRow label="Total activities">
         <span className="tabular-nums">{total}</span>
-      </FieldRow>
+      </ContactFieldRow>
       {Object.entries(byType).map(([key, count]) => (
-        <FieldRow key={key} label={capitalize(key)}>
+        <ContactFieldRow key={key} label={capitalize(key)}>
           <span className="tabular-nums">{count}</span>
-        </FieldRow>
+        </ContactFieldRow>
       ))}
-      <FieldRow label="Most active users" empty={mostActiveUsers.length === 0}>
+      <ContactFieldRow label="Most active users" empty={mostActiveUsers.length === 0}>
         {mostActiveUsers.length > 0
           ? mostActiveUsers.map((u) => `${u.name} (${u.count})`).join(", ")
           : "-"}
-      </FieldRow>
-      <FieldRow label="Last activity" empty={lastActivityAt === null}>
+      </ContactFieldRow>
+      <ContactFieldRow label="Last activity" empty={lastActivityAt === null}>
         {lastActivityAt !== null ? (
           <span className="tabular-nums">{lastActivityAt.toLocaleDateString()}</span>
         ) : (
           "-"
         )}
-      </FieldRow>
-      <FieldRow label="Inactive" empty={inactiveDays === null}>
+      </ContactFieldRow>
+      <ContactFieldRow label="Inactive" empty={inactiveDays === null}>
         {inactiveDays !== null ? (
           <span>
             <span className="tabular-nums">{inactiveDays}</span> days
@@ -56,7 +56,7 @@ export function ContactOverviewSection({
         ) : (
           "-"
         )}
-      </FieldRow>
+      </ContactFieldRow>
     </CollapsibleSection>
   );
 }

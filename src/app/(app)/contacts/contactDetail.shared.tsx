@@ -11,7 +11,7 @@ import { countHistoryTabs } from "@/features/deal-workspace/historyTabCounts";
 import { mergeEmailItems, partitionFocusHistory } from "@/features/deal-workspace/historyTimeline";
 import { PinnedNotesSection } from "@/features/deal-workspace/PinnedNotesSection";
 import { SectionHeading } from "@/features/deal-workspace/SectionHeading";
-import { FieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
+import { ContactFieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { emailTabStatusLabel } from "@/features/email/emailTabStatus";
 import { FileAttachments } from "@/features/files/FileAttachments";
 import { trpc } from "@/lib/trpc-client";
@@ -189,13 +189,13 @@ export function CustomFieldsPanel<T extends { id: string; key: string; name: str
       {defs.map((def) => {
         const value = values[def.key];
         return (
-          <FieldRow
+          <ContactFieldRow
             key={def.id}
             label={def.name}
             empty={value === null || value === undefined || value === ""}
           >
             {renderValue(def, value)}
-          </FieldRow>
+          </ContactFieldRow>
         );
       })}
     </CollapsibleSection>
