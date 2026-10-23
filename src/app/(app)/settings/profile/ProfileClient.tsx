@@ -4,6 +4,7 @@ import type React from "react";
 import { useId, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { Select, type SelectOption } from "@/components/ui/Select";
@@ -100,19 +101,17 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
         <SettingsCardBody className="space-y-5">
           <AvatarUpload name={props.name} avatarUrl={props.avatarUrl} />
           <div>
-            <label htmlFor={nameFieldId} className="mb-1 block text-sm font-medium">
-              {STRINGS.settings.name}
-            </label>
-            <Input
-              id={nameFieldId}
-              value={draftName}
-              onChange={(e) => setDraftName(e.target.value)}
-            />
-            {nameError !== null && (
-              <p role="alert" className="mt-1 text-xs text-destructive">
-                {`Could not save name (${nameError})`}
-              </p>
-            )}
+            <FormField
+              label={STRINGS.settings.name}
+              htmlFor={nameFieldId}
+              error={nameError !== null ? `Could not save name (${nameError})` : undefined}
+            >
+              <Input
+                id={nameFieldId}
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+              />
+            </FormField>
             <div className="mt-2 flex items-center gap-3">
               <Button
                 type="button"
@@ -128,13 +127,11 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
               )}
             </div>
           </div>
-          <div>
-            <span className="mb-1 block text-sm font-medium">{STRINGS.settings.email}</span>
+          <FormField label={STRINGS.settings.email}>
             <p className="text-sm text-muted-foreground">{props.email || "-"}</p>
-          </div>
+          </FormField>
 
-          <div className="block">
-            <span className="mb-1 block text-sm font-medium">{STRINGS.settings.timezone}</span>
+          <FormField label={STRINGS.settings.timezone}>
             <Select
               ariaLabel={STRINGS.settings.timezone}
               value={timezone}
@@ -142,7 +139,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
               placeholder={STRINGS.settings.timezoneNone}
               options={TIMEZONE_OPTIONS}
             />
-          </div>
+          </FormField>
 
           <fieldset>
             <legend className="mb-1 block text-sm font-medium">{STRINGS.settings.density}</legend>

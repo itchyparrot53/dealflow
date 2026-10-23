@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
@@ -139,60 +140,56 @@ export function ProductDialog({
           <DialogTitle>{product === null ? S.newProduct : S.editProduct}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block sm:col-span-2" htmlFor="product-name">
-              <span className="mb-1.5 block text-sm font-medium">{S.name}</span>
-              <Input
-                id="product-name"
-                value={form.name}
-                onChange={(event) => update("name", event.target.value)}
-                autoFocus
-              />
-            </label>
-            <label className="block" htmlFor="product-code">
-              <span className="mb-1.5 block text-sm font-medium">{S.code}</span>
+          <FormGrid columns={2}>
+            <div data-span="full">
+              <FormField label={S.name} htmlFor="product-name">
+                <Input
+                  id="product-name"
+                  value={form.name}
+                  onChange={(event) => update("name", event.target.value)}
+                  autoFocus
+                />
+              </FormField>
+            </div>
+            <FormField label={S.code} htmlFor="product-code">
               <Input
                 id="product-code"
                 value={form.code}
                 onChange={(event) => update("code", event.target.value)}
               />
-            </label>
-            <label className="block" htmlFor="product-unit">
-              <span className="mb-1.5 block text-sm font-medium">{S.unit}</span>
+            </FormField>
+            <FormField label={S.unit} htmlFor="product-unit">
               <Input
                 id="product-unit"
                 value={form.unit}
                 onChange={(event) => update("unit", event.target.value)}
               />
-            </label>
-            <label className="block" htmlFor="product-price">
-              <span className="mb-1.5 block text-sm font-medium">{S.price}</span>
+            </FormField>
+            <FormField label={S.price} htmlFor="product-price">
               <Input
                 id="product-price"
                 inputMode="decimal"
                 value={form.price}
                 onChange={(event) => update("price", event.target.value)}
               />
-            </label>
-            <div className="block">
-              <span className="mb-1.5 block text-sm font-medium">{S.currency}</span>
+            </FormField>
+            <FormField label={S.currency}>
               <Combobox
                 value={form.currency}
                 onChange={(value) => update("currency", value)}
                 options={currencyOptions(codes)}
                 ariaLabel={S.currency}
               />
-            </div>
-            <label className="block" htmlFor="product-tax">
-              <span className="mb-1.5 block text-sm font-medium">{S.taxPercent}</span>
+            </FormField>
+            <FormField label={S.taxPercent} htmlFor="product-tax">
               <Input
                 id="product-tax"
                 inputMode="decimal"
                 value={form.taxPercent}
                 onChange={(event) => update("taxPercent", event.target.value)}
               />
-            </label>
-          </div>
+            </FormField>
+          </FormGrid>
           {error !== null && (
             <p role="alert" className="text-sm text-destructive">
               {error}

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { STRINGS } from "@/constants/strings";
 import { updateCompanyGeneralAction } from "@/features/settings/actions";
@@ -34,26 +35,26 @@ export function CompanyGeneralClient(props: Props): React.ReactNode {
 
   return (
     <SettingsCard>
-      <SettingsCardBody className="grid gap-5 sm:grid-cols-2">
-        <label htmlFor="company-name" className="block">
-          <span className="mb-1.5 block text-sm font-medium">{STRINGS.settings.companyName}</span>
-          <Input
-            id="company-name"
-            aria-label={STRINGS.settings.companyName}
-            value={companyName}
-            onChange={(e) => {
-              setCompanyName(e.target.value);
-              setSaved(false);
-            }}
-          />
-        </label>
+      <SettingsCardBody>
+        <FormGrid columns={2}>
+          <FormField label={STRINGS.settings.companyName} htmlFor="company-name">
+            <Input
+              id="company-name"
+              aria-label={STRINGS.settings.companyName}
+              value={companyName}
+              onChange={(e) => {
+                setCompanyName(e.target.value);
+                setSaved(false);
+              }}
+            />
+          </FormField>
 
-        <div>
-          <span className="mb-1.5 block text-sm font-medium">{STRINGS.settings.baseCurrency}</span>
-          <div className="flex min-h-9 items-center rounded-md bg-muted/50 px-3 text-sm text-muted-foreground">
-            {props.baseCurrency}
-          </div>
-        </div>
+          <FormField label={STRINGS.settings.baseCurrency}>
+            <div className="flex min-h-9 items-center rounded-md bg-muted/50 px-3 text-sm text-muted-foreground">
+              {props.baseCurrency}
+            </div>
+          </FormField>
+        </FormGrid>
       </SettingsCardBody>
 
       <SettingsCardFooter>

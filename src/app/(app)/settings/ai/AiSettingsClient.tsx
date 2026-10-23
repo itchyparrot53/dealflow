@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
 import { Progress } from "@/components/ui/Progress";
 import { Switch } from "@/components/ui/Switch";
 import { AI_STRINGS } from "@/constants/aiStrings";
@@ -173,9 +173,8 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
           <Switch checked={enabled} onCheckedChange={setEnabled} label={AI_STRINGS.enabledLabel} />
           {AI_STRINGS.enabledLabel}
         </span>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-company-limit">{AI_STRINGS.companyLimitLabel}</Label>
+        <FormGrid columns={2}>
+          <FormField label={AI_STRINGS.companyLimitLabel} htmlFor="ai-company-limit">
             <Input
               id="ai-company-limit"
               inputMode="numeric"
@@ -183,9 +182,8 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
               onChange={(event) => setCompanyLimit(event.target.value)}
               disabled={saving}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-user-limit">{AI_STRINGS.userLimitLabel}</Label>
+          </FormField>
+          <FormField label={AI_STRINGS.userLimitLabel} htmlFor="ai-user-limit">
             <Input
               id="ai-user-limit"
               inputMode="numeric"
@@ -194,8 +192,8 @@ export function AiSettingsClient({ overview }: { overview: AiSettingsOverview })
               onChange={(event) => setUserLimit(event.target.value)}
               disabled={saving}
             />
-          </div>
-        </div>
+          </FormField>
+        </FormGrid>
         {error !== null && (
           <p role="alert" className="text-sm text-destructive">
             {error}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
@@ -124,107 +125,131 @@ export function GoalForm({
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Select
-        ariaLabel={S.goalSubject}
-        value={subject}
-        onChange={chooseSubject}
-        options={[
-          { value: "deal", label: "Deals" },
-          { value: "activity", label: "Activities" },
-        ]}
-      />
-      <Select
-        ariaLabel={S.goalAction}
-        value={action}
-        onChange={setAction}
-        options={actionOptions}
-      />
-      <Select
-        ariaLabel={S.goalMetric}
-        value={metric}
-        onChange={setMetric}
-        options={
-          subject === "deal"
-            ? [
-                { value: "count", label: "Count" },
-                { value: "value", label: "Value" },
-              ]
-            : [{ value: "count", label: "Count" }]
-        }
-      />
-      <Select
-        ariaLabel={S.goalAssignee}
-        value={assigneeKind}
-        onChange={(v) => {
-          setAssigneeKind(v as GoalAssigneeKind);
-          setAssigneeId(ANY);
-        }}
-        options={[
-          { value: "company", label: "Whole company" },
-          { value: "team", label: "A team" },
-          { value: "user", label: "One person" },
-        ]}
-      />
-      {assigneeKind !== "company" && (
-        <Select
-          ariaLabel={S.goalAssignee}
-          value={assigneeId}
-          onChange={setAssigneeId}
-          options={[{ value: ANY, label: "Select" }, ...assigneeOptions]}
-        />
-      )}
-      <Select
-        ariaLabel={S.goalPipeline}
-        value={pipelineId}
-        onChange={setPipelineId}
-        options={[
-          { value: ANY, label: S.goalAnyPipeline },
-          ...pipelines.map((p) => ({ value: p.id, label: p.name })),
-        ]}
-      />
-      {subject === "activity" && (
-        <Select
-          ariaLabel={S.goalActivityType}
-          value={activityTypeId}
-          onChange={setActivityTypeId}
-          options={[
-            { value: ANY, label: S.goalAnyActivityType },
-            ...activityTypes.map((t) => ({ value: t.id, label: t.name })),
-          ]}
-        />
-      )}
-      <Select
-        ariaLabel={S.goalInterval}
-        value={interval}
-        onChange={setInterval}
-        options={GOAL_INTERVALS.map((i) => ({ value: i, label: i }))}
-      />
-      <Input
-        aria-label={S.goalTarget}
-        placeholder={S.goalTarget}
-        value={target}
-        onChange={(e) => setTarget(e.target.value)}
-      />
-      <DatePicker
-        ariaLabel={S.goalStartsOn}
-        value={startsOn}
-        onChange={(v) => setStartsOn(v ?? startsOn)}
-      />
-      <DatePicker
-        ariaLabel={S.goalEndsOn}
-        value={endsOn}
-        onChange={setEndsOn}
-        placeholder={S.goalNoEnd}
-      />
-      <Button type="submit" disabled={isPending || target.trim() === ""}>
-        {submitLabel}
-      </Button>
-      {error !== null && (
-        <p role="alert" className="text-sm text-destructive sm:col-span-2 lg:col-span-4">
-          {error}
-        </p>
-      )}
+    <form onSubmit={submit}>
+      <FormGrid columns={2}>
+        <FormField label={S.goalSubject}>
+          <Select
+            ariaLabel={S.goalSubject}
+            value={subject}
+            onChange={chooseSubject}
+            options={[
+              { value: "deal", label: "Deals" },
+              { value: "activity", label: "Activities" },
+            ]}
+          />
+        </FormField>
+        <FormField label={S.goalAction}>
+          <Select
+            ariaLabel={S.goalAction}
+            value={action}
+            onChange={setAction}
+            options={actionOptions}
+          />
+        </FormField>
+        <FormField label={S.goalMetric}>
+          <Select
+            ariaLabel={S.goalMetric}
+            value={metric}
+            onChange={setMetric}
+            options={
+              subject === "deal"
+                ? [
+                    { value: "count", label: "Count" },
+                    { value: "value", label: "Value" },
+                  ]
+                : [{ value: "count", label: "Count" }]
+            }
+          />
+        </FormField>
+        <FormField label={S.goalAssignee}>
+          <Select
+            ariaLabel={S.goalAssignee}
+            value={assigneeKind}
+            onChange={(v) => {
+              setAssigneeKind(v as GoalAssigneeKind);
+              setAssigneeId(ANY);
+            }}
+            options={[
+              { value: "company", label: "Whole company" },
+              { value: "team", label: "A team" },
+              { value: "user", label: "One person" },
+            ]}
+          />
+        </FormField>
+        {assigneeKind !== "company" && (
+          <FormField label={S.goalAssignee}>
+            <Select
+              ariaLabel={S.goalAssignee}
+              value={assigneeId}
+              onChange={setAssigneeId}
+              options={[{ value: ANY, label: "Select" }, ...assigneeOptions]}
+            />
+          </FormField>
+        )}
+        <FormField label={S.goalPipeline}>
+          <Select
+            ariaLabel={S.goalPipeline}
+            value={pipelineId}
+            onChange={setPipelineId}
+            options={[
+              { value: ANY, label: S.goalAnyPipeline },
+              ...pipelines.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
+        </FormField>
+        {subject === "activity" && (
+          <FormField label={S.goalActivityType}>
+            <Select
+              ariaLabel={S.goalActivityType}
+              value={activityTypeId}
+              onChange={setActivityTypeId}
+              options={[
+                { value: ANY, label: S.goalAnyActivityType },
+                ...activityTypes.map((t) => ({ value: t.id, label: t.name })),
+              ]}
+            />
+          </FormField>
+        )}
+        <FormField label={S.goalInterval}>
+          <Select
+            ariaLabel={S.goalInterval}
+            value={interval}
+            onChange={setInterval}
+            options={GOAL_INTERVALS.map((i) => ({ value: i, label: i }))}
+          />
+        </FormField>
+        <FormField label={S.goalTarget}>
+          <Input
+            aria-label={S.goalTarget}
+            placeholder={S.goalTarget}
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+          />
+        </FormField>
+        <FormField label={S.goalStartsOn}>
+          <DatePicker
+            ariaLabel={S.goalStartsOn}
+            value={startsOn}
+            onChange={(v) => setStartsOn(v ?? startsOn)}
+          />
+        </FormField>
+        <FormField label={S.goalEndsOn}>
+          <DatePicker
+            ariaLabel={S.goalEndsOn}
+            value={endsOn}
+            onChange={setEndsOn}
+            placeholder={S.goalNoEnd}
+          />
+        </FormField>
+        <Button type="submit" disabled={isPending || target.trim() === ""}>
+          {submitLabel}
+        </Button>
+        {error !== null && (
+          <p role="alert" data-span="full" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </FormGrid>
     </form>
   );
 }

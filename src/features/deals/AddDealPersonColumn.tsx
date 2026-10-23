@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { MAX_EMAIL_LEN, MAX_PHONE_LEN } from "@/features/contacts/fieldBounds";
@@ -71,8 +72,7 @@ function ContactRows({
     onChange(rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   }
   return (
-    <div className="text-sm">
-      <span className="mb-1 block font-medium">{kind}</span>
+    <FormField label={kind} className="text-sm">
       <div className="flex flex-col gap-2">
         {rows.map((row, idx) => (
           // Positional rows for an ephemeral create form.
@@ -105,10 +105,10 @@ function ContactRows({
         type="button"
         disabled={disabled}
         onClick={() => onChange([...rows, { label: labels[0] ?? "Work", value: "" }])}
-        className="mt-2 text-sm font-medium text-link-record hover:underline disabled:opacity-40"
+        className="justify-self-start text-sm font-medium text-link-record hover:underline disabled:opacity-40"
       >
         + Add {kind.toLowerCase()}
       </button>
-    </div>
+    </FormField>
   );
 }

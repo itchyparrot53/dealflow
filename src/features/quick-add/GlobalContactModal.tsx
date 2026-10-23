@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useId, useRef, useState } from "react";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { createOrgAction, createPersonAction } from "@/features/contacts/actions";
@@ -173,10 +174,7 @@ function ContactCreateModal({
       onClose={onClose}
     >
       <div className="min-w-0 space-y-4">
-        <div className="space-y-1">
-          <label htmlFor={nameId} className="block text-sm font-medium">
-            Name
-          </label>
+        <FormField label="Name" htmlFor={nameId}>
           <Input
             id={nameId}
             autoFocus
@@ -191,11 +189,10 @@ function ContactCreateModal({
               }
             }}
           />
-        </div>
+        </FormField>
 
         {kind === "person" && (
-          <div className="space-y-1">
-            <span className="block text-sm font-medium">Organization</span>
+          <FormField label="Organization">
             <Select
               ariaLabel="Organization"
               value={selectedOrgId}
@@ -210,7 +207,7 @@ function ContactCreateModal({
               ]}
               triggerClassName="min-h-9"
             />
-          </div>
+          </FormField>
         )}
 
         <CustomFieldCreateFields
@@ -235,10 +232,7 @@ function ContactCreateModal({
             {ADDRESS_FIELDS.map(([key, label]) => {
               const id = `${addressId}-${key}`;
               return (
-                <div key={key} className="space-y-1">
-                  <label htmlFor={id} className="block text-sm font-medium">
-                    {label}
-                  </label>
+                <FormField key={key} label={label} htmlFor={id}>
                   <Input
                     id={id}
                     value={address[key] ?? ""}
@@ -246,7 +240,7 @@ function ContactCreateModal({
                       setAddress((current) => ({ ...current, [key]: event.target.value }))
                     }
                   />
-                </div>
+                </FormField>
               );
             })}
           </fieldset>

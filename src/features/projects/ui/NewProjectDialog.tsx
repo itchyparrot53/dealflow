@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { PROJECT_DEFAULT_PHASES } from "@/constants/projectsApi";
 import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
@@ -105,18 +106,16 @@ export function NewProjectDialog({
                 {projectsErrorMessage(errorId)}
               </p>
             )}
-            <label className="block text-sm font-medium" htmlFor="project-name">
-              {S.name}
+            <FormField label={S.name} htmlFor="project-name">
               <Input
                 id="project-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 aria-label={S.name}
               />
-            </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.linkedDeal}</span>
+            </FormField>
+            <FormGrid columns={2}>
+              <FormField label={S.linkedDeal}>
                 <Combobox
                   value={dealId}
                   onChange={setDealId}
@@ -126,9 +125,8 @@ export function NewProjectDialog({
                   ]}
                   ariaLabel={S.linkedDeal}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.owner}</span>
+              </FormField>
+              <FormField label={S.owner}>
                 <Combobox
                   value={ownerId}
                   onChange={setOwnerId}
@@ -138,28 +136,25 @@ export function NewProjectDialog({
                   ]}
                   ariaLabel={S.owner}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.startDate}</span>
+              </FormField>
+              <FormField label={S.startDate}>
                 <DatePicker
                   value={startDate}
                   onChange={setStartDate}
                   ariaLabel={S.startDate}
                   placeholder={S.startDate}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.dueDate}</span>
+              </FormField>
+              <FormField label={S.dueDate}>
                 <DatePicker
                   value={dueDate}
                   onChange={setDueDate}
                   ariaLabel={S.dueDate}
                   placeholder={S.dueDate}
                 />
-              </div>
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium">{S.phases}</span>
+              </FormField>
+            </FormGrid>
+            <FormField label={S.phases}>
               <ul className="space-y-1">
                 {phases.map((phase, index) => (
                   <li key={phase.id} className="flex items-center gap-2">
@@ -192,14 +187,14 @@ export function NewProjectDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="mt-1"
+                className="justify-self-start"
                 onClick={() =>
                   setPhases((current) => [...current, { id: nextPhaseId.current++, name: "" }])
                 }
               >
                 {S.addPhase}
               </Button>
-            </div>
+            </FormField>
           </div>
         </DialogBody>
         <DialogFooter>

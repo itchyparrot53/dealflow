@@ -3,6 +3,7 @@
 import { UserPlus } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { ERROR_IDS } from "@/constants/errorIds";
@@ -119,11 +120,16 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
         </div>
       </div>
       <div className="space-y-4 p-5">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="invite-email" className="text-sm font-medium">
-              {T.emailLabel}
-            </label>
+        <FormGrid columns={2}>
+          <FormField
+            label={T.emailLabel}
+            htmlFor="invite-email"
+            error={
+              fieldErrors.email !== null ? (
+                <span id="invite-email-error">{fieldErrors.email}</span>
+              ) : undefined
+            }
+          >
             <Input
               ref={emailRef}
               id="invite-email"
@@ -135,16 +141,16 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
               className="w-full px-3"
               disabled={isPending}
             />
-            {fieldErrors.email !== null && (
-              <p id="invite-email-error" role="alert" className="text-sm text-destructive">
-                {fieldErrors.email}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="invite-name" className="text-sm font-medium">
-              {T.nameLabel}
-            </label>
+          </FormField>
+          <FormField
+            label={T.nameLabel}
+            htmlFor="invite-name"
+            error={
+              fieldErrors.name !== null ? (
+                <span id="invite-name-error">{fieldErrors.name}</span>
+              ) : undefined
+            }
+          >
             <Input
               ref={nameRef}
               id="invite-name"
@@ -157,13 +163,8 @@ export function InviteUserForm({ onInvited }: Props): React.ReactElement {
               className="w-full px-3"
               disabled={isPending}
             />
-            {fieldErrors.name !== null && (
-              <p id="invite-name-error" role="alert" className="text-sm text-destructive">
-                {fieldErrors.name}
-              </p>
-            )}
-          </div>
-        </div>
+          </FormField>
+        </FormGrid>
         <span className="flex items-center gap-2 text-sm">
           <Switch checked={isAdmin} onCheckedChange={setIsAdmin} label={T.admin} />
           {T.admin}

@@ -15,6 +15,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
@@ -215,100 +216,91 @@ export function DocumentsSettings({ settings, templates }: Props): React.ReactNo
         <SettingsCard>
           <SettingsCardHeader title={S.numbering} description={S.numberingDescription} />
           <SettingsCardBody>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block" htmlFor="document-quote-prefix">
-                <span className="mb-1.5 block text-sm font-medium">{S.quotePrefix}</span>
+            <FormGrid columns={2}>
+              <FormField label={S.quotePrefix} htmlFor="document-quote-prefix">
                 <Input
                   id="document-quote-prefix"
                   value={form.quotePrefix}
                   maxLength={8}
                   onChange={(event) => update("quotePrefix", event.target.value.toUpperCase())}
                 />
-              </label>
-              <label className="block" htmlFor="document-invoice-prefix">
-                <span className="mb-1.5 block text-sm font-medium">{S.invoicePrefix}</span>
+              </FormField>
+              <FormField label={S.invoicePrefix} htmlFor="document-invoice-prefix">
                 <Input
                   id="document-invoice-prefix"
                   value={form.invoicePrefix}
                   maxLength={8}
                   onChange={(event) => update("invoicePrefix", event.target.value.toUpperCase())}
                 />
-              </label>
-              <label className="block" htmlFor="document-quote-days">
-                <span className="mb-1.5 block text-sm font-medium">{S.quoteValidDays}</span>
+              </FormField>
+              <FormField label={S.quoteValidDays} htmlFor="document-quote-days">
                 <Input
                   id="document-quote-days"
                   inputMode="numeric"
                   value={form.quoteValidDays}
                   onChange={(event) => update("quoteValidDays", event.target.value)}
                 />
-              </label>
-              <label className="block" htmlFor="document-invoice-days">
-                <span className="mb-1.5 block text-sm font-medium">{S.invoiceDueDays}</span>
+              </FormField>
+              <FormField label={S.invoiceDueDays} htmlFor="document-invoice-days">
                 <Input
                   id="document-invoice-days"
                   inputMode="numeric"
                   value={form.invoiceDueDays}
                   onChange={(event) => update("invoiceDueDays", event.target.value)}
                 />
-              </label>
-            </div>
+              </FormField>
+            </FormGrid>
           </SettingsCardBody>
         </SettingsCard>
 
         <SettingsCard>
           <SettingsCardHeader title={S.company} description={S.companyDescription} />
           <SettingsCardBody>
-            <div className="space-y-4">
-              <label className="block" htmlFor="document-company-name">
-                <span className="mb-1.5 block text-sm font-medium">{S.companyName}</span>
+            <FormGrid>
+              <FormField label={S.companyName} htmlFor="document-company-name">
                 <Input
                   id="document-company-name"
                   value={form.companyName}
                   onChange={(event) => update("companyName", event.target.value)}
                 />
-              </label>
-              <label className="block" htmlFor="document-company-address">
-                <span className="mb-1.5 block text-sm font-medium">{S.companyAddress}</span>
+              </FormField>
+              <FormField label={S.companyAddress} htmlFor="document-company-address">
                 <Textarea
                   id="document-company-address"
                   value={form.companyAddress}
                   onChange={(event) => update("companyAddress", event.target.value)}
                 />
-              </label>
-              <label className="block" htmlFor="document-company-tax-id">
-                <span className="mb-1.5 block text-sm font-medium">{S.companyTaxId}</span>
+              </FormField>
+              <FormField label={S.companyTaxId} htmlFor="document-company-tax-id">
                 <Input
                   id="document-company-tax-id"
                   value={form.companyTaxId}
                   onChange={(event) => update("companyTaxId", event.target.value)}
                 />
-              </label>
-            </div>
+              </FormField>
+            </FormGrid>
           </SettingsCardBody>
         </SettingsCard>
 
         <SettingsCard>
           <SettingsCardHeader title={S.payment} description={S.paymentDescription} />
           <SettingsCardBody>
-            <div className="space-y-4">
-              <label className="block" htmlFor="document-payment-instructions">
-                <span className="mb-1.5 block text-sm font-medium">{S.paymentInstructions}</span>
+            <FormGrid>
+              <FormField label={S.paymentInstructions} htmlFor="document-payment-instructions">
                 <Textarea
                   id="document-payment-instructions"
                   value={form.paymentInstructions}
                   onChange={(event) => update("paymentInstructions", event.target.value)}
                 />
-              </label>
-              <label className="block" htmlFor="document-footer">
-                <span className="mb-1.5 block text-sm font-medium">{S.footer}</span>
+              </FormField>
+              <FormField label={S.footer} htmlFor="document-footer">
                 <Textarea
                   id="document-footer"
                   value={form.footer}
                   onChange={(event) => update("footer", event.target.value)}
                 />
-              </label>
-            </div>
+              </FormField>
+            </FormGrid>
           </SettingsCardBody>
         </SettingsCard>
 

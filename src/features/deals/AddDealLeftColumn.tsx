@@ -3,6 +3,7 @@ import type React from "react";
 import { useId } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
@@ -86,8 +87,7 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
 
       {state.orgMode === "new" ? organizationCustomFields : null}
 
-      <label className="block" htmlFor={titleId}>
-        <span className="mb-1 block font-medium">Title</span>
+      <FormField label="Title" htmlFor={titleId}>
         <Input
           id={titleId}
           aria-label="Deal title"
@@ -98,13 +98,12 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
           placeholder="Deal title"
           maxLength={TITLE_MAX_LEN}
         />
-        <span className="mt-0.5 block text-right text-xs tabular-nums text-muted-foreground">
+        <span className="block text-right text-xs tabular-nums text-muted-foreground">
           {state.title.length}/{TITLE_MAX_LEN}
         </span>
-      </label>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">Value</span>
+      <FormField label="Value">
         <div className="flex gap-2">
           <Input
             aria-label="Deal value"
@@ -117,10 +116,9 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
             {baseCurrency}
           </span>
         </div>
-      </div>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">Pipeline</span>
+      <FormField label="Pipeline">
         <Select
           ariaLabel="Pipeline"
           value={state.pipelineId}
@@ -130,24 +128,21 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
           }}
           options={pipelines.map<SelectOption>((p) => ({ value: p.id, label: p.name }))}
         />
-      </div>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">Pipeline stage</span>
+      <FormField label="Pipeline stage">
         <StageChevron
           stages={stages}
           selectedId={state.stageId}
           onSelect={(id) => set({ stageId: id })}
         />
-      </div>
+      </FormField>
 
-      <div className="block">
-        <span className="mb-1 block font-medium">Labels</span>
+      <FormField label="Labels">
         <LabelField target="deal" value={state.labels} onChange={(labels) => set({ labels })} />
-      </div>
+      </FormField>
 
-      <div className="block">
-        <span className="mb-1 block font-medium">Expected close date</span>
+      <FormField label="Expected close date">
         <DatePicker
           ariaLabel="Expected close date"
           value={state.expectedCloseDate === "" ? null : state.expectedCloseDate}
@@ -156,11 +151,10 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
           formatLabel={formatMediumDate}
           onChange={(v) => set({ expectedCloseDate: v ?? "" })}
         />
-      </div>
+      </FormField>
 
       {owners !== null && (
-        <div className="block">
-          <span className="mb-1 block font-medium">Owner</span>
+        <FormField label="Owner">
           <Combobox
             ariaLabel="Owner"
             value={state.ownerId}
@@ -174,11 +168,10 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
               })),
             ]}
           />
-        </div>
+        </FormField>
       )}
 
-      <div>
-        <span className="mb-1 block font-medium">Source channel</span>
+      <FormField label="Source channel">
         <Select
           ariaLabel="Source channel"
           value={state.sourceChannel}
@@ -192,10 +185,9 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
             })),
           ]}
         />
-      </div>
+      </FormField>
 
-      <label className="block" htmlFor={sourceChannelIdId}>
-        <span className="mb-1 block font-medium">Source channel ID</span>
+      <FormField label="Source channel ID" htmlFor={sourceChannelIdId}>
         <Input
           id={sourceChannelIdId}
           aria-label="Source channel ID"
@@ -203,11 +195,10 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
           onChange={(e) => set({ sourceChannelId: e.target.value })}
           placeholder="Reference / campaign id"
         />
-      </label>
+      </FormField>
 
       {groups !== null && (
-        <div className="block">
-          <span className="mb-1 block font-medium">Visible to</span>
+        <FormField label="Visible to">
           <Select
             ariaLabel="Visible to"
             value={state.visibilityGroupId}
@@ -218,7 +209,7 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
               ...groups.map<SelectOption>((g) => ({ value: g.id, label: g.name })),
             ]}
           />
-        </div>
+        </FormField>
       )}
 
       {dealCustomFields}

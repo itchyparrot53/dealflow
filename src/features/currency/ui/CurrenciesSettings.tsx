@@ -15,6 +15,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { CURRENCY_STRINGS } from "@/constants/salesStrings";
@@ -198,31 +199,31 @@ export function CurrenciesSettings({ base, rates, codes }: Props): React.ReactNo
         )}
         <SettingsCardBody className="border-t">
           <div className="flex flex-wrap items-end gap-3">
-            <div className="w-56">
-              <span className="mb-1.5 block text-sm font-medium">{S.code}</span>
-              <Combobox
-                value={newCode}
-                onChange={setNewCode}
-                options={rateOptions}
-                ariaLabel={S.code}
-                placeholder={S.addRate}
-                disabled={pending}
-              />
-            </div>
-            <label className="block" htmlFor="currency-rate-new">
-              <span className="mb-1.5 block text-sm font-medium">{S.rate}</span>
-              <Input
-                id="currency-rate-new"
-                data-testid="currency-rate-input"
-                aria-label={S.rate}
-                inputMode="decimal"
-                placeholder={S.ratePlaceholder}
-                value={newRate}
-                onChange={(event) => setNewRate(event.target.value)}
-                disabled={pending}
-                className="w-40"
-              />
-            </label>
+            <FormGrid columns={2} className="gap-3">
+              <FormField label={S.code} className="w-56">
+                <Combobox
+                  value={newCode}
+                  onChange={setNewCode}
+                  options={rateOptions}
+                  ariaLabel={S.code}
+                  placeholder={S.addRate}
+                  disabled={pending}
+                />
+              </FormField>
+              <FormField label={S.rate} htmlFor="currency-rate-new">
+                <Input
+                  id="currency-rate-new"
+                  data-testid="currency-rate-input"
+                  aria-label={S.rate}
+                  inputMode="decimal"
+                  placeholder={S.ratePlaceholder}
+                  value={newRate}
+                  onChange={(event) => setNewRate(event.target.value)}
+                  disabled={pending}
+                  className="w-40"
+                />
+              </FormField>
+            </FormGrid>
             <Button
               type="button"
               size="sm"

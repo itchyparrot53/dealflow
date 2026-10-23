@@ -3,6 +3,7 @@ import type React from "react";
 import { useId } from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { TITLE_MAX_LEN } from "@/constants/fieldLimits";
@@ -78,8 +79,7 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
 
       {state.orgMode === "new" ? organizationCustomFields : null}
 
-      <label className="block" htmlFor={titleId}>
-        <span className="mb-1 block font-medium">{L.titleLabel}</span>
+      <FormField label={L.titleLabel} htmlFor={titleId}>
         <Input
           id={titleId}
           aria-label={L.leadTitle}
@@ -90,13 +90,12 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
           placeholder={L.leadTitle}
           maxLength={TITLE_MAX_LEN}
         />
-        <span className="mt-0.5 block text-right text-xs tabular-nums text-muted-foreground">
+        <span className="block text-right text-xs tabular-nums text-muted-foreground">
           {state.title.length}/{TITLE_MAX_LEN}
         </span>
-      </label>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">{L.valueLabel}</span>
+      <FormField label={L.valueLabel}>
         <div className="flex gap-2">
           <Input
             aria-label={L.leadValue}
@@ -109,16 +108,14 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
             {baseCurrency}
           </span>
         </div>
-      </div>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">{L.labelsLabel}</span>
+      <FormField label={L.labelsLabel}>
         <LabelField target="lead" value={state.labels} onChange={(labels) => set({ labels })} />
-      </div>
+      </FormField>
 
       {owners !== null && (
-        <div className="block">
-          <span className="mb-1 block font-medium">{L.ownerLabel}</span>
+        <FormField label={L.ownerLabel}>
           <Combobox
             ariaLabel={L.ownerLabel}
             value={state.ownerId}
@@ -132,20 +129,18 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
               })),
             ]}
           />
-        </div>
+        </FormField>
       )}
 
-      <div className="block">
-        <span className="mb-1 block font-medium">{L.expectedCloseDate}</span>
+      <FormField label={L.expectedCloseDate}>
         <DatePicker
           ariaLabel={L.expectedCloseDate}
           value={state.expectedCloseDate === "" ? null : state.expectedCloseDate}
           onChange={(v) => set({ expectedCloseDate: v ?? "" })}
         />
-      </div>
+      </FormField>
 
-      <div>
-        <span className="mb-1 block font-medium">{L.sourceChannel}</span>
+      <FormField label={L.sourceChannel}>
         <Select
           ariaLabel={L.sourceChannel}
           value={state.sourceChannel}
@@ -159,10 +154,9 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
             })),
           ]}
         />
-      </div>
+      </FormField>
 
-      <label className="block" htmlFor={sourceChannelIdId}>
-        <span className="mb-1 block font-medium">{L.sourceChannelId}</span>
+      <FormField label={L.sourceChannelId} htmlFor={sourceChannelIdId}>
         <Input
           id={sourceChannelIdId}
           aria-label={L.sourceChannelId}
@@ -170,11 +164,10 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
           onChange={(e) => set({ sourceChannelId: e.target.value })}
           placeholder={L.sourceChannelIdPlaceholder}
         />
-      </label>
+      </FormField>
 
       {groups !== null && (
-        <div className="block">
-          <span className="mb-1 block font-medium">{L.visibleTo}</span>
+        <FormField label={L.visibleTo}>
           <Select
             ariaLabel={L.visibleTo}
             value={state.visibilityGroupId}
@@ -185,7 +178,7 @@ export function AddLeadLeftColumn(props: AddLeadLeftColumnProps): React.ReactNod
               ...groups.map<SelectOption>((g) => ({ value: g.id, label: g.name })),
             ]}
           />
-        </div>
+        </FormField>
       )}
 
       {leadCustomFields}

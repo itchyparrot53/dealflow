@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { DOMAIN_EVENT_TYPES } from "@/features/events/types";
@@ -100,16 +101,14 @@ export function WebhookDialog({
         </DialogHeader>
         <DialogBody>
           <div className="space-y-3">
-            <label className="block" htmlFor="webhook-name">
-              <span className="mb-1.5 block text-sm font-medium">{S.dialog.name}</span>
+            <FormField label={S.dialog.name} htmlFor="webhook-name">
               <Input
                 id="webhook-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
-            </label>
-            <label className="block" htmlFor="webhook-url">
-              <span className="mb-1.5 block text-sm font-medium">{S.dialog.url}</span>
+            </FormField>
+            <FormField label={S.dialog.url} htmlFor="webhook-url">
               <Input
                 id="webhook-url"
                 data-testid="webhook-url"
@@ -117,9 +116,8 @@ export function WebhookDialog({
                 onChange={(event) => setUrl(event.target.value)}
                 placeholder="https://example.com/hooks/dealflow"
               />
-            </label>
-            <div>
-              <span className="mb-1.5 block text-sm font-medium">{S.dialog.events}</span>
+            </FormField>
+            <FormField label={S.dialog.events}>
               <div className="space-y-2">
                 {GROUPS.map((group) => {
                   const groupEvents = DOMAIN_EVENT_TYPES.filter((type) =>
@@ -147,7 +145,7 @@ export function WebhookDialog({
                   );
                 })}
               </div>
-            </div>
+            </FormField>
             {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
           </div>
           <div className="flex justify-end gap-2">

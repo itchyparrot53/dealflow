@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
@@ -10,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { updateFormAction } from "../actions";
-import type { FormField } from "../fields";
+import type { FormField as FormFieldDef } from "../fields";
 import { EmbedCode } from "./EmbedCode";
 import { type CustomFieldOptionView, FieldList } from "./FieldList";
 import { SubmissionsTable } from "./SubmissionsTable";
@@ -23,7 +24,7 @@ export interface FormEditorView {
   name: string;
   title: string;
   description: string | null;
-  fields: FormField[];
+  fields: FormFieldDef[];
   creates: "lead" | "deal";
   pipelineId: string | null;
   stageId: string | null;
@@ -58,7 +59,7 @@ export function FormEditor({
   const [ownerId, setOwnerId] = useState(form.ownerId);
   const [successMessage, setSuccessMessage] = useState(form.successMessage);
   const [redirectUrl, setRedirectUrl] = useState(form.redirectUrl ?? "");
-  const [fields, setFields] = useState<FormField[]>(form.fields);
+  const [fields, setFields] = useState<FormFieldDef[]>(form.fields);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,37 +110,35 @@ export function FormEditor({
         </TabsList>
 
         <TabsContent value="definition" className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label htmlFor="form-name" className="space-y-1 text-sm">
-              <span>{S.editor.name}</span>
+          <FormGrid columns={2}>
+            <FormField label={S.editor.name} htmlFor="form-name">
               <Input
                 id="form-name"
                 value={name}
                 maxLength={120}
                 onChange={(e) => setName(e.target.value)}
               />
-            </label>
-            <label htmlFor="form-title" className="space-y-1 text-sm">
-              <span>{S.editor.title}</span>
+            </FormField>
+            <FormField label={S.editor.title} htmlFor="form-title">
               <Input
                 id="form-title"
                 value={title}
                 maxLength={150}
                 onChange={(e) => setTitle(e.target.value)}
               />
-            </label>
-            <label htmlFor="form-description" className="space-y-1 text-sm sm:col-span-2">
-              <span>{S.editor.description}</span>
-              <Textarea
-                id="form-description"
-                value={description}
-                maxLength={1000}
-                rows={2}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </label>
-            <div className="space-y-1 text-sm">
-              <span>{S.editor.creates}</span>
+            </FormField>
+            <div data-span="full">
+              <FormField label={S.editor.description} htmlFor="form-description">
+                <Textarea
+                  id="form-description"
+                  value={description}
+                  maxLength={1000}
+                  rows={2}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </FormField>
+            </div>
+            <FormField label={S.editor.creates}>
               <Select
                 value={creates}
                 onChange={(value) => setCreates(value === "deal" ? "deal" : "lead")}
@@ -150,20 +149,18 @@ export function FormEditor({
                 ariaLabel={S.editor.creates}
                 testId="form-creates-select"
               />
-            </div>
-            <div className="space-y-1 text-sm">
-              <span>{S.editor.owner}</span>
+            </FormField>
+            <FormField label={S.editor.owner}>
               <Select
                 value={ownerId}
                 onChange={setOwnerId}
                 options={lookups.users.map((user) => ({ value: user.id, label: user.name }))}
                 ariaLabel={S.editor.owner}
               />
-            </div>
+            </FormField>
             {creates === "deal" ? (
               <>
-                <div className="space-y-1 text-sm">
-                  <span>{S.editor.pipeline}</span>
+                <FormField label={S.editor.pipeline}>
                   <Select
                     value={pipelineId}
                     onChange={changePipeline}
@@ -173,9 +170,8 @@ export function FormEditor({
                     }))}
                     ariaLabel={S.editor.pipeline}
                   />
-                </div>
-                <div className="space-y-1 text-sm">
-                  <span>{S.editor.stage}</span>
+                </FormField>
+                <FormField label={S.editor.stage}>
                   <Select
                     value={stageId}
                     onChange={setStageId}
@@ -185,20 +181,18 @@ export function FormEditor({
                     }))}
                     ariaLabel={S.editor.stage}
                   />
-                </div>
+                </FormField>
               </>
             ) : null}
-            <label htmlFor="form-success-message" className="space-y-1 text-sm">
-              <span>{S.editor.successMessage}</span>
+            <FormField label={S.editor.successMessage} htmlFor="form-success-message">
               <Input
                 id="form-success-message"
                 value={successMessage}
                 maxLength={1000}
                 onChange={(e) => setSuccessMessage(e.target.value)}
               />
-            </label>
-            <label htmlFor="form-redirect-url" className="space-y-1 text-sm">
-              <span>{S.editor.redirectUrl}</span>
+            </FormField>
+            <FormField label={S.editor.redirectUrl} htmlFor="form-redirect-url">
               <Input
                 id="form-redirect-url"
                 value={redirectUrl}
@@ -206,8 +200,8 @@ export function FormEditor({
                 placeholder="https://example.com/thanks"
                 onChange={(e) => setRedirectUrl(e.target.value)}
               />
-            </label>
-          </div>
+            </FormField>
+          </FormGrid>
 
           <FieldList fields={fields} onChange={setFields} customFields={lookups.customFields} />
 

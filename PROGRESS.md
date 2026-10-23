@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-23 02:19
+Current: 1.4 · Last updated: 2026-10-23 02:33
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -13,7 +13,7 @@ Current: 1.3 · Last updated: 2026-10-23 02:19
 - [x] 0.3 Phase 0 QA gate
 - [x] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
 - [x] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
-- [ ] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
+- [x] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
 - [ ] 1.4 Number and money formatting (U10)
 - [ ] 1.5 Tables, empty states and the bell badge (U29, U30)
 - [ ] 1.6 AI JSON reliability and the humane error (U7)
@@ -69,6 +69,12 @@ Current: 1.3 · Last updated: 2026-10-23 02:19
 - 1.2: the quarter-hour booking time picker (`AvailabilityEditor`, 96 options) stays a Select: a searchable combobox adds typing to a fixed grid, DoD item 3 only requires Selects to scroll, and 6.11's "long list" test needs a real long Select to prove that scrolling. It is the LONG_LIST_SELECT target in `e2e/polish/routes.ts`.
 - 1.2: the Select unit test asserts the viewport's class contract rather than a computed `max-height`, because jsdom loads no Tailwind (the computed value is "none" for every class); the browser-level computed check is 16-polish.spec's "long list" test.
 - 1.2: changed tests for the "Search…" wording (6.3): `Combobox.test` and the custom-field person picker use the new placeholder, and e2e specs 07 and 10 match the prefix `/^Search/`. No assertion was weakened; the e2e long-list test additionally proves the real scroll.
+
+- 1.3: added `FormField` (grid gap-1.5, 14/500 label, required marker and `aria-required`, hint in `text-meta` muted, error as `role="alert"` in `text-destructive` and winning over the hint) and `FormGrid` (gap-4, two columns at sm, `data-span="full"` spans both). The required asterisk sits just outside the `<label>` element so an exact `getByLabelText("Value")` keeps matching.
+- 1.3: applied to the twelve create surfaces (deal, person/organization, lead, product, project, task, booking page, form, webhook, API token, invite) and the six settings forms (Profile, Company, Documents, Currencies, Goals, AI), keeping every id, label text and `data-testid`.
+- 1.3: `AddActivityModal` is deliberately unchanged: its fields are the composer's icon rows, labelled by aria-label/placeholder, and a FormField would introduce visible copy the composer does not have. The activity create surface still uses the 6.2 dialog anatomy from 1.1.
+- 1.3: in `CurrenciesSettings` the base-currency picker keeps its card-header label rather than gaining a second FormField label; it is the only control there without a field label of its own.
+- 1.3: no test assertions needed changing; `QuickAddContact`/`GlobalContactModal` were updated in 1.1 for the shell width. The two failures the migration agent saw were timezone/locale artefacts of running vitest without the project's `TZ=UTC` pin, not regressions.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

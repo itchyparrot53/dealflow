@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Combobox } from "@/components/ui/Combobox";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
@@ -137,55 +138,51 @@ export function BookingPageEditor({
 
   return (
     <div className="space-y-5" data-testid="booking-editor">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label htmlFor="booking-title" className="space-y-1 text-sm">
-          <span>{S.editor.title}</span>
+      <FormGrid columns={2}>
+        <FormField label={S.editor.title} htmlFor="booking-title">
           <Input
             id="booking-title"
             value={title}
             maxLength={120}
             onChange={(event) => setTitle(event.target.value)}
           />
-        </label>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.activityType}</span>
+        </FormField>
+        <FormField label={S.editor.activityType}>
           <Select
             value={activityTypeId}
             onChange={setActivityTypeId}
             options={lookups.activityTypes.map((type) => ({ value: type.id, label: type.name }))}
             ariaLabel={S.editor.activityType}
           />
+        </FormField>
+        <div data-span="full">
+          <FormField label={S.editor.description} htmlFor="booking-description">
+            <Textarea
+              id="booking-description"
+              value={description}
+              rows={2}
+              maxLength={1000}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </FormField>
         </div>
-        <label htmlFor="booking-description" className="space-y-1 text-sm sm:col-span-2">
-          <span>{S.editor.description}</span>
-          <Textarea
-            id="booking-description"
-            value={description}
-            rows={2}
-            maxLength={1000}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-        </label>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.duration}</span>
+        <FormField label={S.editor.duration}>
           <Select
             value={duration}
             onChange={setDuration}
             options={MINUTE_OPTIONS}
             ariaLabel={S.editor.duration}
           />
-        </div>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.buffer}</span>
+        </FormField>
+        <FormField label={S.editor.buffer}>
           <Select
             value={buffer}
             onChange={setBuffer}
             options={BUFFER_OPTIONS}
             ariaLabel={S.editor.buffer}
           />
-        </div>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.notice}</span>
+        </FormField>
+        <FormField label={S.editor.notice}>
           <Select
             value={notice}
             onChange={setNotice}
@@ -193,50 +190,45 @@ export function BookingPageEditor({
             ariaLabel={S.editor.notice}
             testId="booking-notice-select"
           />
-        </div>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.daysAhead}</span>
+        </FormField>
+        <FormField label={S.editor.daysAhead}>
           <Select
             value={daysAhead}
             onChange={setDaysAhead}
             options={DAYS_OPTIONS}
             ariaLabel={S.editor.daysAhead}
           />
-        </div>
-        <div className="space-y-1 text-sm">
-          <span>{S.editor.timezone}</span>
+        </FormField>
+        <FormField label={S.editor.timezone}>
           <Combobox
             value={timezone}
             onChange={setTimezone}
             options={TIMEZONES}
             ariaLabel={S.editor.timezone}
           />
-        </div>
-        <label htmlFor="booking-location" className="space-y-1 text-sm">
-          <span>{S.editor.location}</span>
+        </FormField>
+        <FormField label={S.editor.location} htmlFor="booking-location">
           <Input
             id="booking-location"
             value={location}
             maxLength={300}
             onChange={(event) => setLocation(event.target.value)}
           />
-        </label>
+        </FormField>
         {isAdmin ? (
-          <div className="space-y-1 text-sm">
-            <span>{S.editor.host}</span>
+          <FormField label={S.editor.host}>
             <Select
               value={hostId}
               onChange={setHostId}
               options={lookups.users.map((user) => ({ value: user.id, label: user.name }))}
               ariaLabel={S.editor.host}
             />
-          </div>
+          </FormField>
         ) : null}
-        <div className="flex items-center gap-2 text-sm">
-          <span>{S.table.active}</span>
+        <FormField label={S.table.active}>
           <Switch checked={active} onCheckedChange={setActive} label={S.table.active} />
-        </div>
-      </div>
+        </FormField>
+      </FormGrid>
 
       <AvailabilityEditor availability={availability} onChange={setAvailability} />
 

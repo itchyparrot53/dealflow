@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { PROJECTS_API_STRINGS, projectsErrorMessage } from "@/constants/projectsApiStrings";
@@ -103,8 +104,7 @@ export function NewTokenDialog({
                   {projectsErrorMessage(errorId)}
                 </p>
               )}
-              <label className="block text-sm font-medium" htmlFor="token-name">
-                {S.tokenName}
+              <FormField label={S.tokenName} htmlFor="token-name">
                 <Input
                   id="token-name"
                   value={name}
@@ -112,10 +112,9 @@ export function NewTokenDialog({
                   placeholder={S.tokenNamePlaceholder}
                   aria-label={S.tokenName}
                 />
-              </label>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div>
-                  <span className="mb-1 block text-sm font-medium">{S.scope}</span>
+              </FormField>
+              <FormGrid columns={2}>
+                <FormField label={S.scope}>
                   <Select
                     value={scope}
                     onChange={setScope}
@@ -125,17 +124,16 @@ export function NewTokenDialog({
                     ]}
                     ariaLabel={S.scope}
                   />
-                </div>
-                <div>
-                  <span className="mb-1 block text-sm font-medium">{S.expires}</span>
+                </FormField>
+                <FormField label={S.expires}>
                   <Select
                     value={expiry}
                     onChange={setExpiry}
                     options={EXPIRY_OPTIONS}
                     ariaLabel={S.expires}
                   />
-                </div>
-              </div>
+                </FormField>
+              </FormGrid>
             </div>
           ) : (
             <div className="space-y-2">

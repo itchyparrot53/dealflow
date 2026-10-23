@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField, FormGrid } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
@@ -160,8 +161,7 @@ export function TaskDialog({
                 {projectsErrorMessage(errorId)}
               </p>
             )}
-            <label className="block text-sm font-medium" htmlFor="task-title">
-              {S.task.title}
+            <FormField label={S.task.title} htmlFor="task-title">
               <Input
                 id="task-title"
                 value={title}
@@ -169,9 +169,8 @@ export function TaskDialog({
                 disabled={!canEdit || pending}
                 aria-label={S.task.title}
               />
-            </label>
-            <label className="block text-sm font-medium" htmlFor="task-description">
-              {S.task.description}
+            </FormField>
+            <FormField label={S.task.description} htmlFor="task-description">
               <Textarea
                 id="task-description"
                 value={description}
@@ -179,10 +178,9 @@ export function TaskDialog({
                 disabled={!canEdit || pending}
                 aria-label={S.task.description}
               />
-            </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.task.assignee}</span>
+            </FormField>
+            <FormGrid columns={2}>
+              <FormField label={S.task.assignee}>
                 <Combobox
                   value={assigneeId}
                   onChange={setAssigneeId}
@@ -193,9 +191,8 @@ export function TaskDialog({
                   ariaLabel={S.task.assignee}
                   disabled={!canEdit || pending}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.task.phase}</span>
+              </FormField>
+              <FormField label={S.task.phase}>
                 <Select
                   value={phaseId ?? ""}
                   onChange={(next) => setPhaseId(next === "" ? null : next)}
@@ -206,16 +203,15 @@ export function TaskDialog({
                   ariaLabel={S.task.phase}
                   disabled={!canEdit || pending}
                 />
-              </div>
-              <div>
-                <span className="mb-1 block text-sm font-medium">{S.task.dueDate}</span>
+              </FormField>
+              <FormField label={S.task.dueDate}>
                 <DatePicker
                   value={dueDate}
                   onChange={setDueDate}
                   ariaLabel={S.task.dueDate}
                   placeholder={S.task.dueDate}
                 />
-              </div>
+              </FormField>
               {task !== null && (
                 <div className="flex items-end pb-2">
                   <Checkbox
@@ -227,7 +223,7 @@ export function TaskDialog({
                   <span className="ml-2 text-sm">{S.task.done}</span>
                 </div>
               )}
-            </div>
+            </FormGrid>
           </div>
         </DialogBody>
         <DialogFooter>
