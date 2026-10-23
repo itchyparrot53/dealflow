@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-10-23 04:16
+Current: 4.4 · Last updated: 2026-10-23 04:26
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -37,7 +37,7 @@ Current: 4.3 · Last updated: 2026-10-23 04:16
 - [x] 3.8 Phase 3 QA gate
 - [x] 4.1 User guide update and PDFs
 - [x] 4.2 End-to-end and gallery
-- [ ] 4.3 Integration suite and smoke
+- [x] 4.3 Integration suite and smoke
 - [ ] 4.4 Independent review
 - [ ] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
@@ -166,6 +166,8 @@ Current: 4.3 · Last updated: 2026-10-23 04:16
 
 - 4.2: the full e2e suite passes 60/60 (specs 00 to 16) after one fix: the two-pane document preview narrows the markdown scroll region, so `MarkdownLite`'s overflow wrapper is now a labelled, keyboard-focusable region (axe `scrollable-region-focusable`). The design gallery has 93 PNGs: the 73 Part 11 files plus the 20 `polish-*` files from the spec 16 gallery, all regenerated on this tree.
 - 4.2: the polish gallery pass produced `polish-{add-deal,currencies-open,rail-expanded,rail-collapsed,forecast,calendar,document-editor,thread,leads,dashboard}-1440-{light,dark}.png`.
+
+- 4.3: the full integration suite passed 2097/2097 in 412 files against the dev Postgres (`DATABASE_URL=$DEV_DB_URL`), and the smoke stack printed `[smoke] backup round trip ok (3 deals)` and `[smoke] SMOKE PASS`, then removed its compose project and volumes (no `dealflow-smoke` container or volume remained).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
