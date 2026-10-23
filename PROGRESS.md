@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-10-23 12:44
+Current: 1.2 · Last updated: 2026-10-23 12:50
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -11,7 +11,7 @@ Current: 1.1 · Last updated: 2026-10-23 12:44
 - [x] 0.1 Start Part 13: progress files, kit, baseline and environment
 - [x] 0.2 Outbound email inventory
 - [x] 0.3 Phase 0 QA gate
-- [ ] 1.1 Variables and escaping
+- [x] 1.1 Variables and escaping
 - [ ] 1.2 The layout renderer
 - [ ] 1.3 Data model, design service, logo and the public route
 - [ ] 1.4 Registry, overrides and sendSystemEmail
