@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-23 13:27
+Current: 3.1 · Last updated: 2026-10-23 13:38
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
 - Phase 1: 8ec54f539191a19aee27033b698c00914e8f43c9
-- Phase 2: 7da8993
+- Phase 2: 7da899358fd3cf51a10209fc986fbaf22d7d0841
+- Phase 3: d78e2af
 
 ## Tasks
 - [x] 0.1 Start Part 13: progress files, kit, baseline and environment
@@ -20,7 +21,7 @@ Current: 2.4 · Last updated: 2026-10-23 13:27
 - [x] 2.1 Product emails migrated
 - [x] 2.2 Customer email wrapping in the send path, automations and booking
 - [x] 2.3 Quote and invoice emails
-- [ ] 2.4 Phase 2 QA gate
+- [x] 2.4 Phase 2 QA gate
 - [ ] 3.1 Settings › Email design: Branding tab
 - [ ] 3.2 Templates tab and the template editor
 - [ ] 3.3 Composer layout control and preview
@@ -33,6 +34,7 @@ Current: 2.4 · Last updated: 2026-10-23 13:27
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5479/5479 in 859 files · email, email-design, documents, notifications, scheduling, automations integration 467/467 in 96 files · e2e 01, 02, 06, 08, 09, 10 7/7
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5480/5480 in 860 files · src/features/email-design/*.integration.test.ts 7/7
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs

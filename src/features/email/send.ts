@@ -84,6 +84,23 @@ export interface SendEmailArgs {
 // export added in Task 15.) the provider is injected so tests can supply the fake.
 // Reject an oversized recipient list before any attempt row exists, so the composer shows the
 // limit error instead of queueing a message that the provider would refuse.
+// A future scheduled send stores the prepared payload and hands the row to the worker.
+async function scheduleIfFuture(input: SendEmailInput): Promise<boolean> {
+  if (!isFutureScheduledSend(input.scheduledSendAt, Date.now())) return false;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  await enqueueScheduledSendJob(input.accountId, input.idempotencyKey, input.scheduledSendAt!);
+  return true;
+}
+
+function wrapModeFor(input: SendEmailInput): "new" | "reply" {
+  return isReplySend(input) ? "reply" : "new";
+}
+
+// A send is a reply when it answers an existing thread or an explicit parent message.
+function isReplySend(input: SendEmailInput): boolean {
+  return input.threadId !== undefined || input.inReplyToGmailMessageId !== undefined;
+}
+
 function recipientCapError(input: SendEmailInput): AppError | null {
   const count = input.to.length + (input.cc?.length ?? 0) + (input.bcc?.length ?? 0);
   return count > env.MAIL_SEND_MAX_RECIPIENTS
@@ -215,8 +232,6 @@ async function runSend(
   // body into the payload row (jsonb_set), so a "Send later" email carries the same
   // signature and tracking rewrites an immediate send would. Runs BEFORE the scheduled
   // early-return so the worker later sends the already-prepared payload unchanged.
-  const wrapMode =
-    input.threadId !== undefined || input.inReplyToGmailMessageId !== undefined ? "reply" : "new";
   const bodyResult = await applyTrackingAndSignature(db, {
     attemptId,
     actorId: args.actorId,
@@ -225,7 +240,7 @@ async function runSend(
     trackOpens: resolvedTrackOpens,
     trackLinks: resolvedTrackLinks,
     recipient: input.to[0] ?? "",
-    wrapMode,
+    wrapMode: wrapModeFor(input),
     layout: input.layout,
     signal,
   });
@@ -237,11 +252,7 @@ async function runSend(
   // also does the CRM copy + token backfill via runSendJob) when the row becomes due.
   // enqueueScheduledSendJob is a no-op when no boss is set (tests, web at boot), so
   // DB-only tests stay free of a live queue.
-  if (isFutureScheduledSend(input.scheduledSendAt, Date.now())) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await enqueueScheduledSendJob(input.accountId, input.idempotencyKey, input.scheduledSendAt!);
-    return ok({ status: "scheduled" });
-  }
+  if (await scheduleIfFuture(input)) return ok({ status: "scheduled" });
 
   // (f) Process the outbox attempt (claim, stamp, send or reconcile).
   const outcome = await processSendAttempt(db, {

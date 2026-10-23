@@ -38,6 +38,8 @@ export function notificationCta(type: NotificationRow["type"]): string {
     case "automation":
     case "ai_bulk_score":
       return "Open deal";
+    case "project_task_assigned":
+      return "Open Dealflow";
     default:
       return "Open Dealflow";
   }

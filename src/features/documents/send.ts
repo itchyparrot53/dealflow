@@ -136,6 +136,44 @@ async function composeMail(
   });
 }
 
+// Issue before the send, committed; a mail failure leaves an issued document.
+async function issueBeforeSend(
+  db: Db,
+  actor: PermSetUser,
+  current: DocumentView,
+  signal: AbortSignal,
+): Promise<Result<DocumentView, AppError>> {
+  if (current.status === "draft") {
+    return issueDocument(db, actor, current.id, { via: "issue" }, signal);
+  }
+  if (current.status === "void") {
+    return err(
+      new AppError(ERROR_IDS.DOC_TRANSITION, "A void document cannot be sent", {
+        status: current.status,
+      }),
+    );
+  }
+  return ok(current);
+}
+
+async function wrapDocumentMail(
+  db: Db,
+  document: DocumentView,
+  content: DocumentMail,
+  signal: AbortSignal,
+): Promise<Result<string, AppError>> {
+  const design = await getEmailDesign(db, signal);
+  return ok(
+    wrapCustomerEmail({
+      bodyHtml: content.bodyHtml,
+      mode: "document",
+      design,
+      summary: { rows: content.summary },
+      cta: { label: content.ctaLabel, url: document.publicUrl },
+    }).html,
+  );
+}
+
 // Read-only prefill for the send dialog: the same copy the server would send.
 export async function getDocumentSendDraft(
   db: Db,
@@ -202,19 +240,9 @@ export async function sendDocument(
   const target = await resolveTarget(db, actor, current.value, input.to, signal);
   if (!target.ok) return target;
 
-  // Issue before the send, committed; a mail failure leaves an issued document.
-  let document = current.value;
-  if (document.status === "draft") {
-    const issued = await issueDocument(db, actor, document.id, { via: "issue" }, signal);
-    if (!issued.ok) return issued;
-    document = issued.value;
-  } else if (document.status === "void") {
-    return err(
-      new AppError(ERROR_IDS.DOC_TRANSITION, "A void document cannot be sent", {
-        status: document.status,
-      }),
-    );
-  }
+  const issued = await issueBeforeSend(db, actor, current.value, signal);
+  if (!issued.ok) return issued;
+  const document = issued.value;
 
   const settings = await getDocumentSettings(db, signal);
   const content = await composeMail(db, document, deal, settings, input, signal);
@@ -234,20 +262,14 @@ export async function sendDocument(
     resolved = provider.value;
   }
 
-  const design = await getEmailDesign(db, signal);
-  const wrapped = wrapCustomerEmail({
-    bodyHtml: content.value.bodyHtml,
-    mode: "document",
-    design,
-    summary: { rows: content.value.summary },
-    cta: { label: content.value.ctaLabel, url: document.publicUrl },
-  });
+  const wrapped = await wrapDocumentMail(db, document, content.value, signal);
+  if (!wrapped.ok) return wrapped;
   const payload: SendEmailInput = {
     accountId: target.value.mailboxId,
     idempotencyKey: randomUUID(),
     to: [target.value.recipient],
     subject: content.value.subject,
-    bodyHtml: wrapped.html,
+    bodyHtml: wrapped.value,
     linkDealId: document.dealId,
     ...(deal.personId !== null ? { linkPersonId: deal.personId } : {}),
   };
