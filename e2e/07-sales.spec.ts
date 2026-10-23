@@ -64,7 +64,7 @@ test("currencies, products, deal lines, board totals and the forecast drag", asy
   const section = page.getByTestId("deal-products-section");
   await expect(section).toBeAttached();
   await section.getByTestId("deal-product-add").getByRole("button").click();
-  const search = page.getByPlaceholder("Search...");
+  const search = page.getByPlaceholder(/^Search/);
   await expect(search).toBeVisible();
   await search.fill("Onboarding");
   const option = page.getByRole("option", { name: /Onboarding package/ });

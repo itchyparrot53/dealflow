@@ -84,7 +84,7 @@ test("forms and booking pages: build, submit and cancel through the public pages
   await page.getByTestId("booking-notice-select").click();
   await page.getByRole("option", { name: "0 hours" }).click();
   await page.getByRole("button", { name: "Time zone" }).click();
-  await page.getByPlaceholder("Search...").fill("UTC");
+  await page.getByPlaceholder(/^Search/).fill("UTC");
   await page.getByRole("option", { name: "UTC", exact: true }).click();
   await page.getByTestId("booking-save").click();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible({ timeout: 20_000 });

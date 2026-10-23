@@ -16,14 +16,14 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | ID | Where | Problem found | Fix (contract) | Task | Closed in task | Commit |
 |---|---|---|---|---|---|---|---|
 | U1 | All dialogs (Owner) | `DialogHeader` uses `-mx-6 -mt-6` while dialogs like `EntityCreateDialogShell` set `p-0`, so the title is pushed 24 px above the box and clipped ("Add deal" cut off). The close button is absolutely placed at `top-4` and lands on the header rule. | 6.2 anatomy | 1.1 | 1.1 | | |
-| U2 | Every Select (Owner: currencies) | `Select` content is `position="popper"` with `overflow-hidden` and no max height, so long lists run off screen and cannot scroll | 6.3 Select | 1.2 | | | |
-| U3 | Currency and time zone pickers | 160 currencies and 400+ zones in a plain list | searchable `Combobox` (6.3) | 1.2 | | | |
+| U2 | Every Select (Owner: currencies) | `Select` content is `position="popper"` with `overflow-hidden` and no max height, so long lists run off screen and cannot scroll | 6.3 Select | 1.2 | 1.2 | | |
+| U3 | Currency and time zone pickers | 160 currencies and 400+ zones in a plain list | searchable `Combobox` (6.3) | 1.2 | 1.2 | | |
 | U4 | Rail (Owner) | Icons only, with no way to see labels | expandable rail, 6.4 | 2.1 | | | |
 | U5 | Install, offline, push (Owner) | The owner does not use install, offline or push, and wants every mention hidden | `NEXT_PUBLIC_PWA_UI` flag, 6.4 | 2.2 | | | |
 | U6 | Add deal dialog (Owner) | Stage chevrons truncate to "Qual…", "Cont…"; the right "Person" column is unbalanced; the currency and owner pickers use different chevrons | 6.7.1 | 3.1 | | | |
 | U7 | AI drafts (Owner) | "The AI reply could not be understood". Reasoning models spend the 800-token budget thinking (empty or cut content), and the fence regex only accepts a whole-string fence | 6.9 | 1.6 | | | |
 | U8 | Forms everywhere | Label sizes, gaps and widths differ per dialog and settings page | `FormField` + `FormGrid` (6.3) | 1.3 | | | |
-| U9 | Selects and comboboxes | `Select` uses `ChevronDown` while Combobox (Owner field) uses up/down chevrons, and heights differ | one trigger style (6.3) | 1.2 | | | |
+| U9 | Selects and comboboxes | `Select` uses `ChevronDown` while Combobox (Owner field) uses up/down chevrons, and heights differ | one trigger style (6.3) | 1.2 | 1.2 | | |
 | U10 | Money and numbers | Chart axes show `$380,000.00`; products show `1200.00 USD`; org revenue shows `18500000.00` | 6.5 helpers everywhere | 1.4 | | | |
 | U11 | Index pages | Documents, Insights and Projects repeat the top-bar title as a large H1 | 6.6 heading rule | 2.3 | | | |
 | U12 | Settings | Content is capped near 520 to 700 px in a 1440 window; the nav is a long unscrolled list; pages must always scroll | 6.6 settings layout | 2.3 | | | |

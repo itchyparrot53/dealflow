@@ -1,8 +1,13 @@
 "use client";
 import * as RadixSelect from "@radix-ui/react-select";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import type React from "react";
 import { cn } from "@/lib/utils";
+
+// The one trigger style (PLAN-PART12.md 6.3, U9). Combobox imports this string so the two pickers
+// cannot drift apart: same height, padding, border, radius, hover and focus treatment.
+export const SELECT_TRIGGER_CLASS =
+  "group flex h-8 w-full items-center justify-between rounded-md border border-border-strong bg-card px-2 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-100 ease-out hover:border-placeholder focus:border-ring focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground motion-reduce:transition-none";
 
 export interface SelectOption {
   value: string;
@@ -163,10 +168,7 @@ export function Select({
         aria-label={ariaLabel}
         title={triggerTitle}
         data-testid={testId}
-        className={cn(
-          "group flex h-8 w-full items-center justify-between rounded-md border border-border-strong bg-card px-2 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-100 ease-out hover:border-placeholder focus:border-ring focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground motion-reduce:transition-none",
-          triggerClassName,
-        )}
+        className={cn(SELECT_TRIGGER_CLASS, triggerClassName)}
       >
         <RadixSelect.Value>
           {triggerContent ?? triggerLabel(options, value, placeholder)}
@@ -181,9 +183,13 @@ export function Select({
         <RadixSelect.Content
           position="popper"
           sideOffset={4}
-          className="z-50 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-pop data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
+          className="z-50 max-h-[min(var(--radix-select-content-available-height),320px)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-pop data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 [transform-origin:var(--radix-select-content-transform-origin)] motion-reduce:animate-none"
         >
-          <RadixSelect.Viewport className="p-1">
+          {/* 6.3: a long list scrolls inside the viewport; these 24 px rows make the overflow safe. */}
+          <RadixSelect.ScrollUpButton className="flex h-6 items-center justify-center text-muted-foreground">
+            <ChevronUp className="h-4 w-4" />
+          </RadixSelect.ScrollUpButton>
+          <RadixSelect.Viewport className="max-h-[inherit] overflow-y-auto p-1">
             {groupOptions(options).map((section) => (
               <SelectSection
                 key={section.key}
@@ -192,6 +198,9 @@ export function Select({
               />
             ))}
           </RadixSelect.Viewport>
+          <RadixSelect.ScrollDownButton className="flex h-6 items-center justify-center text-muted-foreground">
+            <ChevronDown className="h-4 w-4" />
+          </RadixSelect.ScrollDownButton>
         </RadixSelect.Content>
       </RadixSelect.Portal>
     </RadixSelect.Root>

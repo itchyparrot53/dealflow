@@ -32,6 +32,26 @@ describe("Select", () => {
     expect(onChange).toHaveBeenCalledWith("b");
   });
 
+  // Part 12, 6.3: a long list scrolls inside the viewport instead of running off the screen. jsdom
+  // loads no Tailwind, so this asserts the class contract; 16-polish.spec's "long list" test reads
+  // the real computed scrollHeight/clientHeight in a browser.
+  it("gives a 200-option list a bounded, scrollable viewport", () => {
+    const many = Array.from({ length: 200 }, (_, index) => ({
+      value: `v${index}`,
+      label: `Option ${index}`,
+    }));
+    render(<Select value="v0" onChange={() => {}} options={many} ariaLabel="Many" />);
+    fireEvent.click(screen.getByLabelText("Many"));
+    const viewport = document.querySelector("[data-radix-select-viewport]");
+    expect(viewport).not.toBeNull();
+    expect(viewport?.className).toContain("overflow-y-auto");
+    expect(viewport?.className).toContain("max-h-[inherit]");
+    const content = viewport?.parentElement;
+    expect(content?.className).toContain(
+      "max-h-[min(var(--radix-select-content-available-height),320px)]",
+    );
+  });
+
   it("renders a leading icon for options that have one", () => {
     const onChange = vi.fn();
     const iconOptions = [

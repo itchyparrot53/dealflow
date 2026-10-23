@@ -2,8 +2,8 @@
 
 import type React from "react";
 import { useState } from "react";
+import { Combobox } from "@/components/ui/Combobox";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { Tip } from "@/components/ui/tooltip";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
@@ -90,7 +90,7 @@ export function DealTermsFields({
           {locked ? (
             <Tip label={hasLines ? S.currencyLocked : S.adminOnly}>
               <span>
-                <Select
+                <Combobox
                   value={currency}
                   onChange={() => undefined}
                   options={currencyOptions(codes)}
@@ -100,7 +100,7 @@ export function DealTermsFields({
               </span>
             </Tip>
           ) : (
-            <Select
+            <Combobox
               value={currency}
               onChange={(value) => void saveTerms({ currency: value })}
               options={currencyOptions(codes)}

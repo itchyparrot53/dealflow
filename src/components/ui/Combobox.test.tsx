@@ -32,7 +32,7 @@ describe("Combobox", () => {
     const onChange = vi.fn();
     render(<Combobox value="u1" onChange={onChange} options={options} ariaLabel="Owner" />);
     fireEvent.click(screen.getByLabelText("Owner"));
-    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "Bob" } });
+    fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "Bob" } });
     // Prove the type-ahead actually narrows the option list to the single
     // match (not just that an already-visible row is clickable). Ann Owner
     // still shows in the trigger since it is the current value, so assert on
@@ -56,7 +56,7 @@ describe("Combobox", () => {
       />,
     );
     fireEvent.click(screen.getByLabelText("Owner"));
-    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "Bob" } });
+    fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "Bob" } });
     expect(onSearch).toHaveBeenCalledWith("Bob");
     expect(screen.getAllByRole("option")).toHaveLength(2);
   });
@@ -77,7 +77,7 @@ describe("Combobox", () => {
     const trigger = screen.getByLabelText("Owner");
     expect(trigger).toBeDisabled();
     fireEvent.click(trigger);
-    expect(screen.queryByPlaceholderText("Search...")).toBeNull();
+    expect(screen.queryByPlaceholderText("Search…")).toBeNull();
   });
 
   it("renders a heading above each group of options", () => {
@@ -133,10 +133,10 @@ describe("Combobox", () => {
       />,
     );
     fireEvent.click(screen.getByLabelText("Owner"));
-    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "West" } });
+    fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "West" } });
     expect(screen.getAllByRole("option")).toHaveLength(2);
-    fireEvent.keyDown(screen.getByPlaceholderText("Search..."), { key: "ArrowDown" });
-    fireEvent.keyDown(screen.getByPlaceholderText("Search..."), { key: "Enter" });
+    fireEvent.keyDown(screen.getByPlaceholderText("Search…"), { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByPlaceholderText("Search…"), { key: "Enter" });
     expect(onChange).toHaveBeenCalledWith("u9");
   });
 
@@ -166,7 +166,7 @@ describe("Combobox", () => {
       />,
     );
     fireEvent.click(screen.getByLabelText("Owner"));
-    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "esra" } });
+    fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "esra" } });
     expect(screen.getAllByRole("option")).toHaveLength(1);
     expect(screen.getByRole("option")).toHaveTextContent("Demo Rep Esra");
   });

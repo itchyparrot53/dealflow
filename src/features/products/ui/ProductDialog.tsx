@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import {
   Dialog,
   DialogBody,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { currencyOptions } from "@/features/currency/ui/currencyOptions";
@@ -176,7 +176,7 @@ export function ProductDialog({
             </label>
             <div className="block">
               <span className="mb-1.5 block text-sm font-medium">{S.currency}</span>
-              <Select
+              <Combobox
                 value={form.currency}
                 onChange={(value) => update("currency", value)}
                 options={currencyOptions(codes)}

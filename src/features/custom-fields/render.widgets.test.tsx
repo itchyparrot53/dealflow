@@ -66,7 +66,7 @@ describe("CustomFieldFormControl references", () => {
     };
     render(<CustomFieldFormControl def={def} value="" onChange={onChange} />);
     fireEvent.click(screen.getByLabelText("Sponsor"));
-    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "Jane" } });
+    fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "Jane" } });
     fireEvent.click(screen.getByRole("option", { name: "Jane Roe" }));
     expect(onChange).toHaveBeenCalledWith("person-1");
   });

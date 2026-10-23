@@ -14,8 +14,8 @@ import {
 } from "@/app/(app)/settings/SettingsSurface";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { CURRENCY_STRINGS } from "@/constants/salesStrings";
 import {
@@ -140,7 +140,7 @@ export function CurrenciesSettings({ base, rates, codes }: Props): React.ReactNo
         <SettingsCardHeader title={S.base} description={S.baseDescription} />
         <SettingsCardBody>
           <div data-testid="currencies-base-select" className="max-w-xs">
-            <Select
+            <Combobox
               value={base}
               onChange={chooseBase}
               options={codeOptions}
@@ -200,7 +200,7 @@ export function CurrenciesSettings({ base, rates, codes }: Props): React.ReactNo
           <div className="flex flex-wrap items-end gap-3">
             <div className="w-56">
               <span className="mb-1.5 block text-sm font-medium">{S.code}</span>
-              <Select
+              <Combobox
                 value={newCode}
                 onChange={setNewCode}
                 options={rateOptions}

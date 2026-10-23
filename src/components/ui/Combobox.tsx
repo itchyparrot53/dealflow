@@ -1,12 +1,12 @@
 "use client";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "cmdk";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import type React from "react";
 import { forwardRef, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "./Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
+import { SELECT_TRIGGER_CLASS } from "./Select";
 
 export interface ComboboxOption {
   value: string;
@@ -81,11 +81,7 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
         ref={ref}
         aria-label={ariaLabel}
         disabled={disabled}
-        className={cn(
-          buttonVariants({ variant: "outline", size: "md" }),
-          "w-full justify-between font-normal disabled:opacity-50",
-          triggerClassName,
-        )}
+        className={cn(SELECT_TRIGGER_CLASS, triggerClassName)}
       >
         <span className="flex items-center gap-1.5 truncate">
           {selected?.avatarName !== undefined && (
@@ -97,19 +93,19 @@ export const Combobox = forwardRef<HTMLButtonElement, ComboboxProps>(function Co
           )}
           {selected?.label ?? <span className="text-muted-foreground">{placeholder}</span>}
         </span>
-        <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-150 ease-out group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command filter={matchLabel} shouldFilter={search === undefined}>
           <CommandInput
-            placeholder="Search..."
+            placeholder="Search…"
             value={search?.value}
             onValueChange={search?.onChange}
             className="h-8 w-full border-b px-3 text-sm outline-none"
           />
-          <CommandList className="max-h-56 overflow-y-auto p-1">
+          <CommandList className="max-h-80 overflow-y-auto p-1">
             <CommandEmpty className="px-2 py-3 text-sm text-muted-foreground">
-              No match.
+              No results
             </CommandEmpty>
             {groups.map((g) => (
               <CommandGroup

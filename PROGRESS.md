@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-10-23 02:16
+Current: 1.3 · Last updated: 2026-10-23 02:19
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -12,7 +12,7 @@ Current: 1.2 · Last updated: 2026-10-23 02:16
 - [x] 0.2 Polish e2e spec and the two check-design rules
 - [x] 0.3 Phase 0 QA gate
 - [x] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
-- [ ] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
+- [x] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
 - [ ] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
 - [ ] 1.4 Number and money formatting (U10)
 - [ ] 1.5 Tables, empty states and the bell badge (U29, U30)
@@ -63,6 +63,12 @@ Current: 1.2 · Last updated: 2026-10-23 02:16
 - 1.1: `MoveDealDialog` and `CommandPalette` are the two headerless dialogs, so both pass `closeButton="corner"` (the command palette's own comment already relied on the dialog's close X).
 - 1.1: POLISH.md's "Closed in task" is filled per task; the Commit column is filled once in Task 4.5 from `git log --grep`, because a commit cannot contain its own hash.
 - 1.1: changed tests (no weakened assertions): `QuickAddContact` and `GlobalContactModal` asserted the retired `max-w-3xl p-0` class pair on the entity shell; they now assert `data-size="lg"` plus `p-0`, which is the same width and padding contract through the new primitive.
+
+- 1.2: `Select` scrolls inside the viewport (`max-h-[min(var(--radix-select-content-available-height),320px)]` on the content, `max-h-[inherit] overflow-y-auto` on the viewport) and gains the 24 px Radix scroll buttons. `Combobox` shares the new `SELECT_TRIGGER_CLASS` exported from `Select.tsx`, so the two triggers cannot drift; it uses `ChevronDown` with the open rotation, a `max-h-80` list, the "Search…" placeholder and a "No results" empty row.
+- 1.2: converted to Combobox: the base and new-rate currencies (`CurrenciesSettings`), both deal-terms currency pickers (`DealTermsFields`), the product currency (`ProductDialog`) and the profile time zone. The booking time zone was already a Combobox. `check:design` `select-long-list` is 0.
+- 1.2: the quarter-hour booking time picker (`AvailabilityEditor`, 96 options) stays a Select: a searchable combobox adds typing to a fixed grid, DoD item 3 only requires Selects to scroll, and 6.11's "long list" test needs a real long Select to prove that scrolling. It is the LONG_LIST_SELECT target in `e2e/polish/routes.ts`.
+- 1.2: the Select unit test asserts the viewport's class contract rather than a computed `max-height`, because jsdom loads no Tailwind (the computed value is "none" for every class); the browser-level computed check is 16-polish.spec's "long list" test.
+- 1.2: changed tests for the "Search…" wording (6.3): `Combobox.test` and the custom-field person picker use the new placeholder, and e2e specs 07 and 10 match the prefix `/^Search/`. No assertion was weakened; the e2e long-list test additionally proves the real scroll.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
