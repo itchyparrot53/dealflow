@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-23 04:26
+Current: 4.5 · Last updated: 2026-10-23 06:24
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -38,11 +38,12 @@ Current: 4.4 · Last updated: 2026-10-23 04:26
 - [x] 4.1 User guide update and PDFs
 - [x] 4.2 End-to-end and gallery
 - [x] 4.3 Integration suite and smoke
-- [ ] 4.4 Independent review
+- [x] 4.4 Independent review
 - [ ] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Independent review: subagent (fresh context, .dsh/qa.md) round 1: QA RESULT FAIL · 1 blocker / 2 majors / 7 minors · fixed 1 blocker, 2 majors and 7 minors · after the fixes: typecheck ok, lint ok, unit 5433/5433 in 854 files, check:design 0 violations, e2e 60/60, integration 2097/2097
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
 - Phase 3 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5428/5428 · check:design 0 violations, 17 opt-outs · polish subset "forecast|calendar|board header" 3/3 · specs 06, 07, 08, 11, 12 pass
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5409/5409 · check:design 0 violations, 14 opt-outs · polish subset "rail|hidden ui|headings|settings scroll" 4/4 · specs 14 and 15 27/27
