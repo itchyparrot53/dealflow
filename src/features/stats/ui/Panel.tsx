@@ -1,8 +1,7 @@
-import { currencyMinorDigits, formatMoney, formatMoneyCompact } from "@/lib/format/number";
-
 import type React from "react";
 import { Panel as DesignPanel } from "@/components/ui/panel";
 import { STRINGS } from "@/constants/strings";
+import { currencyMinorDigits, formatMoney, formatMoneyCompact } from "@/lib/format/number";
 import type { ExcludedCurrency } from "@/types/stats";
 
 // Every dashboard panel goes through here so an empty one says why it is empty. A heading

@@ -145,10 +145,7 @@ export function CreateFilterModal({
         if (!o) onClose();
       }}
     >
-      <DialogContent
-        aria-describedby={undefined}
-        className="max-w-2xl bg-card"
-      >
+      <DialogContent aria-describedby={undefined} className="max-w-2xl bg-card">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">{copy.title}</DialogTitle>
         </DialogHeader>

@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.7 · Last updated: 2026-10-23 02:41
+Current: 2.1 · Last updated: 2026-10-23 02:52
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
 - Phase 1: d6cd01e746f13095fa09b221f12d140414296ae6
+- Phase 2: fae8ad9
 
 ## Tasks
 - [x] 0.1 Start Part 12: progress files, kit, baseline and environment
@@ -17,7 +18,7 @@ Current: 1.7 · Last updated: 2026-10-23 02:41
 - [x] 1.4 Number and money formatting (U10)
 - [x] 1.5 Tables, empty states and the bell badge (U29, U30)
 - [x] 1.6 AI JSON reliability and the humane error (U7)
-- [ ] 1.7 Phase 1 QA gate
+- [x] 1.7 Phase 1 QA gate
 - [ ] 2.1 Expandable rail with labels (U4)
 - [ ] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
 - [ ] 2.3 One heading per page and the settings layout (U11, U12)
@@ -41,6 +42,7 @@ Current: 1.7 · Last updated: 2026-10-23 02:41
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
+- Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5392/5392 · check:design 0 violations, 13 opt-outs · polish subset "dialog anatomy|long list" 2/2 · AI integration 26/26 in 4 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5356/5356 in 843 files · check:design 9 violation(s) in 7 file(s): dialog-anatomy 4 (the two primitive margins and two headerless dialogs), select-long-list 5, 12 opt-outs, and no other rule reports · check:progress ok
 
 ## Decisions
@@ -94,6 +96,9 @@ Current: 1.7 · Last updated: 2026-10-23 02:41
 - 1.6: there is no logger module in this repo, so the provider's metadata-only failure uses `console.warn` (the lint-allowed warn channel); the feature travels on `AiChatRequest.feature` so the log line names it.
 - 1.6: the five AI surfaces (email draft, AI filter, notes to activities, automation describe, report explain) show "The AI couldn't finish that reply. Try again, or shorten your request." (explain keeps its specific line) and a "Try again" button that resubmits the same input.
 - 1.6: changed tests: the `chatJson` suite gains prose-wrapped JSON, the doubled-budget retry, the two-truncation `E_AI_012` failure, the schema-mismatch retry and the feature passthrough; the usage integration literal gained `finishReason`.
+
+- 1.7: gate fixes with no app behaviour change: the polish spec settles a dialog after its data queries before measuring (the Add deal dialog was still growing), the notes-to-activities retry key is read in its effect so the exhaustive-deps rule sees it as intentional, the 10 px badge class sits on the line carrying its `design-ok: badge digit` marker, and biome reflowed the files the 1.1 to 1.6 migrations touched.
+- 1.7: the gate ran on the committed Phase 1 tree (the Phase 2 rail and hidden-UI work was set aside and restored afterwards), so the evidence belongs to this phase.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

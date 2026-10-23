@@ -45,6 +45,10 @@ test("dialog anatomy", async ({ page }) => {
 
   async function inspect(): Promise<void> {
     await expect(dialog).toBeVisible();
+    // The dialog's own data queries land after it opens and change its height; measuring while it
+    // is still growing would move every box for the wrong reason.
+    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
+    await page.waitForTimeout(250);
     const dialogBox = await box(dialog);
     const title = dialog.getByRole("heading").first();
     const titleBox = await box(title);

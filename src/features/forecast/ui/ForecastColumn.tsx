@@ -4,8 +4,8 @@ import { useDroppable } from "@dnd-kit/core";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { parseCents } from "@/features/currency/money";
-import { formatMoney } from "@/lib/format/number";
 import type { ForecastMonth } from "@/features/forecast/forecast";
+import { formatMoney } from "@/lib/format/number";
 import { ForecastCard } from "./ForecastCard";
 
 interface Props {

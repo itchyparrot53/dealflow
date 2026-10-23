@@ -56,6 +56,9 @@ export function NotesToActivitiesDialog({
   // calls out of a closed dialog; TypeScript cannot narrow a ref's property to a constant.
   const cancelled = useRef(false);
   useEffect(() => {
+    // retryKey is the re-run trigger from the Try again button; reading it here is what makes it a
+    // dependency rather than an unused one.
+    void retryKey;
     cancelled.current = false;
     void (async () => {
       const result = await proposeActivitiesFromNoteAction(noteId, readCsrfToken());

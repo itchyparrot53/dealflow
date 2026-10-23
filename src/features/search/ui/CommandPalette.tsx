@@ -246,7 +246,8 @@ export function CommandPalette({
     >
       <DialogContent
         aria-describedby={undefined}
-        closeButton="corner" className="top-[12%] max-w-lg translate-y-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
+        closeButton="corner"
+        className="top-[12%] max-w-lg translate-y-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
       >
         <DialogBody>
           <DialogTitle className="sr-only">{STRINGS.search.placeholder}</DialogTitle>

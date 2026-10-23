@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover
 import { STRINGS } from "@/constants/strings";
 import { markAllReadAction, markReadAction } from "@/features/notifications/actions";
 import { trpc } from "@/lib/trpc-client";
+import { cn } from "@/lib/utils";
 import type { NotificationFeedItem } from "@/types/notification";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { notificationHref } from "./deepLink";
@@ -18,6 +19,11 @@ import { useNotificationStream } from "./useNotificationStream";
 export function notificationBadgeText(count: number): string {
   return count > 9 ? "9+" : String(count);
 }
+
+const NOTIFICATION_BADGE_CLASS = cn(
+  "absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1",
+  "text-[10px] font-semibold tabular-nums text-destructive-foreground ring-2 ring-background", // design-ok: badge digit
+);
 
 export function NotificationsBell({ userId }: { userId: string }): React.ReactNode {
   useNotificationStream(userId);
@@ -67,10 +73,7 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
       >
         <Bell aria-hidden className="size-5" strokeWidth={1.75} />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold tabular-nums text-destructive-foreground ring-2 ring-background">
-            {/* design-ok: badge digit */}
-            {notificationBadgeText(unreadCount)}
-          </span>
+          <span className={NOTIFICATION_BADGE_CLASS}>{notificationBadgeText(unreadCount)}</span>
         ) : null}
       </PopoverTrigger>
 

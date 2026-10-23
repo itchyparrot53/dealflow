@@ -2,11 +2,11 @@
 // Adding a new field type forces a case here via assertNever (compile-time exhaustiveness).
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { STRINGS } from "@/constants/strings";
+import { currencyMinorDigits, formatMoney, formatNumber } from "@/lib/format/number";
 import type { CustomFieldDef } from "@/types/customFields";
 import { assertNever } from "@/types/result";
 import type { CustomFieldRefLabels } from "./refLabelsShared";
 import { isCustomFieldValueEmpty } from "./valueEmpty";
-import { currencyMinorDigits, formatMoney, formatNumber } from "@/lib/format/number";
 
 // Re-export widgets from sibling file to keep this file under 200 lines.
 export { CustomFieldDetail, CustomFieldFormControl } from "./render.widgets";

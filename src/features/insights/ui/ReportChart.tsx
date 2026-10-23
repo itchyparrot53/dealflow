@@ -128,7 +128,9 @@ function chartValue(
     return `${formatNumber(number)} min`;
   }
   const minor = Math.round(number * 10 ** currencyMinorDigits(baseCurrency));
-  return mode === "axis" ? formatMoneyCompact(minor, baseCurrency) : formatMoney(minor, baseCurrency);
+  return mode === "axis"
+    ? formatMoneyCompact(minor, baseCurrency)
+    : formatMoney(minor, baseCurrency);
 }
 
 export function ReportChart({
