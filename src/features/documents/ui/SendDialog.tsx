@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
@@ -12,11 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
-import { sendDocumentAction } from "@/features/documents/actions";
+import { documentSendDraftAction, sendDocumentAction } from "@/features/documents/actions";
 import type { DocKind, DocStatus } from "@/features/documents/transitions";
+import { RichTextBody } from "@/features/email/composer/RichTextBody";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 const S = DOCUMENTS_STRINGS;
@@ -58,6 +58,21 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Prefill from the resolved quote/invoice template when the dialog opens. The server still
+  // renders the copy on send, so an untouched field and a cleared one behave the same.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void documentSendDraftAction(document.id).then((result) => {
+      if (cancelled || !result.ok) return;
+      setSubject(result.value.subject);
+      setMessage(result.value.messageHtml);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, document.id]);
 
   async function send(): Promise<void> {
     setPending(true);
@@ -108,15 +123,15 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
                 disabled={pending}
               />
             </label>
-            <label className="block" htmlFor="document-send-message">
+            <div>
               <span className="mb-1.5 block text-sm font-medium">{S.message}</span>
-              <Textarea
-                id="document-send-message"
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                disabled={pending}
+              <RichTextBody
+                html={message}
+                onChange={setMessage}
+                ariaLabel={S.message}
+                frameClassName="rounded-md border bg-card"
               />
-            </label>
+            </div>
           </div>
           {error !== null && (
             <p role="alert" className="text-sm text-destructive">

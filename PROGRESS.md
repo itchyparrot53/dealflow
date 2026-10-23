@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-23 13:22
+Current: 2.4 · Last updated: 2026-10-23 13:27
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -19,7 +19,7 @@ Current: 2.3 · Last updated: 2026-10-23 13:22
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Product emails migrated
 - [x] 2.2 Customer email wrapping in the send path, automations and booking
-- [ ] 2.3 Quote and invoice emails
+- [x] 2.3 Quote and invoice emails
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Settings › Email design: Branding tab
 - [ ] 3.2 Templates tab and the template editor
@@ -38,6 +38,10 @@ Current: 2.3 · Last updated: 2026-10-23 13:22
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 2.3: quote and invoice mail resolves `quote_sent`/`invoice_sent` from the registry; the subject and message are editable, the summary (number, total, valid-until or due date) and the "View quote"/"View invoice" button are structural and point at the existing public URL.
+- 2.3: the message field is now rich text (`RichTextBody`, TipTap) and is sanitised with `sanitizeAuthorHtml`; the send input's message limit rose from 4,000 to 20,000 characters for HTML. The dialog prefills from a read-only `documentSendDraftAction` on open.
+- 2.3: the total is rendered with `formatMoney(..., { decimals: 2 })` from the document's currency and integer minor units; dates use the Part 12 calendar formatter, and the subject goes through `stripHeaderBreaks`.
+- 2.3: changed test: the documents integration decodes every MIME part and asserts the branded marker, the public link, "View quote" and the summary.
 - 2.2: the wrap happens inside `applyTrackingAndSignature`, after the tracking rewrites and the signature, so the pixel, every rewritten link and the signature sit inside the layout and the stored/Sent copy is the wire copy. A scheduled send is prepared (and wrapped) before its early return, so the worker sends it once; the `data-df-layout` marker makes every later pass a no-op.
 - 2.2: documents and automations wrap before calling the mailbox path; because they already carry the marker, the send path only adds a derived text part for them (`textForWrappedBody`) instead of wrapping again.
 - 2.2: the booking confirmation now attaches the existing `buildIcs` output as `invite.ics` through `SystemMail.attachments`, so its "A calendar invite is attached." copy is true. The booking cancellation now emails the guest too, on the cancel flow's existing trigger and recipient (the 6.1 `booking_cancelled` template).

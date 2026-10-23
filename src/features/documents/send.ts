@@ -7,11 +7,18 @@ import type { Db } from "@/db/client";
 import { persons, users } from "@/db/schema";
 import { loadEditableDeal } from "@/features/deals/dealAuth";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
+import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
 import { type SendEmailInput, sendEmail } from "@/features/email/send";
+import { getEmailDesign } from "@/features/email-design/design";
+import { resolveTemplate } from "@/features/email-design/templates";
+import { renderVariables, stripHeaderBreaks } from "@/features/email-design/variables";
+import { wrapCustomerEmail } from "@/features/email-design/wrapCustomerEmail";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { type ResolveDeps, resolveMailProvider } from "@/features/mail/provider/resolve";
 import type { MailProvider } from "@/features/mail/provider/types";
 import type { PermSetUser } from "@/features/permissions/effective";
+import { formatCalendarDate } from "@/lib/format/date";
+import { currencyMinorDigits, formatMoney } from "@/lib/format/number";
 import { err, ok, type Result } from "@/types/result";
 import { type DocumentView, getDocument, toDocumentError } from "./documents";
 import { issueDocument } from "./issue";
@@ -26,7 +33,8 @@ export const sendDocumentInput = z.object({
   id: z.string().uuid(),
   to: z.string().trim().email().max(320).optional(),
   subject: z.string().trim().max(200).optional(),
-  message: z.string().max(4000).optional(),
+  // The dialog sends rich text (TipTap), so the message is sanitised HTML, not a plain string.
+  message: z.string().max(20_000).optional(),
 });
 
 export interface SendDocumentDeps {
@@ -37,35 +45,112 @@ export interface SendDocumentDeps {
   storage?: StorageClient;
 }
 
-interface MailContent {
+export interface DocumentMail {
   subject: string;
   bodyHtml: string;
+  ctaLabel: string;
+  summary: { label: string; value: string }[];
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function documentKey(kind: DocKind): "quote_sent" | "invoice_sent" {
+  return kind === "quote" ? "quote_sent" : "invoice_sent";
 }
 
-// The composer sends HTML. Escape the plain text first, then keep paragraph and
-// line breaks, so customer names and messages can never inject markup.
-function toBodyHtml(text: string): string {
-  return text
-    .split(/\n{2,}/)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
-    .join("");
+function dateOrEmpty(value: string | null): string {
+  return value === null || value === "" ? "" : formatCalendarDate(value);
 }
 
-function defaultSubject(kind: DocKind, number: string, from: string): string {
-  return `${kind === "quote" ? "Quote" : "Invoice"} ${number} from ${from}`;
+function formattedTotal(document: DocumentView): string {
+  const minor = Math.round(Number(document.total) * 10 ** currencyMinorDigits(document.currency));
+  return formatMoney(minor, document.currency, { decimals: 2 });
 }
 
-function defaultMessage(kind: DocKind, firstName: string): string {
-  const greeting = firstName === "" ? "Hi" : `Hi ${firstName}`;
-  return `${greeting}, here is your ${kind === "quote" ? "quote" : "invoice"}.`;
+async function documentVariables(
+  db: Db,
+  document: DocumentView,
+  deal: { personId: string | null; ownerId: string },
+  settings: DocumentSettingsView,
+): Promise<Record<string, string>> {
+  const [owner] = await db.select().from(users).where(eq(users.id, deal.ownerId));
+  let customerName = document.customerName ?? "";
+  if (deal.personId !== null) {
+    const [person] = await db.select().from(persons).where(eq(persons.id, deal.personId));
+    customerName = person?.name ?? customerName;
+  }
+  return {
+    "company.name": settings.companyName ?? owner?.name ?? "",
+    "app.url": env.BASE_URL,
+    "customer.name": customerName,
+    "document.number": document.number ?? "",
+    "document.title": document.title,
+    "document.total": formattedTotal(document),
+    "document.valid_until": dateOrEmpty(document.validUntil),
+    "document.due_date": dateOrEmpty(document.dueDate),
+    "document.url": document.publicUrl,
+    "sender.name": owner?.name ?? "",
+  };
+}
+
+async function composeMail(
+  db: Db,
+  document: DocumentView,
+  deal: { personId: string | null; ownerId: string },
+  settings: DocumentSettingsView,
+  input: { subject?: string; message?: string },
+  signal: AbortSignal,
+): Promise<Result<DocumentMail, AppError>> {
+  const key = documentKey(document.kind);
+  const template = await resolveTemplate(db, key, signal);
+  if (!template.ok) return template;
+  const variables = await documentVariables(db, document, deal, settings);
+  const subject =
+    input.subject !== undefined && input.subject.trim() !== ""
+      ? input.subject.trim().slice(0, 200)
+      : stripHeaderBreaks(
+          renderVariables(template.value.subject, variables, { mode: "text" }),
+          200,
+        );
+  const bodyHtml =
+    input.message !== undefined && input.message.trim() !== ""
+      ? sanitizeAuthorHtml(input.message)
+      : sanitizeAuthorHtml(renderVariables(template.value.bodyHtml, variables, { mode: "html" }));
+  return ok({
+    subject,
+    bodyHtml,
+    ctaLabel:
+      template.value.ctaLabel ?? (document.kind === "quote" ? "View quote" : "View invoice"),
+    summary: [
+      {
+        label: document.kind === "quote" ? "Quote" : "Invoice",
+        value: variables["document.number"] ?? "",
+      },
+      { label: "Total", value: variables["document.total"] ?? "" },
+      {
+        label: document.kind === "quote" ? "Valid until" : "Due date",
+        value:
+          document.kind === "quote"
+            ? (variables["document.valid_until"] ?? "")
+            : (variables["document.due_date"] ?? ""),
+      },
+    ],
+  });
+}
+
+// Read-only prefill for the send dialog: the same copy the server would send.
+export async function getDocumentSendDraft(
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+): Promise<Result<{ subject: string; messageHtml: string }, AppError>> {
+  const current = await getDocument(db, actor, id, signal);
+  if (!current.ok) return current;
+  const editable = await loadEditableDeal(db, actor, current.value.dealId, signal);
+  if (!editable.ok) return err(toDocumentError(editable.error));
+  const settings = await getDocumentSettings(db, signal);
+  const mail = await composeMail(db, current.value, editable.value.deal, settings, {}, signal);
+  if (!mail.ok) return mail;
+  return ok({ subject: mail.value.subject, messageHtml: mail.value.bodyHtml });
 }
 
 // Recipient and mailbox are checked before the draft is issued, so a refusal
@@ -93,26 +178,6 @@ async function resolveTarget(
     );
   }
   return ok({ recipient, mailboxId: mailbox.id });
-}
-
-async function composeMail(
-  db: Db,
-  document: DocumentView,
-  deal: { personId: string | null; ownerId: string },
-  settings: DocumentSettingsView,
-  input: { subject?: string; message?: string },
-): Promise<MailContent> {
-  const [owner] = await db.select().from(users).where(eq(users.id, deal.ownerId));
-  let firstName = "";
-  if (deal.personId !== null) {
-    const [person] = await db.select().from(persons).where(eq(persons.id, deal.personId));
-    firstName = person?.firstName ?? person?.name.split(" ")[0] ?? "";
-  }
-  const from = settings.companyName ?? owner?.name ?? "";
-  const subject = input.subject ?? defaultSubject(document.kind, document.number ?? "", from);
-  const message = input.message ?? defaultMessage(document.kind, firstName);
-  const text = `${message}\n\nView it here: ${document.publicUrl}\n\n${owner?.name ?? ""}`;
-  return { subject, bodyHtml: toBodyHtml(text) };
 }
 
 export async function sendDocument(
@@ -152,7 +217,8 @@ export async function sendDocument(
   }
 
   const settings = await getDocumentSettings(db, signal);
-  const content = await composeMail(db, document, deal, settings, input);
+  const content = await composeMail(db, document, deal, settings, input, signal);
+  if (!content.ok) return content;
 
   let resolved: MailProvider;
   if (deps.provider !== undefined) {
@@ -168,12 +234,20 @@ export async function sendDocument(
     resolved = provider.value;
   }
 
+  const design = await getEmailDesign(db, signal);
+  const wrapped = wrapCustomerEmail({
+    bodyHtml: content.value.bodyHtml,
+    mode: "document",
+    design,
+    summary: { rows: content.value.summary },
+    cta: { label: content.value.ctaLabel, url: document.publicUrl },
+  });
   const payload: SendEmailInput = {
     accountId: target.value.mailboxId,
     idempotencyKey: randomUUID(),
     to: [target.value.recipient],
-    subject: content.subject,
-    bodyHtml: content.bodyHtml,
+    subject: content.value.subject,
+    bodyHtml: wrapped.html,
     linkDealId: document.dealId,
     ...(deal.personId !== null ? { linkPersonId: deal.personId } : {}),
   };

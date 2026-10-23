@@ -38,6 +38,8 @@ interface RichTextBodyProps {
   // content internally, so a full-pane composer fills the viewport instead of floating as a short
   // box over dead space. Opt-in: settings/activity-note callers keep their intrinsic height.
   grow?: boolean;
+  // Accessible name when the editor has no visible <label for> pointing at a native control.
+  ariaLabel?: string;
 }
 
 export function RichTextBody({
@@ -47,6 +49,7 @@ export function RichTextBody({
   contentClassName,
   frameClassName,
   grow = false,
+  ariaLabel,
 }: RichTextBodyProps): React.ReactNode {
   // Track the last HTML we emitted so we can distinguish "parent changed the
   // prop" from "our own typing round-tripped back through state".
@@ -59,6 +62,9 @@ export function RichTextBody({
     immediatelyRender: false,
     extensions: richTextExtensions,
     content: html,
+    editorProps: {
+      attributes: ariaLabel === undefined ? {} : { "aria-label": ariaLabel },
+    },
     onUpdate({ editor: e }) {
       const raw = e.getHTML();
       const sanitized = sanitizeAuthorHtml(raw);

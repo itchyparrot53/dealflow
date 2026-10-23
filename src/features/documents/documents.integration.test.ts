@@ -853,11 +853,17 @@ describe("sending", () => {
 
     const wire = fakeRead(mailDir, MAIL_ADDRESS, "Sent", 1).toString("utf8");
     expect(wire).toContain(`Subject: Quote ${sent.value.number ?? "MISSING"} from`);
-    // The HTML part is base64 on the wire; decode it to read the link.
-    const splitAt = wire.indexOf("\r\n\r\n");
-    const decoded = Buffer.from(wire.slice(splitAt + 4).trim(), "base64").toString("utf8");
+    // The body is multipart/alternative now; decode every base64 part to read the HTML and text.
+    const decoded = [
+      ...wire.matchAll(/Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*?)(?=\r?\n--|$)/g),
+    ]
+      .map((match) => Buffer.from((match[1] ?? "").replace(/\s+/g, ""), "base64").toString("utf8"))
+      .join("\n");
     expect(decoded).toContain(sent.value.publicUrl);
     expect(decoded).toContain("Hi Ada");
+    expect(decoded).toContain('data-df-layout="customer-branded"');
+    expect(decoded).toContain("View quote");
+    expect(decoded).toContain("Total");
 
     const messages = await h.db.execute(
       sql`SELECT count(*)::int AS count FROM email_messages WHERE account_id=${mailboxId}`,

@@ -20,7 +20,7 @@ import {
 } from "./documents";
 import { issueDocument, voidInvoice } from "./issue";
 import { deletePayment, recordPayment } from "./payments";
-import { sendDocument } from "./send";
+import { getDocumentSendDraft, sendDocument } from "./send";
 import { type DocumentSettingsView, updateDocumentSettings } from "./settings";
 import {
   createTemplate,
@@ -176,6 +176,16 @@ export async function deletePaymentAction(
   const g = await guard(csrfToken);
   if (!g.ok) return g;
   return toClientResult(await deletePayment(db, g.value, id, SIG()));
+}
+
+// Read-only prefill for the send dialog. No CSRF: it changes nothing and the service applies the
+// document's own visibility and edit rules.
+export async function documentSendDraftAction(
+  id: string,
+): Promise<ActionResult<{ subject: string; messageHtml: string }>> {
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_LOGIN_REJECTED } };
+  return toClientResult(await getDocumentSendDraft(db, actor, id, SIG()));
 }
 
 export async function sendDocumentAction(
