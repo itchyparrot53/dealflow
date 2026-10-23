@@ -40,6 +40,9 @@ interface RichTextBodyProps {
   grow?: boolean;
   // Accessible name when the editor has no visible <label for> pointing at a native control.
   ariaLabel?: string;
+  // Fires when the editable surface takes focus; the template editor uses it to route variable
+  // insertion to the body.
+  onFocus?: () => void;
 }
 
 export function RichTextBody({
@@ -50,6 +53,7 @@ export function RichTextBody({
   frameClassName,
   grow = false,
   ariaLabel,
+  onFocus,
 }: RichTextBodyProps): React.ReactNode {
   // Track the last HTML we emitted so we can distinguish "parent changed the
   // prop" from "our own typing round-tripped back through state".
@@ -78,6 +82,9 @@ export function RichTextBody({
       const sanitized = sanitizeAuthorHtml(raw);
       lastEmittedRef.current = sanitized;
       onChange(sanitized);
+    },
+    onFocus() {
+      onFocus?.();
     },
   });
 

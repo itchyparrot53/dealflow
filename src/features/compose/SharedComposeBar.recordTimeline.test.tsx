@@ -14,6 +14,10 @@ const invalidateDealMessages = vi.fn(() => Promise.resolve());
 const invalidateContactMessages = vi.fn(() => Promise.resolve());
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({
       email: {
         listMessagesForDeal: { invalidate: invalidateDealMessages },

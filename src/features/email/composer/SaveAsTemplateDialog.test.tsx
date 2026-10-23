@@ -32,6 +32,10 @@ vi.mock("@/components/shell/ActionErrorProvider", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({ email: { templates: { list: { invalidate: invalidateMock } } } }),
   },
 }));

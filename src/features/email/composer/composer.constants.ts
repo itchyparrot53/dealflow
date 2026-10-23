@@ -24,6 +24,14 @@ export const COMPOSER_STRINGS = {
   // Compose header controls (email-tab): Settings cog link + Close.
   headerSettingsLabel: "Email settings",
   headerCloseLabel: "Close",
+  // Layout control (Part 13): the default comes from Settings > Email design; Plain keeps the
+  // author HTML unwrapped. Preview opens the exact wire copy.
+  layoutLabel: "Layout",
+  layoutBranded: "Branded",
+  layoutMinimal: "Minimal",
+  layoutPlain: "Plain",
+  preview: "Preview",
+  previewTitle: "Email preview",
   // Toolbar signature picker.
   signaturePickerLabel: "Signature",
   signatureNoneLabel: "None",

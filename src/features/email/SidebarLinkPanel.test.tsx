@@ -55,6 +55,10 @@ vi.mock("@/features/deals/AddDealModal", () => ({
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     pipeline: {
       list: {
         useQuery: () => ({

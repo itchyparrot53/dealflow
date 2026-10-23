@@ -72,6 +72,10 @@ const invalidateUnreadCount = vi.fn();
 vi.mock("./mailLabelsActions", () => ({ createMailLabelAction: vi.fn() }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     mailLabels: { list: { useQuery: () => ({ data: [] }) } },
     email: { thread: { get: { useQuery: () => ({ data: threadData, refetch: vi.fn() }) } } },
     // Sidebar SidebarLinkPanel loads pipelines (Add-new-deal) + the global search (owner-only).

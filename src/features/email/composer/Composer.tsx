@@ -1,7 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AiDraftButton } from "@/features/ai/ui/AiDraftButton";
+import { EmailPreview } from "@/features/email-design/ui/EmailPreview";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { trpc } from "@/lib/trpc-client";
 import type { EmailVisibility } from "../threadVisibility";
@@ -11,6 +19,7 @@ import { AttachmentList } from "./AttachmentList";
 import { ComposerErrorAlert } from "./ComposerErrorAlert";
 import { ComposerFooter } from "./ComposerFooter";
 import { ComposerHeader } from "./ComposerHeader";
+import { COMPOSER_STRINGS } from "./composer.constants";
 import type { ComposerContext } from "./composer.types";
 import { mergeRecipientEmail, resolveComposerLinks } from "./composerLinks";
 import { dealDefaultRecipients } from "./dealRecipients";
@@ -106,6 +115,10 @@ export function Composer({
   const [recipientsNonce, setRecipientsNonce] = useState(0);
   // Confirmed uploaded attachments; cleared on resetDraft so Discard starts fresh.
   const [attachments, setAttachments] = useState<AttachedFile[]>([]);
+  // Part 13: the layout pick (undefined means "whatever Settings > Email design says") and the
+  // preview dialog.
+  const [layout, setLayout] = useState<"branded" | "minimal" | "plain" | undefined>(undefined);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: signatures = [] } = trpc.email.signatures.list.useQuery();
 
@@ -175,6 +188,7 @@ export function Composer({
     // C3: when the signature is embedded in `body`, sendSignatureId is "" (no server re-append);
     // for a forward/reply/legacy draft it is the selected id so the server appends it.
     signatureId: sendSignatureId,
+    layout,
     attachments: attachments.map((a) => ({ fileId: a.fileId })),
     context,
     linkDealId: links.linkDealId,
@@ -188,6 +202,23 @@ export function Composer({
     draftIdRef,
     inFlightRef: draftInFlightRef,
   });
+
+  // The resolved default comes from the saved design; the author can override it per message.
+  const design = trpc.emailDesign.get.useQuery(undefined, { staleTime: 60_000 });
+  const sendMode = resolvedThreadId === undefined ? "new" : "reply";
+  const effectiveLayout =
+    layout ??
+    (sendMode === "reply" ? design.data?.replyLayout : design.data?.newEmailLayout) ??
+    "branded";
+  const preview = trpc.emailDesign.previewCustomer.useQuery(
+    {
+      bodyHtml: body,
+      signatureId: sendSignatureId === "" ? undefined : sendSignatureId,
+      layout: effectiveLayout,
+      mode: sendMode,
+    },
+    { enabled: previewOpen, refetchOnWindowFocus: false },
+  );
 
   // AttachButton needs an entityId for the upload; use dealId in deal context,
   // otherwise fall back to accountId as a stable entity anchor.
@@ -305,9 +336,26 @@ export function Composer({
             addAsActivity={addAsActivity}
             onAddAsActivityChange={setAddAsActivity}
             onSendLater={(scheduledAt) => void handleSendLater(scheduledAt)}
+            layout={effectiveLayout}
+            onLayoutChange={setLayout}
+            onPreview={() => setPreviewOpen(true)}
           />
         </div>
       </div>
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-[760px]">
+          <DialogHeader>
+            <DialogTitle>{COMPOSER_STRINGS.previewTitle}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            {preview.data === undefined ? (
+              <div className="h-[420px] animate-pulse rounded-lg border bg-canvas-subtle" />
+            ) : (
+              <EmailPreview html={preview.data.html} title={COMPOSER_STRINGS.previewTitle} />
+            )}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

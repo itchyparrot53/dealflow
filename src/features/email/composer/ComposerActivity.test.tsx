@@ -8,6 +8,10 @@ afterEach(cleanup);
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({ email: { templates: { list: { invalidate: () => undefined } } } }),
     email: {
       templates: {

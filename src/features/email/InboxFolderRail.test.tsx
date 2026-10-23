@@ -16,6 +16,10 @@ vi.mock("next/navigation", () => ({
 const unreadCount = vi.fn<() => number | undefined>(() => 0);
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     email: {
       inbox: { unreadCount: { useQuery: () => ({ data: unreadCount() }) } },
     },

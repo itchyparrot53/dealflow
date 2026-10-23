@@ -12,6 +12,10 @@ const catalog = [
 ];
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     mailLabels: { list: { useQuery: () => ({ data: catalog }) } },
     useUtils: () => ({ mailLabels: { list: { invalidate: () => undefined } } }),
   },

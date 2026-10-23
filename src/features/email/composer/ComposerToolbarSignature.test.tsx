@@ -15,6 +15,10 @@ let signaturesData: { id: string; name: string; isDefault?: boolean }[] = [];
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({ email: { templates: { list: { invalidate: () => undefined } } } }),
     email: {
       templates: {

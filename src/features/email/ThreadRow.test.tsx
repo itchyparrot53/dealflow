@@ -24,6 +24,10 @@ vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 // ThreadRow renders ThreadLabelChips, which resolves labels against the mail-label catalog.
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     mailLabels: {
       list: {
         useQuery: () => ({

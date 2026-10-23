@@ -18,6 +18,10 @@ afterEach(cleanup);
 // unconditionally, so every file that mounts the real Composer needs these stubs.
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({ email: { templates: { list: { invalidate: () => undefined } } } }),
     email: {
       templates: {

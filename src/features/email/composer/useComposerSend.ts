@@ -29,6 +29,8 @@ export interface ComposerSendDeps {
   trackLinks: boolean;
   // C1: compose privacy, threaded into the send payload so the created thread's visibility matches.
   visibility: EmailVisibility;
+  // The composer's layout pick. Omitted lets the server resolve the Settings > Email design default.
+  layout?: "branded" | "minimal" | "plain";
   signatureId: string;
   attachments: { fileId: string }[];
   context: ComposerContext | undefined;
@@ -64,6 +66,7 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
     trackOpens,
     trackLinks,
     visibility,
+    layout,
     signatureId,
     attachments,
     context,
@@ -107,6 +110,7 @@ export function buildSendHandlers(deps: ComposerSendDeps) {
       // C1: the composer's privacy pick. A NEW thread is created with this visibility; a reply
       // (resolvedThreadId set) inherits the existing thread's visibility server-side.
       visibility,
+      layout,
       signatureId: signatureId.length > 0 ? signatureId : undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
       scheduledSendAt,

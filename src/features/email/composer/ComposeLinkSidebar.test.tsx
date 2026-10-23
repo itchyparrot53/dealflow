@@ -36,6 +36,10 @@ let pipelineData: { id: string; name: string; stages: { id: string; name: string
 ];
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     pipeline: {
       list: {
         useQuery: () => ({ data: pipelineData }),

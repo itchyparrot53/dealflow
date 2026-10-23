@@ -12,6 +12,10 @@ beforeAll(() => {
 
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({
       email: {
         listMessagesForDeal: { invalidate: vi.fn() },

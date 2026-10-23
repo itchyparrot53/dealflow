@@ -42,6 +42,10 @@ const { getTemplateMock, mergeContextMock } = vi.hoisted(() => ({
 // option (item 10d) so tests can assert the guard prevents a fetch.
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     email: {
       templates: {
         list: {

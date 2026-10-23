@@ -52,6 +52,10 @@ const threadData = {
 };
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     mailLabels: { list: { useQuery: () => ({ data: [] }) } },
     email: { thread: { get: { useQuery: () => ({ data: threadData, refetch: vi.fn() }) } } },
     pipeline: { list: { useQuery: () => ({ data: [] }) } },

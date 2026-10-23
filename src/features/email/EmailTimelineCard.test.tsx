@@ -11,6 +11,10 @@ const invalidateDeal = vi.fn();
 const invalidateContact = vi.fn();
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     email: { message: { get: { useQuery: (...a: unknown[]) => useQuery(...a) } } },
     useUtils: () => ({
       email: {

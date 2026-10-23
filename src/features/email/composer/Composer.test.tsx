@@ -8,6 +8,10 @@ afterEach(cleanup);
 // Mock trpc queries to return empty arrays (no templates/signatures) and no contacts.
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     useUtils: () => ({ email: { templates: { list: { invalidate: () => undefined } } } }),
     email: {
       templates: {

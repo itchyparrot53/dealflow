@@ -19,6 +19,10 @@ vi.mock("./folderActions", () => ({
 }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     email: {
       folders: {
         outbox: {

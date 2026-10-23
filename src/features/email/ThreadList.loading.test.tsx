@@ -16,6 +16,10 @@ const emptyFolder = {
 };
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
+    emailDesign: {
+      get: { useQuery: () => ({ data: undefined }) },
+      previewCustomer: { useQuery: () => ({ data: undefined }) },
+    },
     mailLabels: { list: { useQuery: () => ({ data: [] }) } },
     email: {
       inbox: { list: { useInfiniteQuery: () => inboxListQuery() } },

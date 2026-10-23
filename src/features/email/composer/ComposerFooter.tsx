@@ -8,8 +8,15 @@
 // not here, see Composer.tsx.
 // Right cluster includes the read-only VisibilityControl.
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Eye } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ToggleField } from "@/components/ui/ToggleField";
 import { Tip } from "@/components/ui/tooltip";
 import { STRINGS } from "@/constants/strings";
@@ -41,6 +48,11 @@ interface ComposerFooterProps {
   // the picker would be a no-op there (the reader's thread-privacy toggle governs instead). Defaults
   // to shown for a new compose (codex P2).
   showVisibility?: boolean;
+  // The layout the message will use, resolved from Settings > Email design unless chosen here.
+  // Optional so older render sites and unit tests keep working; Composer always supplies them.
+  layout?: "branded" | "minimal" | "plain";
+  onLayoutChange?: (layout: "branded" | "minimal" | "plain") => void;
+  onPreview?: () => void;
 }
 
 export function ComposerFooter({
@@ -59,6 +71,9 @@ export function ComposerFooter({
   visibility = "shared",
   onVisibilityChange,
   showVisibility = true,
+  layout = "branded",
+  onLayoutChange,
+  onPreview,
 }: ComposerFooterProps): React.ReactNode {
   const [showPicker, setShowPicker] = useState(false);
   const [pickerValue, setPickerValue] = useState("");
@@ -90,6 +105,47 @@ export function ComposerFooter({
     <div className="flex items-center gap-3 flex-wrap">
       {/* Left slot: tracking toggles + add-as-activity (available from deal and inbox context). */}
       <div className="flex items-center gap-2">
+        {onLayoutChange !== undefined && onPreview !== undefined && (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label={COMPOSER_STRINGS.layoutLabel}
+                >
+                  <span className="text-muted-foreground">{COMPOSER_STRINGS.layoutLabel}:</span>
+                  <span className="ml-1">
+                    {layout === "plain"
+                      ? COMPOSER_STRINGS.layoutPlain
+                      : layout === "minimal"
+                        ? COMPOSER_STRINGS.layoutMinimal
+                        : COMPOSER_STRINGS.layoutBranded}
+                  </span>
+                  <ChevronDown aria-hidden="true" className="ml-1 size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {(
+                  [
+                    ["branded", COMPOSER_STRINGS.layoutBranded],
+                    ["minimal", COMPOSER_STRINGS.layoutMinimal],
+                    ["plain", COMPOSER_STRINGS.layoutPlain],
+                  ] as const
+                ).map(([value, label]) => (
+                  <DropdownMenuItem key={value} onSelect={() => onLayoutChange(value)}>
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button type="button" variant="ghost" size="sm" onClick={onPreview}>
+              <Eye aria-hidden="true" className="mr-1 size-3.5" />
+              {COMPOSER_STRINGS.preview}
+            </Button>
+          </>
+        )}
         <ToggleField
           control="switch"
           label="Opens"

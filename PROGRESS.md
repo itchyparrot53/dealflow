@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-23 14:04
+Current: 3.4 · Last updated: 2026-10-23 14:07
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -24,7 +24,7 @@ Current: 3.3 · Last updated: 2026-10-23 14:04
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Settings › Email design: Branding tab
 - [x] 3.2 Templates tab and the template editor
-- [ ] 3.3 Composer layout control and preview
+- [x] 3.3 Composer layout control and preview
 - [ ] 3.4 Phase 3 QA gate
 - [ ] 4.1 Email e2e spec and gallery
 - [ ] 4.2 Docs
@@ -40,6 +40,9 @@ Current: 3.3 · Last updated: 2026-10-23 14:04
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 3.3: the footer shows the resolved default (branded for a new email, the design's reply layout for a reply) and lets the author override it per message; the send input carries the chosen `layout`, and an untouched pick still resolves server-side.
+- 3.3: Preview opens a Dialog whose iframe comes from `emailDesign.previewCustomer`, which applies the same signature + wrap as the send path, at 600 or 375 px; the iframe is `sandbox=""`.
+- 3.3: changed tests: the composer suites' trpc mocks gained `emailDesign.get`/`previewCustomer`, and a new `ComposerFooter.layout.test` covers the layout trigger, the three options and the preview callback.
 - 3.2: the editor is a full-height Sheet (the plan allowed a Sheet or a page section), with the fields on the left and the live server-rendered preview on the right. Variables insert at the subject/preheader cursor or into the body through TipTap's `insertToken`.
 - 3.2: Reset is an AlertDialog confirm; the test send uses `sendEmailTemplateTestAction` for the edited key, to the signed-in admin only.
 - 3.2: the server tests for unknown keys, non-admin saves, over-length fields and reset are the `templates.integration.test.ts` cases; the new `TemplateEditor.test` covers the editor's variable insertion, save wiring and reset confirm.
