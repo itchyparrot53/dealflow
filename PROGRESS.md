@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-10-23 12:56
+Current: 1.4 · Last updated: 2026-10-23 13:00
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -13,7 +13,7 @@ Current: 1.3 · Last updated: 2026-10-23 12:56
 - [x] 0.3 Phase 0 QA gate
 - [x] 1.1 Variables and escaping
 - [x] 1.2 The layout renderer
-- [ ] 1.3 Data model, design service, logo and the public route
+- [x] 1.3 Data model, design service, logo and the public route
 - [ ] 1.4 Registry, overrides and sendSystemEmail
 - [ ] 1.5 Phase 1 QA gate
 - [ ] 2.1 Product emails migrated
@@ -36,6 +36,10 @@ Current: 1.3 · Last updated: 2026-10-23 12:56
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 1.3: `db:generate` produced `0093_smooth_harrier.sql`; it was renamed to `0093_dealflow_email_design.sql` with the journal tag updated, and the singleton `INSERT ... ON CONFLICT DO NOTHING` was appended, so the migration matches 6.3 and a fresh database always has the row.
+- 1.3: there is no middleware or public allow-list in this codebase: the public routes are top-level `/d`, `/f` and `/book` outside the `(app)` group. The logo route therefore sits at top-level `/email-assets/logo/[file]`, which is public by construction; there was no list to edit.
+- 1.3: the logo route reuses the `emailTracking` public limiter and, like the tracking pixel, still serves the stored bytes when the limit is hit, so an emailed logo can never render broken.
+- 1.3: audit rows use `targetType: "settings"` because `audit_target_type` is a database enum with no email member; the plan fixes only the action names (`email_design.updated`, and later `email_template.updated`).
 - 0.2: the inventory confirms the ten 6.1 keys and no sender outside them. `booking_cancelled` is the one listed customer email with no sender today: `scheduling/cancel.ts` soft-deletes the activity, emits `booking.cancelled` and notifies the host, but never emails the guest, so Task 2.2 sends it on that existing trigger and recipient. This implements a listed template, not a new email type.
 - 0.2: the booking confirmation has no `.ics` attachment today; `buildIcs` is returned to the HTTP caller only. Task 2.2 attaches it through the `SystemMail.attachments` support 6.4 requires, so the template's "A calendar invite is attached." is true.
 - 0.2: no HTML-to-text helper exists in the repository, so per section 10 Task 1.2 writes a small converter in `layout.ts` with tests and reuses it for the plain-text part.
