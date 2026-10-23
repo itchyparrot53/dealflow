@@ -14,6 +14,7 @@ const { createContext } = vi.hoisted(() => ({
 const { inviteUser } = vi.hoisted(() => ({ inviteUser: vi.fn() }));
 const { issueInviteLink } = vi.hoisted(() => ({ issueInviteLink: vi.fn() }));
 const { mailerSend } = vi.hoisted(() => ({ mailerSend: vi.fn() }));
+const { sendSystemEmail } = vi.hoisted(() => ({ sendSystemEmail: vi.fn() }));
 
 vi.mock("./shared", () => ({ guardCsrf }));
 vi.mock("@/server/trpc/context", () => ({ createContext }));
@@ -22,9 +23,7 @@ vi.mock("../invite.service", () => ({ inviteUser }));
 // stays database-free and asserts the action's returned shape instead.
 vi.mock("@/features/auth/invites", () => ({ issueInviteLink }));
 vi.mock("@/config/env", () => ({ env: { BASE_URL: "https://app.example.com" } }));
-vi.mock("@/features/mailer/templates", () => ({
-  inviteMail: () => ({ subject: "invite", text: "invite", html: "<p>invite</p>" }),
-}));
+vi.mock("@/features/email-design/sendSystemEmail", () => ({ sendSystemEmail }));
 vi.mock("@/features/mailer/systemMailer", () => ({
   getSystemMailer: () => ({ mode: "log", send: mailerSend }),
 }));
@@ -67,7 +66,7 @@ describe("inviteUserAction serialization (IDENTITY-02)", () => {
       url: "https://app.example.com/login/invite?token=t",
       expiresAt: new Date(),
     });
-    mailerSend.mockResolvedValueOnce(ok({ messageId: "m-1" }));
+    sendSystemEmail.mockResolvedValueOnce(ok({ messageId: "m-1" }));
     const result = await inviteUserAction("csrf", VALID_INPUT);
     expect(result.ok).toBe(true);
     if (!result.ok) return;

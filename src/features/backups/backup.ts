@@ -6,9 +6,8 @@ import { childProcessEnv, env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { type Db, pool } from "@/db/client";
 import { backupRuns, users } from "@/db/schema";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import type { StorageClient } from "@/features/files/storage";
-import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
 import { err, ok, type Result } from "@/types/result";
 import { buildManifest } from "./manifest";
 import { backupFileName, filesToPrune } from "./retention";
@@ -107,14 +106,19 @@ async function notifyFailure(db: Db, detail: string, signal: AbortSignal): Promi
       .select({ email: users.email })
       .from(users)
       .where(and(eq(users.isAdmin, true), eq(users.isActive, true)));
-    const mailer = getSystemMailer();
     for (const admin of admins) {
-      await mailer.send(
+      await sendSystemEmail(
+        db,
+        "backup_failed",
+        admin.email,
         {
-          to: admin.email,
-          subject: "Dealflow backup failed",
-          text: `${emailBrandHeaderText()}The scheduled backup failed: ${detail}`,
-          html: `${emailBrandHeaderHtml()}<p>The scheduled backup failed:</p><pre>${detail}</pre>`,
+          "recipient.name": admin.email,
+          "recipient.email": admin.email,
+          "app.url": env.BASE_URL,
+          "company.name": "",
+          "backup.time": new Date().toUTCString(),
+          "backup.error": detail,
+          "backup.url": `${env.BASE_URL}/settings/backups`,
         },
         signal,
       );

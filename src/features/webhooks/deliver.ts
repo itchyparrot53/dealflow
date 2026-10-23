@@ -16,8 +16,7 @@ import { PGBOSS_QUEUE_WEBHOOK_DELIVER } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { users, webhookDeliveries, webhookSubscriptions } from "@/db/schema";
 import { decryptToken } from "@/features/email/crypto";
-import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { getBoss } from "@/jobs/boss";
 import { checkWebhookUrl, isBlockedAddress } from "./ipRanges";
 import { signatureHeader } from "./signature";
@@ -153,27 +152,39 @@ async function disableSubscription(
   db: Db,
   subscriptionId: string,
   reason: string,
+  failures: number,
   createdBy: string | null,
   signal: AbortSignal,
 ): Promise<void> {
+  const [subscription] = await db
+    .select({ name: webhookSubscriptions.name, url: webhookSubscriptions.url })
+    .from(webhookSubscriptions)
+    .where(eq(webhookSubscriptions.id, subscriptionId));
   await db
     .update(webhookSubscriptions)
     .set({ enabled: false, disabledReason: reason, updatedAt: new Date() })
     .where(eq(webhookSubscriptions.id, subscriptionId));
 
-  if (createdBy === null) return;
+  if (createdBy === null || subscription === undefined) return;
   const [user] = await db
     .select({ email: users.email, name: users.name })
     .from(users)
     .where(eq(users.id, createdBy));
   if (user === undefined) return;
   try {
-    await getSystemMailer().send(
+    await sendSystemEmail(
+      db,
+      "webhook_disabled",
+      user.email,
       {
-        to: user.email,
-        subject: "A Dealflow webhook was disabled",
-        text: `${emailBrandHeaderText()}Hello ${user.name},\n\nThe webhook subscription was disabled: ${reason}.\n\nRe-enable it in Settings > Webhooks after fixing the receiver.`,
-        html: `${emailBrandHeaderHtml()}<p>Hello ${user.name},</p><p>The webhook subscription was disabled: ${reason}.</p><p>Re-enable it in Settings &gt; Webhooks after fixing the receiver.</p>`,
+        "recipient.name": user.name,
+        "recipient.email": user.email,
+        "app.url": env.BASE_URL,
+        "company.name": "",
+        "webhook.name": subscription.name,
+        "webhook.url": subscription.url,
+        "webhook.failures": String(failures),
+        "webhook.settings_url": `${env.BASE_URL}/settings/webhooks`,
       },
       signal,
     );
@@ -272,6 +283,7 @@ async function recordGone(
     db,
     subscription.id,
     "Receiver returned 410 Gone",
+    1,
     subscription.createdBy,
     signal,
   );
@@ -315,6 +327,7 @@ async function recordFailure(
       db,
       subscription.id,
       `Disabled after ${WEBHOOK_DISABLE_AFTER} failed deliveries`,
+      consecutiveFailures,
       subscription.createdBy,
       signal,
     );

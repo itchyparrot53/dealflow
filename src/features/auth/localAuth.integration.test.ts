@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { authTokens, settings, userCredentials, users } from "@/db/schema";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { captureMailer } from "@/features/mailer/captureMailer";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
 import { makeTestDb, type TestDb } from "@/test/db";
@@ -176,7 +177,8 @@ describe("requestMagicLink", () => {
       h.db,
       { email: "nobody@example.com", next: "/pipeline" },
       {
-        mailer: captureMailer(captureDir),
+        send: (to, variables, signal) =>
+          sendSystemEmail(h.db, "sign_in_link", to, variables, signal),
         baseUrl: "https://app.example.com",
         seedAdminEmail: SEED,
       },

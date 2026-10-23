@@ -4,9 +4,9 @@ import { env } from "@/config/env";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
 import { issueInviteLink } from "@/features/auth/invites";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { inviteUserInput } from "@/features/identity/schemas";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
-import { inviteMail } from "@/features/mailer/templates";
 import { createContext } from "@/server/trpc/context";
 import { inviteUser } from "../invite.service";
 import { guardCsrf } from "./shared";
@@ -45,15 +45,25 @@ export async function inviteUserAction(
   // The invite now carries a set-password link. It is shown to the admin as well as emailed, so a
   // deploy without SMTP is still usable (emailSent false tells the form to say so).
   const link = await issueInviteLink(db, r.value.userId, env.BASE_URL, SIG());
-  const mailer = getSystemMailer();
-  const sent = await mailer.send(
-    { ...inviteMail({ url: link.url, inviterName: actor.name }), to: parsed.data.email },
+  const sent = await sendSystemEmail(
+    db,
+    "invite",
+    parsed.data.email,
+    {
+      "recipient.name": parsed.data.name,
+      "recipient.email": parsed.data.email,
+      "inviter.name": actor.name,
+      "link.url": link.url,
+      "link.expires_in": "7 days",
+      "app.url": env.BASE_URL,
+      "company.name": "",
+    },
     SIG(),
   );
   return {
     ok: true,
     userId: r.value.userId,
     inviteUrl: link.url,
-    emailSent: sent.ok && mailer.mode !== "log",
+    emailSent: sent.ok && getSystemMailer().mode !== "log",
   };
 }

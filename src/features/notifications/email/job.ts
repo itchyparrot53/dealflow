@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
+import { env } from "@/config/env";
 import { AppError } from "@/constants/errorIds";
 import { EMAIL_NOTIFICATION_QUEUE } from "@/constants/jobNames";
 import type { Db } from "@/db/client";
 import { notifications, users } from "@/db/schema";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
-import type { SystemMail } from "@/features/mailer/types";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { NotificationRow } from "@/types/notification";
 import { ok, type Result } from "@/types/result";
@@ -17,12 +17,9 @@ import { renderNotificationEmail } from "./render";
 // so a notification needs no connected account and keeps working for a user without Gmail.
 export type SendFn = (
   to: string,
-  message: SystemMail,
+  variables: Record<string, string>,
   signal: AbortSignal,
 ) => Promise<Result<{ messageId: string }, AppError>>;
-
-const defaultSend: SendFn = (to, message, signal) =>
-  getSystemMailer().send({ ...message, to }, signal);
 
 export async function runEmailNotificationJob(
   db: Db,
@@ -97,17 +94,26 @@ export async function runEmailNotificationJob(
   const recipientEmail = (userRow?.email ?? "").trim();
   if (recipientEmail === "") return ok({ sent: false });
 
-  // (f) Render and build the SystemMail.
-  const rendered = renderNotificationEmail(notifRow, recipientName);
-  const message: SystemMail = {
-    to: recipientEmail,
-    subject: rendered.subject,
-    text: rendered.text,
-    html: rendered.html,
+  // (f) Render the copy, then hand the variables to the one email sender. The registry template
+  // owns the layout; this job owns the type-specific subject, line and CTA.
+  const copy = renderNotificationEmail(notifRow, recipientName);
+  const variables = {
+    "recipient.name": recipientName,
+    "recipient.email": recipientEmail,
+    "app.url": env.BASE_URL,
+    "company.name": "",
+    "notification.subject": copy.subject,
+    "notification.line": copy.line,
+    "notification.cta": copy.cta,
+    "notification.url": copy.url,
   };
 
-  // (g) Send through the system mailer (injectable for tests).
-  const sent = await (deps.send ?? defaultSend)(recipientEmail, message, signal);
+  // (g) Send through sendSystemEmail (injectable for tests).
+  const send =
+    deps.send ??
+    ((to: string, vars: Record<string, string>, s: AbortSignal) =>
+      sendSystemEmail(db, "notification", to, vars, s));
+  const sent = await send(recipientEmail, variables, signal);
   if (sent.ok !== true) return sent;
 
   // Persist the delivery marker so a later at-least-once retry short-circuits above (F36).

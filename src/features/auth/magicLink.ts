@@ -2,14 +2,17 @@ import { eq } from "drizzle-orm";
 import type { AppError } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema";
-import { magicLinkMail } from "@/features/mailer/templates";
-import type { SystemMailer } from "@/features/mailer/types";
 import { ok, type Result } from "@/types/result";
 import { mintAuthToken } from "./authTokens";
 import { ensureBootstrapAdmin } from "./bootstrapLocal";
 
 export interface MagicLinkDeps {
-  mailer: SystemMailer;
+  // Rendered and sent by sendSystemEmail in the route; injected for tests.
+  send: (
+    to: string,
+    variables: Record<string, string>,
+    signal: AbortSignal,
+  ) => Promise<Result<{ messageId: string }, AppError>>;
   baseUrl: string;
   seedAdminEmail: string;
 }
@@ -43,7 +46,18 @@ export async function requestMagicLink(
 
   const { token } = await mintAuthToken(db, user.id, "magic_link", signal);
   const url = `${deps.baseUrl}/login/magic?token=${encodeURIComponent(token)}&next=${encodeURIComponent(input.next)}`;
-  const sent = await deps.mailer.send({ ...magicLinkMail({ url }), to: email }, signal);
+  const sent = await deps.send(
+    email,
+    {
+      "recipient.name": email,
+      "recipient.email": email,
+      "link.url": url,
+      "link.expires_in": "15 minutes",
+      "app.url": deps.baseUrl,
+      "company.name": "",
+    },
+    signal,
+  );
   if (!sent.ok) return sent;
   return ok({ sent: true });
 }

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { notifications } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
-import type { SystemMail } from "@/features/mailer/types";
 import { setPreference } from "@/features/notifications/preferences";
 import type { EmailAccountRow } from "@/types/email";
 import { ok } from "@/types/result";
@@ -67,10 +66,10 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { to: string; msg: SystemMail }[] = [];
+      const calls: { to: string; variables: Record<string, string> }[] = [];
       // Fake: synchronous return wrapped in Promise.resolve; signal not needed.
-      const fakeSend = (to: string, msg: SystemMail) => {
-        calls.push({ to, msg });
+      const fakeSend = (to: string, variables: Record<string, string>) => {
+        calls.push({ to, variables });
         return Promise.resolve(ok({ messageId: "x" }));
       };
 
@@ -109,9 +108,9 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { to: string; msg: SystemMail }[] = [];
-      const fakeSend = (to: string, msg: SystemMail) => {
-        calls.push({ to, msg });
+      const calls: { to: string; variables: Record<string, string> }[] = [];
+      const fakeSend = (to: string, variables: Record<string, string>) => {
+        calls.push({ to, variables });
         return Promise.resolve(ok({ messageId: "x" }));
       };
 
@@ -149,9 +148,9 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { to: string; msg: SystemMail }[] = [];
-      const fakeSend = (to: string, msg: SystemMail) => {
-        calls.push({ to, msg });
+      const calls: { to: string; variables: Record<string, string> }[] = [];
+      const fakeSend = (to: string, variables: Record<string, string>) => {
+        calls.push({ to, variables });
         return Promise.resolve(ok({ messageId: "x" }));
       };
 
@@ -184,9 +183,9 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { to: string; msg: SystemMail }[] = [];
-      const fakeSend = (to: string, msg: SystemMail) => {
-        calls.push({ to, msg });
+      const calls: { to: string; variables: Record<string, string> }[] = [];
+      const fakeSend = (to: string, variables: Record<string, string>) => {
+        calls.push({ to, variables });
         return Promise.resolve(ok({ messageId: "g1" }));
       };
 
@@ -197,7 +196,7 @@ describe("runEmailNotificationJob", () => {
       if (r.ok === true) expect(r.value.sent).toBe(true);
       expect(calls).toHaveLength(1);
       expect(calls[0]?.to).toBe(alice.email);
-      expect(calls[0]?.msg.subject.length).toBeGreaterThan(0);
+      expect(calls[0]?.variables["notification.subject"]?.length ?? 0).toBeGreaterThan(0);
     });
   }, 60_000);
 
@@ -226,9 +225,9 @@ describe("runEmailNotificationJob", () => {
         .returning();
       if (n === undefined) throw new Error("notification insert failed");
 
-      const calls: { to: string; msg: SystemMail }[] = [];
-      const fakeSend = (to: string, msg: SystemMail) => {
-        calls.push({ to, msg });
+      const calls: { to: string; variables: Record<string, string> }[] = [];
+      const fakeSend = (to: string, variables: Record<string, string>) => {
+        calls.push({ to, variables });
         return Promise.resolve(ok({ messageId: "dup" }));
       };
 

@@ -1,25 +1,46 @@
 import { env } from "@/config/env";
-import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
 import { entityHref, payloadHref } from "@/features/notifications/entityHref";
 import type { NotificationRow } from "@/types/notification";
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => {
-    const map: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    };
-    return map[c] ?? c;
-  });
+// The notification copy: a subject, one line and the CTA label/URL. The layout, the link markup
+// and the escaping belong to the email renderer; this file decides only what the mail says.
+export interface NotificationCopy {
+  subject: string;
+  line: string;
+  cta: string;
+  url: string;
 }
 
-function wrap(line: string, link: string): { text: string; html: string } {
-  const text = `${emailBrandHeaderText()}${line}\n\nOpen: ${link}`;
-  const html = `${emailBrandHeaderHtml()}<p>${escapeHtml(line)}</p><p><a href="${escapeHtml(link)}">Open in Dealflow</a></p>`;
-  return { text, html };
+// One label per type from 6.4, so every notification's button says what it opens.
+export function notificationCta(type: NotificationRow["type"]): string {
+  switch (type) {
+    case "mention":
+    case "comment_reply":
+    case "deal_email_received":
+    case "email_open":
+    case "email_click":
+      return "Open conversation";
+    case "activity_assigned":
+    case "activity_reminder":
+      return "Open activity";
+    case "document_viewed":
+    case "document_accepted":
+    case "document_declined":
+      return "Open quote";
+    case "form_submission":
+      return "Open form";
+    case "booking_created":
+    case "booking_cancelled":
+      return "Open booking";
+    case "deal_followed_update":
+    case "deal_won":
+    case "deal_lost":
+    case "automation":
+    case "ai_bulk_score":
+      return "Open deal";
+    default:
+      return "Open Dealflow";
+  }
 }
 
 function payloadString(value: unknown, fallback: string): string {
@@ -88,7 +109,7 @@ function formsBookingEmailCopy(
 export function renderNotificationEmail(
   row: NotificationRow,
   recipientName: string,
-): { subject: string; text: string; html: string } {
+): NotificationCopy {
   const base = env.BASE_URL;
   // Never derive the path from the entity type: pluralizing it produced /activitys/<id>,
   // /persons/<id> and /organizations/<id>, none of which are routes in this app.
@@ -191,6 +212,5 @@ export function renderNotificationEmail(
     }
   }
 
-  const { text, html } = wrap(line, link);
-  return { subject, text, html };
+  return { subject, line, cta: notificationCta(row.type), url: link };
 }

@@ -6,7 +6,7 @@ import { authMethods } from "@/features/auth/authMethods";
 import { loginReturnTarget } from "@/features/auth/loginReturn";
 import { requestMagicLink } from "@/features/auth/magicLink";
 import { isSameOriginPost } from "@/features/auth/originCheck";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { checkRateLimit } from "@/server/rateLimitGuard";
 
 export const runtime = "nodejs";
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       db,
       { email: parsed.data.email, next: loginReturnTarget(parsed.data.next) },
       {
-        mailer: getSystemMailer(),
+        send: (to, variables, signal) => sendSystemEmail(db, "sign_in_link", to, variables, signal),
         baseUrl: env.BASE_URL,
         seedAdminEmail: env.SEED_ADMIN_EMAIL,
       },

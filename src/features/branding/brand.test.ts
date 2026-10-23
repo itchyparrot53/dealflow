@@ -3,6 +3,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { STRINGS } from "@/constants/strings";
+import { sampleVariables } from "@/features/email-design/registry";
+import { renderDefaultTemplate } from "@/features/email-design/sendSystemEmail";
+import { DEALFLOW_DESIGN } from "@/features/email-design/tokens";
 import { renderNotificationEmail } from "@/features/notifications/email/render";
 import type { NotificationRow } from "@/types/notification";
 
@@ -61,11 +64,16 @@ describe("Dealflow branding", () => {
   });
 
   it("brands the mention notification email", () => {
-    const mail = renderNotificationEmail(MENTION, "Alex");
-    expect(mail.subject).toBe("Somebody mentioned you in Dealflow");
+    const copy = renderNotificationEmail(MENTION, "Alex");
+    const mail = renderDefaultTemplate(
+      "notification",
+      sampleVariables("notification"),
+      DEALFLOW_DESIGN,
+    );
+    expect(copy.subject).toBe("Somebody mentioned you in Dealflow");
     expect(mail.html).toContain("Dealflow");
     expect(mail.html).not.toContain("Warpdrive");
-    expect(mail.subject).not.toContain("Warpdrive");
+    expect(copy.subject).not.toContain("Warpdrive");
   });
 
   it.each(BRAND_FILES)("%s keeps the old name only in comments or internal identifiers", (file) => {

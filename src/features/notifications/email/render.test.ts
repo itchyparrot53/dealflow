@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { env } from "@/config/env";
 import { NOTIFICATION_TYPES } from "@/constants/notificationTypes";
-import { renderNotificationEmail } from "./render";
+import { notificationCta, renderNotificationEmail } from "./render";
 
 function render(over: {
   type?: (typeof NOTIFICATION_TYPES)[number];
@@ -25,30 +26,30 @@ function render(over: {
 
 describe("renderNotificationEmail link", () => {
   it("links to the real route for each entity type", () => {
-    expect(render({ entityType: "deal", entityId: "d1" }).text).toContain("/deals/d1");
+    expect(render({ entityType: "deal", entityId: "d1" }).url).toContain("/deals/d1");
     // The old renderer pluralized the entity type: /persons/<id> and /organizations/<id>, neither
     // of which is a route in this app.
-    expect(render({ entityType: "person", entityId: "p1" }).text).toContain("/contacts/people/p1");
-    expect(render({ entityType: "organization", entityId: "o1" }).text).toContain(
+    expect(render({ entityType: "person", entityId: "p1" }).url).toContain("/contacts/people/p1");
+    expect(render({ entityType: "organization", entityId: "o1" }).url).toContain(
       "/contacts/orgs/o1",
     );
-    expect(render({ entityType: "lead", entityId: "l1" }).text).toContain("/leads/l1");
+    expect(render({ entityType: "lead", entityId: "l1" }).url).toContain("/leads/l1");
   });
 
   it("falls back to the app root for a ref with no detail route", () => {
     // "activity" used to render /activitys/<id>.
     const out = render({ entityType: "activity", entityId: "a1" });
-    expect(out.text).not.toContain("/activitys/");
-    expect(out.text).not.toContain("a1");
+    expect(out.url).not.toContain("/activitys/");
+    expect(out.url).toBe(env.BASE_URL);
   });
 
   it("falls back to the app root when the row has no target", () => {
-    expect(render({ entityType: null, entityId: null }).text).toContain("Open:");
+    expect(render({ entityType: null, entityId: null }).url).toBe(env.BASE_URL);
   });
 });
 
 describe("renderNotificationEmail", () => {
-  it("renders a mention email with subject and bodies", () => {
+  it("renders a mention with its subject, line and conversation CTA", () => {
     const out = renderNotificationEmail(
       {
         id: "n1",
@@ -64,8 +65,8 @@ describe("renderNotificationEmail", () => {
       "Jane",
     );
     expect(out.subject).toContain("mentioned you");
-    expect(out.text).toContain("Jane");
-    expect(out.html).toContain("<");
+    expect(out.line).toContain("Jane");
+    expect(out.cta).toBe("Open conversation");
   });
 
   it("renders an activity reminder email", () => {
@@ -84,10 +85,11 @@ describe("renderNotificationEmail", () => {
       "Jane",
     );
     expect(out.subject).toContain("Reminder");
-    expect(out.text).toContain("Call Acme");
+    expect(out.line).toContain("Call Acme");
+    expect(out.cta).toBe("Open activity");
   });
 
-  it("renders a non-empty subject, text, and html for every notification type", () => {
+  it("gives every notification type a non-empty subject, line, CTA and URL", () => {
     for (const type of NOTIFICATION_TYPES) {
       const out = renderNotificationEmail(
         {
@@ -104,13 +106,16 @@ describe("renderNotificationEmail", () => {
         "Bob",
       );
       expect(out.subject.length, `subject empty for type ${type}`).toBeGreaterThan(0);
-      expect(out.text.length, `text empty for type ${type}`).toBeGreaterThan(0);
-      expect(out.html, `html missing < for type ${type}`).toContain("<");
-      // Every system notification carries the same branded header.
-      expect(out.html, `logo missing for type ${type}`).toContain(
-        'src="https://app.example.com/brand/email-logo@2x.png"',
-      );
-      expect(out.text.startsWith("Dealflow\n\n"), `text fallback missing for ${type}`).toBe(true);
+      expect(out.line.length, `line empty for type ${type}`).toBeGreaterThan(0);
+      expect(out.cta.length, `cta empty for type ${type}`).toBeGreaterThan(0);
+      expect(out.url.startsWith(env.BASE_URL), `url wrong for type ${type}`).toBe(true);
     }
+  });
+
+  it("maps the CTA labels from 6.4", () => {
+    expect(notificationCta("deal_won")).toBe("Open deal");
+    expect(notificationCta("booking_created")).toBe("Open booking");
+    expect(notificationCta("form_submission")).toBe("Open form");
+    expect(notificationCta("document_viewed")).toBe("Open quote");
   });
 });
