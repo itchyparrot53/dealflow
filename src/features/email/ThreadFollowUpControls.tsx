@@ -57,14 +57,20 @@ export function ThreadFollowUpControls({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="w-36">
-        <Select
-          ariaLabel={STRINGS.inbox.followUpStatusLabel}
-          value={followUpStatus ?? "none"}
-          onChange={(v) => void handleStatusChange(v)}
-          options={STATUS_OPTIONS}
-        />
+    <div className="flex flex-wrap items-end gap-2">
+      <div className="grid gap-1">
+        {/* 6.7.6 (U22): a visible label; the trigger keeps its accessible name too. */}
+        <span className="text-meta font-medium text-muted-foreground">
+          {STRINGS.inbox.followUpStatusLabel}
+        </span>
+        <div className="w-36">
+          <Select
+            ariaLabel={STRINGS.inbox.followUpStatusLabel}
+            value={followUpStatus ?? "none"}
+            onChange={(v) => void handleStatusChange(v)}
+            options={STATUS_OPTIONS}
+          />
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-1">
         <ThreadLabelChips labels={labels} />

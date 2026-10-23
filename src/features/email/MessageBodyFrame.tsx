@@ -1,6 +1,5 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/Button";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 
 // Sanitized HTML is isolated in an iframe whose sandbox grants allow-same-origin ONLY.
@@ -38,11 +37,14 @@ const BODY_STYLE = [
   "a{color:#0b57d0}",
 ].join("");
 
-export function MessageBodyFrame(props: {
-  html: string;
-  allowRemote: boolean;
-  onShowRemote: () => void;
-}): React.ReactNode {
+// Email bodies assume a white canvas, so the panel pins that surface in both themes. The
+// design-ok marker on the class line keeps check-design from reading the neutral ink as a
+// raw palette step.
+const PAPER_PANEL_CLASS = "bg-white text-neutral-900 rounded-md border p-4"; // design-ok: paper panel
+
+// The paper panel is the single body surface: the caller's header owns the "Show remote content"
+// control, and this frame owns only the isolated document.
+export function MessageBodyFrame(props: { html: string }): React.ReactNode {
   // null until the frame has loaded and reported its content height; min-height keeps a
   // short (or not-yet-loaded) body from collapsing.
   const [height, setHeight] = useState<number | null>(null);
@@ -60,15 +62,10 @@ export function MessageBodyFrame(props: {
   }
 
   return (
-    <div>
-      {!props.allowRemote && (
-        <Button variant="outline" size="sm" className="mb-2" onClick={props.onShowRemote}>
-          Show remote content
-        </Button>
-      )}
+    <div className={PAPER_PANEL_CLASS}>
       <iframe
         title="email body"
-        className={`${BLOCK_CLASS} block overflow-hidden rounded-md border border-border`}
+        className={`${BLOCK_CLASS} block w-full overflow-hidden`}
         sandbox={IFRAME_SANDBOX}
         srcDoc={srcDoc}
         onLoad={onLoad}

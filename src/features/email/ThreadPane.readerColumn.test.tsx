@@ -100,6 +100,38 @@ describe("ThreadPane reader reading column (U2)", () => {
     expect((column as HTMLElement).className).toMatch(/max-w-/);
   });
 
+  it("fills the reader column up to the context panel with a 24px gutter, left-aligned (6.7.6 U22)", () => {
+    const { container } = render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    const column = container.querySelector("[data-reader-column]");
+    expect(column).not.toBeNull();
+    expect(column).toHaveClass("w-full", "max-w-[880px]", "p-6");
+    // Left-aligned: the column no longer centres itself in the pane.
+    expect(column).not.toHaveClass("mx-auto");
+  });
+
+  it("renders the message header with sender name, address, date and the remote-content control (U22)", () => {
+    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    const card = screen.getByTestId("reader-message-card");
+    expect(within(card).getByText("Ann Acme")).toBeInTheDocument();
+    expect(within(card).getByText("ann@acme.com")).toBeInTheDocument();
+    const remote = within(card).getByRole("button", { name: /show remote content/i });
+    // Small secondary button (size sm), not the primary action style.
+    expect(remote).toHaveClass("h-7");
+  });
+
+  it("puts the message body in a white paper panel in both themes (6.7.6 U22)", () => {
+    render(<ThreadPane threadId="t1" trackingBadge={null} />);
+    const card = screen.getByTestId("reader-message-card");
+    const iframe = within(card).getByTitle("email body");
+    expect(iframe.parentElement).toHaveClass(
+      "bg-white",
+      "text-neutral-900",
+      "rounded-md",
+      "border",
+      "p-4",
+    );
+  });
+
   it("renders the reply control INSIDE the message scroll region, not as a trailing sibling (B8 pin)", () => {
     render(<ThreadPane threadId="t1" trackingBadge={null} />);
     const replyBtn = screen.getByRole("button", { name: STRINGS.inbox.replyAction });

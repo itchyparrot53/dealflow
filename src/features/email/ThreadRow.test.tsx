@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { InboxThread } from "./emailReads";
 
@@ -136,21 +136,21 @@ it("shows an attachment indicator only when the thread has an attachment", () =>
 
 // U7 row visual polish (assert classes/structure, not px, since jsdom has no layout).
 describe("ThreadRow U7 visual polish", () => {
-  it("renders the row date at the larger font (A14: text-sm, not text-xs)", () => {
+  it("renders the row date in the meta scale (6.7.6 U23: text-meta, not text-sm)", () => {
     render(<ThreadRow {...props} thread={{ ...thread, lastMessageAt: "2026-07-02T10:00:00Z" }} />);
     const dateEl = screen.getByText(/Jul 2/);
-    expect(dateEl).toHaveClass("text-sm");
-    expect(dateEl).not.toHaveClass("text-xs");
+    expect(dateEl).toHaveClass("text-meta", "tabular-nums");
+    expect(dateEl).not.toHaveClass("text-sm");
   });
 
-  it("renders the label chip before the subject (A15)", () => {
+  it("renders the label chip in the icon cell, after the subject (6.7.6 U23)", () => {
     render(
       <ThreadRow {...props} thread={{ ...thread, subject: "Hello", labels: ["important"] }} />,
     );
     const chip = screen.getByText("Important");
     const subject = screen.getByText("Hello");
-    // DOCUMENT_POSITION_FOLLOWING (4) means subject comes after the chip in document order.
-    expect(chip.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // DOCUMENT_POSITION_FOLLOWING (4) means the chip comes after the subject in document order.
+    expect(subject.compareDocumentPosition(chip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("sizes the sender column to content, not a fixed 176px width (A18)", () => {
@@ -171,6 +171,66 @@ describe("ThreadRow U7 visual polish", () => {
 
     rerender(<ThreadRow {...props} thread={{ ...thread, isOwner: false }} />);
     expect(container.querySelector("[data-privacy-caret]")).not.toBeInTheDocument();
+  });
+});
+
+describe("ThreadRow inbox grid (6.7.6 U23)", () => {
+  it("lays the row out as the five-column grid (checkbox, sender, subject, icons, date)", () => {
+    const { container } = render(<ThreadRow {...props} />);
+    const row = container.querySelector("li");
+    expect(row).not.toBeNull();
+    expect(row).toHaveClass(
+      "grid",
+      "grid-cols-[32px_200px_1fr_auto_72px]",
+      "items-center",
+      "gap-3",
+      "h-11",
+      "px-4",
+    );
+  });
+
+  it("renders the unread dot and a semibold sender when unread", () => {
+    const { container, rerender } = render(
+      <ThreadRow
+        {...props}
+        thread={{ ...thread, unread: true, senderEmail: "ada@acme.com", senderName: "Ada Acme" }}
+      />,
+    );
+    const sender = screen.getByText("Ada Acme");
+    expect(sender.parentElement).toHaveClass("font-semibold");
+    expect(container.querySelector(".bg-primary")).toBeInTheDocument();
+
+    rerender(
+      <ThreadRow
+        {...props}
+        thread={{ ...thread, unread: false, senderEmail: "ada@acme.com", senderName: "Ada Acme" }}
+      />,
+    );
+    expect(screen.getByText("Ada Acme").parentElement).toHaveClass("font-normal");
+    expect(container.querySelector(".bg-primary")).not.toBeInTheDocument();
+  });
+
+  it("joins the subject and the snippet with a middle dot on one line", () => {
+    const { container } = render(
+      <ThreadRow {...props} thread={{ ...thread, subject: "Renewal", snippet: "Deal terms" }} />,
+    );
+    expect(container.textContent).toContain("Renewal · Deal terms");
+  });
+
+  it("opens the thread when a non-control cell is clicked", () => {
+    const onOpen = vi.fn();
+    render(<ThreadRow {...props} onOpen={onOpen} />);
+    fireEvent.click(screen.getByText("Hello"));
+    expect(onOpen).toHaveBeenCalledWith("t1");
+  });
+
+  it("does not open the thread when the selection checkbox is clicked", () => {
+    const onOpen = vi.fn();
+    const onToggleSelected = vi.fn();
+    render(<ThreadRow {...props} onOpen={onOpen} onToggleSelected={onToggleSelected} />);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select Hello" }));
+    expect(onToggleSelected).toHaveBeenCalledWith("t1");
+    expect(onOpen).not.toHaveBeenCalled();
   });
 });
 

@@ -181,13 +181,10 @@ export function ThreadPane({
         <div className="flex min-w-0 flex-1 flex-col">
           {/* B8: the reply footer lives INSIDE this scroller (as the last child of the constrained
               column), so it flows immediately under the last message instead of floating at the page
-              bottom below a flex-1 spacer. B10: the column is width-constrained and centered, with
-              each message + the reply footer as its own bordered card. */}
+              bottom below a flex-1 spacer. 6.7.6 (U22): the column fills the space up to the context
+              panel with a 24px gutter, caps at 880px, and stays left-aligned. */}
           <div data-reader-scroll className="flex-1 overflow-y-auto bg-canvas-subtle">
-            <div
-              data-reader-column
-              className="mx-auto flex w-full max-w-[640px] flex-col gap-3 p-4"
-            >
+            <div data-reader-column className="flex w-full max-w-[880px] flex-col gap-3 p-6">
               {messages.map((msg) => (
                 <ReaderMessageCard
                   key={msg.providerMessageId}

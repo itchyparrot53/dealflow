@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { InboxThread } from "./emailReads";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -30,7 +31,7 @@ vi.mock("./readActions", () => ({
 
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
 
-const inboxRow = {
+const inboxRow: InboxThread = {
   id: "t1",
   subject: "Renewal",
   lastMessageAt: null,
@@ -46,7 +47,7 @@ const inboxRow = {
   snippet: null,
   hasAttachment: false,
 };
-const secondRow = {
+const secondRow: InboxThread = {
   id: "t2",
   subject: "Follow up",
   lastMessageAt: null,
@@ -148,10 +149,25 @@ describe("ThreadList", () => {
     expect(screen.queryByRole("button", { name: /All/ })).toBeNull();
   });
 
-  it("bolds the subject of an unread row", () => {
+  it("bolds the sender of an unread row (6.7.6 U23)", () => {
+    inboxListQuery.mockReturnValue({
+      data: {
+        pages: [
+          {
+            threads: [{ ...inboxRow, senderEmail: "ada@acme.com", senderName: "Ada Client" }],
+            nextCursor: null,
+          },
+        ],
+      },
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    });
     render(<ThreadList folder="inbox" />);
-    const subject = screen.getByText("Renewal");
-    expect(subject).toHaveClass("font-semibold");
+    const sender = screen.getByText("Ada Client");
+    expect(sender.parentElement).toHaveClass("font-semibold");
+    // The subject keeps the medium weight; the sender carries the unread emphasis.
+    expect(screen.getByText("Renewal")).toHaveClass("font-medium", "text-sm");
   });
 
   // Regression (codex review): the Has-attachment / Unread-only quick-filters only make sense on

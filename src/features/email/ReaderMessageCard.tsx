@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import type { ThreadMessage } from "./emailReads";
 import { InboundAttachmentList } from "./InboundAttachmentList";
 import { formatReaderDate } from "./inboxDate";
@@ -15,10 +16,10 @@ interface ReaderMessageCardProps {
   onShowRemote: () => void;
 }
 
-// One message in the reader's reading column, wrapped as a bordered card (PD parity B10: each
-// message is a ~593px bordered card inside a constrained column, not a flat full-width article).
-// Header shows the sender avatar + "Name <email>", a To/Cc recipients line, the sanitized body
-// frame, inbound attachment chips, and (outbound only) the persisted open/click history.
+// One message in the reader's reading column, wrapped as a bordered card. The header row carries
+// the sender (avatar, name, address), the To/Cc line, the date on the right and the remote-content
+// control; the body sits in the white paper panel; attachments and (outbound only) the persisted
+// open/click history follow below.
 export function ReaderMessageCard({
   message,
   allowRemote,
@@ -29,46 +30,57 @@ export function ReaderMessageCard({
       data-testid="reader-message-card"
       className="rounded-lg border border-border bg-card p-4"
     >
-      <div className="mb-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="flex min-w-0 items-center gap-2">
+      <header className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-2">
           {/* Per-message avatar (Pipedrive shows one beside each sender). */}
           <Avatar
             name={message.fromName ?? message.fromEmail}
-            className="size-7 shrink-0 text-caption"
+            className="size-8 shrink-0 text-caption"
           />
-          <span className="min-w-0 truncate">
-            {/* PD shows "Name <email>": name in the strong slot, address alongside. */}
-            <span className="font-medium text-foreground">
-              {message.fromName ?? message.fromEmail}
-            </span>
-            {message.fromName !== null && (
-              <span className="ml-1.5 text-muted-foreground">{message.fromEmail}</span>
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-sm">
+              <span className="truncate font-semibold text-foreground">
+                {message.fromName ?? message.fromEmail}
+              </span>
+              {message.fromName !== null && (
+                <span className="truncate text-meta text-muted-foreground">
+                  {message.fromEmail}
+                </span>
+              )}
+              {message.direction === "outbound" && (
+                <span className="rounded bg-accent px-1 text-accent-foreground">Sent</span>
+              )}
+            </div>
+            {message.toEmails.length > 0 && (
+              // Recipients line (Pipedrive shows To: / Cc: in the message header). Matters most on
+              // sent mail, where the body doesn't say who it went to.
+              <p className="mt-0.5 truncate text-meta text-muted-foreground">
+                <span className="font-medium">To:</span> <span>{message.toEmails.join(", ")}</span>
+                {message.ccEmails.length > 0 && (
+                  <>
+                    {" · "}
+                    <span className="font-medium">Cc:</span>{" "}
+                    <span>{message.ccEmails.join(", ")}</span>
+                  </>
+                )}
+              </p>
             )}
-            {message.direction === "outbound" && (
-              <span className="ml-1 rounded bg-accent px-1 text-accent-foreground">Sent</span>
-            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className="text-meta tabular-nums text-muted-foreground">
+            {formatReaderDate(message.sentAt)}
           </span>
-        </span>
-        <span className="shrink-0 tabular-nums">{formatReaderDate(message.sentAt)}</span>
-      </div>
-      {message.toEmails.length > 0 && (
-        // Recipients line (Pipedrive shows To: / Cc: in the message header). Matters most on sent
-        // mail, where the row above is the counterparty but the body doesn't say who it went to.
-        <div className="mb-2 text-xs text-muted-foreground">
-          <span className="font-medium">To:</span> <span>{message.toEmails.join(", ")}</span>
-          {message.ccEmails.length > 0 && (
-            <>
-              {" · "}
-              <span className="font-medium">Cc:</span> <span>{message.ccEmails.join(", ")}</span>
-            </>
+          {/* Remote assets stay blocked until the owner explicitly reveals them; the click
+              re-queries the server with allowRemote:true (see MessageBodyFrame). */}
+          {!allowRemote && (
+            <Button variant="secondary" size="sm" onClick={onShowRemote}>
+              Show remote content
+            </Button>
           )}
         </div>
-      )}
-      <MessageBodyFrame
-        html={message.bodyHtml}
-        allowRemote={allowRemote}
-        onShowRemote={onShowRemote}
-      />
+      </header>
+      <MessageBodyFrame html={message.bodyHtml} />
       {message.attachments.length > 0 && (
         <InboundAttachmentList attachments={message.attachments} />
       )}

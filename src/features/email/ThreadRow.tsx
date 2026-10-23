@@ -35,7 +35,7 @@ export function canSelectInFolder(folder: ThreadFolder): boolean {
 }
 
 // Per-row archive/unarchive affordance. Inbox rows archive; Archive rows unarchive; Sent
-// rows get no affordance. A real <button> (mutation), separate from the nav <button>.
+// rows get no affordance. A real <button> (mutation), separate from the row's nav handler.
 function RowArchiveButton({
   folder,
   threadId,
@@ -63,8 +63,12 @@ function RowArchiveButton({
     <button
       type="button"
       disabled={busy}
-      onClick={() => void run()}
-      className={`${ROW_ACTION_BUTTON} self-start`}
+      onClick={(e) => {
+        // The row owns open-thread navigation; archive stays its own action.
+        e.stopPropagation();
+        void run();
+      }}
+      className={ROW_ACTION_BUTTON}
     >
       {isArchive ? "Unarchive" : "Archive"}
     </button>
@@ -84,9 +88,9 @@ interface ThreadRowProps {
   onVisibilityChanged?: () => void;
 }
 
-// A single thread row: select checkbox, the nav button that opens the thread, and the
-// per-row archive/unarchive affordance. The checkbox stops click propagation so toggling
-// selection never also fires the row's onOpen navigation.
+// A single thread row, laid out as a five-column grid: selection checkbox, sender, subject +
+// snippet, icons, date. The whole row opens the thread (6.7.6 U23); selection, privacy and
+// archive stop propagation so they keep their own actions. Snippet masking is preserved.
 export function ThreadRow({
   thread,
   folder,
@@ -98,92 +102,108 @@ export function ThreadRow({
   onVisibilityChanged,
 }: ThreadRowProps): React.ReactNode {
   const subject = thread.subject ?? "(no subject)";
-  const weight = thread.unread ? "font-semibold" : "font-normal";
-  // Pipedrive-style single-line row: sender column, then subject + inline snippet, then the date
-  // on the right (archive appears on hover). No persistent reading pane; the row opens the thread.
+  const sender = thread.senderName ?? thread.senderEmail;
+  const unlinked = thread.personId === null && thread.dealId === null;
+
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: the sr-only Open button is the row's keyboard path
     <li
-      className={`group flex items-center gap-2 pr-2 min-h-[72px] [content-visibility:auto] [contain-intrinsic-size:auto_72px] ${active ? "bg-info-soft" : "hover:bg-muted"}`}
+      // The row is the navigation target; nested controls guard their own clicks (6.7.6 U23).
+      onClick={() => onOpen(thread.id)}
+      className={cn(
+        "group relative grid grid-cols-[32px_200px_1fr_auto_72px] items-center gap-3 h-11 px-4",
+        "[content-visibility:auto] [contain-intrinsic-size:auto_44px]",
+        "cursor-pointer",
+        active ? "bg-info-soft" : "hover:bg-muted",
+      )}
     >
-      {canSelectInFolder(folder) && (
-        <div className="flex items-center px-4">
+      {/* Keyboard path to the row action: hidden until focused, so the row itself never becomes a
+          tab stop with a bogus role (the grid contains its own buttons). */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen(thread.id);
+        }}
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-1 focus:z-10 focus:rounded-md focus:bg-card focus:px-2 focus:py-1 focus:text-sm focus:font-medium focus:ring-2 focus:ring-ring"
+      >
+        Open {subject}
+      </button>
+      {/* The checkbox column is always present so every folder lines up; chrome-less views
+          render an empty cell instead of shifting the sender into column one. The wrapper is a
+          pure propagation guard: selecting must not also open the thread. */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: propagation guard only */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: propagation guard only */}
+      <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+        {canSelectInFolder(folder) && (
           <Checkbox
             label={`Select ${subject}`}
             checked={selected}
             onCheckedChange={() => onToggleSelected(thread.id)}
           />
-        </div>
-      )}
-      <button
-        type="button"
-        className={`flex min-w-0 flex-1 items-center gap-3 py-3 text-left ${canSelectInFolder(folder) ? "" : "pl-3"}`}
-        onClick={() => onOpen(thread.id)}
-      >
-        {/* Correspondent column (Pipedrive leads each row with the counterparty). Projected by the
-            Inbox AND the Sent/Archive folder reads (folderReads.ts); rendered whenever a
-            correspondent address is present, blank only when a thread genuinely has no other party. */}
-        {thread.senderEmail !== null && (
-          <span className={`max-w-56 shrink-0 truncate text-sm text-foreground ${weight}`}>
-            {thread.unread && (
-              <span
-                aria-hidden="true"
-                className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
-              />
-            )}
-            {/* Pipedrive leads with the sender's display name; fall back to the address when the
-                From header carried no name (or older mail synced before from_name existed). */}
-            {thread.senderName ?? thread.senderEmail}
-          </span>
         )}
-        {/* A15: the label chip leads the subject (Pipedrive positions it before, not after). */}
-        <ThreadLabelChips labels={thread.labels} />
-        {/* Subject + inline snippet preview, subject bolded when unread. */}
-        <span className="min-w-0 flex-1 truncate text-meta">
-          {thread.senderEmail === null && thread.unread && (
-            <span
-              aria-hidden="true"
-              className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle"
-            />
-          )}
-          <span className={`text-foreground ${weight}`}>{subject}</span>
-          {thread.snippet !== null && thread.snippet !== "" && (
+      </div>
+
+      {/* Correspondent column. Pipedrive leads each row with the counterparty; the display name
+          wins over the address, and the unread dot plus semibold weight carry the unread state. */}
+      <div
+        className={cn(
+          "flex min-w-0 items-center gap-1.5 truncate text-sm",
+          thread.unread ? "font-semibold" : "font-normal",
+        )}
+      >
+        {thread.unread && (
+          <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+        )}
+        {sender !== null && <span className="truncate">{sender}</span>}
+      </div>
+
+      {/* Subject then the snippet on one line, truncated together. */}
+      <div className="min-w-0 truncate text-sm">
+        <span className="text-sm font-medium text-foreground">{subject}</span>
+        {thread.snippet !== null && thread.snippet !== "" && (
+          <>
+            {" · "}
             <span className={cn("text-muted-foreground", MASK_CLASS)}>
-              {" "}
               {decodeEmailSnippet(thread.snippet)}
             </span>
-          )}
-        </span>
-        {thread.personId === null && thread.dealId === null && (
+          </>
+        )}
+      </div>
+
+      {/* Icons: attachment, labels, unlinked, privacy, then the hover-only archive action. */}
+      <div className="flex items-center justify-end gap-1.5">
+        {thread.hasAttachment && (
+          <Paperclip
+            role="img"
+            aria-label={STRINGS.inbox.hasAttachmentLabel}
+            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+          />
+        )}
+        <ThreadLabelChips labels={thread.labels} />
+        {unlinked && (
           <span className="shrink-0 rounded bg-warning/20 px-1.5 py-0.5 text-xs text-warning-foreground">
             Unlinked
           </span>
         )}
-      </button>
-      {thread.hasAttachment && (
-        <Paperclip
-          role="img"
-          aria-label={STRINGS.inbox.hasAttachmentLabel}
-          className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-        />
-      )}
-      {/* Privacy toggle stays visible (the lock reflects private/shared at a glance); owner-only.
-          A16: a caret sits next to the lock so the affordance reads as a dropdown (the lock is the
-          real DropdownMenu trigger; the caret is decorative). */}
-      {thread.isOwner && (
-        <div className="flex shrink-0 items-center text-muted-foreground">
-          <ThreadPrivacyToggle
-            threadId={thread.id}
-            visibility={thread.visibility}
-            onChanged={onVisibilityChanged}
-          />
-          <ChevronDown data-privacy-caret="true" aria-hidden="true" className="-ml-1 h-3 w-3" />
+        {/* Privacy toggle stays visible (the lock reflects private/shared at a glance); owner-only.
+            A16: a caret sits next to the lock so the affordance reads as a dropdown. */}
+        {thread.isOwner && (
+          <div className="flex shrink-0 items-center text-muted-foreground">
+            <ThreadPrivacyToggle
+              threadId={thread.id}
+              visibility={thread.visibility}
+              onChanged={onVisibilityChanged}
+            />
+            <ChevronDown data-privacy-caret="true" aria-hidden="true" className="-ml-1 h-3 w-3" />
+          </div>
+        )}
+        <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <RowArchiveButton folder={folder} threadId={thread.id} onDone={onArchiveDone} />
         </div>
-      )}
-      <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-        <RowArchiveButton folder={folder} threadId={thread.id} onDone={onArchiveDone} />
       </div>
-      {/* A14: row date at the larger 14px font (text-sm) to match Pipedrive's list. */}
-      <span className="w-16 shrink-0 text-right text-sm text-muted-foreground tabular-nums">
+
+      <span className="text-right text-meta text-muted-foreground tabular-nums">
         {formatInboxListDate(thread.lastMessageAt)}
       </span>
     </li>

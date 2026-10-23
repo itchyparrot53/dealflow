@@ -36,8 +36,8 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U19 | Calendar | The day starts at 00:00, so working hours are below the fold; the grid is flat | 6.7.3 | 3.3 | 3.3 | | |
 | U20 | Deal stage track | Every future stage says "0 days" | 6.7.4 | 3.4 | 3.4 | | |
 | U21 | Document editor | The raw template (`# Quote {{document.number}}`) is the main field; actions mix filled, outline and plain text; "Send" looks disabled | 6.7.5 | 3.5 | 3.5 | | |
-| U22 | Email thread | White message boxes in dark mode, a narrow centred column, an unlabeled follow-up select | 6.7.6 | 3.6 | | | |
-| U23 | Inbox list | Sender, subject and snippet run together | grid row (6.7.6) | 3.6 | | | |
+| U22 | Email thread | White message boxes in dark mode, a narrow centred column, an unlabeled follow-up select | 6.7.6 | 3.6 | 3.6 | | |
+| U23 | Inbox list | Sender, subject and snippet run together | grid row (6.7.6) | 3.6 | 3.6 | | |
 | U24 | Leads list | An orange "No activity" warning on every row; source values like "manually created" | 6.7.7 | 3.7 | | | |
 | U25 | Dashboard | The dashboard name is a form input at the top; actions are scattered | 6.7.7 | 3.7 | | | |
 | U26 | Insights index | A bare two-line list under a duplicate H1 | table plus empty state (6.7.7) | 3.7 | | | |

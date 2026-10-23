@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -9,14 +10,13 @@ afterEach(cleanup);
 // grants allow-same-origin ONLY (never allow-scripts): with scripts disabled no code can
 // execute, so a sanitizer miss still cannot reach the app, cookies, or session. same-origin
 // is required so onLoad can read the laid-out document height and size the frame to its
-// content instead of collapsing to a fixed default.
+// content instead of collapsing to a fixed default. The frame sits in the white paper panel
+// (6.7.6 U22) because email HTML assumes a light surface in both themes.
 import { MessageBodyFrame } from "./MessageBodyFrame";
 
 describe("MessageBodyFrame", () => {
   it("renders the body in an iframe sandboxed with allow-same-origin but NOT allow-scripts", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>safe</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>safe</p>" />);
     const iframe = container.querySelector("iframe");
     expect(iframe).toBeTruthy();
     const sandbox = iframe?.getAttribute("sandbox") ?? "";
@@ -25,17 +25,13 @@ describe("MessageBodyFrame", () => {
   });
 
   it("gives the iframe a min-height so a short body does not collapse", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>x</p>" />);
     const iframe = container.querySelector("iframe");
     expect(iframe?.style.minHeight).not.toBe("");
   });
 
   it("sizes the iframe to contentDocument.body.scrollHeight on load", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>tall</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>tall</p>" />);
     const iframe = container.querySelector("iframe");
     if (iframe === null) throw new Error("no iframe");
     // jsdom cannot lay out iframes, so drive the handler with a mocked contentDocument.
@@ -48,9 +44,7 @@ describe("MessageBodyFrame", () => {
   });
 
   it("does not throw and keeps the min-height when contentDocument is null on load", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>x</p>" />);
     const iframe = container.querySelector("iframe");
     if (iframe === null) throw new Error("no iframe");
     Object.defineProperty(iframe, "contentDocument", { configurable: true, value: null });
@@ -59,43 +53,32 @@ describe("MessageBodyFrame", () => {
     expect(iframe.style.height).toBe("");
   });
 
-  it("offers a show-remote-content affordance when remote is blocked", () => {
-    const { getByRole } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
+  it("wraps the frame in the white paper panel in both themes", () => {
+    const { container } = render(<MessageBodyFrame html="<p>x</p>" />);
+    expect(container.firstElementChild).toHaveClass(
+      "bg-white",
+      "text-neutral-900",
+      "rounded-md",
+      "border",
+      "p-4",
     );
-    expect(getByRole("button", { name: /show remote content/i })).toBeTruthy();
   });
 
   it("zeroes the document margin so the height-sized frame does not grow its own scrollbar", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>x</p>" />);
     const srcDoc = container.querySelector("iframe")?.getAttribute("srcdoc") ?? "";
     expect(srcDoc).toMatch(/body\s*\{[^}]*margin:\s*0/);
   });
 
   it("renders the body on a light surface so a dark theme does not wash out the sender's copy", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>x</p>" />);
     const srcDoc = container.querySelector("iframe")?.getAttribute("srcdoc") ?? "";
     expect(srcDoc).toMatch(/color-scheme:\s*light/);
     expect(srcDoc).toMatch(/background:\s*#fff/i);
   });
 
-  it("styles the show-remote-content control as a design-system button", () => {
-    const { getByRole } = render(
-      <MessageBodyFrame html="<p>x</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
-    const button = getByRole("button", { name: /show remote content/i });
-    expect(button.className).toMatch(/inline-flex/);
-    expect(button.className).toMatch(/rounded-md/);
-  });
-
   it("drops the min-height once the frame reports its height, so a short body is not a tall slab", () => {
-    const { container } = render(
-      <MessageBodyFrame html="<p>two lines</p>" allowRemote={false} onShowRemote={() => {}} />,
-    );
+    const { container } = render(<MessageBodyFrame html="<p>two lines</p>" />);
     const iframe = container.querySelector("iframe");
     if (iframe === null) throw new Error("no iframe");
     Object.defineProperty(iframe, "contentDocument", {

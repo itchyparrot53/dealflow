@@ -47,6 +47,19 @@ afterEach(() => {
 
 const onChanged = vi.fn();
 
+it("shows a visible Follow-up label beside the status select (6.7.6 U22)", () => {
+  render(
+    <ThreadFollowUpControls
+      threadId="t1"
+      followUpStatus={null}
+      labels={[]}
+      onChanged={onChanged}
+    />,
+  );
+  expect(screen.getByText("Follow-up")).toBeInTheDocument();
+  expect(screen.getByLabelText("Follow-up")).toBeInTheDocument();
+});
+
 it("picking a follow-up status calls setFollowUpStatusAction with the picked value", () => {
   render(
     <ThreadFollowUpControls
