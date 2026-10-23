@@ -52,7 +52,11 @@ function png(width: number, height: number): Buffer {
 function uploadFile(bytes: Buffer): { size: number; arrayBuffer: () => Promise<ArrayBuffer> } {
   return {
     size: bytes.length,
-    arrayBuffer: async () => new Uint8Array(bytes).buffer as ArrayBuffer,
+    arrayBuffer: () => {
+      const buffer = new ArrayBuffer(bytes.length);
+      new Uint8Array(buffer).set(bytes);
+      return Promise.resolve(buffer);
+    },
   };
 }
 

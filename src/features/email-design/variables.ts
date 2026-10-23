@@ -5,7 +5,6 @@
 export type VariableMode = "html" | "text";
 
 const TOKEN = /\{\{\s*([A-Za-z0-9_.]+)\s*\}\}/g;
-const CONTROL = /[\u0000-\u001F\u007F]/g;
 const SPACE = /\s+/g;
 
 const ESCAPES: Record<string, string> = {
@@ -34,5 +33,11 @@ export function renderVariables(
 // Subjects and preview lines are single-line headers. Strip every C0 control character (CR, LF,
 // tab and friends), collapse the resulting whitespace and cut to the header's limit.
 export function stripHeaderBreaks(value: string, max: number): string {
-  return value.replace(CONTROL, " ").replace(SPACE, " ").trim().slice(0, max);
+  // C0 controls (CR, LF, tab and friends) and DEL are replaced without a control-character regex,
+  // which the linter refuses; they are exactly what a header must never carry.
+  const flattened = Array.from(value, (character) => {
+    const code = character.codePointAt(0) ?? 0;
+    return code < 0x20 || code === 0x7f ? " " : character;
+  }).join("");
+  return flattened.replace(SPACE, " ").trim().slice(0, max);
 }

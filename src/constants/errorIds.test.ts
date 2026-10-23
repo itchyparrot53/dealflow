@@ -65,9 +65,10 @@ describe("error IDs", () => {
       "BULK",
       "ORGREL",
       "PUSH",
+      "EMAIL_DESIGN",
     ];
     for (const id of Object.values(ERROR_IDS)) {
-      const m = /^E_([A-Z]+)_(\d{3})$/.exec(id);
+      const m = /^E_([A-Z]+(?:_[A-Z]+)*)_(\d{3})$/.exec(id);
       expect(m, `bad id: ${id}`).not.toBeNull();
       expect(domains).toContain(m![1]);
     }

@@ -50,7 +50,7 @@ const CONTENT_STYLES: Record<string, string> = {
 function addContentStyles(html: string, accent: string): string {
   return html.replace(
     /<(p|a|h1|h2|ul|ol|li|img|blockquote)(\s[^>]*)?>/gi,
-    (match, tag: string, attrs = "") => {
+    (match: string, tag: string, attrs: string = "") => {
       if (/\bstyle=/.test(attrs)) return match;
       const color = tag === "a" ? `color:${accent};` : "";
       return `<${tag}${attrs} style="${CONTENT_STYLES[tag] ?? ""}${color}">`;
@@ -98,7 +98,7 @@ function footerHtml(design: EmailDesign, family: EmailFamily, extraHtml?: string
   return `<div style="font-family:${EMAIL_FONT_STACK};font-size:12px;line-height:18px;color:${EMAIL_COLORS.muted};">${body}</div>`;
 }
 
-function summaryHtml(summary: EmailSummary | undefined, design: EmailDesign): string {
+function summaryHtml(summary: EmailSummary | undefined): string {
   if (summary === undefined || summary.rows.length === 0) return "";
   const rows = summary.rows
     .map(
@@ -144,7 +144,7 @@ function brandedBody(
   ].join("");
 }
 
-function minimalBody(design: EmailDesign, bodyHtml: string, footer: string | null): string {
+function minimalBody(bodyHtml: string, footer: string | null): string {
   const footerRow =
     footer === null
       ? ""
@@ -276,13 +276,13 @@ function plainText(
 export function renderEmail(input: RenderEmailInput): RenderedEmail {
   const layout: EmailLayout = input.family === "product" ? "branded" : input.layout;
   const body = addContentStyles(input.bodyHtml, input.design.accentColor);
-  const sections = `${input.cta === undefined ? "" : buttonHtml(input.cta, input.design)}${summaryHtml(input.summary, input.design)}`;
+  const sections = `${input.cta === undefined ? "" : buttonHtml(input.cta, input.design)}${summaryHtml(input.summary)}`;
   const includeFooter = layout === "branded" || input.design.footerOnReplies;
   const footer = footerHtml(input.design, input.family, input.footerExtraHtml);
   const bodyHtml =
     layout === "branded"
       ? brandedBody(input.design, input.family, body, sections, footer)
-      : minimalBody(input.design, body, input.design.footerOnReplies ? footer : null);
+      : minimalBody(body, input.design.footerOnReplies ? footer : null);
   const html = documentShell(
     input.subject ?? input.design.displayName,
     input.preheader,

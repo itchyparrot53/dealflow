@@ -4,7 +4,7 @@ import type { Db } from "@/db/client";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
 import { getSystemMailer } from "@/features/mailer/systemMailer";
 import type { SystemAttachment } from "@/features/mailer/types";
-import { err, ok, type Result } from "@/types/result";
+import { err, type Result } from "@/types/result";
 import { getEmailDesign } from "./design";
 import { renderEmail } from "./layout";
 import { EMAIL_TEMPLATES, type EmailTemplateKey, isTemplateKey } from "./registry";

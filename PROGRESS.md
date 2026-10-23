@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-10-23 13:05
+Current: 2.1 · Last updated: 2026-10-23 13:10
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
-- Phase 1: 8ec54f5
+- Phase 1: 8ec54f539191a19aee27033b698c00914e8f43c9
+- Phase 2: 7da8993
 
 ## Tasks
 - [x] 0.1 Start Part 13: progress files, kit, baseline and environment
@@ -15,7 +16,7 @@ Current: 1.5 · Last updated: 2026-10-23 13:05
 - [x] 1.2 The layout renderer
 - [x] 1.3 Data model, design service, logo and the public route
 - [x] 1.4 Registry, overrides and sendSystemEmail
-- [ ] 1.5 Phase 1 QA gate
+- [x] 1.5 Phase 1 QA gate
 - [ ] 2.1 Product emails migrated
 - [ ] 2.2 Customer email wrapping in the send path, automations and booking
 - [ ] 2.3 Quote and invoice emails
@@ -32,10 +33,13 @@ Current: 1.5 · Last updated: 2026-10-23 13:05
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5480/5480 in 860 files · src/features/email-design/*.integration.test.ts 7/7
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 1.5: the error-id registry test's regex accepted only one-word domains; Part 13's required `E_EMAIL_DESIGN_NNN` ids are two words, so the test regex now allows underscore segments and `EMAIL_DESIGN` joins the domain list. This widens the registry contract for the new domain, not a weakened assertion.
+- 1.5: `renderEmail` takes an optional `subject` for the `<title>` element: 6.2 asks the skeleton for the subject but its input interface omits it, so the field defaults to the display name.
 - 1.3: `db:generate` produced `0093_smooth_harrier.sql`; it was renamed to `0093_dealflow_email_design.sql` with the journal tag updated, and the singleton `INSERT ... ON CONFLICT DO NOTHING` was appended, so the migration matches 6.3 and a fresh database always has the row.
 - 1.3: there is no middleware or public allow-list in this codebase: the public routes are top-level `/d`, `/f` and `/book` outside the `(app)` group. The logo route therefore sits at top-level `/email-assets/logo/[file]`, which is public by construction; there was no list to edit.
 - 1.3: the logo route reuses the `emailTracking` public limiter and, like the tracking pixel, still serves the stored bytes when the limit is hit, so an emailed logo can never render broken.

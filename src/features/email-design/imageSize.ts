@@ -37,6 +37,25 @@ function pngSize(bytes: Uint8Array): ImageInfo | null {
   return { mime: "image/png", width, height };
 }
 
+function skipFill(bytes: Uint8Array, offset: number): number {
+  let index = offset;
+  while (index + 1 < bytes.length && bytes[index + 1] === 0xff) index += 1;
+  return index;
+}
+
+function standalone(marker: number): boolean {
+  return marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7);
+}
+
+function sofInfo(bytes: Uint8Array, offset: number, marker: number): ImageInfo | null {
+  if (marker !== 0xc0 && marker !== 0xc1 && marker !== 0xc2) return null;
+  if (offset + 9 > bytes.length) return null;
+  const height = u16(bytes, offset + 5);
+  const width = u16(bytes, offset + 7);
+  if (width === 0 || height === 0) return null;
+  return { mime: "image/jpeg", width, height };
+}
+
 function jpegSize(bytes: Uint8Array): ImageInfo | null {
   let offset = 2;
   while (offset + 4 <= bytes.length) {
@@ -44,27 +63,16 @@ function jpegSize(bytes: Uint8Array): ImageInfo | null {
       offset += 1;
       continue;
     }
-    let marker = bytes[offset + 1] ?? 0;
-    // Fill bytes: a marker may be preceded by any number of 0xFF.
-    while (marker === 0xff) {
-      offset += 1;
-      marker = bytes[offset + 1] ?? 0;
-    }
-    // Standalone markers carry no length.
-    if (marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7)) {
+    offset = skipFill(bytes, offset);
+    const marker = bytes[offset + 1] ?? 0;
+    if (standalone(marker)) {
       offset += 2;
       continue;
     }
     const length = u16(bytes, offset + 2);
     if (length < 2) return null;
-    // SOF0, SOF1 and SOF2 are the baseline, extended and progressive frames that carry the size.
-    if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-      if (offset + 9 > bytes.length) return null;
-      const height = u16(bytes, offset + 5);
-      const width = u16(bytes, offset + 7);
-      if (width === 0 || height === 0) return null;
-      return { mime: "image/jpeg", width, height };
-    }
+    const frame = sofInfo(bytes, offset, marker);
+    if (frame !== null) return frame;
     offset += 2 + length;
   }
   return null;
