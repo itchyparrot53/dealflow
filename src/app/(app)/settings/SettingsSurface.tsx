@@ -8,7 +8,7 @@ export function SettingsPage({
   children: React.ReactNode;
   className?: string;
 }): React.ReactElement {
-  return <section className={cn("max-w-[800px] space-y-6 p-6", className)}>{children}</section>;
+  return <section className={cn("w-full space-y-6", className)}>{children}</section>;
 }
 
 export function SettingsCard({

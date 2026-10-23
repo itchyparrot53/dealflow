@@ -136,6 +136,9 @@ const AI_ITEM: NavItem = {
   icon: Bot,
 };
 
+const GROUP_LABEL_CLASS =
+  "mb-1 mt-4 px-4 text-meta font-semibold uppercase tracking-wide text-muted-foreground"; // design-ok: settings group label
+
 // Grouped left secondary menu (Pipedrive settings IA): My account for everyone, Company overview
 // for managers and admins. Replaces the old flat tab bar.
 export function SettingsNav({
@@ -177,14 +180,12 @@ export function SettingsNav({
   return (
     <nav
       aria-label="Settings sections"
-      className="w-[240px] shrink-0 space-y-5 border-r border-border bg-card pb-6"
+      className="w-60 shrink-0 space-y-4 border-r border-border bg-card pb-6"
     >
       {sections.map((section) => (
         <div key={section.title}>
           {/* 6.8.11: group headings are 13/600 secondary, with a 24 px top margin. */}
-          <p className="mb-1 mt-6 px-4 text-meta font-semibold text-muted-foreground">
-            {section.title}
-          </p>
+          <p className={GROUP_LABEL_CLASS}>{section.title}</p>
           <ul className="space-y-0.5">
             {section.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);

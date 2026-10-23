@@ -31,7 +31,6 @@ export default async function InsightsPage(): Promise<React.ReactNode> {
   return (
     <main aria-label={S.ui.title} className="space-y-4 p-4">
       <PageTitle title="Insights" />
-      <h1 className="text-title">{S.ui.title}</h1>
       <InsightsHome
         reports={reports.map((report) => ({
           id: report.id,

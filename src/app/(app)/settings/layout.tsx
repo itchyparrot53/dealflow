@@ -18,11 +18,18 @@ export default async function SettingsLayout({
   const canImport = actor !== null && can(actor, "data.import");
   return (
     <div className="flex gap-6">
-      {/* The grouped rail is 14rem wide; on a phone the content needs that width. */}
-      <div className="hidden md:block">
+      {/* 240 px nav, sticky inside the shell. The scroll container is the content column, so a
+          settings page always scrolls without clipping (6.6, U12). The 16 px main padding is why
+          the height is 100dvh minus 88: the 56 px top bar plus that padding. */}
+      <div className="sticky top-0 hidden h-[calc(100dvh-88px)] shrink-0 overflow-y-auto md:block">
         <SettingsNav isAdmin={isAdmin} canManageCompany={canManageCompany} canImport={canImport} />
       </div>
-      <div className="min-w-0 flex-1">{children}</div>
+      <div
+        data-testid="settings-scroll"
+        className="h-[calc(100dvh-88px)] min-w-0 flex-1 overflow-y-auto"
+      >
+        <div className="mx-auto w-full max-w-[960px] px-8 py-6">{children}</div>
+      </div>
     </div>
   );
 }

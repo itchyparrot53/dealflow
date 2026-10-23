@@ -69,7 +69,6 @@ export function ComposePageClient({
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
           {STRINGS.inbox.back}
         </Link>
-        <h1 className="text-title">{STRINGS.inbox.composeTitle}</h1>
       </div>
       <div className="flex min-h-0 flex-1 items-start gap-6 overflow-y-auto p-4">
         <div className="flex min-w-0 flex-1 flex-col">

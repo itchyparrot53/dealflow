@@ -49,7 +49,6 @@ export default async function ProjectsPage({
   return (
     <main aria-label={S.title} className="space-y-4 p-4">
       <PageTitle title="Projects" />
-      <h1 className="text-title">{S.title}</h1>
       <ProjectsList
         projects={projects}
         users={users}

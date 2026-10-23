@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.3 · Last updated: 2026-10-23 02:56
+Current: 2.4 · Last updated: 2026-10-23 02:58
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -21,7 +21,7 @@ Current: 2.3 · Last updated: 2026-10-23 02:56
 - [x] 1.7 Phase 1 QA gate
 - [x] 2.1 Expandable rail with labels (U4)
 - [x] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
-- [ ] 2.3 One heading per page and the settings layout (U11, U12)
+- [x] 2.3 One heading per page and the settings layout (U11, U12)
 - [ ] 2.4 Contacts view switcher (U13)
 - [ ] 2.5 Toolbar order and the Ask AI popover (U14, U15)
 - [ ] 2.6 Phase 2 QA gate
@@ -109,6 +109,11 @@ Current: 2.3 · Last updated: 2026-10-23 02:56
 - 2.2: `clientEnv.PWA_UI` is `process.env.NEXT_PUBLIC_PWA_UI === "true"` (default false), `.env.example` documents `NEXT_PUBLIC_PWA_UI=false`, and the e2e env sets it true so spec 14 keeps testing the real feature.
 - 2.2: the 6.4 grep found four user-visible surfaces and all are gated: the account-menu Install app item and the Profile "Install app" card (`InstallButton` itself returns null), the Settings > Notifications "Push notifications" card and its Push column (`PushSettings` and `PreferencesForm`'s `showPush`), and the `OfflineBanner`. Other hits are the offline store (`RememberRecord`, snapshots) and code comments, which are not user-facing and stay.
 - 2.2: the service worker, the `/offline` page, the offline store, push code, routes and tests are untouched; only rendering is gated.
+
+- 2.3: removed the content H1s that repeated the top-bar title on the Documents, Insights and Projects index pages, and also on the Import wizard and the compose page (the 6.6 one-h1 rule has no exception for them); record pages keep their record-name H1. Every app page now has exactly one visible H1, in the top bar.
+- 2.3: the settings layout is the 240 px nav column plus a content scroller. The nav is sticky and scrolls its own long list; the content publishes `data-testid="settings-scroll"` (used by spec 16), is `max-w-[960px] px-8 py-6`, and every settings page scrolls inside it. `SettingsPage` no longer caps itself at 800 px or pads, so panels fill the content width.
+- 2.3: the settings group labels are `text-meta font-semibold uppercase tracking-wide text-muted-foreground` with the `design-ok: settings group label` opt-out 6.6 requires, 16 px above each group.
+- 2.3: the sticky nav and the scroller are `h-[calc(100dvh-88px)]` rather than the contract's `calc(100dvh-56px)`: the shell's `main` adds 16 px padding on each side, so 88 is the real available height, and the shorter box keeps `main` itself from scrolling. Logged because it is the one number in 6.6 that had to follow the shell.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
