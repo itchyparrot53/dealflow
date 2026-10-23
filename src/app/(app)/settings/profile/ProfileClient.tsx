@@ -4,10 +4,10 @@ import type React from "react";
 import { useId, useState } from "react";
 import { useActionError } from "@/components/shell/ActionErrorProvider";
 import { Button } from "@/components/ui/Button";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
-import { Select, type SelectOption } from "@/components/ui/Select";
 import { clientEnv } from "@/config/clientEnv";
 import { STRINGS } from "@/constants/strings";
 import { AvatarUpload } from "@/features/identity/avatar/AvatarUpload";
@@ -45,7 +45,7 @@ const TIMEZONES = [
   "Australia/Sydney",
 ];
 const TIMEZONE_NONE_VALUE = "timezone:none";
-const TIMEZONE_OPTIONS: SelectOption[] = [
+const TIMEZONE_OPTIONS: ComboboxOption[] = [
   { value: TIMEZONE_NONE_VALUE, label: STRINGS.settings.timezoneNone },
   ...TIMEZONES.map((tz) => ({ value: tz, label: tz })),
 ];
@@ -133,7 +133,7 @@ export function ProfileClient(props: ProfileClientProps): React.ReactNode {
           </FormField>
 
           <FormField label={STRINGS.settings.timezone}>
-            <Select
+            <Combobox
               ariaLabel={STRINGS.settings.timezone}
               value={timezone}
               onChange={(value) => setTimezone(value === TIMEZONE_NONE_VALUE ? "" : value)}

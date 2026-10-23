@@ -4,6 +4,7 @@ import type React from "react";
 import type { Organization } from "@/db/schema";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { ContactCustomFieldRows } from "@/features/custom-fields/ContactCustomFieldRows";
+import { formatNumber } from "@/lib/format/number";
 import type { CustomFieldDef } from "@/types/customFields";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { externalHref, LinkValue } from "./contactLinks";
@@ -165,7 +166,7 @@ export function OrgBlock({
       {!hidden.has("annualRevenue") && (
         <SidebarFieldRow
           label="Annual revenue"
-          value={org.annualRevenue ?? "-"}
+          value={org.annualRevenue === null ? "-" : formatNumber(Number(org.annualRevenue))}
           empty={org.annualRevenue === null}
           initialDraft={org.annualRevenue ?? ""}
           renderEditor={textEditor("editor-annual-revenue")}
@@ -178,7 +179,7 @@ export function OrgBlock({
       {!hidden.has("employeeCount") && (
         <SidebarFieldRow
           label="Number of employees"
-          value={org.employeeCount ?? "-"}
+          value={org.employeeCount === null ? "-" : formatNumber(org.employeeCount)}
           empty={org.employeeCount === null}
           initialDraft={org.employeeCount === null ? "" : String(org.employeeCount)}
           renderEditor={textEditor("editor-employees")}

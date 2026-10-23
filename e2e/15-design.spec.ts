@@ -73,6 +73,9 @@ async function runScreen(page: Page, route: DesignRoute): Promise<void> {
 
   await page.setViewportSize({ width: 375, height: 812 });
   await settle(page);
+  // A toast or banner that is mid slide/fade can widen scrollWidth for a frame; measure the
+  // settled layout, not the animation (no tolerance change: the 1 px limit stays).
+  await page.waitForTimeout(300);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
   );

@@ -36,7 +36,10 @@ function renderCurrency(
   // that fraction is shown (auto drops it for a whole major unit).
   const scale = 10n ** BigInt(currencyDigits);
   const whole = absolute / scale;
-  const fraction = (absolute % scale).toString().padStart(currencyDigits, "0").slice(0, fractionDigits);
+  const fraction = (absolute % scale)
+    .toString()
+    .padStart(currencyDigits, "0")
+    .slice(0, fractionDigits);
   const formatter = new Intl.NumberFormat(LOCALE, {
     style: "currency",
     currency,
@@ -60,11 +63,7 @@ function renderCurrency(
   return negative ? `-${rendered}` : rendered;
 }
 
-export function formatMoney(
-  amountMinor: number,
-  currency: string,
-  opts?: MoneyOptions,
-): string {
+export function formatMoney(amountMinor: number, currency: string, opts?: MoneyOptions): string {
   if (!Number.isFinite(amountMinor)) return "";
   const minor = BigInt(Math.round(amountMinor));
   const digits = currencyMinorDigits(currency);

@@ -18,6 +18,8 @@ const EDIT_LABELS_LABEL = "Edit labels";
 
 interface ThreadLabelChipsProps {
   labels: string[];
+  // 6.7.6: the inbox row shows at most this many chips, then a +n count; other callers omit it.
+  max?: number;
   // When provided, the chips gain a pencil affordance (B5) that reveals the label editor; the
   // editor stays hidden until the pencil is clicked. Omitted for read-only usage (the inbox row).
   onLabelsChange?: (keys: string[]) => void;
@@ -30,16 +32,19 @@ interface ThreadLabelChipsProps {
 // Label chips sit at the caption size; sentence case matches the rest of the UI.
 export function ThreadLabelChips({
   labels,
+  max,
   onLabelsChange,
 }: ThreadLabelChipsProps): React.ReactNode {
   const [editing, setEditing] = useState(false);
   const catalog = trpc.mailLabels.list.useQuery().data ?? [];
   const chips = resolveMailLabelChips(catalog, labels);
   const editable = onLabelsChange !== undefined;
+  const shown = max === undefined ? chips : chips.slice(0, max);
+  const hidden = chips.length - shown.length;
   if (chips.length === 0 && !editable) return null;
   return (
     <span className="flex shrink-0 items-center gap-1">
-      {chips.map((chip) => (
+      {shown.map((chip) => (
         <span
           key={chip.key}
           className={`rounded-md border px-1.5 py-0.5 text-caption font-medium ${chip.classes}`}
@@ -47,6 +52,14 @@ export function ThreadLabelChips({
           {chip.name}
         </span>
       ))}
+      {hidden > 0 && (
+        <span
+          data-testid="label-overflow"
+          className="rounded-md border px-1.5 py-0.5 text-caption font-medium text-muted-foreground"
+        >
+          +{hidden}
+        </span>
+      )}
       {editable && (
         <button
           type="button"

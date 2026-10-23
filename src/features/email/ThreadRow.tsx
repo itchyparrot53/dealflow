@@ -176,7 +176,7 @@ export function ThreadRow({
             className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
           />
         )}
-        <ThreadLabelChips labels={thread.labels} />
+        <ThreadLabelChips labels={thread.labels} max={2} />
         {unlinked && (
           <span className="shrink-0 rounded bg-warning/20 px-1.5 py-0.5 text-xs text-warning-foreground">
             Unlinked

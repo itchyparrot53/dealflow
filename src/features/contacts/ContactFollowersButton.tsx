@@ -1,5 +1,5 @@
 "use client";
-import { Users } from "lucide-react";
+import { ChevronDown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ICON_BUTTON } from "@/constants/formStyles";
 import { followContactAction, unfollowContactAction } from "@/features/contacts/followerActions";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -50,9 +49,10 @@ export function ContactFollowersButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={`${ICON_BUTTON} gap-1.5 text-sm tabular-nums`}>
+      <DropdownMenuTrigger className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border-strong bg-card px-2 text-sm text-foreground transition-colors duration-100 hover:bg-muted">
         <Users aria-hidden="true" className="h-4 w-4" />
-        {count} {count === 1 ? "follower" : "followers"}
+        <span className="tabular-nums">{count}</span> {count === 1 ? "follower" : "followers"}
+        <ChevronDown aria-hidden="true" className="size-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-52">
         <DropdownMenuItem disabled={pending} onSelect={() => void toggle()} className="font-medium">

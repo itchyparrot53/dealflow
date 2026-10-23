@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -91,9 +92,11 @@ export function DeliveryLog({
                     <td className="py-2">{row.eventType}</td>
                     <td className="py-2">{row.status}</td>
                     <td className="py-2">{row.attempts}</td>
-                    <td className="py-2">{row.lastStatusCode ?? ""}</td>
                     <td className="py-2">
-                      {row.durationMs === null ? "" : `${row.durationMs} ms`}
+                      {row.lastStatusCode === null ? <EmptyCell /> : row.lastStatusCode}
+                    </td>
+                    <td className="py-2">
+                      {row.durationMs === null ? <EmptyCell /> : `${row.durationMs} ms`}
                     </td>
                     <td className="py-2 text-right">
                       <Button

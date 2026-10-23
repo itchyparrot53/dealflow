@@ -9,6 +9,9 @@ import { useInlineEditField } from "./useInlineEditField";
 interface InlineTextFieldProps {
   label: string;
   value: string;
+  // Formatted presentation (6.5), while `value` stays the raw string the editor starts from and
+  // the dirty check compares against.
+  displayValue?: string;
   onSave: InlineSaveFn<string>;
   placeholder?: string;
 }
@@ -22,6 +25,7 @@ const DEFAULT_PLACEHOLDER = "+ Add";
 export function InlineTextField({
   label,
   value,
+  displayValue,
   onSave,
   placeholder = DEFAULT_PLACEHOLDER,
 }: InlineTextFieldProps): React.ReactNode {
@@ -60,7 +64,7 @@ export function InlineTextField({
         label={label}
         editing={f.editing}
         onStartEdit={f.start}
-        value={value === "" ? null : value}
+        value={value === "" ? null : (displayValue ?? value)}
         emptyPrompt={placeholder}
       >
         {editor}

@@ -60,13 +60,13 @@ function LinesTable({
   return (
     // The six numeric columns cannot fit a phone's document width, so the table scrolls inside
     // its own container instead of widening the page.
-    <div
+    <section
       className="overflow-x-auto"
+      aria-label="Scrollable document content"
       // 6.7.5's narrower paper preview can make a wide block scroll; a scroll region needs to be
       // reachable from the keyboard (axe scrollable-region-focusable).
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: focusable scroll region for axe
       tabIndex={0}
-      role="region"
-      aria-label="Scrollable document content"
     >
       <table className="w-full min-w-[560px] border-collapse text-sm">
         <thead>
@@ -92,7 +92,7 @@ function LinesTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
 

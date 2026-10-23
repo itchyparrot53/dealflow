@@ -1,7 +1,7 @@
 "use client";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { forwardRef } from "react";
+import { createContext, forwardRef, useContext } from "react";
 import { cn } from "@/lib/utils";
 
 // shadcn (new-york) Sheet: a side-anchored drawer over @radix-ui/react-dialog. This is the
@@ -33,6 +33,22 @@ const SheetOverlay = forwardRef<
 SheetOverlay.displayName = "SheetOverlay";
 
 type CloseButton = "header" | "corner" | "none";
+const SheetCloseContext = createContext<CloseButton>("corner");
+
+function SheetCloseButton({ className }: { className?: string }): React.ReactNode {
+  return (
+    <SheetPrimitive.Close
+      aria-label="Close"
+      data-testid="dialog-close"
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+        className,
+      )}
+    >
+      <X className="size-4" strokeWidth={2.25} />
+    </SheetPrimitive.Close>
+  );
+}
 
 // Right-anchored, full-height content column. Width is capped so the list stays partly visible
 // behind the scrim (Pipedrive's overlay leaves the list context in view).
@@ -54,7 +70,7 @@ export const SheetContent = forwardRef<
       )}
       {...props}
     >
-      {children}
+      <SheetCloseContext.Provider value={closeButton}>{children}</SheetCloseContext.Provider>
       {closeButton === "corner" ? (
         <SheetPrimitive.Close
           aria-label="Close"
@@ -75,6 +91,7 @@ export function SheetHeader({
   children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
+  const closeButton = useContext(SheetCloseContext);
   return (
     <div
       data-slot="dialog-header"
@@ -85,6 +102,7 @@ export function SheetHeader({
       {...props}
     >
       <div className="min-w-0 flex-1">{children}</div>
+      {closeButton === "header" ? <SheetCloseButton className="-mr-2" /> : null}
     </div>
   );
 }

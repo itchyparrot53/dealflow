@@ -35,7 +35,7 @@ describe("OrgFirmographicsPanel", () => {
     expect(screen.getByText("acme.com")).toBeInTheDocument();
     expect(screen.getByText("SaaS")).toBeInTheDocument();
     expect(screen.getByText("200")).toBeInTheDocument();
-    expect(screen.getByText("5000000.00")).toBeInTheDocument();
+    expect(screen.getByText("5,000,000")).toBeInTheDocument();
     expect(screen.getByText("https://linkedin.com/company/acme")).toBeInTheDocument();
   });
 

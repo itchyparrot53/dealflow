@@ -3,6 +3,7 @@ import type React from "react";
 import { updateOrgAction } from "@/features/contacts/actions";
 import { ContactFieldRow } from "@/features/deal-workspace/sidebar/FieldRow";
 import { InlineTextField } from "@/features/inline-edit/InlineTextField";
+import { formatNumber } from "@/lib/format/number";
 import { err, ok, type Result } from "@/types/result";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
@@ -91,6 +92,11 @@ export function OrgFirmographicsPanel({
           <InlineTextField
             label="Annual revenue"
             value={org.annualRevenue ?? ""}
+            displayValue={
+              org.annualRevenue === null || org.annualRevenue === ""
+                ? ""
+                : formatNumber(Number(org.annualRevenue))
+            }
             placeholder="+ Add revenue"
             onSave={(v) => {
               const trimmed = v.trim();
@@ -104,6 +110,7 @@ export function OrgFirmographicsPanel({
           <InlineTextField
             label="Employees"
             value={org.employeeCount == null ? "" : String(org.employeeCount)}
+            displayValue={org.employeeCount == null ? "" : formatNumber(org.employeeCount)}
             placeholder="+ Add employees"
             onSave={(v) => {
               const trimmed = v.trim();

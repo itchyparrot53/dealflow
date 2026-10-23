@@ -34,7 +34,7 @@ it("renders the follower count", () => {
       isFollowedBySelf={false}
     />,
   );
-  expect(screen.getByText("2 followers")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "2 followers" })).toBeTruthy();
 });
 
 it("opening the menu shows follower names", async () => {

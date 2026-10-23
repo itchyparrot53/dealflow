@@ -13,6 +13,17 @@ function requireId(value: string | null, screen: string): string {
 
 type Interact = () => Promise<void>;
 
+// Dialogs and popovers animate in; a shot taken on the first frame is translucent and, for the
+// tall Add deal dialog, has its header off-screen. Wait until the overlay reaches full opacity.
+async function settleOverlay(page: Page): Promise<void> {
+  const overlay = page.getByRole("dialog").last();
+  if ((await overlay.count()) === 0) return;
+  if (!(await overlay.isVisible().catch(() => false))) return;
+  await expect
+    .poll(async () => Number(await overlay.evaluate((el) => getComputedStyle(el).opacity)))
+    .toBe(1);
+}
+
 async function capture(
   page: Page,
   name: string,
@@ -23,12 +34,14 @@ async function capture(
   await page.goto(route);
   await settle(page);
   await interact?.();
+  await settleOverlay(page);
   await shot(page, `polish-${name}-1440-light`);
 
   await page.emulateMedia({ colorScheme: "dark" });
   await page.reload();
   await settle(page);
   await interact?.();
+  await settleOverlay(page);
   await shot(page, `polish-${name}-1440-dark`);
   await page.emulateMedia({ colorScheme: "light" });
 }

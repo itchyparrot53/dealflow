@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Progress } from "@/components/ui/Progress";
 import { Select } from "@/components/ui/Select";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { tableStyles } from "@/components/ui/table-styles";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
 import type { ProjectListItem } from "../types";
@@ -60,7 +61,7 @@ export function ProjectsList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="w-full min-w-0 space-y-3 overflow-x-clip">
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" data-testid="project-new" onClick={() => setNewOpen(true)}>
           {S.newProject}
@@ -112,7 +113,7 @@ export function ProjectsList({
           className="py-10"
         />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="w-full max-w-full overflow-x-auto [contain:paint]">
           <table data-testid="projects-table" className={tableStyles.table}>
             <thead className="bg-muted/40 text-left">
               <tr>
@@ -168,7 +169,13 @@ export function ProjectsList({
                       </span>
                     </div>
                   </td>
-                  <td className={tableStyles.td}>{project.dueDate ?? ""}</td>
+                  <td className={tableStyles.td}>
+                    {project.dueDate === null || project.dueDate === "" ? (
+                      <EmptyCell />
+                    ) : (
+                      project.dueDate
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

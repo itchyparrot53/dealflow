@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
+import { EmptyCell } from "@/components/ui/table-parts";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { deleteProductAction, setProductActiveAction } from "@/features/products/actions";
@@ -208,7 +209,9 @@ export function ProductsSettings({
                   className={SETTINGS_TABLE_ROW}
                 >
                   <td className={SETTINGS_TABLE_CELL}>{row.name}</td>
-                  <td className={SETTINGS_TABLE_CELL}>{row.code ?? ""}</td>
+                  <td className={SETTINGS_TABLE_CELL}>
+                    {row.code === null || row.code === "" ? <EmptyCell /> : row.code}
+                  </td>
                   <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>
                     {formatMoney(
                       Math.round(Number(row.price) * 10 ** currencyMinorDigits(row.currency)),
