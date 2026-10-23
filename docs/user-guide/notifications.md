@@ -6,7 +6,7 @@ Dealflow tells you when something needs your attention: you were mentioned, an a
 
 ![The notification panel](images/notifications.png)
 
-1. Select the bell in the top bar. A red badge shows how many are unread.
+1. Select the bell in the top bar. A red badge shows how many are unread; it reads 9+ when there are more than nine.
 2. Read the list, grouped into **Today** and **Earlier**. Unread items have a blue dot.
 3. Select a notification to go to the record it is about.
 4. Select **Mark all read** to clear the badge, or **See all activity** for the full list.

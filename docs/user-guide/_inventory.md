@@ -1,6 +1,6 @@
 # Dealflow user-facing inventory (Phase 0)
 
-Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker image built from the latest commit `e376d2f`), with seed demo data, `AI_FAKE=true` and `MAIL_FAKE=true`. Every page listed was loaded signed in (HTTP 200, content read); interactive flows were clicked through with a headless browser where marked "seen". The Playwright suite (`e2e/00` to `e2e/15`, 50 of 50 passing at the end of Part 11) is the second source of evidence.
+Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker image built from the latest commit `e376d2f`), with seed demo data, `AI_FAKE=true` and `MAIL_FAKE=true`. Every page listed was loaded signed in (HTTP 200, content read); interactive flows were clicked through with a headless browser where marked "seen". The Playwright suite (`e2e/00` to `e2e/15`, 50 of 50 passing at the end of Part 11) is the second source of evidence. Part 12 (2026-10-23) made the rail expandable, moved the AI filter and the contacts views into the toolbar, renamed the document actions and hid the install, offline and push UI behind `NEXT_PUBLIC_PWA_UI` (off by default); the rows below give the current location.
 
 **Who** uses the default permission sets: **Everyone** = any signed-in user (the default "Regular" set can create deals, contacts and activities and edit their own); **Admin** = the Admin set or `is_admin`; **Flag** = a permission flag an admin can grant in a permission set (for example `products.manage`).
 
@@ -24,7 +24,7 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 
 | Feature | Who | Where | Status | Evidence |
 |---|---|---|---|---|
-| Left rail: Pipeline, Forecast, Documents, Insights, Projects, Leads, Contacts, Activities, Inbox, Performance | Everyone | left edge (desktop) | Works (seen) | rail links read |
+| Left rail: Pipeline, Forecast, Documents, Insights, Projects, Leads, Contacts, Activities, Inbox, Performance | Everyone | left edge (desktop) | Works (seen) | 232 px with labels by default; **Collapse** or `[` gives 56 px icons; the choice is remembered |
 | Mobile bottom bar: Deals, Activities, Inbox, Contacts, More | Everyone | below 768 px wide | Works (seen) | browser pane at phone width |
 | Global search | Everyone | top bar, Open search | Works (seen) | results grouped by Deals, People, Organizations, Leads |
 | Quick add menu: Lead, Deal, Activity, Person, Organization, Note, Email (single-letter keys) | Everyone | top bar `+` | Works (seen) | menu opened |
@@ -55,9 +55,9 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 
 | Feature | Who | Where | Status | Evidence |
 |---|---|---|---|---|
-| People and organizations lists, saved views, filters, export CSV | Everyone | Contacts | Works (seen) | 105 people, 52 orgs |
+| People and organizations lists, saved views, filters, export CSV | Everyone | Contacts | Works (seen) | 105 people, 52 orgs; People, Organizations and Timeline are a view switcher in the page toolbar |
 | Person and organization detail with linked deals and timeline | Everyone | `/contacts/people/{id}`, `/contacts/orgs/{id}` | Works (seen) | |
-| Contacts timeline (activity across contacts by month) | Everyone | Contacts › Timeline | Works (seen) | |
+| Contacts timeline (activity across contacts by month) | Everyone | Contacts › Timeline | Works (seen) | Timeline is a view in the Contacts toolbar view switcher |
 | Find and merge duplicates, hide non-duplicates | `contact.merge` | Contacts › Find duplicates | Works (seen) | `13-productivity` |
 | Bulk edit people and organizations | `bulk.edit` | list selection | Works (e2e) | `13-productivity` |
 | Fill the gaps (enrichment from Apollo, RocketReach, GetProspect) | Admin enables | Settings › Enrichment | Needs setup | no provider keys on this install |
@@ -92,7 +92,7 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 |---|---|---|---|---|
 | In-app notifications (mentions, assignments, followed deal won, quote viewed, email opened), mark all read | Everyone | top bar bell | Works (seen) | |
 | Notification preferences (in app or by email per event) | Everyone | Settings › Notifications | Works (seen) | |
-| Push notifications to this browser or installed app | Everyone, once an admin sets VAPID keys | Settings › Notifications | Not documented | owner will not use it (2026-10-22) |
+| Push notifications to this browser or installed app | Everyone, once an admin sets VAPID keys | Settings › Notifications | Not documented | owner will not use it (2026-10-22); the push card and column are hidden while `NEXT_PUBLIC_PWA_UI` is off |
 | Mentions with `@` in notes | Everyone | notes | Works (e2e) | demo notifications |
 
 ## 8. Stats, reporting and forecasting
@@ -109,7 +109,7 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 
 | Feature | Who | Where | Status | Evidence |
 |---|---|---|---|---|
-| Quotes and invoices from a deal: draft, issue, send, numbering, tax, print preview | `documents.manage` | Documents, deal workspace | Works (seen) | `08-documents` |
+| Quotes and invoices from a deal: draft, Save draft, Issue, Mark as sent, Send, Copy link, Print preview, numbering, tax | `documents.manage` | Documents, deal workspace | Works (seen) | `08-documents`; **Delete draft** and **Void** are in the overflow menu |
 | Public quote page: accept by typing your name, decline, download PDF | Customers (no sign-in) | `/d/{publicId}` | Works (seen) | see Question 2 |
 | Payments recorded by hand, overdue status | `documents.manage` | invoice detail | Works (e2e) | `08-documents` |
 | Document settings (prefixes, company details, payment instructions, templates) | Admin | Settings › Documents | Works (seen) | |
@@ -131,7 +131,7 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 | Deal summary: risks, next steps, add suggested activity | Everyone | deal › AI insights › Generate summary | Works (seen) | fake summary returned |
 | Deal score badge and bulk scoring | Everyone; bulk is admin | deal › Score deal; Insights | Works (e2e) | `03-ai-deal`, `11-insights` |
 | Draft an email with AI | Everyone | composer | Works (e2e) | `04-ai-compose-filter` |
-| Describe a filter in plain English | Everyone | Leads, People, Organizations › Describe a filter | Works (seen) | `04-ai-compose-filter` |
+| Describe a filter in plain English | Everyone | Leads, People, Organizations toolbar › Ask AI popover; the pipeline's Create filter dialog keeps its box | Works (seen) | `04-ai-compose-filter` |
 | Notes to activities | Everyone | deal notes | Works (e2e) | `03-ai-deal` |
 | Automation "Describe it" drafting and AI actions | `automations.manage` | Settings › Automations | Works (e2e) | `09-automations` |
 | AI settings: on or off, monthly token limits per company and user, usage by feature and user | Admin | Settings › AI | Works (seen) | |
@@ -158,8 +158,8 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 
 | Feature | Who | Where | Status | Evidence |
 |---|---|---|---|---|
-| Install as an app (PWA) | Everyone | browser install prompt | Works (e2e) | `14-pwa-mobile` |
-| Offline: read-only recent records, "You're offline" page | Everyone | automatic | Works (seen) | `/offline` lists recent records |
+| Install as an app (PWA) | Everyone | browser install prompt | Works (e2e) | `14-pwa-mobile`; hidden while `NEXT_PUBLIC_PWA_UI` is off |
+| Offline: read-only recent records, "You're offline" page | Everyone | automatic | Works (seen) | `/offline` lists recent records; the banner and guide mentions are hidden while `NEXT_PUBLIC_PWA_UI` is off |
 | Self-hosting with Docker Compose (app, ws, worker, Postgres, MinIO), reverse proxy routes | Operator | `docs/deploy.md`, `docs/reverse-proxy.md` | Works | this install runs that way |
 
 ## Differences between the code or plans and the running app
@@ -169,6 +169,7 @@ Checked on 2026-10-22 against the running app on `http://localhost:3001` (Docker
 3. Demo quote Q-2026-0011 has no customer name, so its public page reads "Quote Q-2026-0011 for" and "Prepared for by". The template fields simply render empty; screenshots will use a quote that has a customer.
 4. The demo draft document's public link returns 404 by design (only issued documents are public).
 5. The rail labels the stats page **Performance** while its URL is `/dashboard`; the guide uses the visible name.
+6. Install, offline and push are hidden, not removed, behind `NEXT_PUBLIC_PWA_UI` (off by default): the guide wraps those passages and their images in `hidden` markers so they stay in the Markdown but not in the PDFs.
 
 ## Owner decisions (2026-10-22)
 

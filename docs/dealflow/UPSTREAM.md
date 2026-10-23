@@ -514,3 +514,58 @@ were edited for the rollout (new files are marked):
   `brand/` kit from linting because its draft SVGs are artwork, not app code.
 - Docs: `README.md`, `docs/dealflow/DESIGN.md`, `docs/dealflow/BRAND-ROLLOUT.md` (new), this
   section.
+
+## Part 12: professional UI polish (2026-10-23)
+
+No upstream dependency changed and no upstream migration was rewritten. This part is layout and
+reliability work on existing features, plus one UI preference (the rail cookie) and one build flag
+(`NEXT_PUBLIC_PWA_UI`, off by default, on in the e2e build).
+
+New files:
+`src/components/ui/{form-field,table-parts}.ts(x)`,
+`src/components/shell/{railState,RailToggle}.ts(x)`,
+`src/lib/format/number.ts`,
+`src/features/ai/{extractJson,AiFilterButton}.ts(x)`,
+`src/app/(app)/contacts/ContactsViewSwitcher.tsx`,
+`e2e/16-polish.spec.ts`, `e2e/polish/{checks,routes,gallery}.ts`,
+`docs/dealflow/POLISH.md`, and the tests beside them.
+
+Upstream files changed, by area:
+
+- Dialogs and pickers: `src/components/ui/{dialog,alert-dialog,sheet,Select,Combobox}.tsx`, every
+  file that renders `DialogContent`/`AlertDialogContent` (the 6.2 migration), and the currency,
+  product-currency and time-zone pickers that became Comboboxes.
+- Shell and navigation: `src/components/shell/LeftNav.tsx`, `src/app/(app)/layout.tsx` (the rail
+  cookie), `src/features/shortcuts/{registry,GlobalShortcuts}.ts(x)` (the `[` shortcut),
+  `src/config/clientEnv.ts`, `.env.example`, `src/features/pwa/{InstallButton,OfflineBanner}.tsx`,
+  `src/features/push/ui/PushSettings.tsx`,
+  `src/features/notifications/ui/PreferencesForm.tsx`,
+  `src/app/(app)/settings/{profile/ProfileClient,notifications/page}.tsx`,
+  `src/app/(app)/contacts/{layout.tsx,people/page.tsx,orgs/page.tsx,timeline/page.tsx}` (the view
+  switcher replaces `ContactsNav`), `src/components/ui/page-toolbar.tsx` users on the 6.6 lists.
+- AI: `src/features/ai/{chatJson,openrouterProvider,types,scriptedProvider,fakeProvider,emailDraft,aiErrors}.ts`,
+  `src/constants/errorIds.ts` (`E_AI_012`), `src/features/ai/ui/{AiFilterBox,AiDraftButton}` and
+  the AI error surfaces, `src/features/automations/ui/DescribeDialog.tsx`,
+  `src/features/insights/ui/ExplainPanel.tsx`.
+- Screens: `src/features/deals/**` (add deal, board column, score pill, stage track),
+  `src/features/entity-create/EntityCreateModalShell.tsx`,
+  `src/features/forecast/ui/ForecastColumn.tsx`, the calendar grid pieces,
+  `src/features/documents/ui/{DocumentEditor,DocumentsList}.tsx`,
+  `src/features/email/**` (thread row and reader), `src/features/leads/**`,
+  `src/features/insights/ui/**`, `src/features/projects/ui/**`,
+  `src/features/stats/ui/{Panel,TrendWidget,GoalChart}.tsx`,
+  `src/features/custom-fields/render.tsx`, `src/features/products/ui/{ProductsSettings,ProductDialog,DealTermsFields}.tsx`,
+  `src/features/activities/**`, `src/features/webhooks/ui/**`,
+  `src/app/(app)/activities/list/page.tsx`, the contacts detail panels.
+- Settings layout: `src/app/(app)/settings/{layout,SettingsSurface,SettingsNav}.tsx`, the settings
+  pages that lost a duplicate H1, `src/app/(app)/{documents,projects,insights}/page.tsx`,
+  `src/app/(app)/inbox/compose/ComposePageClient.tsx`,
+  `src/app/(app)/settings/import/ImportWizard.tsx`.
+- Tables and empty states: `src/components/ui/{EmptyState,table-styles}.tsx`,
+  `src/features/notifications/ui/NotificationsBell.tsx`, the list/table surfaces named in 6.8.
+- Test harness: `scripts/e2e/e2e-env.mjs` (sets `NEXT_PUBLIC_PWA_UI=true` for the e2e build),
+  `e2e/design/styleChecks.ts` (the 6.4 rail, 6.7.2 header, and focus-order checks),
+  `e2e/07-sales.spec.ts` and `e2e/10-forms-booking.spec.ts` (the "Search…" placeholder prefix).
+
+Tests updated for the changed contracts are listed in the Part 12 Decisions; no assertion was
+weakened or deleted.

@@ -75,7 +75,7 @@ Products come from your company's catalogue (see [Quotes and invoices](quotes-an
 ![The filter menu](images/pipeline-filter.png)
 
 1. Select **Filter**.
-2. Choose a saved filter such as **All open deals**, **My open deals** or **Rotting deals**, or select **Create new filter** to build your own.
+2. Choose a saved filter such as **All open deals**, **My open deals** or **Rotting deals**, or select **Create new filter** to build your own. In the Create new filter dialog you can also describe the filter in plain English and select **Generate filter**.
 3. Use the owner picker to see **Everyone** or one person, and **Sort by** to order the cards (for example by next activity or deal value).
 
 **Tip:** **Pin filters** keeps your favourite filters visible above the board.
@@ -120,7 +120,7 @@ Leads are enquiries you have not qualified yet, for example from a web form.
 ### How to work through your leads
 
 1. Select **Leads** in the left rail.
-2. Use **Saved views**, **Filter**, the label and owner pickers, or **Describe a filter** (see [AI features](ai-features.md)) to narrow the list.
+2. Use **Saved views**, **Filter**, the label and owner pickers, or select **Ask AI**, describe the filter and select **Generate filter** (see [AI features](ai-features.md)) to narrow the list.
 3. Select a lead to open it.
 
 ![A lead](images/lead.png)

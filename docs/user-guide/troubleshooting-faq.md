@@ -53,6 +53,7 @@ Your company or your own monthly AI limit may have been reached, or an admin may
 **The AI got something wrong.**
 AI suggestions are drafts. Check them before you send or save. The assistant never changes data until you select **Confirm**.
 
+<!-- hidden while NEXT_PUBLIC_PWA_UI is off -->
 ## Offline and mobile
 
 **I see "You're offline".**
@@ -60,6 +61,7 @@ Your device has lost its connection. You can still open the records you viewed r
 
 **How do I install Dealflow on my phone?**
 Open Dealflow in your phone's browser and use the browser's **Add to Home Screen** or **Install** option.
+<!-- end hidden -->
 
 ## Quotes and invoices
 

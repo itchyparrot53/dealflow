@@ -37,6 +37,8 @@ You need permission to manage products.
 
 **Result:** a draft quote is saved. **Print preview** shows exactly what the customer will see.
 
+A draft's header has **Send** as the main button, then **Save draft**, **Issue**, **Mark as sent**, **Copy link** and **Print preview**. **Delete draft** is in the three-dot overflow menu.
+
 ## How to send a quote
 
 1. Open the draft quote.
@@ -50,7 +52,7 @@ You need permission to manage products.
 - **Send again** resends a quote that has already gone out.
 - You get a notification when the customer views, accepts or declines.
 - After its **Valid until** date a quote can no longer be accepted. Duplicate it to send a fresh one.
-- A draft you no longer need can be removed with **Delete draft**. Issued documents are never deleted.
+- A draft you no longer need can be removed with **Delete draft** in the header's overflow menu. Issued documents are never deleted.
 
 ## What your customer sees
 
@@ -78,7 +80,7 @@ Your customer opens the link without signing in. They can read the quote, select
 
 - Invoices past their due date are marked **Overdue** automatically.
 - **Void** cancels an invoice you sent by mistake. Its number is not reused.
-- **Duplicate** makes a copy of any quote or invoice.
+- **Duplicate** makes a copy of any quote or invoice. On an issued document the header shows **Send again**, **Copy link**, **Duplicate** and **Print preview**, plus **Create invoice** on an accepted quote and **Record payment** on an invoice; **Void** is in the overflow menu.
 
 ## How to see all your documents
 

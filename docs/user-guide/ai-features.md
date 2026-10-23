@@ -63,8 +63,8 @@ Dealflow has AI built in. It can summarise a deal, score how likely it is to clo
 
 ![Describing a filter](images/ai-filter.png)
 
-1. In **Leads**, **People** or **Organizations**, type what you want in **Describe a filter**, for example "people at North Systems". On the pipeline, select **Filter** then **Create new filter** to find the same box.
-2. Select **Generate filter**.
+1. In **Leads**, **People** or **Organizations**, select **Ask AI** in the toolbar, type what you want in **Describe a filter** (for example "people at North Systems") and select **Generate filter**.
+2. On the pipeline, select **Filter** then **Create new filter**: the same **Describe a filter** box sits inside that dialog, above **Generate filter**.
 
 **Result:** Dealflow turns your sentence into filter conditions and applies them. Open **Filter** to see or adjust the conditions it chose.
 

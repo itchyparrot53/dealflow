@@ -71,14 +71,23 @@ function toHtml(slug, markdown) {
   return { html, headings };
 }
 
+// Part 12: passages wrapped in these markers stay in the Markdown (so the source keeps the
+// install/offline/push instructions) but never reach the PDFs while NEXT_PUBLIC_PWA_UI is off.
+const HIDDEN_BLOCK =
+  /<!--\s*hidden while NEXT_PUBLIC_PWA_UI is off\s*-->[\s\S]*?<!--\s*end hidden\s*-->/g;
+
+function stripHidden(markdown) {
+  return markdown.replace(HIDDEN_BLOCK, "");
+}
+
 function readSection(slug) {
-  const md = readFileSync(path.join(GUIDE, `${slug}.md`), "utf8");
+  const md = stripHidden(readFileSync(path.join(GUIDE, `${slug}.md`), "utf8"));
   return { slug, title: md.match(/^# (.+)$/m)?.[1] ?? slug, ...toHtml(slug, md) };
 }
 
 // The index page becomes an introduction: the contents table is replaced by the real TOC.
 function readIntro() {
-  const md = readFileSync(path.join(GUIDE, "index.md"), "utf8")
+  const md = stripHidden(readFileSync(path.join(GUIDE, "index.md"), "utf8"))
     .replace(/## Contents[\s\S]*?(?=## Glossary)/, "")
     .replace(/^# .+$/m, "# Introduction");
   return { slug: "index", title: "Introduction", ...toHtml("index", md) };

@@ -1,6 +1,6 @@
 # Admin
 
-This section is for admins: the people who set Dealflow up for the company. Most of these pages are under **Settings** (open the **Account menu** and choose **Settings**). The settings menu has two parts: **My account** (your own preferences, which every user has) and **Company overview** (company-wide settings, shown only to users with the right permissions).
+This section is for admins: the people who set Dealflow up for the company. Most of these pages are under **Settings** (open the **Account menu** and choose **Settings**). The settings menu has two parts: **My account** (your own preferences, which every user has) and **Company overview** (company-wide settings, shown only to users with the right permissions). The menu stays in place while the page beside it scrolls.
 
 ## How to invite a user
 

@@ -43,11 +43,22 @@ Use this if you would rather not type a password, or if you have forgotten it.
 
 ![The pipeline board with the left rail and top bar](images/board.png)
 
-- **Left rail.** The dark bar on the left takes you to Pipeline, Forecast, Documents, Insights, Projects, Leads, Contacts, Activities, Inbox and Performance. The leaf logo at the top takes you home.
+- **Left rail.** The dark bar on the left takes you to Pipeline, Forecast, Documents, Insights, Projects, Leads, Contacts, Activities, Inbox and Performance. It opens with labels at 232 px wide. The leaf logo at the top takes you home.
 - **Top bar.** From left to right: the page title (with an **(i)** button that explains the page), **Search**, **Quick add** (`+`), **AI chat**, **Notifications** (the bell), **Docs** (this guide) and your **Account menu**.
 - **Settings.** Open the **Account menu** and choose **Settings**.
 
 ![Hovering the (i) button shows what the page contains](images/page-info.png)
+
+## How to expand or collapse the left rail
+
+The rail opens at 232 px wide with every destination named. You can shrink it to icons when you want more room for the page.
+
+1. Select **Collapse** at the bottom of the rail, or press `[`.
+2. The rail becomes 56 px wide and shows icons only. Rest the pointer on an icon to see its name.
+
+**Result:** Dealflow remembers the choice, so the rail opens the same way next time.
+
+To bring the labels back, select the arrow at the bottom of the rail (its tooltip says **Expand sidebar**), or press `[` again. On a phone the rail becomes the bottom bar, so there is nothing to collapse.
 
 ## How to search for anything
 
@@ -91,6 +102,7 @@ Press `?` anywhere outside a text box to open the shortcut sheet. The most usefu
 | `j` / `k` | Move up and down a list; `Enter` opens the row |
 | `1` to `9` | Jump to a navigation item |
 | `Cmd+K` / `Ctrl+K` | Open the command palette |
+| `[` | Collapse or expand the left rail |
 | `Escape` | Close a dialog or the palette |
 
 ## How to undo a change
@@ -114,7 +126,7 @@ After many changes, such as moving a deal, Dealflow shows a message at the botto
 
 ## Using Dealflow on your phone
 
-Dealflow works in your phone's browser and can be installed like an app.
+Dealflow works in your phone's browser.
 
 ![Dealflow at phone width, with the bottom bar](images/mobile-board.png)
 
@@ -123,8 +135,12 @@ Dealflow works in your phone's browser and can be installed like an app.
 
 ![The More sheet on a phone](images/mobile-more.png)
 
+<!-- hidden while NEXT_PUBLIC_PWA_UI is off -->
 **How to install it:** open Dealflow in your phone or desktop browser and use the browser's own **Install** or **Add to Home Screen** option. **Settings › Personal preferences** has an **Install app** section with the same reminder.
+<!-- end hidden -->
 
+<!-- hidden while NEXT_PUBLIC_PWA_UI is off -->
 **If you lose your connection:** Dealflow shows a "You're offline" page listing the records you opened recently. They are read-only until you are back online. See [Troubleshooting](troubleshooting-faq.md).
 
 ![The offline page with recently opened records](images/offline.png)
+<!-- end hidden -->

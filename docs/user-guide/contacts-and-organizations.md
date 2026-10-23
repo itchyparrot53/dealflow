@@ -1,13 +1,13 @@
 # Contacts and organizations
 
-**People** are the individuals you deal with. **Organizations** are the companies they work for. Both live under **Contacts** in the left rail.
+**People** are the individuals you deal with. **Organizations** are the companies they work for. Both live under **Contacts** in the left rail. The three views, **People**, **Organizations** and **Timeline**, sit in a view switcher at the top of the page, not in a panel of their own.
 
 ## How to find a person or organization
 
 ![The people list](images/people.png)
 
-1. Select **Contacts** in the left rail. **People** opens first; select **Organizations** for companies.
-2. Type in the search box, use **Saved views** or **Filter**, or describe what you want in **Describe a filter** (see [AI features](ai-features.md)).
+1. Select **Contacts** in the left rail. **People** opens first; use the view switcher in the toolbar to move between **People**, **Organizations** and **Timeline**.
+2. Type in the search box, use **Saved views** or **Filter**, or select **Ask AI**, describe the filter and select **Generate filter** (see [AI features](ai-features.md)).
 3. Select a name to open the record.
 
 ![The organizations list](images/organizations.png)
@@ -37,7 +37,7 @@ Organizations also list **Related organizations** (for example a parent company)
 
 ![The contacts timeline](images/contacts-timeline.png)
 
-1. In **Contacts**, select **Timeline**.
+1. Select **Contacts** in the left rail, then **Timeline** in the view switcher.
 2. Choose **People** or **Organizations**, how far back to look, the owner and the activity types.
 
 **Result:** one row per contact, with an icon for each activity in each week, so you can spot contacts nobody has spoken to lately.
