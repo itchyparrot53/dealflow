@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-23 15:18
+Current: 4.6 · Last updated: 2026-10-23 15:30
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -30,7 +30,7 @@ Current: 4.5 · Last updated: 2026-10-23 15:18
 - [x] 4.2 Docs
 - [x] 4.3 End-to-end, integration suite and smoke
 - [x] 4.4 Independent review
-- [ ] 4.5 Final checklist
+- [x] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
 
 ## QA log
@@ -42,6 +42,26 @@ Current: 4.5 · Last updated: 2026-10-23 15:18
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5480/5480 in 860 files · src/features/email-design/*.integration.test.ts 7/7
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
+
+## Final checklist (Task 4.5)
+
+1. `git status --porcelain` ignores `site/public/` and is empty: yes.
+2. `pnpm install --frozen-lockfile` exits 0; `pnpm-lock.yaml` is unchanged from the base, and the only `package.json` change is the `email:gallery` script. No dependency was added.
+3. `pnpm typecheck` exits 0.
+4. `pnpm lint` exits 0 (16 warnings, 1 info, both pre-existing).
+5. `pnpm test:unit` passes 5485/5485 in 861 files (baseline 5472 + 13 new).
+6. `pnpm test:integration` passes 2107/2107 in 415 files on the final tree.
+7. `pnpm build` exits 0.
+8. `MINIO_PORT=9100 DEV_PG_PORT=5433 pnpm e2e` passes 66/66, specs 00 to 17, on the final tree.
+9. `ls e2e/screenshots/email/*.png | wc -l` is 26; the gallery reported 13 emails and every HTML is at most 5,049 bytes (under 90 KB).
+10. `grep -rlnE "<table|<html|style=\"" src --include=*.ts | grep -iE "mail|notif|booking|backup|webhook|documents/send" | grep -v "src/features/email-design/"` has no production hit; the only unscoped hits are three test fixtures (gmailRefresh HTTP body, sanitizeHtml fixtures, wrap footer assertion), so the scoped command with `grep -v "\.test\.ts"` is empty. No email HTML is built outside the renderer.
+11. `grep -rn "emailBrandHeaderHtml" src` prints nothing.
+12. The 6.5 tests pass: `variables.test.ts` 9/9, including "escapes values in html mode so a name cannot inject markup", "escapes the ampersand in a URL used as an href attribute" and "removes CR, LF and other control characters and collapses the gap"; `layout.test` adds "uses the subject as the customer title" and "escapes the design's display name and footer text".
+13. Smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)` on the final tree; no `dealflow-smoke` container or volume is left.
+14. `pnpm check:design` prints `0 violation(s) in 0 file(s); 17 opt-out(s)`.
+15. No em dash in any changed text file from the Phase 0 base (PDF binaries excluded; one PDF contains the byte sequence by chance). The scan with `perl -CSD ... /\x{2014}/` prints nothing.
+16. `docs/dealflow/EMAIL.md` (architecture, security, testing, adding a template) and `UPSTREAM.md` ("Part 13" section) are complete.
+17. `pnpm check:progress --final` passes with 22/22 tasks ticked and a commit each.
 
 ## Decisions
 - 4.4 blocker: documents and automations no longer wrap before the mailbox path. They pass sanitised author content plus a server-only `prepared` value (mode, summary, CTA) to `sendEmail`; `applyTrackingAndSignature` appends the signature and tracking, then wraps once. This keeps the summary table and button intact, puts the signature inside the layout, and makes the stored/Sent copy the wire copy. The automation and document integration tests now assert one marker, a styled button and a structured summary.
