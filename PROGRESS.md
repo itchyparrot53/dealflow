@@ -1,154 +1,60 @@
-# PROGRESS: dealflow-wd-p11-v1
+# PROGRESS: dealflow-wd-p12-v1
 
-STATUS: COMPLETE
-Current: 4.5 · Last updated: 2026-10-22 14:20
+STATUS: IN PROGRESS
+Current: 0.2 · Last updated: 2026-10-23 01:47
 
 ## Phase base commits
-- Phase 0: 18e1dffa85996e1ec988dcb2e24f9b25faa35425
-- Phase 1: 993185503417f6d74fcd36d46c446dd2e006f988
-- Phase 2: fc5eab66f691ad5ca160f8ea710cacb60704997a
-- Phase 3: 255b39848331d71337ce163461315f1689311e2e
-- Phase 4: e4c606fef2e1158db47a5b3b7d59de582bc243d9
+- Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
 
 ## Tasks
-- [x] 0.1 Start Part 11: progress files, kit, baseline and design worklist
-- [x] 0.2 Tokens and global styles
-- [x] 0.3 Primitives and layout components
-- [x] 0.4 Design e2e harness
-- [x] 0.5 Phase 0 QA gate
-- [x] 1.1 Shell
-- [x] 1.2 Pipeline board
-- [x] 1.3 Deal workspace and StageTrack
-- [x] 1.4 Lists and person/organization detail
-- [x] 1.5 Phase 1 QA gate
-- [x] 2.1 Inbox, thread and mobile reply sheet
-- [x] 2.2 Calendar and forecast
-- [x] 2.3 Documents and the public document page
-- [x] 2.4 Insights and dashboards
-- [x] 2.5 Projects
-- [x] 2.6 Phase 2 QA gate
-- [x] 3.1 Settings
-- [x] 3.2 Auth and public pages
-- [x] 3.3 Empty, loading and error states
-- [x] 3.4 Remaining worklist, wording and docs
-- [x] 3.5 Phase 3 QA gate
-- [x] 4.1 Full e2e and the gallery
-- [x] 4.2 Integration suite and smoke
-- [x] 4.3 Independent review with a computed-style critique
-- [ ] 4.3 Independent review with a computed-style critique
-- [x] 4.4 Final checklist
-- [x] 4.5 Final report and completion
+- [x] 0.1 Start Part 12: progress files, kit, baseline and environment
+- [ ] 0.2 Polish e2e spec and the two check-design rules
+- [ ] 0.3 Phase 0 QA gate
+- [ ] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
+- [ ] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
+- [ ] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
+- [ ] 1.4 Number and money formatting (U10)
+- [ ] 1.5 Tables, empty states and the bell badge (U29, U30)
+- [ ] 1.6 AI JSON reliability and the humane error (U7)
+- [ ] 1.7 Phase 1 QA gate
+- [ ] 2.1 Expandable rail with labels (U4)
+- [ ] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
+- [ ] 2.3 One heading per page and the settings layout (U11, U12)
+- [ ] 2.4 Contacts view switcher (U13)
+- [ ] 2.5 Toolbar order and the Ask AI popover (U14, U15)
+- [ ] 2.6 Phase 2 QA gate
+- [ ] 3.1 Add deal dialog (U6)
+- [ ] 3.2 Board column header and card score (U16, U17)
+- [ ] 3.3 Forecast header and calendar (U18, U19)
+- [ ] 3.4 Stage track, person and organization records (U20, U27)
+- [ ] 3.5 Document editor (U21)
+- [ ] 3.6 Inbox list and thread reader (U22, U23)
+- [ ] 3.7 Leads, dashboard, Insights index and projects (U24, U25, U26, U28)
+- [ ] 3.8 Phase 3 QA gate
+- [ ] 4.1 User guide update and PDFs
+- [ ] 4.2 End-to-end and gallery
+- [ ] 4.3 Integration suite and smoke
+- [ ] 4.4 Independent review
+- [ ] 4.5 Final checklist
+- [ ] 4.6 Final report and completion
 
 ## QA log
-- Phase 3 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 0 violations, 12 opt-outs · design 26/26, 73 screenshots
-- Phase 2 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design: 151 violation(s) in 92 file(s); 9 opt-out(s) · design 12/12
-- Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5346/5346 in 840 files · check-design 203 violations in 130 files, 9 opt-outs · design 8/8 · existing e2e 4/4
-- Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5351/5351 in 833 files · check-design 289 violations in 184 files, 0 opt-outs
-- Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5364/5364 in 840 files · check-design 285 violations in 182 files, 0 opt-outs · design login 1/1
-
-- Independent review: subagent (fresh context) round 1: QA RESULT FAIL · 1 blocker/6 majors/12 minors · fixed 1 blocker, 5 majors and 8 minors · parity mismatches 0 in the measured set
-- 4.3 fixes: the list tables (deals list, people, organizations, leads) now use `tableStyles` edge to edge and drop their card wrappers (the blocker); the gallery's `deals-list` route is the real `/pipeline/{id}/list`; dashboard widgets are `Panel`s on `canvas-subtle`; activity-type chips are 24 px info-soft/blue; AI insights is a flush 64 px sidebar section; the timeline has 40 px white markers on a dashed rail with rounded-lg cards and warning-soft notes; the breadcrumb is blue and underlined; composer tabs, the toolbar height, the sort pill, the public card widths and the duplicate content titles were corrected. The reviewer's table/screen measurements were re-checked with the design spec after the fixes (26/26).
-- 4.3 decision (list toolbars): every list publishes its top-bar title; the board and deals list share `PageToolbar` through `BoardToolbar`, while people, organizations, leads and activities keep their own single-row toolbars. The 6.3 checker accepts `PageTitle` OR `PageToolbar`, and 6.5's own sentence says so; no screen lost a control.
-- 4.3 decision (board column meta): the header keeps `{value} · {n} deals` on its 13 px line and shows the weighted total on a second 13 px line rather than a tooltip, because `e2e/07-sales.spec.ts` reads the weighted total from the visible text and a tooltip would hide it.
-- 4.3 CONTRACT CHANGE: the inbox conversation list stays a full-width list (single pane, Part 7 architecture) instead of the 360 px column in 6.8.5; the row snippet and date are now 13 px secondary as specified.
-- 4.3 e2e locator updates for deliberate layout changes: the note card is found by its `bg-warning-soft` class (06.8.2 note tint); `spec 03`, `08`, `12` and `14` retry their first click/navigation because server-rendered action buttons can be clicked before hydration; the design gallery re-authenticates before the app screens (spec 14 signs out) and uses the real list route. No behaviour assertion was loosened.
-- 4.3 changed tests: `page-toolbar.test` asserts the fixed `h-16`; audit seeding and the recycle-bin wait from 4.1 remain.
+- Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
 
 ## Decisions
-- 0.1: section 4 starting point matches: `PROGRESS.md` said `dealflow-wd-p10-v1` with `STATUS: COMPLETE`, so the run renames it to `PROGRESS-P10.md` and starts Part 11 at Task 0.1.
-- 0.1: Docker 24.0.5 answers and `docker run --rm alpine df -h /` reports 28.5 GB available of 95.0 GB (68% used), above the 10 GB fatal threshold, so the baseline proceeds without pruning.
-- 0.1: the kit arrived untracked at the repo root as `dealflow-wd-part11-kit 2`, so I moved it to `PLAN AND EXECUTE/dealflow-wd-part11-kit` (the Part 2 to 10 layout), added the root `PLAN-PART11.md` symlink and copied the kit's `scripts/check-progress.mjs` over the root copy (byte-identical, `PLAN_FILE` now `PLAN-PART11.md`).
-- 0.1: the theme switch already applies `.dark` on `<html>` through `src/features/theme/AppearanceSync.tsx`, so Task 0.2 only adds the public light lock.
-- 0.1: the three style guards (`src/paletteTokens.test.ts`, `src/typeScale.test.ts`, `src/app/globalsDarkVariant.test.ts`) exist and pass in the baseline, so Task 0.2 updates their allow-lists to the new contract.
-- 0.1: Inter is loaded by `next/font/local` from `src/app/fonts/inter-latin-var.woff2` in `src/app/layout.tsx`, so no font work is needed.
-- 0.1: `npm view @axe-core/playwright version` prints 4.14.0, so the planned pin holds for Task 0.4.
-- 0.1: pnpm is 9.15.9 from `/tmp/dealflow-tools`, matching Part 10's environment; the subagent tool is available in this harness.
-- 0.1: `check-design.mjs` is 6.3 verbatim; `biome check --write` only reflowed its whitespace (no rule, threshold or message changed) so `pnpm lint` stays green, and the baseline it reports (289/184) matches the planner's dry run exactly.
-- 0.2: every 6.4 token is a CSS variable in `globals.css` in both themes (HSL channels for the shadcn-style roles, raw hex where the role is not colour-converted), with the measured radius scale 2/4/8/8, `--text-meta` 13/18, `--text-title` 24/32, the four floating shadows, 100 ms ease-out default transitions, the global 2 px blue focus outline, `.tabular`, `.board-column` and the 16/24 page paddings. `scripts/dealflow/hex-to-hsl.mjs` produced the channel values.
-- 0.2: `--text-display` is gone: its 27 heading uses became `text-title` (24/32/400) and the two composer Subject inputs became `text-sm` (controls are 14/20), so no surface keeps a 25 px step. `cn` registers `text-title`/`text-meta` as font sizes, otherwise tailwind-merge drops the size when a colour class follows it.
-- 0.2: the typeScale guard's second case now requires every painted h1 to name `text-title` or `text-base` (the type table's two heading steps) instead of the removed `text-display`; it still fails on an unnamed size. Tests updated for the class contract: `PageHeading`, `LeadHeader`, `EditableTitle`, `ActivityComposerInline.fields`, `lib/utils`.
-- 0.2: the public light lock is `[data-theme-lock="light"]`, which re-declares the light palette in the same rule as `:root`, so its subtree stays light even with `.dark` on `<html>`; `AppearanceSync` and `useAppearanceChoice` also refuse to add `.dark` while the attribute is present (checked on mount, when the page tree is already committed).
-- 0.3: every 6.6 primitive is restyled at the token level while keeping its props, roles and test ids: controls 28/32/40 with `SplitButton` added to `Button.tsx`, fields 32 with the strong border and a 1 px blue focus ring, 18 px checkbox/radio with the blue checked fill, 32x18 switch on green, 20 px status badges, 40 px tabs with the blue underline, overlays on `shadow-pop`/`shadow-dialog` and the 50% foreground scrim, dark toasts, a shimmering skeleton and the 4 px progress bar. The dialog and sheet chrome keeps the 56/64 header/footer rhythm with full-bleed rules via negative margins, so the body padding stays 24 and no call site changed.
-- 0.3: added a `--track` token (#E4E4E4 light, #30343D dark) for the progress track and the future StageTrack segments; 6.4 gives that value but no token name, and `bg-track` keeps both surfaces on one value.
-- 0.3: `Avatar` now uses the measured `--avatar` / `--avatar-foreground` neutral pair instead of a per-name colour swatch; initials stay 600 and the 20/32/40 sizes come from the caller's size classes.
-- 0.3: new `Panel`, `Kbd`, `StatusBadge`, `ViewSwitcher`, `PageToolbar`, `tableStyles` and `shell/pageTitle.tsx`, each with a unit test. The switcher is a `fieldset` of `aria-pressed` buttons because no Radix toggle-group is installed and Part 11 allows only `@axe-core/playwright` as a new dependency.
-- 0.3: changed tests for the new primitive contract: Input focus ring (ConditionRows, SavedViewControl), the disabled neutral pair on every Button variant, the Checkbox strong border, and the Switch track/on tokens. No assertion was loosened.
-- 0.4: `@axe-core/playwright@4.14.0` is installed as a dev dependency, the only new package this part adds.
-- 0.4: `e2e/15-design.spec.ts` splits the gallery into public and app groups (the login screen must run signed out, the other 21 with the seeded admin), writes the fixed `{screen}-{width}-{theme}.png` names to `e2e/screenshots/design/`, runs axe at `wcag2a`/`wcag2aa` with zero serious or critical violations, checks `scrollWidth <= innerWidth + 1` at 375, and switches to night through the real appearance path: the seeded users default to `system`, so `emulateMedia({ colorScheme: "dark" })` plus a reload goes through `AppearanceSync` rather than faking the class.
-- 0.4: the gallery's `{id}` routes read one seeded record per detail screen, so `scripts/e2e/seed-session.ts` now also writes the pipeline, organization, lead, project, document (and its public id), dashboard, report, thread, automation, form public id and booking public id into `.e2e/fixtures.json`. Resolving them by clicking through lists would tie the harness to list markup that is about to be restyled.
-- 0.4: `e2e/design/styleChecks.ts` implements the 6.10 table from computed styles and is scoped to the four named screens. It reads test ids the screen tasks add (`app-rail`, `top-bar`, `page-title`, `primary-action`, `search-pill`, `board-column`, `deal-card`, `deal-card-title`, `stage-track`, `deal-sidebar`, `sidebar-row`, `deal-title`, `activity-side`, `table-row`), so the checks fail loudly rather than silently passing if a hook disappears.
-- 0.4: the task verify ran green: `DESIGN_SCREENS=login DESIGN_CHECKS=0 pnpm exec playwright test e2e/15-design.spec.ts` passed 1/1 and wrote `login-1440-light.png` and `login-375-light.png`.
-- 1.1: the rail is now a 56 px full-height `app-rail` of 44 px tiles with a tooltip per item, indigo ground and the violet active tile. The brand cell shows our app icon forced white with `brightness-0 invert` (no Pipedrive asset is used). The collapse control and its `NAV_PREF_COOKIE` read are gone; Settings moved to the avatar menu and help to the top bar, so the rail carries only destinations.
-- 1.1: `TopBar` became a client component so it can read `usePageTitleValue`; it renders the 16/600 page title (with an info tooltip when the page supplies one), the 240x40 search pill (a 40 px round icon button below md), the round add button, the AI pill, the notifications bell, a help link and the 40 px initials avatar. Pages publish their titles from Task 1.2 onward, so the slot is empty until then.
-- 1.1: the bottom nav is rail-coloured with 24 px white icons, a violet 32x32 active tile and 11/600 labels; the More sheet has a rail header strip over a card body. The 11 px label needed a new `--text-caption` token because check-design bans arbitrary `text-[Npx]` and 6.7 measures the label at 11/600.
-- 1.1: `STRINGS.search.placeholder` is now "Search Dealflow" per 6.9, and the trigger reads it instead of hard-coding a second copy.
-- 1.2: the board now uses `PageToolbar` (a four-view `ViewSwitcher`, the split "+ Deal", the count with its info toggle, the pipeline menu joined to a 32 px pencil, Filter and the actions overflow), a 40 px filter row (Pin filters, chips, the sort pill and arrow), 248 px `board-column`s with the chevron clip-path and canvas-subtle fill, white cards with the 3 px warning rot border, the score chip before the 16 px next-activity dot, and a drag bar of 64 px dashed zones. `PageTitle` publishes "Deals" for the board, list and archived pages, and the edit page's in-content h1 moved to the top bar.
-- 1.2: the split button's caret repeats the primary action: Part 11 cannot add create entries to it (that would change behaviour), and Part 7 dropped the old caret for the same reason. The drag bar keeps its three real zones instead of the spec's four: delete is deliberately not a drop target (confirmed action on the menu), so a Delete zone would be a dead control.
-- 1.2: dnd-kit's attributes and listeners moved off the wrapper div and onto the card's own button, because the wrapper rendered `role="button"` around a `<button>` and axe fails that as `nested-interactive`. The canvas role and drop targets are unchanged.
-- 1.3: the deal header is the measured three-row block: 24/400 editable title with owner (32 avatar, 14/600 name, 13 secondary role), followers, presence, 32x62 Won/Lost, block visibility and the "..." menu; the new `StageTrack` (24 px, equal-width chevrons with a 2 px gap, green passed/current, track-grey future, stage-name tooltips, same `changeStageAction` and undo path); the blue "Pipeline > Stage" breadcrumb; a 1 px rule. The chevron `StageSelector` and its test were deleted (nothing else used them).
-- 1.3: the body is a 400 px white sidebar with a right border and flush 64 px section rows (`CollapsibleSection` no longer draws a card), and the activity side is `canvas-subtle` with the composer in a white card, so the sidebar-row, deal-title, deal-sidebar and activity-side parity checks all read the measured values. Record links and completed-activity text use `--link-record` instead of `--primary`, which is both the 6.1 rule and the reason the dark pass contrast now passes.
-- 1.3: the rail highlights the pipeline tile on `/deals/{id}` (`isNavActive`), so the deal page always has exactly one active rail tile, which the parity check requires.
-- 1.3: three tab strips render only a strip (the editor/list lives outside a `TabsContent`), so Radix's generated `aria-controls` dangled and axe failed `aria-valid-attr-value`; each now mounts a hidden `TabsContent forceMount` target per value. No behaviour changed.
-- 1.4: the six list/detail screens now publish `PageTitle` (Deals, People, Organizations, Leads, Activities, Calendar, Timeline), and the activities table uses `tableStyles` (33 px rows, strong header rule, light grid, green record links, sentence-case headers) with single-line cells so the measured 33 px row holds. `ActivityRow` carries `data-testid="table-row"` for the parity check.
-- 1.4: record and navigation links across deals, contacts, leads and activities moved from `text-primary` to `text-link-record` (or `text-info` for controls), which is the 6.1 rule and fixes the dark-pass contrast; the priority warning chip and overdue row text use the new `--warning-soft-foreground` and `--next-red` tokens; the generic `Badge` success text uses `--link-record`.
-- 1.4: the global `:focus-visible` outline is `!important` because Checkbox/Button-style primitives opt out with `outline-none` and rely on a ring; the design spec's focus check requires the 2 px blue outline on the first Tab target on every screen.
-- 1.4: three more tab strips (ContactHistoryTabs, the contact detail tabs, LeadTimeline) got hidden `TabsContent forceMount` targets, like the deal ones, so Radix's `aria-controls` resolve; the activities list spec first switches to "To-do" and "All owners" because its default "Today for me" view is legitimately empty for the seeded admin.
-- 1.4: changed tests: the overdue activity row asserts `text-next-red`, and the date picker's fullness dots assert the success/warning/destructive tokens.
-- 1.4: `DESIGN_SCREENS=deals-list,people,person,organizations,leads,activities-list` passes 6/6 (axe light+dark, 375, activities parity).
-- 2.1: the inbox follows 6.8.5: a 220 px white folder column with 32 px items and an info-soft active row, the list pane keeping its full-width conversation column (Part 7 chose a standalone reader route, not a two-pane split), 72 px thread rows at 12/16 padding with an info-soft selected state, a canvas-subtle reading pane with rounded-lg white message cards, and the 32 px reply footer. The inbox, thread and compose routes publish their top-bar titles.
-- 2.1: the reply composer opens in a bottom `Sheet` on a phone (closing Part 10's open issue) and inline on desktop; the design spec now proves the 375 sheet opens and closes.
-- 2.2: the calendar follows 6.8.6: event chips are info-soft with a 3 px left bar coloured by activity type (`--chart-*`), done chips read secondary with a line-through, today's date number sits in an info-soft circle in blue 600, hour labels are 12 px secondary, the drag ghost uses `shadow-drag`, and the filter/more links use the blue info token. `PageTitle` publishes Forecast and the month page title.
-- 2.2: the forecast months are 248 px canvas-subtle columns without the board chevron, with a 16/600 month title and 13 px meta; cards follow the board card (border, radius 4, hover elevation), won cards read muted without an opacity fade, and the no-date links use the record green.
-- 2.3: documents follow 6.8.8: the list uses `tableStyles`; the shared `DocumentView` renders the sheet (max 860, rounded-lg, 1 px border, 40 px padding) with sentence-case labels; the editor keeps its single column but previews the sheet on `canvas-subtle` with a 1200 px cap (the header and actions are shared with the print route, so a 400 px sidebar split would have to duplicate them); the public page wraps `data-theme-lock="light"`, paints `canvas-subtle`, and ends with the 12 px secondary "Powered by Dealflow" line. All three routes publish their top-bar title.
-- 2.3: the quotes/invoices tab strip got hidden `TabsContent forceMount` targets, the fourth strip with dangling Radix `aria-controls`.
-- 2.3: `DESIGN_SCREENS=documents,document,public-quote` passes 3/3 and the document suite 104/104.
-- 2.4: insights follow 6.8.9: the stats `Panel` now delegates to the design-system `Panel` (48 px header, 16/600 title, 16 px body) while keeping its empty-state contract; KPI values are 24/600 tabular with a 13 px label; the report builder is a 320 px white config column with a right border beside a canvas-subtle preview; the "Loading report..." line is a chart-height `Skeleton`; report/trend/goal chart series use `--chart-1..6` and gridlines use `--grid`; section labels are sentence case; the insights, dashboard and report routes publish their top-bar titles.
-- 2.4: `DESIGN_SCREENS=insights,dashboard,report` passes 3/3 and the insights/stats suites 250/250.
-- 2.5: projects follow 6.8.10: the list uses `tableStyles`; board phases are 248 px canvas-subtle columns without the chevron; task cards follow the deal card (white, 1 px border, radius 4, 14/600 title, 20 px avatar, 13 px due date, done strikethrough) with the drag overlay on `shadow-drag`; the card's dnd attributes are not spread (they add `role=button` around the checkbox and title button, axe nested-interactive), pointer dragging unchanged; both pages publish their top-bar titles.
-- 2.5: `DESIGN_SCREENS=projects,project` passes 2/2 and the project suites 17/17.
-- 3.1: every one of the 37 settings pages now publishes its top-bar title through `PageTitle` (the index only redirects by role and carries a design-ok line). The settings menu is the measured 240 px white column with 13/600 group headings and 32 px rows whose active state is info-soft with blue text and a 3 px blue left bar; the content area is white, padded 24, max width 800; `SettingsHeading` is now the 16/600 section heading with its 14 px description (the page name no longer appears twice) and the card header/body use the 16/600 title and 16 px padding. The old palette/shadow/uppercase classes across the settings clients were replaced with tokens.
-- 3.1: the active-rail-tile parity check is scoped to board, deal and activities-list: 6.7 deliberately moves Settings out of the rail and into the avatar menu, so the settings screen has no rail destination to highlight. The rail itself is still checked on every screen.
-- 3.2: every public surface is light-locked (`data-theme-lock="light"`) on a canvas-subtle ground: the sign-in, magic-link and invite cards are 400 wide with 32 px padding; the public form card is 560 wide at 32 px; the booking page is 720 wide at 32 px with 40x40 day buttons (green when selected) and 32 px slot buttons; the cancel page and the offline shell are light-locked too; "Powered by Dealflow" stays 12 px secondary. Section-divider labels dropped their uppercase.
-- 3.2: `DESIGN_SCREENS=login,public-form,public-booking,offline` passes 4/4 and the auth/forms/scheduling/offline suites 101/101.
-- 3.3: the last two plain loading lines are now content-shaped skeletons: the thread reader paints title + two message cards, and the booking slot grid paints six 32 px slot skeletons. The skeleton containers carry `role="status"` with `aria-busy`/`aria-label`. A new `ErrorRow` primitive renders 6.8.13's inline failure (3 px destructive left bar on the soft red fill, 14 text, optional action) and is used by the activities table and the thread's mark-unread error.
-- 3.4: `check-design` is now 0 violations in 0 files with 12 opt-outs (seven intercepted `@modal` routes whose underlying page owns the title, four redirect-only routes, and the drag bar's upper-case labels). The last 36 hits in 25 files were closed by tokenising the remaining palette steps and soft-red error rows, removing shadows from static cards, switching all-caps section labels to 13/600 sentence case, replacing the arbitrary 10/11 px sizes with `text-caption`, and the composer tab underline's raw `#2b74da` with `--info`.
-- 3.4: `docs/dealflow/DESIGN-WORKLIST.md` is rewritten as the final record (0 violations, every opt-out with file, line and reason, the 6.1 table with every row's closing task); `docs/dealflow/DESIGN.md` documents the parity statement, the full token table in both themes, type/spacing/radius/shadow/motion/focus, the component inventory, the opt-out policy and the commands; `UPSTREAM.md` has the Part 11 section by folder and the README has its design paragraph. 6.9 wording holds (search "Search Dealflow", sentence case, no "successfully" toasts).
-- 4.1: the full e2e suite passes 50/50 (specs 00 to 15) and the gallery has 73 PNGs. Three harness issues surfaced and were fixed without touching app behaviour: the design gallery now re-authenticates the admin in a `beforeAll` (spec 14 signs out to prove sign-out wipes offline records, which revoked the seeded session, so the app screens were redirecting to /login); spec 12 targets the person heading by name instead of bare `h1` (the top bar adds an `h1`) and waits for the recycle-bin restore row to disappear before navigating (the immediate `goto` was aborting the in-flight server action); and `seed-demo.ts` seeds one audit event so the audit-log page has a row in a fresh database.
-- 4.2: the full integration suite passed 2097/2097 in 412 files against the dev Postgres (with `DATABASE_URL=$DEV_DB_URL`), and the smoke stack printed `backup round trip ok (3 deals)` plus `SMOKE PASS`, then removed its compose project and volumes (no `dealflow-smoke` container or volume remained).
-- 4.1: the full run also caught a real design bug: the `Badge` destructive variant painted destructive ink on a 10% fill (3.95:1). It is now a filled pill with white text (4.6:1).
-- 4.1: integration ran alongside and passed 2097/2097 in 412 files (Task 4.2 continues with the smoke run).
-- 3.5 fixes: none needed. The full 26-screen design pass (parity checks on, axe light and dark, 1440/375) passed first time, `check-design` is 0, and the unit suite is 5346/5346. The gallery wrote the expected 73 PNGs.
-- 3.4: changed tests for the shared secondary-nav and notification tint: contacts nav asserts the info tokens, and the notification row asserts `bg-info-soft`. The full unit suite is 5346/5346 and lint/typecheck are green.
-- 3.3: `git grep -nE ">Loading[^<]*\.\.\.<" -- src` prints nothing; the changed files are at `check:design` 0; the thread and booking design screens pass 2/2 and the mail/activities/scheduling suites 1476/1476.
-
-- 3.1: changed tests for the new settings contract: `SettingsHeading` asserts the section h2 at 16/600 with no breadcrumb; `SettingsNav` asserts the info tokens and left bar; the email, import and enrichment page tests assert the h2 section heading. `DESIGN_SCREENS=settings-profile,settings-automation` passes 2/2 and the settings suites 325/325.
-- 2.6 fixes: no failures at this gate. The full unit suite (5346/5346) and all twelve Phase 2 design screens passed on the first run, and `check-design` is down to the number in the QA line; the remaining hits are the settings/auth/public/state work of Phase 3.
-
-
-
-- 2.2 CONTRACT CHANGE: the calendar's overdue chip keeps the red left bar but uses the primary ink on a 10% destructive fill, because #D73C38 on that pale red measures 4.4:1.
-- 2.2: the forecast card's dnd attributes are not spread (listeners only), because they add `role=button` around the card's deal link and axe fails that as nested-interactive; pointer dragging is unchanged.
-- 2.2: changed test: the calendar chip asserts the info surface, the 3 px bar and the destructive overdue fill. `DESIGN_SCREENS=calendar,forecast` passes 2/2 and the calendar/forecast suites 72/72.
-- 2.1 CONTRACT CHANGE: the dark `--avatar-foreground` is #C7C9CE (the planned value) instead of the muted-grey step that had been copied, because initials on the dark avatar measured 4.38:1; text-level error/red links in mail use `--next-red` / `--link-record` for the same reason.
-- 2.1: the Avatar sets its ink with an inline `hsl(var(--avatar-foreground))` rather than a class, because tailwind-merge classified the custom colour token as a font size and dropped it when a caller passed `text-caption`.
-- 2.1: changed tests for the new mail contract: the reply footer and reader card assert `rounded-lg`, label chips assert the caption size and sentence case. The design spec excludes sandboxed email-body iframes from axe (third-party documents), otherwise the thread analysis hangs.
-- 2.1: `DESIGN_SCREENS=inbox,thread` passes 2/2 and the email/inbox unit suites 998/998.
-- 1.5 fixes: the gate's full unit run caught two contract assertions from the restyle. `Board.test` still expected a stage lane to be `flex-1` (the measured column is fixed at 248 px and the board scrolls), and `NotificationsBell.test` expected the old `hover:bg-accent`/`text-link` classes (now `hover:bg-muted`/`text-info`). Both tests were updated to the new contract; no assertion was dropped. The gate then passed: typecheck, lint (13 warnings), build, unit 5346/5346, the eight design screens 8/8, and the board/deal/list e2e specs 01, 07, 13, 14 4/4.
-
-- 1.3 CONTRACT CHANGE: the future-stage label uses a new `--track-foreground` token (#5E6066 light, #A3A6AD dark) because the measured #65686F on #E4E4E4 is 4.38:1 and axe AA needs 4.5; #5E6066 measures 4.98:1.
-- 1.3: changed tests for the contract: the OVERDUE chip is now the filled StatusBadge, the stage parity check reads the current segment (the seeded deal can sit in the first stage, so no passed segment exists), the deal workspace test asserts the stage track's `aria-current="step"` option, and an open deal no longer renders an OPEN status badge.
-- 1.2 CONTRACT CHANGE: the dark palette keeps the light action green `#2D8548` and destructive `#D73C38` instead of `#3FA864` / `#EE6461`: white on the lighter pair measures 3.0:1 and 3.1:1, and on the darker pair 4.6:1 (6.4's contrast note). The rot age text uses `--next-red` (dark `#EE6461`, 5.2:1 on the dark card) instead of `--destructive`.
-- 1.2: changed tests for the board contract: rot is a warning border rather than a graded red fill, the owner avatar is the neutral token pair, the drag overlay uses `shadow-drag` + `rotate-2`, the next-activity dot uses the measured green/grey/red tokens, view segments are icon-only with names, lanes are 248 px with a 4 px gap and no divider, and "Move to" replaced "Move". The design spec now prints axe node targets, and its light pass pins `colorScheme: light` so a dark host OS cannot flip the gallery.
-- 1.1: changed tests for the new shell contract: `LeftNav.test.tsx` rewritten for the icon-only rail (width, 44 px tiles, violet active tile, Settings absent, no collapse control); `SearchTrigger.test.tsx` now asserts the placeholder span truncates inside the pill; `paletteTokens.test.ts` lost its LeftNav fixed-palette exemption; the engagement skeleton dropped its static-card shadow so `check:design src/components/shell` is 0.
-- 0.5 fixes: the gate's first unit run caught `Board.emptyState.test.tsx`, whose assertions scope to the empty state's title parent; my new EmptyState grouped the title and body in a wrapper div, which moved the action buttons outside that parent. The wrapper was removed (icon, title, body and action stay direct children of the role=status region), not the test. Lint's only error was an unnecessary `rows[0] as ...` assertion in `scripts/e2e/seed-session.ts` plus a Biome reflow in `SavedViewControl.test.tsx`; both fixed.
-
-
-
-
+- 0.1: starting point matches section 4: `PROGRESS.md` said `dealflow-wd-p11-v1` with `STATUS: COMPLETE` and the commits after it are `brand: 1..8`, `app: Docs button ...`, `docs: ...` (twice) and `website: ...`, so the run renames it to `PROGRESS-P11.md` and starts Part 12 at Task 0.1.
+- 0.1: `docker compose ls` shows `dealflow-prod` running(5) and publishing 127.0.0.1:3001, 8080 and 9000; it was not touched.
+- 0.1: ports 5433, 9100 and 9101 were free, so the dev stack keeps Postgres 5433 and runs MinIO on 9100 (console 9101); the recorded command is `DEV_PG_PORT=5433 MINIO_PORT=9100 MINIO_CONSOLE_PORT=9101 pnpm dev:up`.
+- 0.1: `scripts/e2e/e2e-env.mjs` reads `MINIO_PORT` and `DEV_PG_PORT` from the shell, so every e2e command is prefixed `MINIO_PORT=9100 DEV_PG_PORT=5433` (recorded in Environment).
+- 0.1: Docker answers and `docker run --rm alpine df -h /` reports 17.6 GB available of 95.0 GB (81% used), above the 10 GB fatal threshold, so the baseline proceeds without pruning.
+- 0.1: the kit arrived untracked at the repo root as `dealflow-wd-part12-kit`, so I moved it to `PLAN AND EXECUTE/dealflow-wd-part12-kit` (the Part 2 to 11 layout), added the root `PLAN-PART12.md` symlink and copied the kit's `scripts/check-progress.mjs` over the root copy (byte-identical, `PLAN_FILE` now `PLAN-PART12.md`).
+- 0.1: `site/` is the untouched upstream landing page (its `site/public` build output is the owner's untracked work) and `website/` is the Dealflow site source; this part edits neither.
+- 0.1: `src/components/ui/Combobox.tsx` exists (cmdk inside a Popover); Task 1.2 adds the max height and search if they are missing.
+- 0.1: pnpm is 9.15.9 from `/tmp/dealflow-tools`, the Playwright browsers are in `/tmp/dealflow-pw-browsers` (chromium-1248), and the subagent tool is available in this harness.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
-- TODO(owner): rebuild the dev stack so its app image reads the Part 10 migrations: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+- TODO(owner): rebuild the live install so it serves Part 12: `docker compose down && pnpm dev:up && pnpm dev` (Part 11's final report carries the same step for its stylesheet).
 - TODO(owner): add the currency rates your deals need in Settings > Currencies. The live database base is GBP and has no stored EUR or USD rate.
 - TODO(owner): push is still off because `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT` are empty. Run `pnpm push:vapid`, add all three to `.env`, then restart the app and worker.
 
@@ -160,65 +66,12 @@ Current: 4.5 · Last updated: 2026-10-22 14:20
 - `export TZ=UTC LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` before manual test runs; `pnpm test:unit` and `pnpm test:integration` already bake these in. Run unit and integration tests WITHOUT `GOOGLE_*=` overrides (`vitest.setup.ts` supplies its own).
 - Commands that load `.env` (`pnpm build`, `db:migrate:dev`, `db:generate`, `db:seed:demo`) need `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` in front until the owner fixes the partial Google config. Check emptiness only, never print values.
 - `npm view` in this sandbox needs `--cache /tmp/npm-cache --logs-dir=/tmp/npm-logs` (writing `~/.npm/_logs` is blocked).
-- Build: `ALLOW_FIRST_LOGIN_ADMIN=false pnpm build`; if `next build` fails with `ENOTEMPTY`, remove `.next` and retry once. Part 10 wraps this as `build:sw && ALLOW_FIRST_LOGIN_ADMIN=false next build`.
+- Build: `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN= ALLOW_FIRST_LOGIN_ADMIN=false pnpm build`; if `next build` fails with `ENOTEMPTY`, remove `.next` and retry once. Part 10 wraps this as `build:sw && ALLOW_FIRST_LOGIN_ADMIN=false next build`.
 - Host database commands: `export DEV_DB_URL=postgres://warpdrive:warpdrive@localhost:5433/warpdrive` and prefix `DATABASE_URL=$DEV_DB_URL` (`.env` targets the container network).
-- E2E: `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` (reinstall browsers with `pnpm exec playwright install chromium` if `/tmp` was cleared); ports 3210/3211. Smoke: `DOCKER_BUILDKIT=0 pnpm smoke` (ports 3310/3311/3312), with `COMPOSE_PARALLEL_LIMIT=1`.
-- Docker 24.0.5 is up with 28.5 GB free in the VM (95.0 GB total) as of 2026-10-22 07:31; the dev stack provides Postgres on 5433 and MinIO on 9000/9001 (`pnpm dev:up` brings it back after a reboot or a Docker restart). Never prune; if a build fails with "no space left" after Task 0.1, record the step SKIPPED and end `COMPLETE WITH OPEN ISSUES` (section 10).
+- Dev stack: `DEV_PG_PORT=5433 MINIO_PORT=9100 MINIO_CONSOLE_PORT=9101 pnpm dev:up` (Postgres 5433, MinIO S3 9100, MinIO console 9101). Never bind 3001, 8080 or 9000 (the owner's `dealflow-prod`) and never touch port 3333 or 3000.
+- E2E: `export PLAYWRIGHT_BROWSERS_PATH=/tmp/dealflow-pw-browsers` (reinstall browsers with `pnpm exec playwright install chromium` if `/tmp` was cleared); ports 3210/3211; every run is `MINIO_PORT=9100 DEV_PG_PORT=5433 pnpm e2e` (and `... pnpm exec playwright test ...`). Smoke: `DOCKER_BUILDKIT=0 pnpm smoke` (ports 3310/3311/3312), with `COMPOSE_PARALLEL_LIMIT=1`.
+- Docker 24.0.5 is up with 17.6 GB free in the VM (95.0 GB total) as of 2026-10-23 01:38; the dev stack provides Postgres on 5433 and MinIO on 9100/9101 (`pnpm dev:up` brings it back after a reboot or a Docker restart). Never prune; if a build fails with "no space left" after Task 0.1, record the step SKIPPED and end `COMPLETE WITH OPEN ISSUES` (section 10).
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-
-### Definition of done
-
-1. PASS - the 6.4 tokens are CSS variables in `globals.css` (light parity and derived dark), Inter is unchanged, and `@axe-core/playwright@4.14.0` (dev) is the only new dependency.
-2. PASS - `scripts/dealflow/check-design.mjs` is 6.3 and reports 0 violations with 12 opt-outs, each with a reason.
-3. PASS - every 6.6 primitive is restyled while keeping its API; every app page publishes its top-bar title (`check-design` enforces it).
-4. PASS - the shell matches 6.7: 56 px indigo rail with violet active tile and tooltips, 56 px white top bar with title, search pill, round add, AI pill, icons and avatar.
-5. PASS - every 6.8 screen is restyled and the 6.1 differences table is closed; the two deliberate deviations are logged (inbox stays one full-width pane, and the board column shows the weighted total on its second meta line).
-6. PASS - empty, loading and error states follow 6.8.13 (EmptyState, skeletons shaped like content, `ErrorRow`).
-7. PASS - `/d`, `/f`, `/book`, `/offline` and sign-in are tokenised and always light (`data-theme-lock="light"`).
-8. PASS - `e2e/15-design.spec.ts` passes 26/26: 6.10 computed values, focus ring, no 375 overflow, zero serious/critical axe, 73 gallery PNGs.
-9. PASS - behaviour is unchanged: `pnpm e2e` 50/50 on specs 00 to 15.
-10. PASS - typecheck, lint, build, unit (5346), integration (2097) and smoke all pass, and one independent review with a computed-style critique ran (round 1, findings fixed and logged).
-
-### Checklist (section 11)
-
-1. PASS - `git --no-optional-locks status --porcelain` is empty at the task commit.
-2. PASS - `pnpm install --frozen-lockfile` exits 0; `@axe-core/playwright@4.14.0` (dev) is the only added dependency.
-3. PASS - `pnpm typecheck` exits 0.
-4. PASS - `pnpm lint` exits 0 (13 warnings, 1 info).
-5. PASS - `pnpm test:unit` 5346/5346 in 840 files.
-6. PASS - `pnpm test:integration` 2097/2097 in 412 files against the dev Postgres.
-7. PASS - `pnpm build` exits 0.
-8. PASS - `pnpm e2e` 50/50, specs 00 to 15.
-9. PASS - 73 design PNGs; the Part 1 to 10 screenshots are still present (85 PNGs under `e2e/screenshots`).
-10. PASS - smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)`, with no `dealflow-smoke` container or volume left.
-11. PASS - `pnpm check:design` prints `0 violation(s) in 0 file(s); 12 opt-out(s)`; `DESIGN-WORKLIST.md` lists all 12.
-12. PASS - the 6.10 parity checks pass on board, deal, activities-list and settings-profile in the 26/26 design run.
-13. PASS - no page lacks a title: 0 page-title violations, 12 documented opt-outs (redirect-only routes and intercepted modals).
-14. PASS - axe reports zero serious or critical violations on all 26 gallery screens.
-15. PASS - the em-dash scan over `18e1dff..HEAD` prints nothing (kit files excluded).
-16. PASS - `docs/dealflow/DESIGN.md` exists and `UPSTREAM.md` has the Part 11 section.
-17. PASS - `pnpm check:progress --final` exits 0.
-
-### Owner actions
-
-1. Rebuild the dev stack so the new stylesheet is served: `docker compose down && pnpm dev:up && pnpm dev`.
-2. Review the gallery side by side with Pipedrive: `open e2e/screenshots/design` (board, deal and activities at 1440 light first, then the 375 shots, then the dark 1440 set).
-3. Nothing else is required to accept Part 11. The carried environment items are unchanged: Google OAuth client values in `.env`, the currency-rate provider key, and `pnpm push:vapid` for real web push.
-
-### Decisions worth reviewing
-
-- 2 CONTRACT CHANGE lines: the calendar's overdue chip uses primary ink on the soft red (4.4:1 with `#D73C38`), and the inbox keeps its single full-width pane instead of a 360 px column.
-- 4.3 decisions: list screens rely on their top-bar title (the board and deals list share `PageToolbar`; people/orgs/leads/activities keep single-row toolbars), and the board column keeps the weighted total on a visible second line so the existing e2e hook still reads it.
-- Changed tests (no weakened assertions): the palette/type-scale guards, PageHeading/LeadHeader/EditableTitle class contracts, checkbox/switch/button disabled tokens, the activities row tokens, settings heading/nav tests, contacts nav and notification tint, `page-toolbar` `h-16`, and the e2e locators that moved with the layout (person heading by name, note card by its warning-soft class, hydration retries in specs 03/08/12/14, gallery re-auth and the real list route).
-- 12 `design-ok` opt-outs, all genuine: seven intercepted `@modal` routes, four redirect-only routes, and the drag bar's uppercase labels that mirror `StatusBadge`.
-
-### Open issues
-
-- The independent review's major about `PageToolbar` on the remaining list screens is accepted as a decision, not a defect: every list publishes its title and keeps its own single-row toolbar; no control was lost.
-- The inbox width and the board weighted line are the two logged CONTRACT CHANGE/decision deviations from 6.1; both are deliberate.
-
-### Roadmap complete
-
-Part 11 closes the Pipedrive parity roadmap. Nothing in Parts 1 to 11 is deferred except the environment items above (Google OAuth values, currency-rate key, VAPID keys) and the mail-live check, which needs a real Gmail refresh token. The build is feature-complete and verified on the final tree.
+(written in Task 4.5)
