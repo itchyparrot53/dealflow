@@ -120,6 +120,9 @@ async function boardColumnCheck(page: Page): Promise<void> {
   const column = await computed(page, '[data-testid="board-column"]');
   expect(column.backgroundColor, "board column fill").toBe("rgb(245, 245, 245)");
   expect(column.width, "board column width").toBe(248);
+  // Part 12, 6.7.2: three header lines need 72 px.
+  const header = await computed(page, '[data-testid="board-column"] header');
+  expect(header.height, "board column header height").toBe(72);
 }
 
 async function dealCardCheck(page: Page): Promise<void> {

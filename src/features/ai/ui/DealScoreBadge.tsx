@@ -9,22 +9,21 @@ const MID_MIN = 40;
 
 export function DealScoreBadge({ score }: { score: number }): React.ReactNode {
   const value = Math.max(0, Math.min(100, Math.round(score)));
-  const tone =
-    value >= HIGH_MIN
-      ? "bg-success text-success-foreground"
-      : value >= MID_MIN
-        ? "bg-attention text-attention-foreground"
-        : "bg-muted text-muted-foreground";
+  // 6.7.2: the band is a small dot; the pill itself is quiet and outlined, never a filled green
+  // badge on every card.
+  const dot =
+    value >= HIGH_MIN ? "bg-success" : value >= MID_MIN ? "bg-warning" : "bg-muted-foreground";
   return (
     <Tip label={`AI score ${value} of 100`}>
       <span
         data-testid="deal-score-badge"
         data-score={value}
         className={cn(
-          "inline-flex h-5 shrink-0 items-center rounded-md px-1 text-caption font-semibold tabular",
-          tone,
+          "inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-border px-1.5 font-medium tabular",
+          "text-[11px]", // design-ok: score pill
         )}
       >
+        <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", dot)} />
         AI {value}
       </span>
     </Tip>

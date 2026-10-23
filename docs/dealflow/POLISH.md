@@ -30,8 +30,8 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U13 | Contacts | People, Organizations and Timeline sit in a 180 px left panel on every list and record | view switcher in the toolbar (6.6) | 2.4 | 2.4 | | |
 | U14 | Toolbars | Activities puts Export CSV on its own row; Projects uses full-width selects; the control order differs per page | 6.6 toolbar order | 2.5 | 2.5 | | |
 | U15 | AI filter box | "Describe a filter" is a tall card wedged into the toolbar, and its placeholder talks about deals on Leads, People and Organizations | "Ask AI" popover, entity placeholders (6.6) | 2.5 | 2.5 | | |
-| U16 | Board column header | "W. 1 excluded" and "Weighted $8…" truncate | 72 px, three lines (6.7.2) | 3.2 | | | |
-| U17 | Board cards | Solid green "AI 72" pills shout on every card | calm score pill (6.7.2) | 3.2 | | | |
+| U16 | Board column header | "W. 1 excluded" and "Weighted $8…" truncate | 72 px, three lines (6.7.2) | 3.2 | 3.2 | | |
+| U17 | Board cards | Solid green "AI 72" pills shout on every card | calm score pill (6.7.2) | 3.2 | 3.2 | | |
 | U18 | Forecast | Total, Weighted and Won values overlap in each month header | stacked grid (6.7.3) | 3.3 | | | |
 | U19 | Calendar | The day starts at 00:00, so working hours are below the fold; the grid is flat | 6.7.3 | 3.3 | | | |
 | U20 | Deal stage track | Every future stage says "0 days" | 6.7.4 | 3.4 | | | |

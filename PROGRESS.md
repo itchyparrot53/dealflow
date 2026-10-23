@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-23 03:12
+Current: 3.3 · Last updated: 2026-10-23 03:14
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -27,7 +27,7 @@ Current: 3.2 · Last updated: 2026-10-23 03:12
 - [x] 2.5 Toolbar order and the Ask AI popover (U14, U15)
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Add deal dialog (U6)
-- [ ] 3.2 Board column header and card score (U16, U17)
+- [x] 3.2 Board column header and card score (U16, U17)
 - [ ] 3.3 Forecast header and calendar (U18, U19)
 - [ ] 3.4 Stage track, person and organization records (U20, U27)
 - [ ] 3.5 Document editor (U21)
@@ -132,6 +132,10 @@ Current: 3.2 · Last updated: 2026-10-23 03:12
 - 3.1: the stage picker is now text-free 24 px chevron segments: the selected stage and those before it use the primary colour, later ones the track colour, every segment is a radio with `aria-label` and `aria-checked`, a tooltip names it, arrow keys move the selection, and the caption under the track reads the stage name with "Stage n of total".
 - 3.1 CONTRACT CHANGE: the value row keeps the base-currency badge rather than a currency Combobox. `dealCreateInput` has no `currency` field and a new deal always uses the workspace base currency, so a picker would be a dead control and adding the field would change stored data (out of scope for Part 12). The badge now sits at the same 32 px control height as its neighbours, which is the visual half of U6's complaint.
 - 3.1: changed tests: the Add deal layout test now asserts the 6.7.1 FormGrid, the full-span Person section and the "Stage 1 of 2" caption; `StageChevron.test` is new (text-free radios, aria-checked, caption, arrow keys).
+
+- 3.2: the board column header is 72 px with three lines: the stage name (`text-sm font-semibold`) and its menu, `{total} · {n} deals`, and `Weighted {weighted}` with ` · {k} excluded` appended; the meta lines are `text-meta` muted and truncate, and the chevron clip-path edge now bends at 36/72 px. The full text of each meta line is available through a `Tip` rather than a native `title`, which the lint ban covers.
+- 3.2: the AI score is an outlined pill (`h-5 px-1.5 rounded-full border border-border`) with a 6 px dot in the band colour (70+ success, 40-69 warning, under 40 muted) and `text-[11px]` carrying the `design-ok: score pill` marker; no filled green pill remains.
+- 3.2: the Part 11 board check now pins the 72 px header in `e2e/design/styleChecks.ts`; that is the deliberate Part 12 contract change 6.7.2 names.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

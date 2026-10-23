@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Tip } from "@/components/ui/tooltip";
 import { useLabelColorResolver } from "@/features/labels/useLabelColorResolver";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { stageSubtitle } from "./boardColumnSubtitle";
 import { DealCard } from "./DealCard";
 import type { BoardCard } from "./dealRepo";
 import { StageAddButton } from "./StageAddButton";
@@ -88,6 +87,12 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
   // P1: local collapse state, toggled from the per-column actions menu. Session-only (no persist):
   // a rep collapses a stage to focus the board for the current session, not as a durable preference.
   const [collapsed, setCollapsed] = useState(false);
+  // 6.7.2: three lines that can never truncate at the seeded totals. Line 2 is the total and the
+  // deal count; line 3 is the weighted total, with the excluded count appended when there is one.
+  const totalLabel = formatCurrency(totalValue, baseCurrency);
+  const weightedLine = `Weighted ${formatCurrency(weightedValue, baseCurrency)}${
+    excludedCount > 0 ? ` · ${excludedCount} excluded` : ""
+  }`;
 
   return (
     <section
@@ -105,9 +110,9 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
         .join(" ")
         .trim()}
     >
-      <header className="h-16 shrink-0 px-3 pt-3">
+      <header className="h-[72px] shrink-0 px-3 pt-3">
         <div className="flex items-center gap-2">
-          <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-foreground">
+          <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
             {stageName}
           </h2>
           <StageColumnMenu
@@ -120,25 +125,22 @@ export function BoardColumn(props: BoardColumnProps): React.ReactNode {
             onToggleCollapse={() => setCollapsed((v) => !v)}
           />
         </div>
-        <p className="mt-1 flex min-w-0 items-center gap-1 truncate text-meta text-muted-foreground">
-          <span data-testid="board-column-total" className="tabular">
-            {stageSubtitle(formatCurrency(totalValue, baseCurrency), dealCount)}
-          </span>
-          <span aria-hidden="true">|</span>
-          <span className="truncate">
-            Weighted{" "}
-            <span data-testid="board-column-weighted" className="tabular">
-              {formatCurrency(weightedValue, baseCurrency)}
-            </span>
-          </span>
-          {excludedCount > 0 && (
-            <Tip label={`No rate for ${excludedCurrencies.join(", ")}`}>
-              <span data-testid="totals-excluded" className="cursor-default">
-                {excludedCount} excluded
-              </span>
-            </Tip>
-          )}
-        </p>
+        <Tip label={`${totalLabel} · ${dealCount} ${dealCount === 1 ? "deal" : "deals"}`}>
+          <p
+            data-testid="board-column-total"
+            className="mt-0.5 truncate text-meta text-muted-foreground tabular"
+          >
+            {totalLabel} · {dealCount} {dealCount === 1 ? "deal" : "deals"}
+          </p>
+        </Tip>
+        <Tip label={weightedLine}>
+          <p
+            data-testid="board-column-weighted"
+            className="truncate text-meta text-muted-foreground tabular"
+          >
+            {weightedLine}
+          </p>
+        </Tip>
       </header>
 
       {!collapsed && (
