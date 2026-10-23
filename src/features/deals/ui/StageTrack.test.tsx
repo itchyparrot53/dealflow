@@ -29,15 +29,16 @@ describe("StageTrack", () => {
   it("renders one 24 px segment per stage with its day count", () => {
     render(<StageTrack dealId="d1" expectedUpdatedAt="t1" chips={CHIPS} />);
     expect(screen.getByTestId("stage-track")).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Proposal, 3 days" })).toHaveTextContent("3 days");
-    expect(screen.getByRole("option", { name: "Qualified, 4 days" })).toHaveTextContent("4 days");
+    expect(screen.getByRole("group", { name: "Stage" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Proposal, 3 days" })).toHaveTextContent("3 days");
+    expect(screen.getByRole("button", { name: "Qualified, 4 days" })).toHaveTextContent("4 days");
   });
 
-  it("marks passed and current green, future grey, and the current step as selected", () => {
+  it("marks passed and current green, future grey, and the current step as pressed", () => {
     render(<StageTrack dealId="d1" expectedUpdatedAt="t1" chips={CHIPS} />);
-    const passed = screen.getByRole("option", { name: "Qualified, 4 days" });
-    const current = screen.getByRole("option", { name: "Proposal, 3 days" });
-    const future = screen.getByRole("option", { name: "Negotiation, 0 days" });
+    const passed = screen.getByRole("button", { name: "Qualified, 4 days" });
+    const current = screen.getByRole("button", { name: "Proposal, 3 days" });
+    const future = screen.getByRole("button", { name: "Negotiation, 0 days" });
     // 6.7.4: a future stage has no visible day count; its aria-label still carries it.
     expect(future).toHaveTextContent("");
     for (const segment of [passed, current]) {
@@ -47,14 +48,15 @@ describe("StageTrack", () => {
     expect(future.getAttribute("data-state")).toBe("future");
     expect(future.className).toContain("bg-track");
     expect(future.className).toContain("text-track-foreground");
-    expect(current).toHaveAttribute("aria-selected", "true");
-    expect(passed).toHaveAttribute("aria-selected", "false");
+    expect(current).toHaveAttribute("aria-pressed", "true");
+    expect(current).toHaveAttribute("aria-current", "step");
+    expect(passed).toHaveAttribute("aria-pressed", "false");
   });
 
   it("keeps the stage-change behaviour: clicking a future segment moves the deal", async () => {
     changeStageAction.mockResolvedValue({ ok: true, deal: { updatedAt: "t2" } });
     render(<StageTrack dealId="d1" expectedUpdatedAt="t1" chips={CHIPS} />);
-    fireEvent.click(screen.getByRole("option", { name: "Negotiation, 0 days" }));
+    fireEvent.click(screen.getByRole("button", { name: "Negotiation, 0 days" }));
     await waitFor(() =>
       expect(changeStageAction).toHaveBeenCalledWith(
         { dealId: "d1", toStageId: "s3", expectedUpdatedAt: "t1" },
@@ -65,7 +67,7 @@ describe("StageTrack", () => {
 
   it("does not move the deal when the current segment is clicked", () => {
     render(<StageTrack dealId="d1" expectedUpdatedAt="t1" chips={CHIPS} />);
-    fireEvent.click(screen.getByRole("option", { name: "Proposal, 3 days" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proposal, 3 days" }));
     expect(changeStageAction).not.toHaveBeenCalled();
   });
 });

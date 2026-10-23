@@ -146,13 +146,13 @@ describe("DealWorkspaceClient", () => {
     render(<DealWorkspaceClient workspace={workspace as never} {...props} />);
     // Pipedrive-style day-count track: the current segment is the active step, and stages
     // connect visually (no literal "to" word between them).
-    expect(screen.getByRole("option", { name: /Proposal/ })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Proposal/ })).toHaveAttribute(
       "aria-current",
       "step",
     );
     // Scoped to the stage listbox: the activity composer (now mounted for real on the Activity
     // tab) has its own unrelated "Start time to End time" separator text elsewhere on the page.
-    const stageBar = screen.getByRole("listbox", { name: "Stage" });
+    const stageBar = screen.getByRole("group", { name: "Stage" });
     expect(within(stageBar).queryByText("to")).not.toBeInTheDocument();
   });
 });

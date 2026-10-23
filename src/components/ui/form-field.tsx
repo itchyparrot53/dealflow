@@ -1,5 +1,6 @@
+"use client";
 import type React from "react";
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, isValidElement, useId } from "react";
 import { cn } from "@/lib/utils";
 
 // The one field rhythm (PLAN-PART12.md 6.3, U8): label, control, then hint or error. Every create
@@ -25,8 +26,13 @@ export function FormField({
   children: React.ReactNode;
 }): React.ReactNode {
   // A required field announces itself to assistive tech on the control, not only through the
-  // asterisk (which is decorative). Only a single element child can carry the attribute.
-  const child = required ? withRequired(children) : children;
+  // asterisk (which is decorative). The error needs the same treatment: a stable id the control
+  // points at with aria-describedby, plus aria-invalid. Only a single element child can carry
+  // these attributes, which is why the shared helper clones the control.
+  const generatedId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const hasError = error !== undefined && error !== null;
+  const errorId = `${htmlFor ?? `form-field-${generatedId}`}-error`;
+  const child = withFieldState(children, { required, errorId: hasError ? errorId : undefined });
   return (
     <div className={cn("grid gap-1.5", span === "full" && "sm:col-span-2", className)}>
       <span className="flex items-center gap-0.5">
@@ -42,7 +48,7 @@ export function FormField({
       </span>
       {child}
       {error !== undefined && error !== null ? (
-        <p role="alert" className="text-meta text-destructive">
+        <p id={errorId} role="alert" className="text-meta text-danger">
           {error}
         </p>
       ) : hint !== undefined && hint !== null ? (
@@ -52,10 +58,33 @@ export function FormField({
   );
 }
 
-function withRequired(child: React.ReactNode): React.ReactNode {
+interface FieldState {
+  required: boolean;
+  // Undefined means "no error", so the control must not claim to be invalid.
+  errorId: string | undefined;
+}
+
+function withFieldState(
+  child: React.ReactNode,
+  { required, errorId }: FieldState,
+): React.ReactNode {
   if (!isValidElement(child) || Children.count(child) !== 1) return child;
-  return cloneElement(child as React.ReactElement<{ "aria-required"?: boolean }>, {
-    "aria-required": true,
+  const element = child as React.ReactElement<{
+    "aria-required"?: boolean;
+    "aria-invalid"?: boolean;
+    "aria-describedby"?: string;
+  }>;
+  if (!required && errorId === undefined) return element;
+  // Merge rather than replace: a control may already describe itself with a hint.
+  const describedBy = element.props["aria-describedby"];
+  return cloneElement(element, {
+    ...(required ? { "aria-required": true } : {}),
+    ...(errorId === undefined
+      ? {}
+      : {
+          "aria-invalid": true,
+          "aria-describedby": describedBy === undefined ? errorId : `${describedBy} ${errorId}`,
+        }),
   });
 }
 

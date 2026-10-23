@@ -68,11 +68,12 @@ export function BoardFilterChips(props: BoardFilterChipsProps): React.ReactNode 
         <li key={chip.key}>
           <Badge variant="secondary" className="gap-1 py-1">
             <span className="max-w-56 truncate">{chip.label}</span>
+            {/* The 12 px glyph keeps its size; the pseudo-element grows the pointer target to 24 px. */}
             <button
               type="button"
               aria-label={chip.removeLabel}
               onClick={chip.onClear}
-              className="rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative rounded text-muted-foreground after:absolute after:-inset-1.5 after:content-[''] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X aria-hidden="true" className="h-3 w-3" />
             </button>

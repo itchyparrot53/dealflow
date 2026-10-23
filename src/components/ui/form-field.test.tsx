@@ -38,14 +38,37 @@ describe("FormField", () => {
 
   it("lets the error win over the hint and announces it", () => {
     render(
-      <FormField label="Email" hint="We never share it" error="Enter a valid address">
+      <FormField
+        label="Email"
+        htmlFor="email"
+        hint="We never share it"
+        error="Enter a valid address"
+      >
+        <input id="email" />
+      </FormField>,
+    );
+    const error = screen.getByRole("alert");
+    const control = screen.getByLabelText("Email");
+    expect(error).toHaveTextContent("Enter a valid address");
+    expect(error).toHaveClass("text-danger");
+    expect(error).toHaveAttribute("id", "email-error");
+    expect(control).toHaveAttribute("aria-invalid", "true");
+    expect(control).toHaveAttribute("aria-describedby", "email-error");
+    expect(screen.queryByText("We never share it")).not.toBeInTheDocument();
+  });
+
+  it("links the error to a control that has no explicit htmlFor", () => {
+    render(
+      <FormField label="Email" error="Enter a valid address">
         <input />
       </FormField>,
     );
     const error = screen.getByRole("alert");
-    expect(error).toHaveTextContent("Enter a valid address");
-    expect(error).toHaveClass("text-destructive");
-    expect(screen.queryByText("We never share it")).not.toBeInTheDocument();
+    const control = screen.getByRole("textbox");
+    const errorId = error.getAttribute("id");
+    expect(errorId).toBeTruthy();
+    expect(control).toHaveAttribute("aria-invalid", "true");
+    expect(control).toHaveAttribute("aria-describedby", errorId ?? "");
   });
 });
 

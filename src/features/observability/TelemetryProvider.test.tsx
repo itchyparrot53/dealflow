@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
 const posthog = vi.hoisted(() => ({ init: vi.fn(), register: vi.fn() }));
@@ -21,45 +21,52 @@ const enabled = {
 
 afterEach(() => vi.clearAllMocks());
 
-it("inits posthog when enabled", () => {
+it("inits posthog when enabled", async () => {
   render(
     <TelemetryProvider config={enabled}>
       <div>child</div>
     </TelemetryProvider>,
   );
-  expect(posthog.init).toHaveBeenCalledWith(
-    "k",
-    expect.objectContaining({ api_host: "https://h" }),
+  await waitFor(() =>
+    expect(posthog.init).toHaveBeenCalledWith(
+      "k",
+      expect.objectContaining({ api_host: "https://h" }),
+    ),
   );
 });
 
-it("enables posthog web-vitals autocapture", () => {
+it("enables posthog web-vitals autocapture", async () => {
   render(
     <TelemetryProvider config={enabled}>
       <div>child</div>
     </TelemetryProvider>,
   );
-  expect(posthog.init).toHaveBeenCalledWith(
-    "k",
-    expect.objectContaining({ capture_performance: { web_vitals: true } }),
+  await waitFor(() =>
+    expect(posthog.init).toHaveBeenCalledWith(
+      "k",
+      expect.objectContaining({ capture_performance: { web_vitals: true } }),
+    ),
   );
 });
 
-it("does not init when disabled", () => {
+it("does not init when disabled", async () => {
   render(
     <TelemetryProvider config={{ ...enabled, disabled: true }}>
       <div>child</div>
     </TelemetryProvider>,
   );
+  // Give the dynamic import a chance to run; the guard should return before it starts.
+  await new Promise((resolve) => setTimeout(resolve, 0));
   expect(posthog.init).not.toHaveBeenCalled();
 });
 
-it("installs console forwarding only when the flag is on", () => {
+it("installs console forwarding only when the flag is on", async () => {
   render(
     <TelemetryProvider config={enabled}>
       <div>c</div>
     </TelemetryProvider>,
   );
+  await new Promise((resolve) => setTimeout(resolve, 0));
   expect(installConsole).not.toHaveBeenCalled();
   vi.clearAllMocks();
   render(
@@ -67,5 +74,5 @@ it("installs console forwarding only when the flag is on", () => {
       <div>c</div>
     </TelemetryProvider>,
   );
-  expect(installConsole).toHaveBeenCalled();
+  await waitFor(() => expect(installConsole).toHaveBeenCalled());
 });

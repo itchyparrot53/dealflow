@@ -69,6 +69,6 @@ it("renders the title, pipeline name, owner name, and stage names", () => {
   expect(screen.getByRole("heading", { name: "Acme renewal" })).toBeTruthy();
   expect(screen.getByText("Sales pipeline")).toBeTruthy();
   expect(screen.getByText("Ada Lovelace")).toBeTruthy();
-  expect(screen.getByRole("option", { name: /Qualified/ })).toBeTruthy();
-  expect(screen.getByRole("option", { name: /Proposal/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Qualified/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Proposal/ })).toBeTruthy();
 });

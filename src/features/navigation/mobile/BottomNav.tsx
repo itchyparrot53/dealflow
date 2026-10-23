@@ -32,6 +32,7 @@ export function BottomNav(): React.ReactNode {
     <>
       <nav
         data-testid="bottom-nav"
+        data-nav="bottom"
         aria-label="Primary"
         className="fixed inset-x-0 bottom-0 z-40 bg-rail pb-[env(safe-area-inset-bottom)] md:hidden"
       >

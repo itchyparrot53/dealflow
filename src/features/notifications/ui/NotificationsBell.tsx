@@ -41,16 +41,23 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
   const today = feed.filter((n) => n.band === "today");
   const earlier = feed.filter((n) => n.band === "earlier");
 
-  async function handleOpen(item: NotificationFeedItem): Promise<void> {
-    if (item.readAt === null) {
-      const result = await markReadAction({ id: item.id }, readCsrfToken());
-      if (result.ok) {
-        void utils.notifications.feed.invalidate();
-        void utils.notifications.unreadCount.invalidate();
-      }
-    }
+  function handleOpen(item: NotificationFeedItem): void {
+    // Navigate first: the click's perceived latency is the route change. The bell stays mounted
+    // in the shell, so the unread refetch still updates it once the write settles.
     setOpen(false);
     router.push(notificationHref(item));
+    if (item.readAt !== null) return;
+    void markReadAction({ id: item.id }, readCsrfToken()).then(
+      (result) => {
+        if (result.ok) {
+          void utils.notifications.feed.invalidate();
+          void utils.notifications.unreadCount.invalidate();
+        } else {
+          reportError(result.error.id);
+        }
+      },
+      () => reportError(),
+    );
   }
 
   async function handleMarkAll(): Promise<void> {
@@ -84,7 +91,7 @@ export function NotificationsBell({ userId }: { userId: string }): React.ReactNo
             type="button"
             disabled={markingAll || unreadCount === 0}
             onClick={() => void handleMarkAll()}
-            className="text-sm text-info disabled:bg-disabled disabled:text-disabled-foreground hover:underline"
+            className="min-h-6 text-sm text-info disabled:bg-disabled disabled:text-disabled-foreground hover:underline"
           >
             {STRINGS.notifications.markAllRead}
           </button>

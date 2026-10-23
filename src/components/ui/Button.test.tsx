@@ -43,6 +43,15 @@ describe("Button", () => {
     }
   });
 
+  it("announces the loading state and blocks repeat clicks", () => {
+    render(<Button loading>Archive</Button>);
+    const btn = screen.getByRole("button", { name: /archive/i });
+    expect(btn).toHaveAttribute("aria-busy", "true");
+    expect(btn).toBeDisabled();
+    // Reduced-motion users lose the spinner, so the cue is also present as text.
+    expect(screen.getByText("Loading")).toHaveClass("sr-only");
+  });
+
   // PLAN-PART11.md 6.6: every variant swaps to the neutral disabled pair instead of fading.
   it("keeps the neutral disabled pair on every variant", () => {
     for (const variant of ["default", "outline", "ghost"] as const) {

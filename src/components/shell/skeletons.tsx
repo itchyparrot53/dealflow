@@ -50,16 +50,16 @@ export function ListSectionSkeleton(): React.ReactNode {
 
 export function ListPageSkeleton(): React.ReactNode {
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <section aria-label="Loading" aria-busy="true" className="flex flex-col gap-4">
       <HeadingSkeleton />
       <ListSectionSkeleton />
-    </main>
+    </section>
   );
 }
 
 export function BoardSkeleton(): React.ReactNode {
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <section aria-label="Loading" aria-busy="true" className="flex flex-col gap-4">
       <HeadingSkeleton />
       <div className="flex gap-3 overflow-hidden">
         {Array.from({ length: 5 }, (_, col) => (
@@ -73,13 +73,13 @@ export function BoardSkeleton(): React.ReactNode {
           </div>
         ))}
       </div>
-    </main>
+    </section>
   );
 }
 
 export function DetailPageSkeleton(): React.ReactNode {
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <section aria-label="Loading" aria-busy="true" className="flex flex-col gap-4">
       <HeadingSkeleton />
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Left sidebar (record fields / firmographics). */}
@@ -93,7 +93,7 @@ export function DetailPageSkeleton(): React.ReactNode {
           <RowsSkeleton rows={6} />
         </div>
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -126,7 +126,7 @@ export function DetailDrawerSkeleton({
 
 export function InboxSkeleton(): React.ReactNode {
   return (
-    <main className="flex h-full flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <section aria-label="Loading" aria-busy="true" className="flex h-full flex-col gap-4">
       <HeadingSkeleton action={false} />
       <div className="flex flex-1 gap-4">
         {/* Thread list column. */}
@@ -138,7 +138,7 @@ export function InboxSkeleton(): React.ReactNode {
           <Skeleton className="h-full min-h-64 w-full" />
         </div>
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -248,7 +248,7 @@ export function EngagementGridSkeleton({ lanes = 6 }: { lanes?: number } = {}): 
 
 export function DashboardSkeleton(): React.ReactNode {
   return (
-    <main className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
+    <section aria-label="Loading" aria-busy="true" className="flex flex-col gap-4">
       <HeadingSkeleton action={false} />
       {/* Stat tiles row. */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -262,6 +262,6 @@ export function DashboardSkeleton(): React.ReactNode {
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
-    </main>
+    </section>
   );
 }

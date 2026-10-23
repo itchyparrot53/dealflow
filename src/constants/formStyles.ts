@@ -1,7 +1,7 @@
 // Shared Tailwind class for full-width text/select form inputs used across the create/edit modals.
 // One source of truth so the field styling stays in step (was copy-pasted into four components).
 export const FIELD_INPUT =
-  "h-8 w-full rounded-md border border-border-strong bg-card px-2 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-100 ease-out placeholder:text-placeholder hover:border-placeholder focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring motion-reduce:transition-none disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground";
+  "h-8 w-full rounded-md border border-border-strong bg-card px-2 text-sm outline-none transition-[border-color,box-shadow,background-color] duration-100 ease-out placeholder:text-placeholder-text hover:border-placeholder focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring motion-reduce:transition-none disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-foreground";
 
 // A single bordered icon button (edit-pipeline pencil, board sort-direction toggle). Pairs a
 // muted resting color with a foreground hover.

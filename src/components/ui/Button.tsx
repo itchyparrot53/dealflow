@@ -62,10 +62,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       type={type ?? "button"}
       disabled={disabled === true || loading === true}
+      aria-busy={loading}
       className={cn(buttonVariants({ variant, size }), isStatic !== true && TAP_SCALE, className)}
       {...props}
     >
-      {loading === true ? <Loader2 aria-hidden="true" className="size-3.5 animate-spin" /> : null}
+      {loading === true ? (
+        <>
+          <Loader2
+            aria-hidden="true"
+            className="size-3.5 animate-spin motion-reduce:animate-none"
+          />
+          {/* Reduced-motion users lose the spinner, so the state is also stated in text. */}
+          <span className="sr-only">Loading</span>
+        </>
+      ) : null}
       {children}
     </button>
   ),

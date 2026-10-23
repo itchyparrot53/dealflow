@@ -65,6 +65,7 @@ export function LeftNav({
       id="app-nav"
       aria-label="Primary"
       data-testid="app-rail"
+      data-nav="rail"
       data-state={rail}
       data-print-hide
       className={cn(

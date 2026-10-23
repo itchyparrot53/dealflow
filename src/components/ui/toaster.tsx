@@ -14,17 +14,15 @@ export function Toaster(): React.ReactNode {
   const runAction = useToastStore((state) => state.runAction);
 
   return (
-    <section
-      aria-live="polite"
-      aria-label="Notifications"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex flex-col-reverse items-center gap-2 p-4 sm:inset-x-auto sm:right-4 sm:items-end"
-    >
+    <section className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex flex-col-reverse items-center gap-2 p-4 sm:inset-x-auto sm:right-4 sm:items-end">
       {toasts.map((toast) => (
+        // biome-ignore lint/a11y/noStaticElementInteractions: the role is chosen below (alert or status), which the rule cannot see
         <div
           key={toast.id}
           data-testid={toast.testId ?? "toast"}
-          role="status"
-          aria-live={toast.tone === "error" ? "assertive" : "polite"}
+          // Each toast is its own live region: errors assert, confirmations announce politely.
+          // There is no wrapper live region, so a batch update is not announced twice.
+          role={toast.tone === "error" ? "alert" : "status"}
           onMouseEnter={() => pause(toast.id)}
           onMouseLeave={() => resume(toast.id)}
           onFocus={() => pause(toast.id)}

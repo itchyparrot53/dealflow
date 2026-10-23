@@ -72,9 +72,10 @@ export function StageTrack({
   }
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: a fieldset is a form control group; these are standalone stage actions
     <div
       data-testid="stage-track"
-      role="listbox"
+      role="group"
       aria-label="Stage"
       className="flex h-6 w-full items-stretch gap-0.5"
     >
@@ -90,8 +91,7 @@ export function StageTrack({
           >
             <button
               type="button"
-              role="option"
-              aria-selected={chip.current}
+              aria-pressed={chip.current}
               aria-current={chip.current ? "step" : undefined}
               aria-label={`${chip.name}, ${chip.days} ${chip.days === 1 ? "day" : "days"}`}
               data-state={state}
@@ -101,7 +101,7 @@ export function StageTrack({
                 clipPath: single ? undefined : first ? FIRST_CLIP : last ? LAST_CLIP : MIDDLE_CLIP,
               }}
               className={cn(
-                "flex h-6 min-w-0 flex-1 basis-0 items-center justify-center overflow-hidden text-meta transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-70",
+                "flex h-6 min-w-0 flex-1 basis-0 items-center justify-center overflow-hidden text-meta transition-opacity hover:opacity-90 focus-visible:outline-offset-[-3px] disabled:cursor-default disabled:opacity-70",
                 first && "rounded-l-md",
                 last && "rounded-r-md",
                 state === "future"

@@ -290,7 +290,7 @@ export function CommandPalette({
                 <p className="px-3 py-4 text-sm text-muted-foreground">{STRINGS.search.idle}</p>
               ) : null
             ) : failed ? (
-              <p role="alert" className="px-3 py-4 text-sm text-destructive">
+              <p role="alert" className="px-3 py-4 text-sm text-danger">
                 {SEARCH_ERROR}
               </p>
             ) : pending ? (

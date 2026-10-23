@@ -1,5 +1,4 @@
 "use client";
-import posthog from "posthog-js";
 import type React from "react";
 import { useEffect } from "react";
 import { markReady } from "./capture";
@@ -26,36 +25,59 @@ export function TelemetryProvider({
   const { key, host, release, commit, disabled, consoleForwarding } = config;
   useEffect(() => {
     if (!telemetryEnabled({ key, host, disabled }) || doNotTrackEnabled()) return;
-    posthog.init(key, {
-      api_host: host,
-      person_profiles: "identified_only",
-      autocapture: true,
-      // "history_change" also captures client-side SPA navigations; `true` would only fire on the
-      // initial document load, and this provider lives in a persistent layout that never remounts.
-      capture_pageview: "history_change",
-      capture_pageleave: true,
-      // Autocapture Core Web Vitals (LCP/CLS/INP/FCP/TTFB) as $web_vitals events so prod perf is
-      // queryable without extra client code; the WebVitalsReporter adds a flat `web_vital` event too.
-      capture_performance: { web_vitals: true },
-      session_recording: sessionRecordingOptions,
-      // before_send must never throw into the SDK; keep telemetry fail-open even if scrubbing does.
-      before_send: (event) => {
-        try {
-          return scrubEvent(event);
-        } catch {
-          return event;
-        }
-      },
-      loaded: (ph) => ph.register({ release, commit }),
-    });
-    markReady(true);
-    const uninstallErrors = installGlobalHandlers();
-    // Console forwarding is opt-in (spec): only wrap console when the operator enabled it.
-    const uninstallConsole = consoleForwarding ? installConsoleForwarding() : () => {};
+    // A mutable box rather than a local boolean: the cleanup runs after this closure was created,
+    // and TypeScript otherwise narrows a `let cancelled = false` to always false inside it.
+    const state = { cancelled: false };
+    let teardown: (() => void) | null = null;
+
+    void (async () => {
+      try {
+        // Dynamic on purpose: when telemetry is off or DNT is on we return above, so the
+        // posthog-js chunk is never downloaded. Self-hosted installs carry no telemetry weight.
+        const { default: posthog } = await import("posthog-js");
+        if (state.cancelled) return;
+        posthog.init(key, {
+          api_host: host,
+          person_profiles: "identified_only",
+          autocapture: true,
+          // "history_change" also captures client-side SPA navigations; `true` would only fire on
+          // the initial document load, and this provider lives in a persistent layout that never
+          // remounts.
+          capture_pageview: "history_change",
+          capture_pageleave: true,
+          // Autocapture Core Web Vitals (LCP/CLS/INP/FCP/TTFB) as $web_vitals events so prod perf
+          // is queryable without extra client code; the WebVitalsReporter adds a flat `web_vital`
+          // event too.
+          capture_performance: { web_vitals: true },
+          session_recording: sessionRecordingOptions,
+          // before_send must never throw into the SDK; keep telemetry fail-open even if scrubbing
+          // does.
+          before_send: (event) => {
+            try {
+              return scrubEvent(event);
+            } catch {
+              return event;
+            }
+          },
+          loaded: (ph) => ph.register({ release, commit }),
+        });
+        markReady(true);
+        const uninstallErrors = installGlobalHandlers();
+        // Console forwarding is opt-in (spec): only wrap console when the operator enabled it.
+        const uninstallConsole = consoleForwarding ? installConsoleForwarding() : () => {};
+        teardown = () => {
+          uninstallErrors();
+          uninstallConsole();
+          markReady(false);
+        };
+      } catch {
+        // Telemetry is best-effort; a failed chunk load must not break the app.
+      }
+    })();
+
     return () => {
-      uninstallErrors();
-      uninstallConsole();
-      markReady(false);
+      state.cancelled = true;
+      teardown?.();
     };
   }, [key, host, release, commit, disabled, consoleForwarding]);
 

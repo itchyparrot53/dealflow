@@ -62,7 +62,15 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
         <FollowUpPromptProvider>
           <PageTitleProvider>
             <CreateDialogProvider>
-              <div data-density={prefs.density} className="flex h-screen flex-col">
+              <div data-density={prefs.density} className="flex h-dvh flex-col">
+                {/* First tab stop, so a keyboard user can jump the rail and top bar instead of
+                    tabbing through every destination on each page. */}
+                <a
+                  href="#main"
+                  className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:shadow-pop focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  Skip to content
+                </a>
                 <CsrfRefresher hasCsrf={hasCsrf} />
                 {ctx.actor.type === "admin" && <VersionBanner />}
                 <ReconnectBanner />
@@ -80,7 +88,11 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                       avatarUrl={ctx.actor.avatarUrl}
                       appearance={parseAppearance(prefs.ui.appearance)}
                     />
-                    <main className="min-w-0 flex-1 overflow-auto bg-background p-4 pb-24 md:pb-4">
+                    <main
+                      id="main"
+                      tabIndex={-1}
+                      className="min-w-0 flex-1 overflow-auto scroll-pb-24 bg-background p-4 pb-24 md:scroll-pb-0 md:pb-4"
+                    >
                       {children}
                     </main>
                   </div>
