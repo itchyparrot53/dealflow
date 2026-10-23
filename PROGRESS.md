@@ -1,15 +1,16 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-23 12:42
+Current: 1.1 · Last updated: 2026-10-23 12:44
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
+- Phase 1: 8ec54f5
 
 ## Tasks
 - [x] 0.1 Start Part 13: progress files, kit, baseline and environment
 - [x] 0.2 Outbound email inventory
-- [ ] 0.3 Phase 0 QA gate
+- [x] 0.3 Phase 0 QA gate
 - [ ] 1.1 Variables and escaping
 - [ ] 1.2 The layout renderer
 - [ ] 1.3 Data model, design service, logo and the public route
@@ -31,6 +32,7 @@ Current: 0.3 · Last updated: 2026-10-23 12:42
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
