@@ -3,6 +3,7 @@ import { PageHeading } from "@/components/shell/PageHeading";
 import { PageTitle } from "@/components/shell/pageTitle";
 import { STRINGS } from "@/constants/strings";
 import { createContext } from "@/server/trpc/context";
+import { ContactsViewSwitcher } from "../ContactsViewSwitcher";
 import { EngagementTimelineClient } from "./EngagementTimelineClient";
 
 export const metadata = { title: STRINGS.contacts.timelineHeading };
@@ -26,6 +27,9 @@ export default async function ContactsTimelinePage(): Promise<React.ReactNode> {
         ]}
         title={STRINGS.contacts.timelineHeading}
       />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ContactsViewSwitcher value="timeline" />
+      </div>
       <EngagementTimelineClient />
     </main>
   );

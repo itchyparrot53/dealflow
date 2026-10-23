@@ -27,7 +27,7 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U10 | Money and numbers | Chart axes show `$380,000.00`; products show `1200.00 USD`; org revenue shows `18500000.00` | 6.5 helpers everywhere | 1.4 | 1.4 | | |
 | U11 | Index pages | Documents, Insights and Projects repeat the top-bar title as a large H1 | 6.6 heading rule | 2.3 | 2.3 | | |
 | U12 | Settings | Content is capped near 520 to 700 px in a 1440 window; the nav is a long unscrolled list; pages must always scroll | 6.6 settings layout | 2.3 | 2.3 | | |
-| U13 | Contacts | People, Organizations and Timeline sit in a 180 px left panel on every list and record | view switcher in the toolbar (6.6) | 2.4 | | | |
+| U13 | Contacts | People, Organizations and Timeline sit in a 180 px left panel on every list and record | view switcher in the toolbar (6.6) | 2.4 | 2.4 | | |
 | U14 | Toolbars | Activities puts Export CSV on its own row; Projects uses full-width selects; the control order differs per page | 6.6 toolbar order | 2.5 | | | |
 | U15 | AI filter box | "Describe a filter" is a tall card wedged into the toolbar, and its placeholder talks about deals on Leads, People and Organizations | "Ask AI" popover, entity placeholders (6.6) | 2.5 | | | |
 | U16 | Board column header | "W. 1 excluded" and "Weighted $8…" truncate | 72 px, three lines (6.7.2) | 3.2 | | | |

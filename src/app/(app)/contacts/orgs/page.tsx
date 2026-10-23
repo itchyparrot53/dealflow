@@ -13,6 +13,7 @@ import { can } from "@/features/permissions/can";
 import { readBaseCurrency } from "@/features/settings/readBaseCurrency";
 import { createContext } from "@/server/trpc/context";
 import { createCaller } from "@/server/trpc/root";
+import { ContactsViewSwitcher } from "../ContactsViewSwitcher";
 
 export const metadata = { title: STRINGS.contacts.orgsHeading };
 
@@ -27,7 +28,8 @@ export default async function OrgsListPage(): Promise<React.ReactNode> {
   return (
     <main aria-label={STRINGS.contacts.orgsHeading} className="flex flex-col gap-4">
       <PageTitle title="Organizations" />
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ContactsViewSwitcher value="orgs" />
         <div className="flex flex-wrap items-center gap-2">
           {can(ctx.actor, "data.export") && (
             <ExportButton entity="organizations" columns={["name", "domain", "updatedAt"]} />

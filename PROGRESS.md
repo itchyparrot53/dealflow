@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-10-23 02:58
+Current: 2.5 · Last updated: 2026-10-23 03:00
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -22,7 +22,7 @@ Current: 2.4 · Last updated: 2026-10-23 02:58
 - [x] 2.1 Expandable rail with labels (U4)
 - [x] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
 - [x] 2.3 One heading per page and the settings layout (U11, U12)
-- [ ] 2.4 Contacts view switcher (U13)
+- [x] 2.4 Contacts view switcher (U13)
 - [ ] 2.5 Toolbar order and the Ask AI popover (U14, U15)
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Add deal dialog (U6)
@@ -114,6 +114,9 @@ Current: 2.4 · Last updated: 2026-10-23 02:58
 - 2.3: the settings layout is the 240 px nav column plus a content scroller. The nav is sticky and scrolls its own long list; the content publishes `data-testid="settings-scroll"` (used by spec 16), is `max-w-[960px] px-8 py-6`, and every settings page scrolls inside it. `SettingsPage` no longer caps itself at 800 px or pads, so panels fill the content width.
 - 2.3: the settings group labels are `text-meta font-semibold uppercase tracking-wide text-muted-foreground` with the `design-ok: settings group label` opt-out 6.6 requires, 16 px above each group.
 - 2.3: the sticky nav and the scroller are `h-[calc(100dvh-88px)]` rather than the contract's `calc(100dvh-56px)`: the shell's `main` adds 16 px padding on each side, so 88 is the real available height, and the shorter box keeps `main` itself from scrolling. Logged because it is the one number in 6.6 that had to follow the shell.
+
+- 2.4: the People / Organizations / Timeline rail is replaced by a `ViewSwitcher` (`ContactsViewSwitcher`) in each page's top toolbar, with the same three routes as links and the current view marked `aria-current="page"`. The contacts layout is now a pass-through, so person and organization records use the full width.
+- 2.4: `ContactsNav.tsx` and its test are deleted because the panel they tested is deliberately removed by U13; `ContactsViewSwitcher.test` covers the new control (three links, routes, active state). Nothing else imported the old nav.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.
