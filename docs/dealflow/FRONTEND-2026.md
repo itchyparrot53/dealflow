@@ -125,12 +125,14 @@ read-only against the code and the 1440/375 light and dark gallery. The highest-
 
 ## Verification
 
-- `pnpm typecheck`, `pnpm lint`, `pnpm build`: green (lint 15 warnings, 0 errors).
-- `pnpm test:unit`: full suite in the run record; targeted projects, UI primitives, deals,
-  notifications and telemetry suites pass.
+- `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm check:design`: green (lint 15 warnings, 0
+  errors; design 0 violations, 17 documented opt-outs).
+- `pnpm test:unit`: the full suite passes (see the final run log), including the new date tests and
+  the updated stage-track and form-field suites.
+- E2E: the affected specs (`06`, `07`, `08`, `12`, `15`, `16`) passed 40/40, then the complete
+  suite passed 60/60 at the final tree.
 - Gallery: `projects` and `project` recaptured at 1440 and 375 in both themes; the project screen is
   a real board, not the 404 that was shipped before this review.
-- E2E: `06` to `16` re-run after the batch (see the run log).
 
 ## Backlog, in order
 
