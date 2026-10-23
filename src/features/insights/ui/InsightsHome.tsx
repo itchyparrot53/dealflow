@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { tableStyles } from "@/components/ui/table-styles";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
 import { readCsrfToken } from "@/utils/csrfCookie";
@@ -16,6 +17,14 @@ import { defaultDefinition } from "./builderState";
 import { insightErrorMessage } from "./errorCopy";
 
 const S = INSIGHTS_STRINGS;
+const TABLE = {
+  name: "Name",
+  type: "Type",
+  updated: "Updated",
+  dashboard: "Dashboard",
+  report: "Report",
+  notShared: "No",
+} as const;
 
 // /insights: dashboards and reports in two tabs. "New" creates the row through its server action
 // and opens it; the list links to the builder or the dashboard view.
@@ -26,6 +35,7 @@ export interface ReportSummary {
   definitionText: string;
   shared: boolean;
   ownerName: string;
+  updatedAt: string;
 }
 
 export interface DashboardSummary {
@@ -35,6 +45,81 @@ export interface DashboardSummary {
   isDefault: boolean;
   ownerName: string;
   widgetCount: number;
+  updatedAt: string;
+}
+
+interface InsightsTableRow {
+  id: string;
+  name: string;
+  type: string;
+  ownerName: string;
+  shared: boolean;
+  updatedAt: string;
+  href: string;
+  testId: "dashboard-row" | "report-row";
+  isDefault?: boolean;
+}
+
+// The Updated column reads an ISO timestamp; UTC keeps the server and client render identical.
+function formatUpdated(iso: string): string {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function InsightsTable({ rows }: { rows: readonly InsightsTableRow[] }): React.ReactNode {
+  return (
+    <div className="overflow-x-auto rounded-lg border">
+      <table className={tableStyles.table}>
+        <thead className="bg-muted/40">
+          <tr>
+            <th className={tableStyles.th}>{TABLE.name}</th>
+            <th className={tableStyles.th}>{TABLE.type}</th>
+            <th className={tableStyles.th}>{S.ui.owner}</th>
+            <th className={tableStyles.th}>{S.ui.sharedBadge}</th>
+            <th className={tableStyles.th}>{TABLE.updated}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id} className="border-t hover:bg-accent/40">
+              <td className={tableStyles.td}>
+                <span className="flex min-w-0 items-center gap-2">
+                  <Link
+                    href={row.href}
+                    data-testid={row.testId}
+                    data-dashboard-id={row.testId === "dashboard-row" ? row.id : undefined}
+                    data-report-id={row.testId === "report-row" ? row.id : undefined}
+                    className={`${tableStyles.link} truncate font-medium`}
+                  >
+                    {row.name}
+                  </Link>
+                  {row.isDefault === true && <Badge>{S.ui.defaultBadge}</Badge>}
+                </span>
+              </td>
+              <td className={tableStyles.td}>{row.type}</td>
+              <td className={tableStyles.td}>{row.ownerName}</td>
+              <td className={tableStyles.td}>
+                {row.shared ? (
+                  <Badge variant="secondary">{S.ui.sharedBadge}</Badge>
+                ) : (
+                  <span className="text-muted-foreground">{TABLE.notShared}</span>
+                )}
+              </td>
+              <td className={`${tableStyles.td} tabular-nums text-muted-foreground`}>
+                {formatUpdated(row.updatedAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export function InsightsHome({
@@ -77,6 +162,28 @@ export function InsightsHome({
     }
     router.push(`/insights/dashboards/${response.value.id}`);
   }
+
+  const dashboardRows: InsightsTableRow[] = dashboards.map((dashboard) => ({
+    id: dashboard.id,
+    name: dashboard.name,
+    type: TABLE.dashboard,
+    ownerName: dashboard.ownerName,
+    shared: dashboard.shared,
+    updatedAt: dashboard.updatedAt,
+    href: `/insights/dashboards/${dashboard.id}`,
+    testId: "dashboard-row",
+    isDefault: dashboard.isDefault,
+  }));
+  const reportRows: InsightsTableRow[] = reports.map((report) => ({
+    id: report.id,
+    name: report.name,
+    type: TABLE.report,
+    ownerName: report.ownerName,
+    shared: report.shared,
+    updatedAt: report.updatedAt,
+    href: `/insights/reports/${report.id}`,
+    testId: "report-row",
+  }));
 
   return (
     <div data-testid="insights-home" className="space-y-4">
@@ -123,27 +230,7 @@ export function InsightsHome({
               className="py-10"
             />
           ) : (
-            <ul className="divide-y rounded-lg border">
-              {dashboards.map((dashboard) => (
-                <li key={dashboard.id}>
-                  <Link
-                    href={`/insights/dashboards/${dashboard.id}`}
-                    data-testid="dashboard-row"
-                    data-dashboard-id={dashboard.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-accent/50"
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="truncate font-medium">{dashboard.name}</span>
-                      {dashboard.isDefault && <Badge>{S.ui.defaultBadge}</Badge>}
-                      {dashboard.shared && <Badge variant="secondary">{S.ui.sharedBadge}</Badge>}
-                    </span>
-                    <span className="shrink-0 text-sm text-muted-foreground">
-                      {dashboard.ownerName} · {dashboard.widgetCount}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <InsightsTable rows={dashboardRows} />
           )}
         </TabsContent>
 
@@ -171,31 +258,7 @@ export function InsightsHome({
               className="py-10"
             />
           ) : (
-            <ul className="divide-y rounded-lg border">
-              {reports.map((report) => (
-                <li key={report.id}>
-                  <Link
-                    href={`/insights/reports/${report.id}`}
-                    data-testid="report-row"
-                    data-report-id={report.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-accent/50"
-                  >
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-2">
-                        <span className="truncate font-medium">{report.name}</span>
-                        {report.shared && <Badge variant="secondary">{S.ui.sharedBadge}</Badge>}
-                      </span>
-                      <span className="block truncate text-sm text-muted-foreground">
-                        {report.definitionText}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-sm text-muted-foreground">
-                      {report.ownerName}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <InsightsTable rows={reportRows} />
           )}
         </TabsContent>
       </Tabs>

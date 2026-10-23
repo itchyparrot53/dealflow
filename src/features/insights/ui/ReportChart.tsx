@@ -137,10 +137,12 @@ export function ReportChart({
   result,
   definition,
   description,
+  heightClassName = "h-72",
 }: {
   result: ReportResult;
   definition: ReportDefinition;
   description: string;
+  heightClassName?: string;
 }): React.ReactNode {
   if (definition.chart === "table") {
     return <ReportTable result={result} definition={definition} />;
@@ -180,7 +182,7 @@ export function ReportChart({
   if (definition.chart === "pie") {
     const pie = pieData(result);
     return (
-      <ChartContainer config={pie.config} className="h-72">
+      <ChartContainer config={pie.config} className={heightClassName}>
         <PieChart>
           <ChartTooltip
             content={
@@ -204,7 +206,7 @@ export function ReportChart({
   if (definition.chart === "line" || definition.chart === "area") {
     const Chart = definition.chart === "line" ? LineChart : AreaChart;
     return (
-      <ChartContainer config={config} className="h-72">
+      <ChartContainer config={config} className={heightClassName}>
         <Chart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           {axes}
           {names.map((name) => {
@@ -236,7 +238,7 @@ export function ReportChart({
   }
 
   return (
-    <ChartContainer config={config} className="h-72">
+    <ChartContainer config={config} className={heightClassName}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         {axes}
         {names.map((name) => {

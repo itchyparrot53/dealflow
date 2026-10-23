@@ -1,5 +1,5 @@
 "use client";
-import { TriangleAlert } from "lucide-react";
+import { CalendarX } from "lucide-react";
 import type React from "react";
 import { CustomFieldCell } from "@/components/data-table/CustomFieldCell";
 import { EmptyCell } from "@/components/ui/table-parts";
@@ -10,6 +10,8 @@ import { formatCurrency } from "@/lib/formatCurrency";
 import type { LeadRow } from "../leadRepo";
 import type { LeadColumn } from "./columns";
 import { nextActivityState } from "./nextActivityState";
+import { isStaleWithoutActivity, type NoActivityAge } from "./noActivityAge";
+import { sourceOriginLabel } from "./sourceOriginLabel";
 
 function fmtDate(d: Date | string | null): string {
   if (d === null) return "-";
@@ -20,14 +22,21 @@ function fmtDate(d: Date | string | null): string {
 function NextActivity({
   at,
   now,
+  age,
 }: {
   at: Date | string | null;
   now: Date | null;
+  age: NoActivityAge;
 }): React.ReactNode {
   if (at === null) {
+    // Calm by default. The warning tone only arrives once the lead has been quiet for two weeks,
+    // and only after the clock is set so SSR and the first client render agree.
+    const stale = now !== null && isStaleWithoutActivity(age, now);
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-warning-soft px-1.5 text-warning-soft-foreground">
-        <TriangleAlert aria-hidden="true" className="h-3.5 w-3.5" />
+      <span
+        className={`inline-flex items-center gap-1 ${stale ? "text-warning-soft-foreground" : "text-muted-foreground"}`}
+      >
+        <CalendarX aria-hidden="true" className="h-3.5 w-3.5" />
         No activity
       </span>
     );
@@ -81,11 +90,17 @@ export function LeadCell({
     case "title":
       return <span className="font-medium text-foreground">{row.title}</span>;
     case "nextActivity":
-      return <NextActivity at={row.nextActivityAt} now={now} />;
+      return (
+        <NextActivity
+          at={row.nextActivityAt}
+          now={now}
+          age={{ createdAt: row.createdAt, lastActivityAt: row.lastActivityAt }}
+        />
+      );
     case "labels":
       return <Labels chips={resolveLabels(row.labels)} />;
     case "sourceOrigin":
-      return <span className="text-muted-foreground">{row.sourceOrigin.replace(/_/g, " ")}</span>;
+      return <span className="text-muted-foreground">{sourceOriginLabel(row.sourceOrigin)}</span>;
     case "value":
       return (
         <span className="tabular-nums text-muted-foreground">

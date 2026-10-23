@@ -15,6 +15,7 @@ const row: LeadRow = {
   orgName: null,
   ownerName: "Nick",
   nextActivityAt: null,
+  lastActivityAt: null,
   createdAt: new Date("2026-06-01T00:00:00Z"),
   archivedAt: null,
   updatedAt: new Date("2026-06-01T00:00:00Z"),

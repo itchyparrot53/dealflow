@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.7 · Last updated: 2026-10-23 03:28
+Current: 3.8 · Last updated: 2026-10-23 03:30
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -32,7 +32,7 @@ Current: 3.7 · Last updated: 2026-10-23 03:28
 - [x] 3.4 Stage track, person and organization records (U20, U27)
 - [x] 3.5 Document editor (U21)
 - [x] 3.6 Inbox list and thread reader (U22, U23)
-- [ ] 3.7 Leads, dashboard, Insights index and projects (U24, U25, U26, U28)
+- [x] 3.7 Leads, dashboard, Insights index and projects (U24, U25, U26, U28)
 - [ ] 3.8 Phase 3 QA gate
 - [ ] 4.1 User guide update and PDFs
 - [ ] 4.2 End-to-end and gallery
@@ -151,6 +151,11 @@ Current: 3.7 · Last updated: 2026-10-23 03:28
 - 3.6: the thread row is the 6.7.6 five-column grid (32 px checkbox, 200 px sender, subject plus " · " snippet on one line, icon cell, 72 px right-aligned date) at 44 px; an unread row shows the 6 px dot and a semibold sender, attachment/lock/label chips sit in the icon cell, and the hover archive control moved there too. The row opens the thread, with an sr-only keyboard button inside it.
 - 3.6: the reader column is left-aligned, fills the space to the 300 px context sidebar with a 24 px gutter and caps messages at 880 px; each message card has an avatar/sender/address/To/date header with the small secondary "Show remote content" control, and its body is the white paper panel (`bg-white text-neutral-900 rounded-md border p-4`, `design-ok: paper panel`) in both themes. The email iframe sandbox and the masking tests are untouched. The follow-up select gained its visible "Follow-up" label.
 - 3.6: the label-chip overflow (`+n`) was not added because it lives outside the named files; the existing context sidebar is 288 px and was likewise out of scope. Both are noted for the review rather than silently dropped.
+
+- 3.7: leads show "No activity" as muted text with a `CalendarX` icon; the warning colour only appears once the lead has had no activity for 14 days since creation (a new `noActivityAge` helper fed by the existing `lastActivityAt` projection). Source origins use a label map ("Web form", "Manually created", "Import", "Outbound", "Referral", "API", unknown title-cased), unit-tested in `sourceOriginLabel.test`.
+- 3.7: the dashboard name is an inline-editable H1 (click or pencil, Enter/blur saves through the existing action, Escape cancels); the toolbar's right side holds the labelled Shared switch, "Add widget" (secondary) and "Save" (primary, disabled until dirty); widget cards are 320 px tall with a 14/600 title row and the overflow menu, and chart axes use the 6.5 compact formatters.
+- 3.7: the Insights index is a Name/Type/Owner/Shared/Updated table under the existing Dashboards/Reports tabs and EmptyState; projects keep their 6.6 toolbar, the project-page date pickers read "Not set" and the status select is `w-40`.
+- 3.7: one stale test assertion from 3.4 (`LeadSidebar` label size `text-xs` to `text-meta`) was corrected; no assertion was weakened.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

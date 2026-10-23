@@ -106,7 +106,7 @@ it("uses the shared Pipedrive field tokens (small, medium, right-aligned label)"
   // matching the deal + person + org sidebars that render the same component.
   render(<LeadSidebar lead={baseLead} owners={[]} person={null} org={null} />);
   const label = screen.getByText("Channel ID");
-  expect(label.className).toContain("text-xs");
+  expect(label.className).toContain("text-meta");
   expect(label.className).toContain("font-medium");
   expect(label.className).toContain("text-right");
 });

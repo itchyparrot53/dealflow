@@ -103,7 +103,12 @@ function ReportBody({
     );
   }
   const chart = (
-    <ReportChart result={result} definition={report.definition} description={report.name} />
+    <ReportChart
+      result={result}
+      definition={report.definition}
+      description={report.name}
+      heightClassName="h-60"
+    />
   );
   if (report.definition.chart === "table") return chart;
   return (
@@ -167,8 +172,8 @@ export function DashboardWidget({
 
   return (
     <Panel
-      title={title}
-      className="h-full"
+      title={<h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>}
+      className="h-80"
       actions={
         canEdit ? (
           <WidgetMenu
@@ -190,7 +195,11 @@ export function DashboardWidget({
         ) : undefined
       }
     >
-      <div data-testid="dashboard-widget" data-widget-id={widget.id} className="h-full">
+      <div
+        data-testid="dashboard-widget"
+        data-widget-id={widget.id}
+        className="h-60 overflow-y-auto"
+      >
         {error !== null && (
           <p role="alert" className="text-sm text-destructive">
             {insightErrorMessage(error)}

@@ -68,7 +68,7 @@ export function AddWidgetDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" data-testid="dashboard-add-widget">
+        <Button type="button" variant="secondary" data-testid="dashboard-add-widget">
           {S.ui.addWidget}
         </Button>
       </DialogTrigger>

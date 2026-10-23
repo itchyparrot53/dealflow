@@ -45,6 +45,7 @@ const leadRowSelection = {
   orgName: organizations.name,
   ownerName: users.name,
   nextActivityAt: leads.nextActivityAt,
+  lastActivityAt: leads.lastActivityAt,
   createdAt: leads.createdAt,
   archivedAt: leads.archivedAt,
   updatedAt: leads.updatedAt,
@@ -62,6 +63,8 @@ export interface LeadRow {
   orgName: string | null;
   ownerName: string | null;
   nextActivityAt: Date | null;
+  // Existing row field, used by the list's "No activity" age rule; no extra query is needed.
+  lastActivityAt: Date | null;
   createdAt: Date;
   archivedAt: Date | null;
   updatedAt: Date;

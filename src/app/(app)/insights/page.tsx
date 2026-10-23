@@ -38,6 +38,7 @@ export default async function InsightsPage(): Promise<React.ReactNode> {
           definitionText: describeDefinition(report.definition, {}),
           shared: report.shared,
           ownerName: report.ownerName,
+          updatedAt: report.updatedAt,
         }))}
         dashboards={dashboards.map((dashboard) => ({
           id: dashboard.id,
@@ -46,6 +47,7 @@ export default async function InsightsPage(): Promise<React.ReactNode> {
           isDefault: dashboard.isDefault,
           ownerName: dashboard.ownerName,
           widgetCount: dashboard.widgets.length,
+          updatedAt: dashboard.updatedAt,
         }))}
       />
     </main>

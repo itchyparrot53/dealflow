@@ -46,6 +46,7 @@ import { TaskCard } from "./TaskCard";
 import { TaskDialog } from "./TaskDialog";
 
 const S = PROJECTS_API_STRINGS.projects;
+const NOT_SET_PLACEHOLDER = "Not set";
 
 const STATUS_OPTIONS = [
   { value: "active", label: S.statuses.active },
@@ -259,6 +260,7 @@ export function ProjectBoard({
             options={STATUS_OPTIONS}
             ariaLabel={S.status}
             testId="project-status"
+            triggerClassName="w-40"
             disabled={!canEdit}
           />
           <PhasesPopover
@@ -307,7 +309,7 @@ export function ProjectBoard({
             value={startDate}
             onChange={(value) => void changeDate("startDate", value)}
             ariaLabel={S.startDate}
-            placeholder={S.startDate}
+            placeholder={NOT_SET_PLACEHOLDER}
           />
         </span>
         <span className="flex items-center gap-2">
@@ -316,7 +318,7 @@ export function ProjectBoard({
             value={dueDate}
             onChange={(value) => void changeDate("dueDate", value)}
             ariaLabel={S.dueDate}
-            placeholder={S.dueDate}
+            placeholder={NOT_SET_PLACEHOLDER}
           />
         </span>
         <span className="text-muted-foreground">
