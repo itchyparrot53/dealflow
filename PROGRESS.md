@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-10-23 14:00
+Current: 3.3 · Last updated: 2026-10-23 14:04
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -23,7 +23,7 @@ Current: 3.2 · Last updated: 2026-10-23 14:00
 - [x] 2.3 Quote and invoice emails
 - [x] 2.4 Phase 2 QA gate
 - [x] 3.1 Settings › Email design: Branding tab
-- [ ] 3.2 Templates tab and the template editor
+- [x] 3.2 Templates tab and the template editor
 - [ ] 3.3 Composer layout control and preview
 - [ ] 3.4 Phase 3 QA gate
 - [ ] 4.1 Email e2e spec and gallery
@@ -40,6 +40,9 @@ Current: 3.2 · Last updated: 2026-10-23 14:00
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 3.2: the editor is a full-height Sheet (the plan allowed a Sheet or a page section), with the fields on the left and the live server-rendered preview on the right. Variables insert at the subject/preheader cursor or into the body through TipTap's `insertToken`.
+- 3.2: Reset is an AlertDialog confirm; the test send uses `sendEmailTemplateTestAction` for the edited key, to the signed-in admin only.
+- 3.2: the server tests for unknown keys, non-admin saves, over-length fields and reset are the `templates.integration.test.ts` cases; the new `TemplateEditor.test` covers the editor's variable insertion, save wiring and reset confirm.
 - 3.1: the Branding tab is a client component with a debounced tRPC `emailDesign.previewDesign` query; the preview is a scriptless `sandbox=""` iframe at 600/375 px. Saving is a server action that re-checks admin, CSRF, Zod and the accent contrast in the service; the logo upload goes through FormData and is sniffed by magic bytes.
 - 3.1: a page for non-admins calls `notFound()` (the nav hides the item as well), matching the plan's "page calls notFound for non-admins".
 - 3.1: the audit target type is `settings` for email design and template updates, because the audit enum has no email member; the action names are `email_design.updated` and `email_template.updated`.
