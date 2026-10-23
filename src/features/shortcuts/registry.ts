@@ -42,6 +42,12 @@ export const SEQUENCE_MAP: Record<string, string> = Object.fromEntries(
 
 export const SEQUENCE_TIMEOUT_MS = SHORTCUT_SEQUENCE_MS;
 
+// Single-key commands that are not part of a g/n sequence. They live here too, so the help sheet
+// lists every shortcut and one cannot exist without the other.
+export const SINGLE_KEY_SHORTCUTS: readonly { keys: string; label: string }[] = [
+  { keys: "[", label: "Toggle sidebar" },
+];
+
 export interface ShortcutHelpGroup {
   title: string;
   items: { keys: string; label: string }[];
@@ -50,9 +56,12 @@ export interface ShortcutHelpGroup {
 export const SHORTCUT_HELP_GROUPS: readonly ShortcutHelpGroup[] = [
   {
     title: "Navigation",
-    items: SHORTCUT_SEQUENCES.filter((sequence) => sequence.keys.startsWith("g ")).map(
-      (sequence) => ({ keys: sequence.keys, label: sequence.label }),
-    ),
+    items: [
+      ...SHORTCUT_SEQUENCES.filter((sequence) => sequence.keys.startsWith("g ")).map(
+        (sequence) => ({ keys: sequence.keys, label: sequence.label }),
+      ),
+      ...SINGLE_KEY_SHORTCUTS,
+    ],
   },
   {
     title: "Create",

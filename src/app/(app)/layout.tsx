@@ -6,6 +6,7 @@ import { CsrfRefresher } from "@/components/shell/CsrfRefresher";
 import { LeftNav } from "@/components/shell/LeftNav";
 import { PageTitleProvider } from "@/components/shell/pageTitle";
 import { ReconnectBanner } from "@/components/shell/ReconnectBanner";
+import { normalizeRailState, RAIL_COOKIE } from "@/components/shell/railState";
 import { TopBar } from "@/components/shell/TopBar";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/config/env";
@@ -37,6 +38,8 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   // interface preferences remain; default comfortable when no row exists (DealCard/Board read the
   // density via the data-density attribute).
   const prefs = await getPreferencesForActor(db, ctx.actor.id);
+  // 6.4: read on the server so the rail's width is right on the first paint (no layout shift).
+  const rail = normalizeRailState(jar.get(RAIL_COOKIE)?.value);
   return (
     <ActionErrorProvider>
       <IdentifyUser
@@ -68,7 +71,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                   {/* The rail runs the full viewport height, beside the top bar (Pipedrive). Below md
                       it is replaced by the bottom navigation (BottomNav). */}
                   <div className="hidden h-full md:block">
-                    <LeftNav />
+                    <LeftNav initialRail={rail} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <TopBar

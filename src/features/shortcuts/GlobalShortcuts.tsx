@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
+import { RAIL_TOGGLE_EVENT } from "@/components/shell/railState";
 import { NAV_ITEMS } from "@/constants/nav";
 import { type CreateKind, useCreateDialog } from "@/features/create/CreateDialogProvider";
 import { navHrefForKey } from "./navShortcut";
@@ -42,6 +43,11 @@ export function GlobalShortcuts(): React.ReactNode {
       }
       if (typing || overlay) {
         matcher.reset();
+        return;
+      }
+      if (e.key === "[") {
+        e.preventDefault();
+        window.dispatchEvent(new Event(RAIL_TOGGLE_EVENT));
         return;
       }
       const href = navHrefForKey(e.key, NAV_ITEMS);

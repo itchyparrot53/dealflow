@@ -1,12 +1,12 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-10-23 02:52
+Current: 2.2 · Last updated: 2026-10-23 02:54
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
 - Phase 1: d6cd01e746f13095fa09b221f12d140414296ae6
-- Phase 2: fae8ad9
+- Phase 2: fae8ad915127f39b5171ed80a91cb599d659f9eb
 
 ## Tasks
 - [x] 0.1 Start Part 12: progress files, kit, baseline and environment
@@ -19,7 +19,7 @@ Current: 2.1 · Last updated: 2026-10-23 02:52
 - [x] 1.5 Tables, empty states and the bell badge (U29, U30)
 - [x] 1.6 AI JSON reliability and the humane error (U7)
 - [x] 1.7 Phase 1 QA gate
-- [ ] 2.1 Expandable rail with labels (U4)
+- [x] 2.1 Expandable rail with labels (U4)
 - [ ] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
 - [ ] 2.3 One heading per page and the settings layout (U11, U12)
 - [ ] 2.4 Contacts view switcher (U13)
@@ -99,6 +99,12 @@ Current: 2.1 · Last updated: 2026-10-23 02:52
 
 - 1.7: gate fixes with no app behaviour change: the polish spec settles a dialog after its data queries before measuring (the Add deal dialog was still growing), the notes-to-activities retry key is read in its effect so the exhaustive-deps rule sees it as intentional, the 10 px badge class sits on the line carrying its `design-ok: badge digit` marker, and biome reflowed the files the 1.1 to 1.6 migrations touched.
 - 1.7: the gate ran on the committed Phase 1 tree (the Phase 2 rail and hidden-UI work was set aside and restored afterwards), so the evidence belongs to this phase.
+
+- 2.1: the rail is `w-[232px]` expanded and `w-14` collapsed, animating `transition-[width]` over 200 ms with `motion-reduce:transition-none`. The preference is the `wd_rail` cookie (path `/`, one year, SameSite=Lax), read by the app layout on the server and passed to `LeftNav` as `initialRail` so the first paint has the right width; the default is expanded.
+- 2.1: expanded rows are 40 px (`mx-2 h-10 gap-3 rounded-lg px-3`) with 20 px icons and `text-sm font-medium` labels at 80% white (100% active); collapsed keeps Part 11's 56 px rail with 44 px tiles, 24 px icons, the 28 px reverse mark and tooltips. The header is 56 px: the reverse horizontal logo at 24 px in expanded, the mark in collapsed.
+- 2.1: the toggle is the last rail row, 40 px: `ChevronsLeft` + "Collapse" expanded, `ChevronsRight` with the "Expand sidebar" tooltip collapsed, `aria-expanded` and `aria-controls="app-nav"` on both. `[` is in the shortcut registry (Navigation group, "Toggle sidebar"), handled by GlobalShortcuts and ignored while typing or in an overlay, and it toggles through the same `warpdrive:toggle-rail` event as the button.
+- 2.1: `e2e/design/styleChecks.ts` `railCheck` is now the new contract: fill unchanged, 232 expanded, 56 after the toggle, 232 again so the rest of the gallery keeps the default; the Decision is logged here because the Part 11 check expected a fixed 56.
+- 2.1: changed tests: `LeftNav.test` is rewritten for the two states (widths, logo/mark, visible labels, toggle ARIA, cookie write, server-provided initial state); `railState.test` covers parsing and the cookie; `GlobalShortcuts.test` gains the `[` key and its typing guard.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

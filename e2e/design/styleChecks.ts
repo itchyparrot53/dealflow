@@ -62,8 +62,22 @@ async function bodyCheck(page: Page): Promise<void> {
 async function railCheck(page: Page): Promise<void> {
   const rail = await computed(page, '[data-testid="app-rail"]');
   expect(rail.backgroundColor, "rail fill").toBe("rgb(33, 28, 82)");
-  expect(rail.width, "rail width").toBe(56);
   expect(rail.height, "rail fills the viewport").toBe(rail.viewportHeight);
+  // Part 12, 6.4: expanded by default, 56 px while collapsed, and back to 232 for the rest of the
+  // screen (the cookie would otherwise leave every later gallery screen collapsed).
+  expect(rail.width, "rail starts expanded").toBe(232);
+  await page.getByTestId("rail-toggle").click();
+  await expect
+    .poll(async () => (await computed(page, '[data-testid="app-rail"]')).width, {
+      message: "rail collapses to 56 px",
+    })
+    .toBe(56);
+  await page.getByTestId("rail-toggle").click();
+  await expect
+    .poll(async () => (await computed(page, '[data-testid="app-rail"]')).width, {
+      message: "rail expands again to 232 px",
+    })
+    .toBe(232);
 }
 
 async function activeRailTileCheck(page: Page): Promise<void> {

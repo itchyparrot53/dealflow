@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { RAIL_TOGGLE_EVENT } from "@/components/shell/railState";
 import { NAV_ITEMS } from "@/constants/nav";
 import { GlobalShortcuts } from "./GlobalShortcuts";
 
@@ -60,5 +61,25 @@ describe("GlobalShortcuts number keys", () => {
     view.unmount();
     fireEvent.keyDown(window, { key: "1" });
     expect(push).not.toHaveBeenCalled();
+  });
+
+  test("[ toggles the rail outside a field", () => {
+    const listener = vi.fn();
+    window.addEventListener(RAIL_TOGGLE_EVENT, listener);
+    render(<GlobalShortcuts />);
+    fireEvent.keyDown(window, { key: "[" });
+    expect(listener).toHaveBeenCalledTimes(1);
+    window.removeEventListener(RAIL_TOGGLE_EVENT, listener);
+  });
+
+  test("[ is ignored inside a text field", () => {
+    const listener = vi.fn();
+    window.addEventListener(RAIL_TOGGLE_EVENT, listener);
+    render(<GlobalShortcuts />);
+    const input = document.createElement("input");
+    document.body.append(input);
+    fireEvent.keyDown(input, { key: "[" });
+    expect(listener).not.toHaveBeenCalled();
+    window.removeEventListener(RAIL_TOGGLE_EVENT, listener);
   });
 });

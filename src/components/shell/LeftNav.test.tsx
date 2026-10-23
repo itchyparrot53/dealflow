@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
-import { renderToStaticMarkup } from "react-dom/server";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { isNavActive, LeftNav } from "./LeftNav";
 
@@ -8,37 +8,68 @@ import { isNavActive, LeftNav } from "./LeftNav";
 // component renders outside an app-router provider.
 vi.mock("next/navigation", () => ({ usePathname: () => "/pipeline" }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // The toggle writes the preference cookie; clear it so one test cannot seed the next.
+  for (const entry of document.cookie.split(";")) {
+    const name = entry.split("=")[0]?.trim();
+    if (name !== undefined && name !== "") {
+      document.cookie = `${name}=; path=/; max-age=0`;
+    }
+  }
+});
 
-describe("LeftNav (Pipedrive rail)", () => {
-  test("is a 56 px indigo rail with the app mark at the top", () => {
+describe("LeftNav (expandable rail)", () => {
+  test("starts expanded at 232 px with the horizontal logo and visible labels", () => {
     render(<LeftNav />);
     const nav = screen.getByRole("navigation", { name: "Primary" });
     expect(nav.getAttribute("data-testid")).toBe("app-rail");
-    expect(nav.className).toContain("w-14");
+    expect(nav.getAttribute("data-state")).toBe("expanded");
+    expect(nav.className).toContain("w-[232px]");
     expect(nav.className).toContain("bg-rail");
     expect(nav.className).toContain("h-full");
+    expect(nav.className).toContain("transition-[width]");
     const home = screen.getByRole("link", { name: "Dealflow home" });
     expect(home.getAttribute("href")).toBe("/");
+    const logo = screen.getByRole("img", { name: "Dealflow" });
+    expect(logo.getAttribute("src")).toBe("/brand/dealflow-logo-horizontal-reverse.svg");
+    expect(logo.getAttribute("height")).toBe("24");
+    // The label is on screen, and the link still keeps its accessible name.
+    const pipeline = screen.getByRole("link", { name: "Pipeline" });
+    expect(pipeline.textContent).toBe("Pipeline");
+    expect(pipeline.querySelector("svg")).not.toBeNull();
+  });
+
+  test("collapses to the 56 px icon rail and remembers the choice", async () => {
+    const user = userEvent.setup();
+    render(<LeftNav />);
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const toggle = screen.getByTestId("rail-toggle");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.getAttribute("aria-controls")).toBe("app-nav");
+    expect(toggle.textContent).toBe("Collapse");
+
+    await user.click(toggle);
+    expect(nav.getAttribute("data-state")).toBe("collapsed");
+    expect(nav.className).toContain("w-14");
+    expect(screen.getByRole("link", { name: "Pipeline" }).textContent).toBe("");
     const mark = screen.getByRole("img", { name: "Dealflow" });
     expect(mark.getAttribute("src")).toBe("/brand/dealflow-mark-reverse.svg");
-    expect(mark.getAttribute("width")).toBe("28");
     expect(mark.getAttribute("height")).toBe("28");
-    // The old cell forced the raster icon white; the reverse SVG carries the brand colours.
-    expect(mark.className).not.toContain("brightness-0");
+    const collapsedToggle = screen.getByTestId("rail-toggle");
+    expect(collapsedToggle.getAttribute("aria-expanded")).toBe("false");
+    expect(collapsedToggle.getAttribute("aria-label")).toBe("Expand sidebar");
+    expect(document.cookie).toContain("wd_rail=collapsed");
   });
 
-  test("renders every destination as an icon-only 44 px link with its label as the name", () => {
-    render(<LeftNav />);
-    const pipeline = screen.getByRole("link", { name: "Pipeline" });
-    expect(pipeline.className).toContain("size-11");
-    expect(pipeline.className).toContain("rounded-lg");
-    expect(pipeline.querySelector("svg")).not.toBeNull();
-    // The rail no longer paints text labels; the label is the accessible name (tooltip on hover).
-    expect(pipeline.textContent).toBe("");
+  test("respects the server-provided initial state", () => {
+    render(<LeftNav initialRail="collapsed" />);
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    expect(nav.getAttribute("data-state")).toBe("collapsed");
+    expect(nav.className).toContain("w-14");
   });
 
-  test("marks the active section with the violet tile and aria-current", () => {
+  test("marks the active section violet with aria-current", () => {
     render(<LeftNav />);
     const pipeline = screen.getByRole("link", { name: "Pipeline" });
     expect(pipeline.getAttribute("aria-current")).toBe("page");
@@ -56,11 +87,5 @@ describe("LeftNav (Pipedrive rail)", () => {
     expect(isNavActive("/deals/abc", "/pipeline")).toBe(true);
     expect(isNavActive("/deals", "/pipeline")).toBe(true);
     expect(isNavActive("/contacts/people", "/pipeline")).toBe(false);
-  });
-
-  test("has no collapse control: the rail is always icon-only", () => {
-    render(<LeftNav />);
-    expect(screen.queryByRole("button", { name: /sidebar/i })).toBeNull();
-    expect(renderToStaticMarkup(<LeftNav />)).not.toMatch(/w-56\b/);
   });
 });
