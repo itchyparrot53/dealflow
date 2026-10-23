@@ -28,10 +28,10 @@ vi.mock("@/lib/trpc-client", () => {
   });
   return {
     trpc: {
-    emailDesign: {
-      get: { useQuery: () => ({ data: undefined }) },
-      previewCustomer: { useQuery: () => ({ data: undefined }) },
-    },
+      emailDesign: {
+        get: { useQuery: () => ({ data: undefined }) },
+        previewCustomer: { useQuery: () => ({ data: undefined }) },
+      },
       email: {
         inbox: { list: { useInfiniteQuery: emptyInfinite } },
         folders: {

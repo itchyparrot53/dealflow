@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-10-23 14:07
+Current: 4.1 · Last updated: 2026-10-23 14:12
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -25,7 +25,7 @@ Current: 3.4 · Last updated: 2026-10-23 14:07
 - [x] 3.1 Settings › Email design: Branding tab
 - [x] 3.2 Templates tab and the template editor
 - [x] 3.3 Composer layout control and preview
-- [ ] 3.4 Phase 3 QA gate
+- [x] 3.4 Phase 3 QA gate
 - [ ] 4.1 Email e2e spec and gallery
 - [ ] 4.2 Docs
 - [ ] 4.3 End-to-end, integration suite and smoke
@@ -34,12 +34,16 @@ Current: 3.4 · Last updated: 2026-10-23 14:07
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings) · build ok · unit 5484/5484 in 861 files · check:design 0 violations, 17 opt-outs · e2e/17-email.spec.ts 6/6
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5479/5479 in 859 files · email, email-design, documents, notifications, scheduling, automations integration 467/467 in 96 files · e2e 01, 02, 06, 08, 09, 10 7/7
 - Phase 1 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5480/5480 in 860 files · src/features/email-design/*.integration.test.ts 7/7
 - Phase 0 gate: commands green · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 3.4: e2e 17 was written for this gate (as the plan allows) and passes its six tests; the send tests connect the fake IMAP mailbox themselves, read the decoded MIME from the fake Sent folder, and the invite test types into TipTap instead of filling the contenteditable so ProseMirror updates its document.
+- 3.4: the branding test reads the accent from the live quote preview (the composer's own new email has no button to colour) and the wire assertions cover the marker, the public logo URL with a 200 image/png response, and the body.
+- 3.4: changed tests: the inbox compose page's trpc mock gained `emailDesign`, and the email list test mocks were reformatted after the same insertion.
 - 3.3: the footer shows the resolved default (branded for a new email, the design's reply layout for a reply) and lets the author override it per message; the send input carries the chosen `layout`, and an untouched pick still resolves server-side.
 - 3.3: Preview opens a Dialog whose iframe comes from `emailDesign.previewCustomer`, which applies the same signature + wrap as the send path, at 600 or 375 px; the iframe is `sandbox=""`.
 - 3.3: changed tests: the composer suites' trpc mocks gained `emailDesign.get`/`previewCustomer`, and a new `ComposerFooter.layout.test` covers the layout trigger, the three options and the preview callback.
