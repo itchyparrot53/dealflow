@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
-STATUS: IN PROGRESS
-Current: 4.6 · Last updated: 2026-10-23 06:32
+STATUS: COMPLETE
+Current: 4.6 · Last updated: 2026-10-23 06:36
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -40,7 +40,7 @@ Current: 4.6 · Last updated: 2026-10-23 06:32
 - [x] 4.3 Integration suite and smoke
 - [x] 4.4 Independent review
 - [x] 4.5 Final checklist
-- [ ] 4.6 Final report and completion
+- [x] 4.6 Final report and completion
 
 ## QA log
 - Independent review: subagent (fresh context, .dsh/qa.md) round 1: QA RESULT FAIL · 1 blocker / 2 majors / 7 minors · fixed 1 blocker, 2 majors and 7 minors · after the fixes: typecheck ok, lint ok, unit 5433/5433 in 854 files, check:design 0 violations, e2e 60/60, integration 2097/2097
@@ -196,6 +196,38 @@ Current: 4.6 · Last updated: 2026-10-23 06:32
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
+
+### Definition of done
+
+1. PASS - all 30 rows of 6.1 are implemented as 6.2 to 6.9 describe, and POLISH.md lists each with its task and commit; the one accepted deviation is the Add deal currency (a read-only badge, because the create input has no currency field).
+2. PASS - every `DialogContent` uses the 6.2 anatomy; `check:design` is 0 with `dialog-anatomy` and `select-long-list` active, and 5 opt-outs were added (under the 15 allowed).
+3. PASS - every Select scrolls inside its viewport, and the currency and time zone pickers are searchable Comboboxes.
+4. PASS - the rail expands to 232 px with labels, collapses to 56 px, remembers the choice in `wd_rail`, and defaults to expanded; `[` toggles it.
+5. PASS - install, offline and push UI is hidden behind `NEXT_PUBLIC_PWA_UI` (off by default) without deleting the worker, the `/offline` page, the offline store or the push code; the e2e build turns it on and spec 14 passes.
+6. PASS - AI JSON survives prose-wrapped, fenced and reasoning-truncated replies, with `E_AI_012`, a doubled-budget retry and the humane error plus Try again.
+7. PASS - `e2e/16-polish.spec.ts` passes its ten checks; specs 00 to 15 pass with only the logged contract updates.
+8. PASS - the gallery has 93 PNGs (73 Part 11 + 20 polish), and `docs/user-guide` is updated with the new rail, Ask AI, view switcher and document actions, with all 15 PDFs rebuilt.
+9. PASS - typecheck, lint, build, unit (5433), integration (2097), smoke and one independent review (round 1 findings fixed) are green.
+
+### Owner actions
+
+1. Rebuild the live install to see Part 12: `docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build` (no `-v`).
+2. Review the polish gallery in both themes: `open e2e/screenshots/design` and look at `polish-*`.
+3. Regenerate the user-guide screenshots later with `pnpm docs:screenshots` against a dev-mode seeded app; the current guide images still show the pre-Part-12 rail.
+4. Carried environment items: set or blank the three `GOOGLE_*` values in `.env`, add the currency rates you need in Settings > Currencies, and run `pnpm push:vapid` for real web push.
+
+### Decisions worth reviewing
+
+- `CONTRACT CHANGE` (authorised in section 3): the 6.2 dialog anatomy, the expandable rail, and the 72 px board column header.
+- `CONTRACT CHANGE` (not in section 3, accepted): the Add deal value row keeps the workspace base-currency badge instead of a currency Combobox; `dealCreateInput` has no currency field, so a picker would be a dead control or a data change.
+- Changed tests (no weakened assertions): the entity-shell width assertion, the Combobox "Search…" placeholders (unit and e2e 07/10), `formatCurrency` keeping cents, the two "+ Activity" buttons, future stage labels, the Add deal layout, the rail/shortcut suites, the design checks (rail widths, active row 216x40, 72 px header, focus order), e2e 07's Combobox button role, `FieldRow`/`LeadSidebar` label sizes, the usage fixture's `finishReason`, and the remote-content tests moved from MessageBodyFrame to ReaderMessageCard.
+- The projects table's sticky header plus a wide table needed `contain:paint` on its scroll wrapper (Chromium counted the sticky cells in the document width); the 375 px check was not loosened.
+
+### Open issues
+
+- The user-guide screenshots still show the old rail until the owner runs `pnpm docs:screenshots` (owner action 3).
+- The Add deal currency deviation above.
+- The report table's "None" group labels stay a value label rather than the shared EmptyCell; that is deliberate.
 
 ### Checklist (section 11)
 
