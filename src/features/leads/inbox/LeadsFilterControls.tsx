@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
+import { AiFilterButton } from "@/features/ai/ui/AiFilterButton";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
 import type { LeadConditionInput } from "../schemas";
@@ -45,7 +45,7 @@ export function LeadsFilterControls({
           onCondition(next);
         }}
       />
-      <AiFilterBox
+      <AiFilterButton
         entity="lead"
         onDefinition={(definition) => {
           const parsed = savedFilterDefinitionSchema("lead").safeParse(definition);

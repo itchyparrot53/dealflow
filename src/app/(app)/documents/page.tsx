@@ -27,15 +27,23 @@ export default async function DocumentsPage(): Promise<ReactNode> {
   return (
     <div className="space-y-4">
       <PageTitle title="Documents" />
-      <div className="flex items-center justify-end gap-2">
-        {can(actor, "data.export") && (
-          <ExportButton
-            entity="invoices"
-            columns={["number", "title", "status", "total", "currency", "dueDate", "customerName"]}
-          />
-        )}
-      </div>
       <DocumentsList
+        exportSlot={
+          can(actor, "data.export") ? (
+            <ExportButton
+              entity="invoices"
+              columns={[
+                "number",
+                "title",
+                "status",
+                "total",
+                "currency",
+                "dueDate",
+                "customerName",
+              ]}
+            />
+          ) : undefined
+        }
         rows={result.value.rows}
         base={result.value.base}
         outstandingTotal={result.value.outstandingTotal}

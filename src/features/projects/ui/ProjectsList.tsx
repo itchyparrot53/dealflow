@@ -85,7 +85,7 @@ export function ProjectsList({
           onChange={(value) => push({ status: value })}
           options={STATUS_OPTIONS}
           ariaLabel={S.status}
-          triggerClassName="h-8"
+          triggerClassName="h-8 w-44"
         />
         <Select
           value={filters.ownerId ?? ""}
@@ -95,7 +95,7 @@ export function ProjectsList({
             ...users.map((user) => ({ value: user.id, label: user.name })),
           ]}
           ariaLabel={S.owner}
-          triggerClassName="h-8"
+          triggerClassName="h-8 w-44"
         />
       </div>
 

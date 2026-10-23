@@ -58,6 +58,8 @@ interface Props {
   base: string;
   outstandingTotal: string;
   excludedCurrencies: string[];
+  // The page's Export CSV lives in this toolbar, not on a line of its own (6.6, U14).
+  exportSlot?: React.ReactNode;
 }
 
 export function DocumentsList({
@@ -65,6 +67,7 @@ export function DocumentsList({
   base,
   outstandingTotal,
   excludedCurrencies,
+  exportSlot,
 }: Props): React.ReactNode {
   const [kind, setKind] = useState<DocKind>("quote");
   const [status, setStatus] = useState<string>("all");
@@ -89,13 +92,16 @@ export function DocumentsList({
           <TabsContent forceMount value="quote" className="hidden" />
           <TabsContent forceMount value="invoice" className="hidden" />
         </Tabs>
-        <div className="w-48">
-          <Select
-            value={status}
-            onChange={setStatus}
-            options={STATUS_OPTIONS}
-            ariaLabel={S.statusFilter}
-          />
+        <div className="flex items-center gap-2">
+          {exportSlot}
+          <div className="w-48">
+            <Select
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTIONS}
+              ariaLabel={S.statusFilter}
+            />
+          </div>
         </div>
       </div>
 

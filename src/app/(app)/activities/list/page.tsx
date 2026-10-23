@@ -23,15 +23,18 @@ export default async function ActivityListPage(): Promise<React.ReactNode> {
   return (
     <main aria-label="Activities" className="h-full">
       <PageTitle title="Activities" />
-      <div className="flex justify-end p-2">
-        {can(ctx.actor, "data.export") && (
-          <ExportButton
-            entity="activities"
-            columns={["subject", "typeKey", "done", "dueAt", "assigneeName", "dealTitle"]}
-          />
-        )}
-      </div>
-      <ActivitiesTable currentUserId={ctx.actor.id} initialColumns={prefs.ui.activitiesView} />
+      <ActivitiesTable
+        currentUserId={ctx.actor.id}
+        initialColumns={prefs.ui.activitiesView}
+        exportSlot={
+          can(ctx.actor, "data.export") ? (
+            <ExportButton
+              entity="activities"
+              columns={["subject", "typeKey", "done", "dueAt", "assigneeName", "dealTitle"]}
+            />
+          ) : undefined
+        }
+      />
     </main>
   );
 }

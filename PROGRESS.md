@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-10-23 03:00
+Current: 2.6 · Last updated: 2026-10-23 03:04
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -23,7 +23,7 @@ Current: 2.5 · Last updated: 2026-10-23 03:00
 - [x] 2.2 Hide install, offline and push UI behind NEXT_PUBLIC_PWA_UI (U5)
 - [x] 2.3 One heading per page and the settings layout (U11, U12)
 - [x] 2.4 Contacts view switcher (U13)
-- [ ] 2.5 Toolbar order and the Ask AI popover (U14, U15)
+- [x] 2.5 Toolbar order and the Ask AI popover (U14, U15)
 - [ ] 2.6 Phase 2 QA gate
 - [ ] 3.1 Add deal dialog (U6)
 - [ ] 3.2 Board column header and card score (U16, U17)
@@ -117,6 +117,11 @@ Current: 2.5 · Last updated: 2026-10-23 03:00
 
 - 2.4: the People / Organizations / Timeline rail is replaced by a `ViewSwitcher` (`ContactsViewSwitcher`) in each page's top toolbar, with the same three routes as links and the current view marked `aria-current="page"`. The contacts layout is now a pass-through, so person and organization records use the full width.
 - 2.4: `ContactsNav.tsx` and its test are deleted because the panel they tested is deliberately removed by U13; `ContactsViewSwitcher.test` covers the new control (three links, routes, active state). Nothing else imported the old nav.
+
+- 2.5: the inline "Describe a filter" card on Leads, People and Organizations is now an "Ask AI" toolbar button (`Sparkles`) opening a 360 px popover with a `FormField` "Describe a filter", a 3-row textarea and the primary "Generate filter". The shared `useAiFilter` hook keeps the action, explanation, retry and error identical to the inline box. The pipeline's Create filter modal keeps the inline box on purpose (spec 04 drives it).
+- 2.5: each entity has its own placeholder: deals "Open deals over 10,000 closing this month", leads "Leads from web forms with no activity", people "People at North Systems added this year", organizations "Organizations in Media with open deals".
+- 2.5: toolbar order fixes: Activities' Export CSV moved from its own row into the filter row (`exportSlot`), Documents' export joined its tabs/status row, and the Projects filters are `w-44` instead of stretching. The lists already ordered saved views, Filter and Ask AI on the right with the count and primary action on the left; Leads, People and Organizations now end that right group with Ask AI.
+- 2.5: no existing test typed into the inline box outside the pipeline modal, so spec 04 is unchanged; `AiFilterButton.test` covers the trigger, the popover field, the entity placeholder and the action.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

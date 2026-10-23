@@ -62,9 +62,12 @@ const ACTIVITY_COLUMNS: readonly ColumnDef[] = [
 export function ActivitiesTable({
   currentUserId,
   initialColumns,
+  exportSlot,
 }: {
   currentUserId: string;
   initialColumns?: string[];
+  // The page's Export CSV, placed in the toolbar row instead of its own line (6.6, U14).
+  exportSlot?: React.ReactNode;
 }): React.ReactNode {
   const { filter, setFilter, ready } = useActivityListFilter(currentUserId);
   const [modalOpen, setModalOpen] = useState(false);
@@ -228,8 +231,9 @@ export function ActivitiesTable({
         )}
       </div>
 
-      <div className="mb-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <ActivitiesFilters filter={filter} onChange={setFilter} owners={owners} types={types} />
+        {exportSlot === undefined ? null : <div className="ml-auto">{exportSlot}</div>}
       </div>
 
       {selection.count > 0 && (

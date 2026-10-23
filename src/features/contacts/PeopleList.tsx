@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
 import { PRODUCTIVITY_STRINGS } from "@/constants/productivityStrings";
 import { STRINGS } from "@/constants/strings";
-import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
+import { AiFilterButton } from "@/features/ai/ui/AiFilterButton";
 import { customFieldColumns } from "@/features/custom-fields/listColumns";
 import {
   type CustomFieldRefLabels,
@@ -228,7 +228,7 @@ export function PeopleList({
               setFilter(def);
             }}
           />
-          <AiFilterBox
+          <AiFilterButton
             entity="person"
             onDefinition={(definition) => {
               const parsed = savedFilterDefinitionSchema("person").safeParse(definition);

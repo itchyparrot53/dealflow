@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { AiFilterBox } from "@/features/ai/ui/AiFilterBox";
+import { AiFilterButton } from "@/features/ai/ui/AiFilterButton";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import type { SavedView } from "@/features/saved-filters/savedView";
 import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
@@ -37,7 +37,7 @@ export function OrgsListToolbar({
         appliedDefinition={filter}
         onApply={onApplyFilter}
       />
-      <AiFilterBox
+      <AiFilterButton
         entity="organization"
         onDefinition={(definition) => {
           const parsed = savedFilterDefinitionSchema("organization").safeParse(definition);
