@@ -5,6 +5,12 @@ import { eq, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { files } from "@/db/schema";
+import { getEmailDesign } from "@/features/email-design/design";
+import {
+  type CustomerLayout,
+  textForWrappedBody,
+  wrapCustomerEmail,
+} from "@/features/email-design/wrapCustomerEmail";
 import { canActorAccessParent } from "@/features/files/fileAuthz";
 import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
@@ -46,6 +52,8 @@ export async function applyTrackingAndSignature(
     trackOpens: boolean;
     trackLinks: boolean;
     recipient: string;
+    wrapMode: "new" | "reply";
+    layout?: CustomerLayout;
     signal: AbortSignal;
   },
 ): Promise<Result<string, AppError>> {
@@ -86,6 +94,33 @@ export async function applyTrackingAndSignature(
     signal.throwIfAborted();
   }
 
+  // Wrap AFTER tracking and the signature, so the pixel, the rewritten links and the signature are
+  // all inside the layout and the stored/Sent copy is exactly what went on the wire. An
+  // already-wrapped body (a document or an automation) keeps its marker and only gains a text part.
+  const design = await getEmailDesign(db, signal);
+  const wrapped = wrapCustomerEmail({
+    bodyHtml: body,
+    mode: args.wrapMode,
+    layoutOverride: args.layout,
+    design,
+  });
+  if (wrapped.wrapped && wrapped.text !== null) {
+    body = wrapped.html;
+    await db.execute(sql`
+      UPDATE email_send_attempts
+      SET payload = jsonb_set(jsonb_set(payload, '{html}', ${JSON.stringify(body)}::jsonb), '{text}', to_jsonb(${wrapped.text}::text))
+      WHERE id=${args.attemptId}
+    `);
+    signal.throwIfAborted();
+  } else if (body.includes("data-df-layout")) {
+    const text = textForWrappedBody(body);
+    await db.execute(sql`
+      UPDATE email_send_attempts
+      SET payload = jsonb_set(payload, '{text}', to_jsonb(${text}::text))
+      WHERE id=${args.attemptId}
+    `);
+    signal.throwIfAborted();
+  }
   return ok(body);
 }
 

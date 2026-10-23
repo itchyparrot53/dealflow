@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm";
+import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { activities, bookingPages, bookings, users } from "@/db/schema";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { emitDomainEvent } from "@/features/events/emit";
 import { getPreferences } from "@/features/identity/preferencesRepo";
 import { createNotification } from "@/features/notifications/produce";
@@ -169,6 +171,31 @@ export async function cancelBooking(
     signal,
   );
   if (!notified.ok) console.warn(`booking cancellation notification failed: ${notified.error.id}`);
+
+  // The guest needs the cancellation too. It is the 6.1 booking_cancelled template, sent on the
+  // trigger this flow already has; before Part 13 only the host was told.
+  const when = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: info.timezone,
+  }).format(info.startAt);
+  const cancelled = await sendSystemEmail(
+    db,
+    "booking_cancelled",
+    info.visitorEmail,
+    {
+      "recipient.name": info.visitorName,
+      "recipient.email": info.visitorEmail,
+      "guest.name": info.visitorName,
+      "host.name": info.hostName,
+      "booking.title": info.pageTitle,
+      "booking.when": when,
+      "app.url": env.BASE_URL,
+      "company.name": "",
+    },
+    signal,
+  );
+  if (!cancelled.ok) console.warn(`booking cancellation email failed: ${cancelled.error.id}`);
 
   return ok(info);
 }

@@ -36,13 +36,15 @@ async function seedSignatureFor(db: SchedDb, userId: string, bodyHtml: string): 
 // The MIME body part is inner-base64 encoded (Content-Transfer-Encoding: base64). Decode
 // it back to the authored HTML so assertions run against the real body text (mirrors
 // signatureSend.test.ts). The header block precedes the first blank line.
-function decodeMimeBody(mimeText: string): string {
-  const afterHeaders = mimeText
-    .split(/\r?\n\r?\n/)
-    .slice(1)
-    .join("");
-  const bodyBase64 = afterHeaders.split(/\r?\n/).find((l) => l.length > 10) ?? "";
-  return Buffer.from(bodyBase64, "base64").toString("utf-8");
+function decodeMimeBody(raw: string): string {
+  const mimeText =
+    raw.startsWith("<!doctype") || raw.includes("\r\n")
+      ? raw
+      : Buffer.from(raw, "base64url").toString("utf-8");
+  const parts = [
+    ...mimeText.matchAll(/Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*?)(?=\r?\n--|$)/g),
+  ].map((match) => Buffer.from((match[1] ?? "").replace(/\s+/g, ""), "base64").toString("utf-8"));
+  return parts.length > 0 ? parts.join("\n") : mimeText;
 }
 
 describe("scheduled send bakes tracking + signature into the stored payload (fix #2)", () => {

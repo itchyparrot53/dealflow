@@ -43,17 +43,15 @@ async function seedSignature(db: TestDb, userId: string, bodyHtml: string): Prom
   return r.id;
 }
 
-// Decode the MIME body part from a base64url rawMessage. The body part is
-// inner-base64 encoded (Content-Transfer-Encoding: base64); we decode it back to
-// the authored HTML so assertions run against readable text.
-function decodeMimeBody(rawBase64url: string): string {
-  const mimeText = Buffer.from(rawBase64url, "base64url").toString("utf-8");
-  const afterHeaders = mimeText
-    .split(/\r?\n\r?\n/)
-    .slice(1)
-    .join("");
-  const bodyBase64 = afterHeaders.split(/\r?\n/).find((l) => l.length > 10) ?? "";
-  return Buffer.from(bodyBase64, "base64").toString("utf-8");
+function decodeMimeBody(raw: string): string {
+  const mimeText =
+    raw.startsWith("<!doctype") || raw.includes("\r\n")
+      ? raw
+      : Buffer.from(raw, "base64url").toString("utf-8");
+  const parts = [
+    ...mimeText.matchAll(/Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*?)(?=\r?\n--|$)/g),
+  ].map((match) => Buffer.from((match[1] ?? "").replace(/\s+/g, ""), "base64").toString("utf-8"));
+  return parts.length > 0 ? parts.join("\n") : mimeText;
 }
 
 describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
@@ -128,6 +126,10 @@ describe("scheduled-send promotion: end-to-end (findings #1 and #2)", () => {
       expect(body).toContain("Best, Eve");
       expect(body).toContain("/t/click/");
       expect(body).not.toContain("https://example.com/promo");
+      // The stored scheduled payload was wrapped once before the worker sent it; the marker guard
+      // means the wire copy carries exactly one layout.
+      expect(body.match(/data-df-layout=/g)).toHaveLength(1);
+      expect(body).toContain('data-df-layout="customer-branded"');
 
       // Assertion C: an email_messages CRM copy row exists for this send.
       const msgRow = (

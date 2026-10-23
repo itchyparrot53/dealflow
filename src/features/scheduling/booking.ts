@@ -8,10 +8,9 @@ import { bookingPages, bookings, persons, users } from "@/db/schema";
 import { createActivity } from "@/features/activities/repo";
 import { loadContactActor } from "@/features/contacts/actorAdapters";
 import { createPerson } from "@/features/contacts/personsRepo";
+import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
 import { emitDomainEvent } from "@/features/events/emit";
 import { getPreferences } from "@/features/identity/preferencesRepo";
-import { emailBrandHeaderHtml, emailBrandHeaderText } from "@/features/mailer/branding";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
 import { createNotification } from "@/features/notifications/produce";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { hydrateActor } from "@/server/hydrateActor";
@@ -214,26 +213,6 @@ async function notifyHost(
   if (!result.ok) console.warn(`booking notification failed: ${result.error.id}`);
 }
 
-async function sendVisitorEmail(
-  to: string,
-  subject: string,
-  text: string,
-  signal: AbortSignal,
-): Promise<void> {
-  const mailer = getSystemMailer();
-  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const result = await mailer.send(
-    {
-      to,
-      subject,
-      text: `${emailBrandHeaderText()}${text}`,
-      html: `${emailBrandHeaderHtml()}<pre>${escaped}</pre>`,
-    },
-    signal,
-  );
-  if (!result.ok) console.warn(`booking confirmation email failed: ${result.error.id}`);
-}
-
 export async function bookSlot(
   db: Db,
   publicId: string,
@@ -354,36 +333,48 @@ export async function bookSlot(
 
   const when = localLabel(start, timezone);
   const cancelUrl = `${env.BASE_URL}/book/cancel/${cancelToken}`;
-  const emailText = [
-    `Hi ${input.name},`,
-    "",
-    `Your booking with ${host.name} is confirmed.`,
-    "",
-    `${when} (${timezone})`,
-    `${duration} minutes`,
-    ...(page.location === null ? [] : [page.location]),
-    "",
-    `Need to cancel? ${cancelUrl}`,
-    "",
-    "Thanks,",
-    "Dealflow",
-  ].join("\n");
-  await sendVisitorEmail(input.email, `Booked: ${page.title} with ${host.name}`, emailText, signal);
+  const ics = buildIcs({
+    uid: `booking-${created.bookingId}@dealflow`,
+    start,
+    end: created.end,
+    summary: `${page.title} with ${host.name}`,
+    description: page.description ?? "",
+    location: page.location ?? "",
+    organizerName: host.name,
+    organizerEmail: host.email,
+  });
+  const confirmation = await sendSystemEmail(
+    db,
+    "booking_confirmed",
+    input.email,
+    {
+      "recipient.name": input.name,
+      "recipient.email": input.email,
+      "guest.name": input.name,
+      "host.name": host.name,
+      "booking.title": page.title,
+      "booking.when": when,
+      "booking.timezone": timezone,
+      "booking.duration": `${duration} minutes`,
+      "booking.location": page.location ?? "",
+      "booking.cancel_url": cancelUrl,
+      "app.url": env.BASE_URL,
+      "company.name": "",
+    },
+    signal,
+    {
+      attachments: [{ filename: "invite.ics", contentType: "text/calendar", content: ics }],
+    },
+  );
+  if (!confirmation.ok) {
+    console.warn(`booking confirmation email failed: ${confirmation.error.id}`);
+  }
 
   return ok({
     start: start.toISOString(),
     end: created.end.toISOString(),
     hostName: host.name,
     timezone,
-    ics: buildIcs({
-      uid: `booking-${created.bookingId}@dealflow`,
-      start,
-      end: created.end,
-      summary: `${page.title} with ${host.name}`,
-      description: page.description ?? "",
-      location: page.location ?? "",
-      organizerName: host.name,
-      organizerEmail: host.email,
-    }),
+    ics,
   });
 }

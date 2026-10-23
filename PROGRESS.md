@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-10-23 13:18
+Current: 2.3 · Last updated: 2026-10-23 13:22
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -18,7 +18,7 @@ Current: 2.2 · Last updated: 2026-10-23 13:18
 - [x] 1.4 Registry, overrides and sendSystemEmail
 - [x] 1.5 Phase 1 QA gate
 - [x] 2.1 Product emails migrated
-- [ ] 2.2 Customer email wrapping in the send path, automations and booking
+- [x] 2.2 Customer email wrapping in the send path, automations and booking
 - [ ] 2.3 Quote and invoice emails
 - [ ] 2.4 Phase 2 QA gate
 - [ ] 3.1 Settings › Email design: Branding tab
@@ -38,6 +38,10 @@ Current: 2.2 · Last updated: 2026-10-23 13:18
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 2.2: the wrap happens inside `applyTrackingAndSignature`, after the tracking rewrites and the signature, so the pixel, every rewritten link and the signature sit inside the layout and the stored/Sent copy is the wire copy. A scheduled send is prepared (and wrapped) before its early return, so the worker sends it once; the `data-df-layout` marker makes every later pass a no-op.
+- 2.2: documents and automations wrap before calling the mailbox path; because they already carry the marker, the send path only adds a derived text part for them (`textForWrappedBody`) instead of wrapping again.
+- 2.2: the booking confirmation now attaches the existing `buildIcs` output as `invite.ics` through `SystemMail.attachments`, so its "A calendar invite is attached." copy is true. The booking cancellation now emails the guest too, on the cancel flow's existing trigger and recipient (the 6.1 `booking_cancelled` template).
+- 2.2: changed tests: the scheduled-promotion, scheduled-tracking and signature suites decode every base64 MIME part (the new text part makes the body multipart/alternative); the booking integration asserts `customer-branded` and the `.ics` attachment instead of the old product logo.
 - 2.1: all five product senders now call `sendSystemEmail` with their registry key; `renderNotificationEmail` returns copy (`subject`, `line`, `cta`, `url`) instead of HTML, so the notification job passes `notification.*` variables and the layout owns the markup.
 - 2.1: the notification CTA is derived per type (`notificationCta`): conversation for mentions, comments, email opens/clicks and deal email; activity for assignments/reminders; quote for document events; form; booking; deal for deal/automation/AI; `Open Dealflow` otherwise.
 - 2.1: `mailer/templates.ts` and `mailer/branding.ts` (and their tests) are deleted; the logo constants live in `email-design/tokens.ts`. The old headers are gone, not merely unused.

@@ -73,15 +73,14 @@ describe("sendEmail with signatureId", () => {
       const rawArg = sendCall.args as { rawBase64: string };
       const mimeText = Buffer.from(rawArg.rawBase64, "base64url").toString("utf-8");
 
-      // The MIME body part is inner-base64 encoded. Extract and decode it.
-      // The body part follows a blank line after the Content-Transfer-Encoding header.
-      const innerBase64 = mimeText
-        .split(/\r?\n\r?\n/)
-        .slice(1)
-        .join("");
-      // Remove MIME boundaries and line breaks to get the raw base64 body
-      const bodyBase64 = innerBase64.split(/\r?\n/).find((l) => l.length > 10) ?? "";
-      const bodyDecoded = Buffer.from(bodyBase64, "base64").toString("utf-8");
+      // The wrapped body is multipart/alternative now, so decode the HTML part specifically:
+      // the signature must appear once in the HTML body, not once per MIME part.
+      const htmlPart = mimeText
+        .split(/--[^\r\n]+/)
+        .find((part) => part.includes("Content-Type: text/html"));
+      const htmlBase64 =
+        /Content-Transfer-Encoding: base64\r?\n\r?\n([\s\S]*)/.exec(htmlPart ?? "")?.[1] ?? "";
+      const bodyDecoded = Buffer.from(htmlBase64.replace(/\s+/g, ""), "base64").toString("utf-8");
 
       // Body text AND signature must both appear in the decoded body
       expect(bodyDecoded).toContain("Body text");

@@ -58,6 +58,9 @@ export const sendEmailInput = z.object({
   // visibility: the composer's privacy pick (C1). Applied to a NEW outbound thread only; a reply
   // (threadId set) inherits the existing thread's visibility. Omitted => DB default ("private").
   visibility: z.enum(EMAIL_VISIBILITY).optional(),
+  // layout: the composer's per-message choice. Omitted resolves the design default (branded for a
+  // new email, minimal for a reply); "plain" sends the author HTML as before.
+  layout: z.enum(["branded", "minimal", "plain"]).optional(),
 });
 
 export type SendEmailInput = z.infer<typeof sendEmailInput>;
@@ -212,6 +215,8 @@ async function runSend(
   // body into the payload row (jsonb_set), so a "Send later" email carries the same
   // signature and tracking rewrites an immediate send would. Runs BEFORE the scheduled
   // early-return so the worker later sends the already-prepared payload unchanged.
+  const wrapMode =
+    input.threadId !== undefined || input.inReplyToGmailMessageId !== undefined ? "reply" : "new";
   const bodyResult = await applyTrackingAndSignature(db, {
     attemptId,
     actorId: args.actorId,
@@ -220,6 +225,8 @@ async function runSend(
     trackOpens: resolvedTrackOpens,
     trackLinks: resolvedTrackLinks,
     recipient: input.to[0] ?? "",
+    wrapMode,
+    layout: input.layout,
     signal,
   });
   if (!bodyResult.ok) return bodyResult;

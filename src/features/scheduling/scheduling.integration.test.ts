@@ -236,7 +236,8 @@ describe("booking", () => {
     expect(captured[0]?.to).toBe("sam.ortiz@example.com");
     expect(captured[0]?.text).toContain("/book/cancel/");
     expect(captured[0]?.text.startsWith("Dealflow\n\n")).toBe(true);
-    expect(captured[0]?.html).toContain('src="https://app.example.com/brand/email-logo@2x.png"');
+    expect(captured[0]?.html).toContain('data-df-layout="customer-branded"');
+    expect(captured[0]?.attachments?.[0]?.filename).toBe("invite.ics");
   });
 
   it("lets exactly one of ten concurrent bookings win", async () => {
