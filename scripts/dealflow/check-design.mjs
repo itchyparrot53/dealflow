@@ -45,6 +45,42 @@ const PAGE_RULE = {
   id: "page-title",
   msg: "app page without PageTitle/usePageTitle or PageToolbar",
 };
+// File-level rules (Part 12, 6.10). They need the whole file, so they run once per file rather
+// than per line, the way PAGE_RULE does.
+const DIALOG_ANATOMY = {
+  id: "dialog-anatomy",
+  msg: 'DialogContent without DialogHeader or closeButton="corner"|"none"',
+};
+const DIALOG_MARGIN = {
+  id: "dialog-anatomy",
+  msg: "negative header/footer margin; the Dialog primitives own the padding",
+};
+const LONG_LIST = {
+  id: "select-long-list",
+  msg: "long list in a Select; use Combobox",
+};
+// The long lists 6.10 names, plus the local prop names the code actually uses for them.
+const LONG_LIST_NAMES =
+  /supportedCurrencyCodes|currencyOptions|timeZoneOptions|zoneOptions|Intl\.supportedValuesOf|codeOptions|rateOptions|TIMEZONES/;
+
+// A <Select> renders inline in these files, so its tag (and the options prop) can span lines and
+// contain "=>" inside a prop expression. Walk to the first ">" at brace/paren depth zero.
+function selectTagAt(src, index) {
+  let depth = 0;
+  let quote = null;
+  for (let i = index; i < src.length; i++) {
+    const char = src[i];
+    if (quote !== null) {
+      if (char === quote && src[i - 1] !== "\\") quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") quote = char;
+    else if (char === "{" || char === "(" || char === "[") depth++;
+    else if (char === "}" || char === ")" || char === "]") depth--;
+    else if (char === ">" && depth === 0) return src.slice(index, i + 1);
+  }
+  return src.slice(index, index + 1600);
+}
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
@@ -95,6 +131,39 @@ for (const file of files) {
     if (!/PageTitle|usePageTitle|PageToolbar/.test(src) && !/design-ok:/.test(src))
       hits.push({ line: 1, rule: PAGE_RULE.id, msg: PAGE_RULE.msg });
   }
+  const src = lines.join("\n");
+  // A file-level rule is opted out only by a "design-ok:" marker near the construct it excuses,
+  // not by an unrelated marker elsewhere in the file.
+  const optOutNear = (line, radius = 3) =>
+    lines
+      .slice(Math.max(0, line - radius - 1), line + radius)
+      .some((text) => /design-ok:\s*\S/.test(text));
+  const lineOf = (index) => src.slice(0, index).split("\n").length;
+  // 6.2: a dialog owns a header (which owns the close button) or asks for a corner/none button.
+  const dialogStart = src.indexOf("<DialogContent");
+  if (dialogStart !== -1) {
+    const hasHeader = /DialogHeader/.test(src) || /closeButton="(?:corner|none)"/.test(src);
+    if (!hasHeader && !optOutNear(lineOf(dialogStart))) {
+      hits.push({ line: lineOf(dialogStart), rule: DIALOG_ANATOMY.id, msg: DIALOG_ANATOMY.msg });
+    }
+  }
+  // 6.2: the header and footer own their padding, so a usage must not pull them out again. The
+  // margin sits on a nearby line of the same element, hence the small window.
+  lines.forEach((line, i) => {
+    if (!/-(?:mt|mx)-6\b/.test(line) || optOutNear(i, 1)) return;
+    const around = lines.slice(Math.max(0, i - 3), i + 4).join("\n");
+    if (/DialogHeader|DialogFooter/.test(around)) {
+      hits.push({ line: i + 1, rule: DIALOG_MARGIN.id, msg: DIALOG_MARGIN.msg });
+    }
+  });
+  // 6.3: lists over 12 options are comboboxes, never Selects.
+  for (const match of src.matchAll(/<Select\b/g)) {
+    const tag = selectTagAt(src, match.index ?? 0);
+    const line = lineOf(match.index ?? 0);
+    if (LONG_LIST_NAMES.test(tag) && !optOutNear(line, 4)) {
+      hits.push({ line, rule: LONG_LIST.id, msg: LONG_LIST.msg });
+    }
+  }
   if (hits.length) {
     report[rel] = hits;
     total += hits.length;
@@ -104,8 +173,14 @@ for (const [f, hits] of Object.entries(report)) {
   console.log(`${f} (${hits.length})`);
   for (const h of hits) console.log(`  ${h.line}: [${h.rule}] ${h.msg}`);
 }
+const byRule = {};
+for (const hits of Object.values(report)) {
+  for (const h of hits) byRule[h.rule] = (byRule[h.rule] ?? 0) + 1;
+}
 console.log(
   `check-design: ${total} violation(s) in ${Object.keys(report).length} file(s); ${optOuts} opt-out(s)`,
 );
-if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ total, optOuts, files: report }, null, 2));
+if (jsonOut) {
+  writeFileSync(jsonOut, JSON.stringify({ total, optOuts, byRule, files: report }, null, 2));
+}
 process.exit(total > 0 || optOuts > 40 ? 1 : 0);
