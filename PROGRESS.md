@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 2.6 · Last updated: 2026-10-23 03:04
+Current: 3.1 · Last updated: 2026-10-23 03:06
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
 - Phase 1: d6cd01e746f13095fa09b221f12d140414296ae6
 - Phase 2: fae8ad915127f39b5171ed80a91cb599d659f9eb
+- Phase 3: d041757a05254e742125e808c24449bf1a434c43
 
 ## Tasks
 - [x] 0.1 Start Part 12: progress files, kit, baseline and environment
@@ -24,7 +25,7 @@ Current: 2.6 · Last updated: 2026-10-23 03:04
 - [x] 2.3 One heading per page and the settings layout (U11, U12)
 - [x] 2.4 Contacts view switcher (U13)
 - [x] 2.5 Toolbar order and the Ask AI popover (U14, U15)
-- [ ] 2.6 Phase 2 QA gate
+- [x] 2.6 Phase 2 QA gate
 - [ ] 3.1 Add deal dialog (U6)
 - [ ] 3.2 Board column header and card score (U16, U17)
 - [ ] 3.3 Forecast header and calendar (U18, U19)
@@ -42,6 +43,7 @@ Current: 2.6 · Last updated: 2026-10-23 03:04
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
+- Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5409/5409 · check:design 0 violations, 14 opt-outs · polish subset "rail|hidden ui|headings|settings scroll" 4/4 · specs 14 and 15 27/27
 - Phase 1 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5392/5392 · check:design 0 violations, 13 opt-outs · polish subset "dialog anatomy|long list" 2/2 · AI integration 26/26 in 4 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5356/5356 in 843 files · check:design 9 violation(s) in 7 file(s): dialog-anatomy 4 (the two primitive margins and two headerless dialogs), select-long-list 5, 12 opt-outs, and no other rule reports · check:progress ok
 
@@ -122,6 +124,9 @@ Current: 2.6 · Last updated: 2026-10-23 03:04
 - 2.5: each entity has its own placeholder: deals "Open deals over 10,000 closing this month", leads "Leads from web forms with no activity", people "People at North Systems added this year", organizations "Organizations in Media with open deals".
 - 2.5: toolbar order fixes: Activities' Export CSV moved from its own row into the filter row (`exportSlot`), Documents' export joined its tabs/status row, and the Projects filters are `w-44` instead of stretching. The lists already ordered saved views, Filter and Ask AI on the right with the count and primary action on the left; Leads, People and Organizations now end that right group with Ask AI.
 - 2.5: no existing test typed into the inline box outside the pipeline modal, so spec 04 is unchanged; `AiFilterButton.test` covers the trigger, the popover field, the entity placeholder and the action.
+
+- 2.6: gate fixes: the Part 11 style checks now follow 6.4 (active row 216x40 expanded, rail 232 then 56 then 232) and the focus check resets the sequential focus start to the body, because the rail check's toggle click left it at the rail's last row. Both are contract updates, not loosened assertions.
+- 2.6: the rail toggle's tooltip uses the `Tip` primitive and the links dropped their native `title` attributes, which the lint ban covers.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

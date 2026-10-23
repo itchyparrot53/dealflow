@@ -95,7 +95,6 @@ export function LeftNav({
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              title={collapsed ? item.label : undefined}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex transition-colors duration-100",

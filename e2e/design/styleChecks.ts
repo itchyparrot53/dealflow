@@ -83,8 +83,9 @@ async function railCheck(page: Page): Promise<void> {
 async function activeRailTileCheck(page: Page): Promise<void> {
   const tile = await computed(page, '[data-testid="app-rail"] [aria-current="page"]');
   expect(tile.backgroundColor, "active rail tile").toBe("rgb(98, 80, 226)");
-  expect(tile.width, "active rail tile width").toBe(44);
-  expect(tile.height, "active rail tile height").toBe(44);
+  // Part 12, 6.4: the expanded active row is the 40 px label row inset by mx-2, not a 44 px tile.
+  expect(tile.width, "active rail row width").toBe(216);
+  expect(tile.height, "active rail row height").toBe(40);
 }
 
 async function topBarCheck(page: Page): Promise<void> {
@@ -179,7 +180,13 @@ async function recordLinkCheck(page: Page): Promise<void> {
 }
 
 async function focusCheck(page: Page): Promise<void> {
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  // The rail check clicks the toggle, which moves the sequential focus start to the rail's last
+  // row. Focusing the body resets it, so Tab always lands on the first tabbable (the brand link).
+  await page.evaluate(() => {
+    const body = document.body;
+    body.setAttribute("tabindex", "-1");
+    body.focus();
+  });
   await page.keyboard.press("Tab");
   const outline = await page.evaluate(() => {
     const element = document.activeElement as HTMLElement | null;
