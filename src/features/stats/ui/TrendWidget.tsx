@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/chart";
 import { STRINGS } from "@/constants/strings";
 import type { WonTrendPoint } from "@/types/stats";
-import { ExcludedNote, money, monthLabel, Panel } from "./Panel";
+import { ExcludedNote, money, moneyCompact, monthLabel, Panel } from "./Panel";
 import { trendTooltipValue } from "./trendTooltip";
 
 // Value, not count, is the line: "are we going to make the number" is a money question. The
@@ -67,7 +67,7 @@ export function WonTrendWidget({
                 width={64}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: number) => money(String(v), currency)}
+                tickFormatter={(v: number) => moneyCompact(String(v), currency)}
               />
               <ChartTooltip
                 content={

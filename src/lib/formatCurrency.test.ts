@@ -6,8 +6,8 @@ describe("formatCurrency", () => {
     expect(formatCurrency("25000.00")).toBe("$25,000");
   });
 
-  it("rounds fractional cents to whole dollars", () => {
-    expect(formatCurrency("1234567.89")).toBe("$1,234,568");
+  it("keeps the cents when the amount has a fractional part (6.5 auto rule)", () => {
+    expect(formatCurrency("1234567.89")).toBe("$1,234,567.89");
   });
 
   it("formats zero", () => {

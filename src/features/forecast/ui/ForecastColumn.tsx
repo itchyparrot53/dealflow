@@ -3,7 +3,8 @@
 import { useDroppable } from "@dnd-kit/core";
 import type React from "react";
 import { Tip } from "@/components/ui/tooltip";
-import { formatMoney, parseCents } from "@/features/currency/money";
+import { parseCents } from "@/features/currency/money";
+import { formatMoney } from "@/lib/format/number";
 import type { ForecastMonth } from "@/features/forecast/forecast";
 import { ForecastCard } from "./ForecastCard";
 
@@ -21,7 +22,7 @@ const S = {
 };
 
 function money(value: string, currency: string): string {
-  return formatMoney(parseCents(value), currency);
+  return formatMoney(Number(parseCents(value)), currency);
 }
 
 export function ForecastColumn({ month, baseCurrency }: Props): React.ReactNode {

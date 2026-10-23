@@ -13,7 +13,7 @@ import type { GoalPeriod } from "@/features/goals/goalPeriod";
 import type { GoalSeriesPoint } from "@/features/goals/goalSeries";
 import { goalNumberText } from "@/features/goals/goalTargetText";
 import { goalChartPoints } from "./goalChartPoints";
-import { money } from "./Panel";
+import { money, moneyCompact } from "./Panel";
 
 const ACTUAL = "actual";
 const TARGET = "target";
@@ -49,6 +49,10 @@ export function GoalChart({
   const points = goalChartPoints(period, series, target);
   const fmt = (v: number): string =>
     metric === "value" ? money(String(v), currency) : goalNumberText(String(Math.round(v)), metric);
+  const fmtAxis = (v: number): string =>
+    metric === "value"
+      ? moneyCompact(String(v), currency)
+      : goalNumberText(String(Math.round(v)), metric);
 
   return (
     <ChartContainer config={CONFIG} aria-hidden="true" className="h-36">
@@ -61,7 +65,7 @@ export function GoalChart({
           axisLine={false}
           minTickGap={32}
         />
-        <YAxis width={56} tickLine={false} axisLine={false} tickCount={3} tickFormatter={fmt} />
+        <YAxis width={56} tickLine={false} axisLine={false} tickCount={3} tickFormatter={fmtAxis} />
         <ChartTooltip
           content={
             <ChartTooltipContent

@@ -21,7 +21,12 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { INSIGHTS_STRINGS } from "@/constants/insightsStrings";
-import { formatMoney } from "@/features/currency/money";
+import {
+  currencyMinorDigits,
+  formatMoney,
+  formatMoneyCompact,
+  formatNumber,
+} from "@/lib/format/number";
 import type { ReportDefinition } from "../definition";
 import type { ReportResult } from "../result";
 import { FunnelChart } from "./FunnelChart";
@@ -111,17 +116,19 @@ function chartValue(
   value: string | number | undefined,
   definition: ReportDefinition,
   baseCurrency: string,
+  mode: "axis" | "tooltip" = "tooltip",
 ): string {
   const number = typeof value === "number" ? value : Number(value ?? 0);
   if (!Number.isFinite(number)) return "0";
   const kind = definition.measure.kind;
   if (kind === "count") {
-    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(number);
+    return formatNumber(number);
   }
   if (kind === "sum_duration") {
-    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(number)} min`;
+    return `${formatNumber(number)} min`;
   }
-  return formatMoney(BigInt(Math.round(number * 100)), baseCurrency);
+  const minor = Math.round(number * 10 ** currencyMinorDigits(baseCurrency));
+  return mode === "axis" ? formatMoneyCompact(minor, baseCurrency) : formatMoney(minor, baseCurrency);
 }
 
 export function ReportChart({
@@ -154,7 +161,9 @@ export function ReportChart({
         width={96}
         tickLine={false}
         axisLine={false}
-        tickFormatter={(value: number) => chartValue(value, definition, result.baseCurrency)}
+        tickFormatter={(value: number) =>
+          chartValue(value, definition, result.baseCurrency, "axis")
+        }
       />
       <ChartTooltip
         content={

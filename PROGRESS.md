@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-10-23 02:33
+Current: 1.5 · Last updated: 2026-10-23 02:34
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -14,7 +14,7 @@ Current: 1.4 · Last updated: 2026-10-23 02:33
 - [x] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
 - [x] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
 - [x] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
-- [ ] 1.4 Number and money formatting (U10)
+- [x] 1.4 Number and money formatting (U10)
 - [ ] 1.5 Tables, empty states and the bell badge (U29, U30)
 - [ ] 1.6 AI JSON reliability and the humane error (U7)
 - [ ] 1.7 Phase 1 QA gate
@@ -75,6 +75,12 @@ Current: 1.4 · Last updated: 2026-10-23 02:33
 - 1.3: `AddActivityModal` is deliberately unchanged: its fields are the composer's icon rows, labelled by aria-label/placeholder, and a FormField would introduce visible copy the composer does not have. The activity create surface still uses the 6.2 dialog anatomy from 1.1.
 - 1.3: in `CurrenciesSettings` the base-currency picker keeps its card-header label rather than gaining a second FormField label; it is the only control there without a field label of its own.
 - 1.3: no test assertions needed changing; `QuickAddContact`/`GlobalContactModal` were updated in 1.1 for the shell width. The two failures the migration agent saw were timezone/locale artefacts of running vitest without the project's `TZ=UTC` pin, not regressions.
+
+- 1.4: `src/lib/format/number.ts` adds `formatMoney` (minor units, auto or currency-native decimals), `formatMoneyCompact` and `formatNumber`. Detailed money keeps the app's existing en-US display locale; the compact formatter also pins en-US because that is what spells the K/M suffixes in upper case (6.5's examples). The existing bigint `formatMoney` in `src/features/currency/money.ts` stays the exact-arithmetic source; the new helper builds its grouped integer part the same way, so no amount passes through a float.
+- 1.4: "auto" uses the currency's own minor-unit digits: JPY keeps zero decimals even with `decimals: 2`, because a yen has no subunit; the `2` option means the currency-native digits for prices, documents, invoices and payments.
+- 1.4: applied to the board/list totals (`formatCurrency` now delegates to auto), the forecast month totals, the products settings price (native decimals), chart axes (compact in the trend, goal and report charts) and tooltips (auto), plain numbers (custom numeric fields, AI caps) and report/tooltip counts.
+- 1.4: the editable organization revenue/employee inline fields keep the raw stored string while editing; Task 3.4 renders the read-only record rows through `formatNumber`, which is where U10's 18500000.00 display lives.
+- 1.4: changed test: `formatCurrency` used to round a fractional amount to whole dollars; it now keeps the cents, which is the 6.5 auto rule, so `1234567.89` expects `$1,234,567.89` instead of `$1,234,568`.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

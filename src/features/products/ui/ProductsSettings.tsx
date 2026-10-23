@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
+import { currencyMinorDigits, formatMoney } from "@/lib/format/number";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { PRODUCTS_STRINGS } from "@/constants/salesStrings";
 import { deleteProductAction, setProductActiveAction } from "@/features/products/actions";
@@ -209,7 +210,7 @@ export function ProductsSettings({
                   <td className={SETTINGS_TABLE_CELL}>{row.name}</td>
                   <td className={SETTINGS_TABLE_CELL}>{row.code ?? ""}</td>
                   <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>
-                    {row.price} {row.currency}
+                    {formatMoney(Math.round(Number(row.price) * 10 ** currencyMinorDigits(row.currency)), row.currency, { decimals: 2 })}
                   </td>
                   <td className={`${SETTINGS_TABLE_CELL} tabular-nums`}>{row.taxPercent}%</td>
                   <td className={SETTINGS_TABLE_CELL}>

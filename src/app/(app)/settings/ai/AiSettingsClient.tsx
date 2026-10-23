@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/Switch";
 import { AI_STRINGS } from "@/constants/aiStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { updateAiSettingsAction } from "@/features/ai/actions/settingsActions";
+import { formatNumber } from "@/lib/format/number";
 import { readCsrfToken } from "@/utils/csrfCookie";
 
 export interface AiSettingsOverview {
@@ -27,7 +28,7 @@ export interface AiSettingsOverview {
   providerKind: "openrouter" | "fake" | "none";
 }
 
-const format = (value: number): string => new Intl.NumberFormat("en-GB").format(value);
+const format = (value: number): string => formatNumber(value);
 
 const MESSAGES: Record<string, string> = {
   [ERROR_IDS.AI_INPUT_INVALID]: AI_STRINGS.companyLimitInvalid,

@@ -24,7 +24,7 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U7 | AI drafts (Owner) | "The AI reply could not be understood". Reasoning models spend the 800-token budget thinking (empty or cut content), and the fence regex only accepts a whole-string fence | 6.9 | 1.6 | | | |
 | U8 | Forms everywhere | Label sizes, gaps and widths differ per dialog and settings page | `FormField` + `FormGrid` (6.3) | 1.3 | 1.3 | | |
 | U9 | Selects and comboboxes | `Select` uses `ChevronDown` while Combobox (Owner field) uses up/down chevrons, and heights differ | one trigger style (6.3) | 1.2 | 1.2 | | |
-| U10 | Money and numbers | Chart axes show `$380,000.00`; products show `1200.00 USD`; org revenue shows `18500000.00` | 6.5 helpers everywhere | 1.4 | | | |
+| U10 | Money and numbers | Chart axes show `$380,000.00`; products show `1200.00 USD`; org revenue shows `18500000.00` | 6.5 helpers everywhere | 1.4 | 1.4 | | |
 | U11 | Index pages | Documents, Insights and Projects repeat the top-bar title as a large H1 | 6.6 heading rule | 2.3 | | | |
 | U12 | Settings | Content is capped near 520 to 700 px in a 1440 window; the nav is a long unscrolled list; pages must always scroll | 6.6 settings layout | 2.3 | | | |
 | U13 | Contacts | People, Organizations and Timeline sit in a 180 px left panel on every list and record | view switcher in the toolbar (6.6) | 2.4 | | | |

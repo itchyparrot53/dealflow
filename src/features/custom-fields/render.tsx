@@ -6,6 +6,7 @@ import type { CustomFieldDef } from "@/types/customFields";
 import { assertNever } from "@/types/result";
 import type { CustomFieldRefLabels } from "./refLabelsShared";
 import { isCustomFieldValueEmpty } from "./valueEmpty";
+import { currencyMinorDigits, formatMoney, formatNumber } from "@/lib/format/number";
 
 // Re-export widgets from sibling file to keep this file under 200 lines.
 export { CustomFieldDetail, CustomFieldFormControl } from "./render.widgets";
@@ -19,12 +20,10 @@ function labelFor(def: CustomFieldDef, id: string): string {
 }
 
 // Callers pass the tenant base currency (settings.base_currency via readBaseCurrency);
-// DEFAULT_BASE_CURRENCY is only the final fallback when a caller has none.
-function formatMoney(n: number, currency = DEFAULT_BASE_CURRENCY): string {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-  }).format(n);
+// DEFAULT_BASE_CURRENCY is only the final fallback when a caller has none. Part 12's 6.5 rule:
+// amounts use the auto money format, plain numbers use formatNumber.
+function displayMoney(n: number, currency = DEFAULT_BASE_CURRENCY): string {
+  return formatMoney(Math.round(n * 10 ** currencyMinorDigits(currency)), currency);
 }
 
 export function formatCustomFieldDisplay(
@@ -47,10 +46,10 @@ export function formatCustomFieldDisplay(
       return value as string;
 
     case "numeric":
-      return (value as number).toString();
+      return formatNumber(value as number);
 
     case "monetary":
-      return formatMoney(value as number, currency);
+      return displayMoney(value as number, currency);
 
     case "single_option":
       return labelFor(def, value as string);

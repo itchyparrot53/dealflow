@@ -1,3 +1,5 @@
+import { currencyMinorDigits, formatMoney, formatMoneyCompact } from "@/lib/format/number";
+
 import type React from "react";
 import { Panel as DesignPanel } from "@/components/ui/panel";
 import { STRINGS } from "@/constants/strings";
@@ -74,9 +76,10 @@ export function monthLabel(month: string): string {
 }
 
 export function money(v: string, currency: string): string {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(v));
+  return formatMoney(Math.round(Number(v) * 10 ** currencyMinorDigits(currency)), currency);
+}
+
+// Axis ticks read better compact: $380K instead of $380,000 (6.5).
+export function moneyCompact(v: string, currency: string): string {
+  return formatMoneyCompact(Math.round(Number(v) * 10 ** currencyMinorDigits(currency)), currency);
 }
