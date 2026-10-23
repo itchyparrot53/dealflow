@@ -1,15 +1,16 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 0.3 · Last updated: 2026-10-23 01:47
+Current: 1.1 · Last updated: 2026-10-23 01:52
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
+- Phase 1: d6cd01e746f13095fa09b221f12d140414296ae6
 
 ## Tasks
-- [ ] 0.1 Start Part 12: progress files, kit, baseline and environment
+- [x] 0.1 Start Part 12: progress files, kit, baseline and environment
 - [x] 0.2 Polish e2e spec and the two check-design rules
-- [ ] 0.3 Phase 0 QA gate
+- [x] 0.3 Phase 0 QA gate
 - [ ] 1.1 Dialog, alert dialog and sheet anatomy, every dialog migrated (U1)
 - [ ] 1.2 Scrolling Select, searchable Combobox, one trigger style (U2, U3, U9)
 - [ ] 1.3 FormField and FormGrid on create dialogs and settings forms (U8)
@@ -40,6 +41,7 @@ Current: 0.3 · Last updated: 2026-10-23 01:47
 
 ## QA log
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (13 warnings, 1 info) · build ok · unit 5356/5356 in 843 files · check-design 0 violations, 12 opt-outs · after the two new 6.10 rules: 9 violations (dialog-anatomy 4, select-long-list 5), 12 opt-outs
+- Phase 0 gate: commands green · typecheck ok · lint ok (13 warnings) · build ok · unit 5356/5356 in 843 files · check:design 9 violation(s) in 7 file(s): dialog-anatomy 4 (the two primitive margins and two headerless dialogs), select-long-list 5, 12 opt-outs, and no other rule reports · check:progress ok
 
 ## Decisions
 - 0.1: starting point matches section 4: `PROGRESS.md` said `dealflow-wd-p11-v1` with `STATUS: COMPLETE` and the commits after it are `brand: 1..8`, `app: Docs button ...`, `docs: ...` (twice) and `website: ...`, so the run renames it to `PROGRESS-P11.md` and starts Part 12 at Task 0.1.
