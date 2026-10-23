@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-10-23 12:38
+Current: 0.3 · Last updated: 2026-10-23 12:42
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
 
 ## Tasks
 - [x] 0.1 Start Part 13: progress files, kit, baseline and environment
-- [ ] 0.2 Outbound email inventory
+- [x] 0.2 Outbound email inventory
 - [ ] 0.3 Phase 0 QA gate
 - [ ] 1.1 Variables and escaping
 - [ ] 1.2 The layout renderer
@@ -34,6 +34,13 @@ Current: 0.2 · Last updated: 2026-10-23 12:38
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 0.2: the inventory confirms the ten 6.1 keys and no sender outside them. `booking_cancelled` is the one listed customer email with no sender today: `scheduling/cancel.ts` soft-deletes the activity, emits `booking.cancelled` and notifies the host, but never emails the guest, so Task 2.2 sends it on that existing trigger and recipient. This implements a listed template, not a new email type.
+- 0.2: the booking confirmation has no `.ics` attachment today; `buildIcs` is returned to the HTTP caller only. Task 2.2 attaches it through the `SystemMail.attachments` support 6.4 requires, so the template's "A calendar invite is attached." is true.
+- 0.2: no HTML-to-text helper exists in the repository, so per section 10 Task 1.2 writes a small converter in `layout.ts` with tests and reuses it for the plain-text part.
+- 0.2: every notification email currently says "Open in Dealflow"; Task 2.1 derives the per-type `notification.cta` label from 6.4 (Open deal, Open activity, Open quote, Open conversation, Open form, Open booking, or Open Dealflow) from the same `NotificationRow` switch.
+- 0.2: the current backup and webhook emails interpolate the failure detail and `user.name` into HTML without escaping; moving their copy into the renderer in Task 2.1 escapes every variable, which closes that gap without changing either trigger.
+- 0.2: the notification job sends one email per row and enqueues one job per row, so there is no digest and no `notification_digest` key.
+- 0.2: document subjects and messages are code defaults today (`defaultSubject`/`defaultMessage`), not templates; Task 2.3 resolves `quote_sent` and `invoice_sent` from the registry and pre-fills the dialog.
 - 0.1: starting point matches section 4: `PROGRESS.md` said `dealflow-wd-p12-v1` with `STATUS: COMPLETE` and the four commits after it start `frontend-2026:` (4fdcf08, 16243df, de5eb77, 7cb9450), so it is renamed to `PROGRESS-P12.md` and Part 13 starts here at Task 0.1.
 - 0.1: the live `dealflow-prod` stack is running on 127.0.0.1:3001, 8080 and 9000 and was not touched; only read-only Docker inspection was used.
 - 0.1: the dev stack answers on 5433 (Postgres), 9100 (MinIO S3) and 9101 (console), so `DEV_PG_PORT=5433 MINIO_PORT=9100 MINIO_CONSOLE_PORT=9101 pnpm dev:up` is the recorded command.
