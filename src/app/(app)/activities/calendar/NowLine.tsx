@@ -11,8 +11,8 @@ export function NowLine({ now }: { now: Date }): React.ReactNode {
       className="pointer-events-none absolute z-20 flex items-center"
       style={{ top: topPx, left: `calc(${AGENDA_GUTTER_WIDTH} - 0.25rem)`, right: 0 }}
     >
-      <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" />
-      <span className="h-px w-full bg-destructive" />
+      <span className="size-1.5 shrink-0 rounded-full bg-destructive" />
+      <span className="h-0.5 w-full bg-destructive" />
     </div>
   );
 }

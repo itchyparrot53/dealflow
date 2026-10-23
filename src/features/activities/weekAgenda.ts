@@ -12,8 +12,8 @@ export const HOURS: number[] = Array.from(
 
 // One template for the header row, the all-day row and the scrolling hour region, so the time
 // gutter and the seven day columns share one set of tracks instead of three that can drift.
-export const AGENDA_GRID_COLS = "3.25rem repeat(7, minmax(0, 1fr))";
-export const AGENDA_GUTTER_WIDTH = "3.25rem";
+export const AGENDA_GRID_COLS = "3.5rem repeat(7, minmax(0, 1fr))";
+export const AGENDA_GUTTER_WIDTH = "3.5rem";
 
 // 24-hour labels, matching the "HH:mm" the composer's TimePicker reads and writes.
 export function hourLabel(hour: number): string {

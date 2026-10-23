@@ -28,7 +28,7 @@ export function AllDayLane({
       data-all-day-lane
       role="group"
       aria-label={`All day, ${dayLabel}`}
-      className="overflow-hidden border-l border-border px-0.5"
+      className="min-h-8 overflow-hidden border-l border-b border-border px-0.5"
       style={{ height: rows * ALL_DAY_ROW_HEIGHT_PX }}
     >
       {visible.map((a) => (

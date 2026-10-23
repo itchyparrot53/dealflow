@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-10-23 03:14
+Current: 3.4 · Last updated: 2026-10-23 03:17
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -28,7 +28,7 @@ Current: 3.3 · Last updated: 2026-10-23 03:14
 - [x] 2.6 Phase 2 QA gate
 - [x] 3.1 Add deal dialog (U6)
 - [x] 3.2 Board column header and card score (U16, U17)
-- [ ] 3.3 Forecast header and calendar (U18, U19)
+- [x] 3.3 Forecast header and calendar (U18, U19)
 - [ ] 3.4 Stage track, person and organization records (U20, U27)
 - [ ] 3.5 Document editor (U21)
 - [ ] 3.6 Inbox list and thread reader (U22, U23)
@@ -136,6 +136,9 @@ Current: 3.3 · Last updated: 2026-10-23 03:14
 - 3.2: the board column header is 72 px with three lines: the stage name (`text-sm font-semibold`) and its menu, `{total} · {n} deals`, and `Weighted {weighted}` with ` · {k} excluded` appended; the meta lines are `text-meta` muted and truncate, and the chevron clip-path edge now bends at 36/72 px. The full text of each meta line is available through a `Tip` rather than a native `title`, which the lint ban covers.
 - 3.2: the AI score is an outlined pill (`h-5 px-1.5 rounded-full border border-border`) with a 6 px dot in the band colour (70+ success, 40-69 warning, under 40 muted) and `text-[11px]` carrying the `design-ok: score pill` marker; no filled green pill remains.
 - 3.2: the Part 11 board check now pins the 72 px header in `e2e/design/styleChecks.ts`; that is the deliberate Part 12 contract change 6.7.2 names.
+
+- 3.3: the forecast month header is a `grid grid-cols-3 gap-2` of stacked cells (13 px label over a 14/600 tabular value), each value truncating with the full amount in a `Tip`; values switch to `formatMoneyCompact` when the full text would exceed nine characters. Month columns are 240 px minimum and the board scrolls horizontally inside its container.
+- 3.3: the calendar already opened at 08:00 (the Part 9 `initialScrollHour`), so 6.7.3's remaining work was geometry and emphasis: hour rows stay 48 px, labels are `text-meta` in a 56 px gutter, today's column header takes the primary colour, the current-time line is 2 px with a 6 px dot in `--destructive`, and the all-day row has a 32 px minimum height with a bottom border. `data-testid="time-gutter"` is published for the polish spec's 08:00 check.
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

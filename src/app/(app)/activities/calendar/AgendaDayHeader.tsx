@@ -7,7 +7,10 @@ export function AgendaDayHeader({ iso, today }: { iso: string; today: boolean })
   return (
     <div
       data-today={today}
-      className="flex items-center gap-1 border-l border-border px-2 py-1 text-xs font-medium tabular-nums"
+      className={cn(
+        "flex items-center gap-1 border-l border-border px-2 py-1 text-xs font-medium tabular-nums",
+        today && "text-primary",
+      )}
     >
       {/* 6.8.6: today's date number sits in an info-soft circle, in blue 600. */}
       <span

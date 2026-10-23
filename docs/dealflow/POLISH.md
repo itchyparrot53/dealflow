@@ -32,8 +32,8 @@ fixes: **9 violation(s) in 7 file(s); 12 opt-out(s)**.
 | U15 | AI filter box | "Describe a filter" is a tall card wedged into the toolbar, and its placeholder talks about deals on Leads, People and Organizations | "Ask AI" popover, entity placeholders (6.6) | 2.5 | 2.5 | | |
 | U16 | Board column header | "W. 1 excluded" and "Weighted $8…" truncate | 72 px, three lines (6.7.2) | 3.2 | 3.2 | | |
 | U17 | Board cards | Solid green "AI 72" pills shout on every card | calm score pill (6.7.2) | 3.2 | 3.2 | | |
-| U18 | Forecast | Total, Weighted and Won values overlap in each month header | stacked grid (6.7.3) | 3.3 | | | |
-| U19 | Calendar | The day starts at 00:00, so working hours are below the fold; the grid is flat | 6.7.3 | 3.3 | | | |
+| U18 | Forecast | Total, Weighted and Won values overlap in each month header | stacked grid (6.7.3) | 3.3 | 3.3 | | |
+| U19 | Calendar | The day starts at 00:00, so working hours are below the fold; the grid is flat | 6.7.3 | 3.3 | 3.3 | | |
 | U20 | Deal stage track | Every future stage says "0 days" | 6.7.4 | 3.4 | | | |
 | U21 | Document editor | The raw template (`# Quote {{document.number}}`) is the main field; actions mix filled, outline and plain text; "Send" looks disabled | 6.7.5 | 3.5 | | | |
 | U22 | Email thread | White message boxes in dark mode, a narrow centred column, an unlabeled follow-up select | 6.7.6 | 3.6 | | | |
