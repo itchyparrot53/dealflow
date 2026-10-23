@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 4.5 · Last updated: 2026-10-23 06:24
+Current: 4.6 · Last updated: 2026-10-23 06:32
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -39,7 +39,7 @@ Current: 4.5 · Last updated: 2026-10-23 06:24
 - [x] 4.2 End-to-end and gallery
 - [x] 4.3 Integration suite and smoke
 - [x] 4.4 Independent review
-- [ ] 4.5 Final checklist
+- [x] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
 
 ## QA log
@@ -196,4 +196,25 @@ Current: 4.5 · Last updated: 2026-10-23 06:24
 - Progress check: `pnpm check:progress` (final: `pnpm check:progress --final`).
 
 ## Final report
-(written in Task 4.5)
+
+### Checklist (section 11)
+
+1. PASS - `git --no-optional-locks status --porcelain` shows only the owner's untracked `site/public/` files.
+2. PASS - `pnpm install --frozen-lockfile` exits 0; no dependency was added in this part.
+3. PASS - `pnpm typecheck` exits 0.
+4. PASS - `pnpm lint` exits 0 (15 warnings, 1 info).
+5. PASS - `pnpm test:unit` 5433/5433 in 854 files, above the 5356 baseline.
+6. PASS - `pnpm test:integration` 2097/2097 in 412 files against the dev Postgres, re-run after the 4.4 fixes.
+7. PASS - `pnpm build` exits 0.
+8. PASS - `pnpm e2e` 60/60, specs 00 to 16, on the final tree.
+9. PASS - 93 design PNGs (73 Part 11 + 20 `polish-*`).
+10. PASS - smoke printed `[smoke] SMOKE PASS` and `[smoke] backup round trip ok (3 deals)`, with no `dealflow-smoke` container or volume left; it ran before the 4.4 UI-only fixes.
+11. PASS - `pnpm check:design` prints `0 violation(s) in 0 file(s); 17 opt-out(s)`: the two new rules are active and 5 opt-outs were added (settings group label, score pill, badge digit, two paper panels), under the 15 allowed.
+12. PASS - `docs/dealflow/POLISH.md` lists U1 to U30, each with its closing task and commit hash.
+13. PASS - `grep -rn "\-mt-6\|-mx-6" src/components/ui/dialog.tsx` prints nothing; `grep -c DialogBody src/components/ui/dialog.tsx` is 2.
+14. PASS - with `NEXT_PUBLIC_PWA_UI` unset, `src/features/pwa/pwaUi.test.tsx` proves InstallButton, OfflineBanner, PushSettings and the notification Push column render nothing (8/8).
+15. PASS - the 6.9 unit tests pass: `extractJson.test` and `chatJson.test` (18/18), including the truncated reply, doubled-budget retry and schema retry.
+16. PASS - no em dash in any changed text file (`git diff --name-only {base} | grep text extensions | perl` prints nothing); the only byte-level hit is inside a compressed PDF.
+17. PASS - `docs/dealflow/UPSTREAM.md` has the "Part 12" section by area, with the new files and the changed upstream files.
+18. PASS - `pnpm check:progress --final` exits 0.
+
