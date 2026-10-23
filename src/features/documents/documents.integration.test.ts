@@ -864,6 +864,12 @@ describe("sending", () => {
     expect(decoded).toContain('data-df-layout="customer-branded"');
     expect(decoded).toContain("View quote");
     expect(decoded).toContain("Total");
+    // One wrap, a real summary card and a styled button: the double-wrap regression guard.
+    expect(decoded.match(/data-df-layout=/g)).toHaveLength(1);
+    expect(decoded).toMatch(/<td align="center" bgcolor="#[0-9A-Fa-f]{6}"/);
+    expect(decoded).toContain("background:#");
+    expect(decoded).toContain("Valid until");
+    expect(wire).toContain(`Subject: Quote ${sent.value.number ?? ""}`);
 
     const messages = await h.db.execute(
       sql`SELECT count(*)::int AS count FROM email_messages WHERE account_id=${mailboxId}`,

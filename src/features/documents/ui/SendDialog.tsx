@@ -56,6 +56,9 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
   const [to, setTo] = useState(document.customerEmail ?? "");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  // The prefill is a preview of what the server will render anyway. Sending an untouched subject
+  // would freeze the unnumbered draft copy instead of letting the issue step put the number in.
+  const [prefilled, setPrefilled] = useState({ subject: "", message: "" });
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +71,7 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
       if (cancelled || !result.ok) return;
       setSubject(result.value.subject);
       setMessage(result.value.messageHtml);
+      setPrefilled({ subject: result.value.subject, message: result.value.messageHtml });
     });
     return () => {
       cancelled = true;
@@ -81,8 +85,12 @@ export function SendDialog({ open, onOpenChange, document, onSent }: Props): Rea
       document.id,
       {
         ...(to.trim() === "" ? {} : { to: to.trim() }),
-        ...(subject.trim() === "" ? {} : { subject: subject.trim() }),
-        ...(message.trim() === "" ? {} : { message: message.trim() }),
+        ...(subject.trim() === "" || subject === prefilled.subject
+          ? {}
+          : { subject: subject.trim() }),
+        ...(message.trim() === "" || message === prefilled.message
+          ? {}
+          : { message: message.trim() }),
       },
       readCsrfToken(),
     );

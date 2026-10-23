@@ -65,6 +65,14 @@ export const sendEmailInput = z.object({
 
 export type SendEmailInput = z.infer<typeof sendEmailInput>;
 
+// Structural extras that only server-side senders pass (documents, automations). They never come
+// from the composer's validated input, so a client cannot forge a button URL.
+export interface PreparedEmail {
+  mode: "document" | "automation";
+  summary?: { rows: { label: string; value: string }[] };
+  cta?: { label: string; url: string };
+}
+
 export interface SendEmailArgs {
   actorId: string;
   // actorType and actorGroupIds carry the real permission shape for attachment authz.
@@ -76,6 +84,8 @@ export interface SendEmailArgs {
   // attachment sends never silently fail. Tests inject FakeStorageClient.
   storage: StorageClient;
   input: SendEmailInput;
+  // Internal callers only (documents, automations): the wrap mode and the structural summary/CTA.
+  prepared?: PreparedEmail;
   signal?: AbortSignal;
 }
 
@@ -240,8 +250,10 @@ async function runSend(
     trackOpens: resolvedTrackOpens,
     trackLinks: resolvedTrackLinks,
     recipient: input.to[0] ?? "",
+    subject: mergedSubject,
     wrapMode: wrapModeFor(input),
     layout: input.layout,
+    prepared: args.prepared,
     signal,
   });
   if (!bodyResult.ok) return bodyResult;

@@ -30,7 +30,7 @@ builds HTML and no template is edited in code.
 | `booking_cancelled` | customer | Customers | cancel flow (guest) | `Cancelled: {title} with {host}` |
 | `quote_sent` | customer | Customers | document send | `Quote {number} from {company}` |
 | `invoice_sent` | customer | Customers | document send | `Invoice {number} from {company}` |
-| `customer_message` | customer | Customers | composer, reply, automation, documents | the author's subject |
+| `customer_message` | customer | Customers | composer, reply, automation | the author's subject |
 
 The composer and reply path uses `customer_message`, which is not editable in the Templates tab. A
 new email resolves `design.newEmailLayout`; a reply resolves `design.replyLayout`; documents and

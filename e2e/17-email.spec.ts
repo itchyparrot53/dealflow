@@ -51,6 +51,17 @@ async function ensureMailbox(page: Page, adminEmail: string): Promise<void> {
   });
 }
 
+async function chooseSignature(page: Page): Promise<void> {
+  const trigger = page.getByRole("button", { name: "Signature" });
+  if (!(await trigger.isVisible().catch(() => false))) return;
+  await trigger.click();
+  await page.getByRole("menuitem", { name: "Default" }).click();
+  // A fresh compose embeds the selected signature into the body; wait for it before previewing.
+  await expect(page.locator('[contenteditable="true"]').first()).toContainText("Best,", {
+    timeout: 10_000,
+  });
+}
+
 async function composeNew(
   page: Page,
   dealId: string,
@@ -62,6 +73,7 @@ async function composeNew(
   await composer.getByRole("tab", { name: "Email" }).click();
   await page.getByPlaceholder("Subject").fill(subject);
   await page.locator('[contenteditable="true"]').first().fill(body);
+  await chooseSignature(page);
   await composer.getByRole("button", { name: "Send", exact: true }).click();
 }
 
@@ -99,7 +111,6 @@ test.describe("admin", () => {
   test.setTimeout(300_000);
 
   test("admin edits the invite template", async ({ page, browser }) => {
-    const { adminEmail } = fixtures();
     const stamp = Date.now();
     const firstEmail = `e2e-email-${stamp}@example.com`;
     const secondEmail = `e2e-email-reset-${stamp}@example.com`;
@@ -179,6 +190,8 @@ test.describe("admin", () => {
     expect(sent).toContain('data-df-layout="customer-branded"');
     expect(sent).toContain("Hello from the branded layout.");
     expect(sent).toMatch(/\/email-assets\/logo\/[0-9a-f]{16}\.png/);
+    expect(sent.match(/data-df-layout=/g)).toHaveLength(1);
+    expect(sent).toContain("Best,");
 
     const logoPath = /\/email-assets\/logo\/[0-9a-f]{16}\.png/.exec(sent)?.[0] ?? "";
     const logo = await request.get(`http://localhost:3210${logoPath}`);
@@ -222,12 +235,18 @@ test.describe("admin", () => {
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Send", exact: true }).click();
     await expect(dialog).toBeHidden({ timeout: 30_000 });
-    const number = (await page.getByTestId("document-number").first().textContent()) ?? "";
-    const sent = decodedParts(await waitForSent(adminEmail, "View quote"));
+    const number = ((await page.getByTestId("document-number").first().textContent()) ?? "").trim();
+    const raw = await waitForSent(adminEmail, "View quote");
+    const sent = decodedParts(raw);
+    expect(raw).toContain(`Subject: Quote ${number}`);
+    expect(sent.match(/data-df-layout=/g)).toHaveLength(1);
     expect(sent).toContain('data-df-layout="customer-branded"');
-    expect(sent).toContain(number.trim());
+    expect(sent).toContain(number);
     expect(sent).toContain("View quote");
     expect(sent).toContain("Total");
+    expect(sent).toMatch(/<td align="center" bgcolor="#[0-9A-Fa-f]{6}"/);
+    expect(sent).toContain("background:#");
+    expect(sent).toContain("Valid until");
     const publicUrl = /http:\/\/localhost:3210\/d\/[A-Za-z0-9_-]+/.exec(sent)?.[0] ?? "";
     expect(publicUrl).not.toBe("");
     const pageResponse = await request.get(publicUrl);

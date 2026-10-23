@@ -159,7 +159,7 @@ export function SettingsNav({
     icon: Upload,
   };
   const companyItems = [
-    ...COMPANY.items,
+    ...COMPANY.items.filter((item) => item.href !== "/settings/email-design" || isAdmin),
     ...(isAdmin
       ? [
           AUTOMATIONS_ITEM,

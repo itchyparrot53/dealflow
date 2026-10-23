@@ -213,9 +213,10 @@ export function Composer({
   const preview = trpc.emailDesign.previewCustomer.useQuery(
     {
       bodyHtml: body,
-      signatureId: sendSignatureId === "" ? undefined : sendSignatureId,
+      signatureId: signatureId === "" ? undefined : signatureId,
       layout: effectiveLayout,
-      mode: sendMode,
+      threadId: resolvedThreadId,
+      subject,
     },
     { enabled: previewOpen, refetchOnWindowFocus: false },
   );

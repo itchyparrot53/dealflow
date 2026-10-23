@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
+import { wrapCustomerEmail } from "@/features/email-design/wrapCustomerEmail";
 import { gmailProviderForTest } from "@/features/mail/provider/gmailAdapter";
 import { FakeStorageClient } from "../files/storageFake";
 import { FakeGmailClient } from "./gmailFake";
@@ -91,6 +92,56 @@ describe("customer email wrapping in the send path", () => {
         "base64url",
       ).toString("utf-8");
       expect(decodeParts(mime)).toContain("Best regards, Sam");
+    });
+  }, 60_000);
+
+  it("uses the minimal layout for a reply and keeps the logo out of it", () => {
+    const wrapped = wrapCustomerEmail({
+      bodyHtml: "<p>Thanks, that works.</p>",
+      mode: "reply",
+      design: {
+        displayName: "Northwind Studio",
+        accentColor: "#1F5FBF",
+        logo: null,
+        showAddress: true,
+        addressLines: ["1 Northwind Way"],
+        footerText: null,
+        showPoweredBy: false,
+        newEmailLayout: "branded",
+        replyLayout: "minimal",
+        footerOnReplies: false,
+      },
+    });
+    expect(wrapped.html).toContain('data-df-layout="customer-minimal"');
+    expect(wrapped.html).not.toContain("email-assets/logo");
+    expect(wrapped.html).not.toContain("background:#F4F4F7");
+  });
+
+  it("wraps an automation body once in the send path", async () => {
+    await withTestDb(async (db) => {
+      const user = await seedUser(db);
+      const accountId = await seedAccount(db, user.id);
+      const gmail = new FakeGmailClient();
+      const result = await sendEmail(db, {
+        actorId: user.id,
+        actorType: "regular",
+        actorGroupIds: new Set<string>(),
+        provider: gmailProviderForTest(db, accountId, gmail),
+        storage: new FakeStorageClient(),
+        input: {
+          accountId,
+          idempotencyKey: "66666666-6666-6666-6666-666666666666",
+          to: ["customer@example.com"],
+          subject: "Automated",
+          bodyHtml: "<p>Automated body.</p>",
+        },
+        prepared: { mode: "automation" },
+      });
+      expect(result.ok).toBe(true);
+      const body = await storedBody(db, accountId);
+      expect(body.match(/data-df-layout=/g)).toHaveLength(1);
+      expect(body).toContain('data-df-layout="customer-branded"');
+      expect(body).toContain("Automated body.");
     });
   }, 60_000);
 

@@ -71,7 +71,8 @@ export const emailDesignRouter = router({
         bodyHtml: z.string().max(20_000),
         signatureId: z.string().uuid().optional(),
         layout: z.enum(["branded", "minimal", "plain"]).optional(),
-        mode: z.enum(["new", "reply"]).default("new"),
+        threadId: z.string().uuid().optional(),
+        subject: z.string().max(200).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {

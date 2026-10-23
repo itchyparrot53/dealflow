@@ -83,6 +83,7 @@ export async function sendEmailDesignTestAction(
   if (!allowed.ok) return allowed;
   const { actor } = await createContext();
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_LOGIN_REJECTED } };
+  if (actor.type !== "admin") return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
   const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, actor.id));
   if (user === undefined) return { ok: false, error: { id: ERROR_IDS.AUTH_LOGIN_REJECTED } };
   const design = await getEmailDesign(db, SIG());
@@ -108,6 +109,7 @@ export async function sendEmailTemplateTestAction(
   }
   const { actor } = await createContext();
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_LOGIN_REJECTED } };
+  if (actor.type !== "admin") return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
   const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, actor.id));
   if (user === undefined) return { ok: false, error: { id: ERROR_IDS.AUTH_LOGIN_REJECTED } };
   const design = await getEmailDesign(db, SIG());

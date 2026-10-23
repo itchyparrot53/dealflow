@@ -14,6 +14,7 @@ export interface WrapCustomerEmailInput {
   layoutOverride?: CustomerLayout | null;
   design: EmailDesign;
   preheader?: string;
+  subject?: string;
   summary?: EmailSummary;
   cta?: { label: string; url: string };
 }
@@ -50,6 +51,7 @@ export function wrapCustomerEmail(input: WrapCustomerEmailInput): WrappedCustome
     design: input.design,
     bodyHtml: input.bodyHtml,
     preheader: input.preheader,
+    subject: input.subject,
     summary: input.summary,
     cta: input.cta,
   });

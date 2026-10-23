@@ -4,6 +4,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import {
@@ -195,8 +196,21 @@ export function TemplateEditor({
                   />
                 </FormField>
               )}
-              <div>
-                <p className="mb-1.5 text-sm font-medium">{S.variables}</p>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">{S.variables}</p>
+                <Combobox
+                  ariaLabel={S.insertVariable}
+                  value=""
+                  onChange={(name) => {
+                    if (name !== "") insert(name);
+                  }}
+                  options={def.variables.map((variable) => ({
+                    value: variable.name,
+                    label: `{{${variable.name}}}`,
+                  }))}
+                  placeholder={S.insertVariable}
+                  triggerClassName="h-8 w-full"
+                />
                 <div className="flex flex-wrap gap-1.5">
                   {def.variables.map((variable) => (
                     <Tip key={variable.name} label={variable.description}>

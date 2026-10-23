@@ -7,8 +7,6 @@ import { emailTemplates, persons } from "@/db/schema";
 import { renderVariables } from "@/features/documents/variables";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
 import { type SendEmailInput, sendEmail as sendMail } from "@/features/email/send";
-import { getEmailDesign } from "@/features/email-design/design";
-import { wrapCustomerEmail } from "@/features/email-design/wrapCustomerEmail";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { type ResolveDeps, resolveMailProvider } from "@/features/mail/provider/resolve";
 import type { ActionContext, StepResult } from "../runner";
@@ -101,9 +99,7 @@ registerActionHandler("send_email", async (ctx, action) => {
     Object.entries(variables).map(([key, value]) => [key, escapeHtml(value)]),
   );
   const subject = renderVariables(template.subject ?? template.name, variables).slice(0, 200);
-  const rawBodyHtml = renderVariables(template.bodyHtml, safeVariables);
-  const design = await getEmailDesign(ctx.db, ctx.signal);
-  const bodyHtml = wrapCustomerEmail({ bodyHtml: rawBodyHtml, mode: "automation", design }).html;
+  const bodyHtml = renderVariables(template.bodyHtml, safeVariables);
 
   const deps = testDeps ?? {};
   const provider = await resolveMailProvider(ctx.db, mailbox.id, ctx.signal, deps.resolveDeps);
@@ -129,6 +125,7 @@ registerActionHandler("send_email", async (ctx, action) => {
       provider: provider.value,
       storage: deps.storage ?? makeStorageClient(),
       input: payload,
+      prepared: { mode: "automation" },
     });
     if (!sent.ok) return { ok: false, errorId: sent.error.id, detail: "send failed" };
   } finally {

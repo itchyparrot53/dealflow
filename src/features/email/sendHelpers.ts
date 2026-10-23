@@ -16,6 +16,7 @@ import type { AuthUser } from "@/features/permissions/types";
 import { err, ok, type Result } from "@/types/result";
 import { assertSignatureOwner } from "./mailboxOwnership";
 import { sanitizeAuthorHtml } from "./sanitizeHtml";
+import type { PreparedEmail } from "./send";
 import { mintTokensForSend, rewriteBody } from "./tracking";
 
 // Resolved attachment metadata stored in the outbox payload so replay can rebuild MIME.
@@ -52,8 +53,10 @@ export async function applyTrackingAndSignature(
     trackOpens: boolean;
     trackLinks: boolean;
     recipient: string;
+    subject: string;
     wrapMode: "new" | "reply";
     layout?: CustomerLayout;
+    prepared?: PreparedEmail;
     signal: AbortSignal;
   },
 ): Promise<Result<string, AppError>> {
@@ -95,14 +98,18 @@ export async function applyTrackingAndSignature(
   }
 
   // Wrap AFTER tracking and the signature, so the pixel, the rewritten links and the signature are
-  // all inside the layout and the stored/Sent copy is exactly what went on the wire. An
-  // already-wrapped body (a document or an automation) keeps its marker and only gains a text part.
+  // all inside the layout and the stored/Sent copy is exactly what went on the wire. Documents and
+  // automations arrive as sanitised author content plus structural summary/CTA in `prepared`; they
+  // are wrapped here, once, not before the mailbox path.
   const design = await getEmailDesign(db, signal);
   const wrapped = wrapCustomerEmail({
     bodyHtml: body,
-    mode: args.wrapMode,
+    mode: args.prepared?.mode ?? args.wrapMode,
     layoutOverride: args.layout,
     design,
+    subject: args.subject,
+    summary: args.prepared?.summary,
+    cta: args.prepared?.cta,
   });
   if (wrapped.wrapped && wrapped.text !== null) {
     body = wrapped.html;

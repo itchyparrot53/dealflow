@@ -12,7 +12,9 @@ export interface PreviewCustomerInput {
   bodyHtml: string;
   signatureId?: string;
   layout?: CustomerLayout;
-  mode: "new" | "reply";
+  // The 6.6 contract: a reply is identified by its thread, the mode is derived here.
+  threadId?: string;
+  subject?: string;
 }
 
 export async function renderCustomerPreview(
@@ -29,13 +31,18 @@ export async function renderCustomerPreview(
       .from(signatures)
       .where(and(eq(signatures.id, input.signatureId), eq(signatures.userId, actorId)));
     signal.throwIfAborted();
-    if (signature !== undefined) body += sanitizeAuthorHtml(signature.bodyHtml);
+    // A fresh compose embeds the default signature into the body; append only when it is not
+    // already there, so the preview never shows it twice.
+    if (signature !== undefined && !body.includes(signature.bodyHtml)) {
+      body += sanitizeAuthorHtml(signature.bodyHtml);
+    }
   }
   const wrapped = wrapCustomerEmail({
     bodyHtml: body,
-    mode: input.mode,
+    mode: input.threadId === undefined ? "new" : "reply",
     layoutOverride: input.layout,
     design,
+    subject: input.subject,
   });
   return { html: wrapped.html };
 }

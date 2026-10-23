@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Textarea } from "@/components/ui/Textarea";
 import { EMAIL_DESIGN_STRINGS } from "@/constants/emailDesignStrings";
 import { ERROR_IDS } from "@/constants/errorIds";
+import { contrastRatio } from "@/features/email-design/contrast";
 import type { EmailDesignView } from "@/features/email-design/design";
 import type { DesignInput } from "@/features/email-design/schemas";
 import { useToastStore } from "@/features/feedback/toastStore";
@@ -70,9 +71,10 @@ export function BrandingTab({ initial }: { initial: EmailDesignView }): React.Re
   }
 
   function failure(id: string): void {
+    const ratio = contrastRatio(draft.accentColor, "#FFFFFF");
     const message =
       id === ERROR_IDS.EMAIL_DESIGN_ACCENT_CONTRAST
-        ? S.contrastFailed
+        ? `${S.contrastFailed} (${ratio.toFixed(2)}:1, needs 4.5:1)`
         : id === ERROR_IDS.EMAIL_DESIGN_LOGO_INVALID ||
             id === ERROR_IDS.EMAIL_DESIGN_LOGO_TOO_LARGE ||
             id === ERROR_IDS.EMAIL_DESIGN_INPUT_INVALID

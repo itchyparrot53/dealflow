@@ -93,6 +93,29 @@ describe("renderEmail: branded layout", () => {
     expect(html).toContain("&lt;b&gt;£1,200&lt;/b&gt;");
   });
 
+  it("uses the subject as the customer title", () => {
+    const { html } = renderEmail({
+      family: "customer",
+      layout: "branded",
+      design: CUSTOMER,
+      bodyHtml: "<p>Hello.</p>",
+      subject: "A note from Northwind",
+    });
+    expect(html).toContain("<title>A note from Northwind</title>");
+  });
+
+  it("escapes the design's display name and footer text", () => {
+    const { html } = renderEmail({
+      family: "customer",
+      layout: "branded",
+      design: { ...CUSTOMER, displayName: "<b>Acme</b>", footerText: "<i>hello</i>" },
+      bodyHtml: "<p>Hello.</p>",
+    });
+    expect(html).toContain("&lt;b&gt;Acme&lt;/b&gt;");
+    expect(html).toContain("&lt;i&gt;hello&lt;/i&gt;");
+    expect(html).not.toContain("<b>Acme</b>");
+  });
+
   it("includes the customer footer address and text", () => {
     const { html } = renderEmail({
       family: "customer",

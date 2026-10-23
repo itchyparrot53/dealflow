@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-10-23 14:38
+Current: 4.5 · Last updated: 2026-10-23 15:18
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -29,11 +29,13 @@ Current: 4.4 · Last updated: 2026-10-23 14:38
 - [x] 4.1 Email e2e spec and gallery
 - [x] 4.2 Docs
 - [x] 4.3 End-to-end, integration suite and smoke
-- [ ] 4.4 Independent review
+- [x] 4.4 Independent review
 - [ ] 4.5 Final checklist
 - [ ] 4.6 Final report and completion
 
 ## QA log
+- Independent review (4.4): QA RESULT: FAIL, 1 blocker (documents/automations were wrapped before sendEmail, whose sanitizer stripped the marker and tables, then wrapped again), 3 majors (subject lost the number until issue, weak e2e assertions, missing reply/automation wrap tests), 12 minors. All were fixed or answered in the 4.4 Decisions; the fixed tree was re-verified.
+- Final tree: typecheck ok · lint ok (16 warnings) · build ok · unit 5485/5485 · e2e 66/66 (specs 00 to 17) · integration 2107/2107 · check:design 0 · gallery 26 PNGs, every HTML <=5 KB
 - Full: e2e 66/66 (specs 00 to 17) · integration 2106/2106 in 415 files · smoke PASS with backup round trip ok (3 deals), no containers or volumes left
 - Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings) · build ok · unit 5484/5484 in 861 files · check:design 0 violations, 17 opt-outs · e2e/17-email.spec.ts 6/6
 - Phase 2 gate: commands green · typecheck ok · lint ok (15 warnings) · build ok · unit 5479/5479 in 859 files · email, email-design, documents, notifications, scheduling, automations integration 467/467 in 96 files · e2e 01, 02, 06, 08, 09, 10 7/7
@@ -42,6 +44,11 @@ Current: 4.4 · Last updated: 2026-10-23 14:38
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 4.4 blocker: documents and automations no longer wrap before the mailbox path. They pass sanitised author content plus a server-only `prepared` value (mode, summary, CTA) to `sendEmail`; `applyTrackingAndSignature` appends the signature and tracking, then wraps once. This keeps the summary table and button intact, puts the signature inside the layout, and makes the stored/Sent copy the wire copy. The automation and document integration tests now assert one marker, a styled button and a structured summary.
+- 4.4 subject: the send dialog tracks the prefilled subject/message and sends either only when the author changed it; the server then resolves the template after issuing, so the default subject carries the new number (`Quote Q-2026-0003 from ...`). The e2e asserts the number in the MIME Subject header.
+- 4.4 e2e: the branding test selects the Default signature and asserts it in the wire; the quote test asserts one marker, the summary ("Valid until"), the button's `bgcolor` and `background:#...`; the preview test asserts the marker and the body in both the iframe and the wire. The signature is not asserted inside the preview iframe because the composer's embedded signature is applied after the preview query's first snapshot; the wire assertion covers it.
+- 4.4 other fixes: the nav gates Email design on `isAdmin`; both test-send actions require admin; `previewCustomer` takes `threadId` (mode derived) and carries the subject into `<title>`; the template editor has the 6.7 Insert-variable Combobox (the guide now matches); the contrast toast shows the measured ratio; the logo fixture is a 240x60, 296-byte PNG; `documents/send.ts` parses the total with integer minor units; EMAIL.md no longer says documents use `customer_message`; the layout escaping test and the reply/automation wrap tests are added.
+- 4.4 test changes: `localAuth.integration.test` changed only to inject the magic-link sender (grouped with Decision 2.1); `InsertToolbar.test` lost two em dashes from comments; the wrap tests gained reply and automation cases.
 - 4.3: the full suite is 66 tests now (60 from Part 12 plus the six in `17-email`), all passing; integration is 2106/2106 in 415 files; smoke printed `SMOKE PASS` and `backup round trip ok (3 deals)` and left no `dealflow-smoke` container or volume.
 - 4.2: `docs/dealflow/EMAIL.md` is now the architecture and operations guide (renderer, registry, variables, security, testing, adding a template); the user guide gained "How to brand the emails Dealflow sends" and "How to edit an email template" (admin), "How to choose a layout or preview an email" (email), and the quote template note. All 15 PDFs were rebuilt and checked with pdftotext.
 - 4.2: the gallery script stays `.mts` (the plan's path) and ESLint's default project now includes `scripts/dealflow/*.mts`, with the same script overrides as `.mjs`.

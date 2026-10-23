@@ -9,10 +9,8 @@ import { loadEditableDeal } from "@/features/deals/dealAuth";
 import { getActorMailboxStatus } from "@/features/email/mailboxOwnership";
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
 import { type SendEmailInput, sendEmail } from "@/features/email/send";
-import { getEmailDesign } from "@/features/email-design/design";
 import { resolveTemplate } from "@/features/email-design/templates";
 import { renderVariables, stripHeaderBreaks } from "@/features/email-design/variables";
-import { wrapCustomerEmail } from "@/features/email-design/wrapCustomerEmail";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { type ResolveDeps, resolveMailProvider } from "@/features/mail/provider/resolve";
 import type { MailProvider } from "@/features/mail/provider/types";
@@ -60,8 +58,17 @@ function dateOrEmpty(value: string | null): string {
   return value === null || value === "" ? "" : formatCalendarDate(value);
 }
 
+function toMinor(total: string, digits: number): number {
+  const negative = total.trim().startsWith("-");
+  const [whole = "0", fraction = ""] = total.replace("-", "").trim().split(".");
+  const scaled = BigInt(whole === "" ? "0" : whole) * 10n ** BigInt(digits);
+  const decimals = fraction.padEnd(digits, "0").slice(0, digits);
+  const minor = scaled + BigInt(decimals === "" ? "0" : decimals);
+  return Number(negative ? -minor : minor);
+}
+
 function formattedTotal(document: DocumentView): string {
-  const minor = Math.round(Number(document.total) * 10 ** currencyMinorDigits(document.currency));
+  const minor = toMinor(document.total, currencyMinorDigits(document.currency));
   return formatMoney(minor, document.currency, { decimals: 2 });
 }
 
@@ -156,24 +163,6 @@ async function issueBeforeSend(
   return ok(current);
 }
 
-async function wrapDocumentMail(
-  db: Db,
-  document: DocumentView,
-  content: DocumentMail,
-  signal: AbortSignal,
-): Promise<Result<string, AppError>> {
-  const design = await getEmailDesign(db, signal);
-  return ok(
-    wrapCustomerEmail({
-      bodyHtml: content.bodyHtml,
-      mode: "document",
-      design,
-      summary: { rows: content.summary },
-      cta: { label: content.ctaLabel, url: document.publicUrl },
-    }).html,
-  );
-}
-
 // Read-only prefill for the send dialog: the same copy the server would send.
 export async function getDocumentSendDraft(
   db: Db,
@@ -262,14 +251,12 @@ export async function sendDocument(
     resolved = provider.value;
   }
 
-  const wrapped = await wrapDocumentMail(db, document, content.value, signal);
-  if (!wrapped.ok) return wrapped;
   const payload: SendEmailInput = {
     accountId: target.value.mailboxId,
     idempotencyKey: randomUUID(),
     to: [target.value.recipient],
     subject: content.value.subject,
-    bodyHtml: wrapped.value,
+    bodyHtml: content.value.bodyHtml,
     linkDealId: document.dealId,
     ...(deal.personId !== null ? { linkPersonId: deal.personId } : {}),
   };
@@ -282,6 +269,11 @@ export async function sendDocument(
       provider: resolved,
       storage: deps.storage ?? makeStorageClient(),
       input: payload,
+      prepared: {
+        mode: "document",
+        summary: { rows: content.value.summary },
+        cta: { label: content.value.ctaLabel, url: document.publicUrl },
+      },
       // No caller signal: sendEmail picks MAIL_SEND_TIMEOUT_MS for an IMAP send, so
       // the SMTP send plus its Sent append is not cut short by the action budget.
     });
