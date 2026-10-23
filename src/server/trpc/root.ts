@@ -9,6 +9,7 @@ import { dealRouter } from "@/features/deals/dealRouter";
 import { documentsRouter } from "@/features/documents/router";
 import { mailLabelsRouter } from "@/features/email/mailLabelsRouter";
 import { emailRouter } from "@/features/email/router";
+import { emailDesignRouter } from "@/features/email-design/router";
 import { enrichmentRouter } from "@/features/enrichment/router";
 import { filesRouter } from "@/features/files/router";
 import { forecastRouter } from "@/features/forecast/router";
@@ -45,6 +46,7 @@ export const appRouter = router({
   contacts: contactsRouter,
   currency: currencyRouter,
   documents: documentsRouter,
+  emailDesign: emailDesignRouter,
   automations: automationsRouter,
   forms: formsRouter,
   insights: insightsRouter,

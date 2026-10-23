@@ -32,6 +32,7 @@ import { SecondaryNavLink } from "@/components/navigation/SecondaryNavLink";
 import { AI_STRINGS } from "@/constants/aiStrings";
 import { AUTOMATIONS_STRINGS, WEBHOOKS_STRINGS } from "@/constants/automationsStrings";
 import { DOCUMENTS_STRINGS } from "@/constants/documentsStrings";
+import { EMAIL_DESIGN_STRINGS } from "@/constants/emailDesignStrings";
 import { ENRICHMENT_STRINGS } from "@/constants/enrichmentStrings";
 import { BOOKING_STRINGS, FORMS_STRINGS } from "@/constants/formsBookingStrings";
 import { PROJECTS_API_STRINGS } from "@/constants/projectsApiStrings";
@@ -79,6 +80,7 @@ const COMPANY: NavSection = {
     { href: "/settings/currencies", label: CURRENCY_STRINGS.title, icon: Coins },
     { href: "/settings/products", label: PRODUCTS_STRINGS.title, icon: Package },
     { href: "/settings/documents", label: DOCUMENTS_STRINGS.title, icon: FileText },
+    { href: "/settings/email-design", label: EMAIL_DESIGN_STRINGS.title, icon: Mail },
     { href: "/settings/users", label: STRINGS.settings.users, icon: Users },
     { href: "/settings/teams", label: STRINGS.settings.teams, icon: UsersRound },
     { href: "/settings/goals", label: SETTINGS_STRINGS.goals, icon: Target },

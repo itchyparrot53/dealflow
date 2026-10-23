@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p13-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-23 13:38
+Current: 3.2 · Last updated: 2026-10-23 14:00
 
 ## Phase base commits
 - Phase 0: 7cb94503b3fc1ab2644d782fd4025c5799e1c382
@@ -22,7 +22,7 @@ Current: 3.1 · Last updated: 2026-10-23 13:38
 - [x] 2.2 Customer email wrapping in the send path, automations and booking
 - [x] 2.3 Quote and invoice emails
 - [x] 2.4 Phase 2 QA gate
-- [ ] 3.1 Settings › Email design: Branding tab
+- [x] 3.1 Settings › Email design: Branding tab
 - [ ] 3.2 Templates tab and the template editor
 - [ ] 3.3 Composer layout control and preview
 - [ ] 3.4 Phase 3 QA gate
@@ -40,6 +40,9 @@ Current: 3.1 · Last updated: 2026-10-23 13:38
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (15 warnings, 1 info) · build ok · unit 5444/5444 in 855 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
+- 3.1: the Branding tab is a client component with a debounced tRPC `emailDesign.previewDesign` query; the preview is a scriptless `sandbox=""` iframe at 600/375 px. Saving is a server action that re-checks admin, CSRF, Zod and the accent contrast in the service; the logo upload goes through FormData and is sniffed by magic bytes.
+- 3.1: a page for non-admins calls `notFound()` (the nav hides the item as well), matching the plan's "page calls notFound for non-admins".
+- 3.1: the audit target type is `settings` for email design and template updates, because the audit enum has no email member; the action names are `email_design.updated` and `email_template.updated`.
 - 2.3: quote and invoice mail resolves `quote_sent`/`invoice_sent` from the registry; the subject and message are editable, the summary (number, total, valid-until or due date) and the "View quote"/"View invoice" button are structural and point at the existing public URL.
 - 2.3: the message field is now rich text (`RichTextBody`, TipTap) and is sanitised with `sanitizeAuthorHtml`; the send input's message limit rose from 4,000 to 20,000 characters for HTML. The dialog prefills from a read-only `documentSendDraftAction` on open.
 - 2.3: the total is rendered with `formatMoney(..., { decimals: 2 })` from the document's currency and integer minor units; dates use the Part 12 calendar formatter, and the subject goes through `stripHeaderBreaks`.
