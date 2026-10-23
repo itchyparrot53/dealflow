@@ -10,6 +10,7 @@ export function FormField({
   hint,
   error,
   required = false,
+  span,
   className,
   children,
 }: {
@@ -18,6 +19,8 @@ export function FormField({
   hint?: React.ReactNode;
   error?: React.ReactNode;
   required?: boolean;
+  // "full" makes the field span both columns of a FormGrid columns={2}.
+  span?: "full";
   className?: string;
   children: React.ReactNode;
 }): React.ReactNode {
@@ -25,7 +28,7 @@ export function FormField({
   // asterisk (which is decorative). Only a single element child can carry the attribute.
   const child = required ? withRequired(children) : children;
   return (
-    <div className={cn("grid gap-1.5", className)}>
+    <div className={cn("grid gap-1.5", span === "full" && "sm:col-span-2", className)}>
       <span className="flex items-center gap-0.5">
         <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
           {label}

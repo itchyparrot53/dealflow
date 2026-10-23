@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p12-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-10-23 03:06
+Current: 3.2 · Last updated: 2026-10-23 03:12
 
 ## Phase base commits
 - Phase 0: 3ef72635f7a31c2863c3e0a3b1f2e88e186769ac
@@ -26,7 +26,7 @@ Current: 3.1 · Last updated: 2026-10-23 03:06
 - [x] 2.4 Contacts view switcher (U13)
 - [x] 2.5 Toolbar order and the Ask AI popover (U14, U15)
 - [x] 2.6 Phase 2 QA gate
-- [ ] 3.1 Add deal dialog (U6)
+- [x] 3.1 Add deal dialog (U6)
 - [ ] 3.2 Board column header and card score (U16, U17)
 - [ ] 3.3 Forecast header and calendar (U18, U19)
 - [ ] 3.4 Stage track, person and organization records (U20, U27)
@@ -127,6 +127,11 @@ Current: 3.1 · Last updated: 2026-10-23 03:06
 
 - 2.6: gate fixes: the Part 11 style checks now follow 6.4 (active row 216x40 expanded, rail 232 then 56 then 232) and the focus check resets the sequential focus start to the body, because the rail check's toggle click left it at the rail's last row. Both are contract updates, not loosened assertions.
 - 2.6: the rail toggle's tooltip uses the `Tip` primitive and the links dropped their native `title` attributes, which the lint ban covers.
+
+- 3.1: the Add deal body is the 6.7.1 `FormGrid columns={2}`: contact person and organization lead, Title and Pipeline stage span both columns, then value, pipeline, labels, expected close date, owner, source channel and ID, visible to and the custom fields. The Person group moved from the right column to a full-span section under a 1 px divider with its "Person" heading, and its phone/email rows are the 2-column grids 6.7.1 asks for.
+- 3.1: the stage picker is now text-free 24 px chevron segments: the selected stage and those before it use the primary colour, later ones the track colour, every segment is a radio with `aria-label` and `aria-checked`, a tooltip names it, arrow keys move the selection, and the caption under the track reads the stage name with "Stage n of total".
+- 3.1 CONTRACT CHANGE: the value row keeps the base-currency badge rather than a currency Combobox. `dealCreateInput` has no `currency` field and a new deal always uses the workspace base currency, so a picker would be a dead control and adding the field would change stored data (out of scope for Part 12). The badge now sits at the same 32 px control height as its neighbours, which is the visual half of U6's complaint.
+- 3.1: changed tests: the Add deal layout test now asserts the 6.7.1 FormGrid, the full-span Person section and the "Stage 1 of 2" caption; `StageChevron.test` is new (text-free radios, aria-checked, caption, arrow keys).
 
 ## Owner actions
 - TODO(owner): `.env` has `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` set with `GOOGLE_WORKSPACE_DOMAIN` empty, which the all-or-nothing rule rejects. Set the domain or blank all three; commands that load `.env` carry `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN=` until then.

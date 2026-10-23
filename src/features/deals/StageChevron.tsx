@@ -1,8 +1,9 @@
 "use client";
 import type React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { Tip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { funnelClip, stageSegmentStyle } from "./boardStageHeader";
+import { funnelClip } from "./boardStageHeader";
 
 interface StageChevronProps {
   stages: Array<{ id: string; name: string }>;
@@ -10,41 +11,65 @@ interface StageChevronProps {
   onSelect: (stageId: string) => void;
 }
 
-// Pipedrive's stage picker in the Add deal dialog: a row of interlocking chevron segments, one per
-// stage, with the chosen stage filled in the brand color. Built on the design-system RadioGroup so
-// it gets arrow-key roving + screen-reader semantics; each stage is a RadioGroupItem rendering its
-// own chevron segment (custom children, so no default radio dot).
+// Pipedrive's stage picker in the Add deal dialog (PLAN-PART12.md 6.7.1): one text-free chevron
+// segment per stage, the selected stage and the ones before it in the primary colour, later ones
+// on the track colour. Each segment is a radio with the stage name as its accessible name and a
+// tooltip; the selected stage is named under the track with "Stage n of total". Radix's RadioGroup
+// gives arrow-key roving for free.
 export function StageChevron({ stages, selectedId, onSelect }: StageChevronProps): React.ReactNode {
+  const selectedIndex = stages.findIndex((stage) => stage.id === selectedId);
+  const current = selectedIndex === -1 ? 0 : selectedIndex;
+  const selected = stages[current];
+
+  // Radix moves focus between radios with the arrow keys; making the selection follow the same
+  // keys is this picker's own behaviour (6.7.1), so it is explicit rather than incidental.
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+    const delta =
+      event.key === "ArrowRight" || event.key === "ArrowDown"
+        ? 1
+        : event.key === "ArrowLeft" || event.key === "ArrowUp"
+          ? -1
+          : 0;
+    if (delta === 0 || stages.length === 0) return;
+    event.preventDefault();
+    const next = stages[(current + delta + stages.length) % stages.length];
+    if (next !== undefined) onSelect(next.id);
+  }
+
   return (
-    <RadioGroup
-      value={selectedId}
-      onValueChange={onSelect}
-      aria-label="Pipeline stage"
-      className="flex w-full gap-0 overflow-hidden"
-    >
-      {stages.map((s, i) => {
-        const selected = s.id === selectedId;
-        // Inherit the pipeline board's per-order hue (stageSegmentStyle) instead of a dark
-        // primary / muted-gray pair: every stage reads in its own color, and the chosen stage
-        // is emphasized with a deeper fill + bold (picker semantics, so unselected stays light).
-        const fill = stageSegmentStyle(i, selected ? "current" : "future");
-        return (
-          <RadioGroupItem
-            key={s.id}
-            value={s.id}
-            style={{
-              clipPath: funnelClip(i === 0),
-              backgroundColor: fill.backgroundColor,
-              fontWeight: fill.fontWeight,
-            }}
-            className={cn(
-              "-ml-1 flex-1 truncate px-3 py-1.5 text-center text-xs text-foreground transition-opacity first:ml-0 hover:opacity-90",
-            )}
-          >
-            {s.name}
-          </RadioGroupItem>
-        );
-      })}
-    </RadioGroup>
+    <div className="space-y-1.5">
+      <RadioGroup
+        value={selectedId}
+        onValueChange={onSelect}
+        onKeyDown={onKeyDown}
+        aria-label="Pipeline stage"
+        className="flex w-full gap-0.5"
+      >
+        {stages.map((stage, index) => (
+          <Tip key={stage.id} label={stage.name}>
+            <RadioGroupItem
+              value={stage.id}
+              aria-label={stage.name}
+              style={{
+                clipPath: funnelClip(index === 0),
+                backgroundColor: index <= current ? "hsl(var(--primary))" : "hsl(var(--track))",
+              }}
+              className={cn(
+                "h-6 min-w-0 flex-1 rounded-none border-0 transition-opacity hover:opacity-90",
+                index === current ? "opacity-100" : "opacity-90",
+              )}
+            >
+              <span className="sr-only">{stage.name}</span>
+            </RadioGroupItem>
+          </Tip>
+        ))}
+      </RadioGroup>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-medium">{selected?.name ?? ""}</span>
+        <span className="text-meta text-muted-foreground">
+          Stage {current + 1} of {stages.length}
+        </span>
+      </div>
+    </div>
   );
 }

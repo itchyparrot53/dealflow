@@ -103,8 +103,12 @@ describe("AddDealModal", () => {
     expect(screen.getByLabelText("Organization")).toBeInTheDocument();
     expect(screen.getByLabelText("Deal title")).toBeInTheDocument();
     expect(screen.getByLabelText("Pipeline")).toBeInTheDocument();
-    // Stage chevron radios.
-    expect(screen.getByRole("radio", { name: "Qualified" })).toBeInTheDocument();
+    // Stage chevron radios, with the caption 6.7.1 puts under the track.
+    expect(screen.getByRole("radio", { name: "Qualified" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    expect(screen.getByText("Stage 1 of 2")).toBeInTheDocument();
     // Right column person contact rows.
     expect(screen.getByLabelText("Phone 1")).toBeInTheDocument();
     expect(screen.getByLabelText("Email 1")).toBeInTheDocument();
@@ -113,21 +117,15 @@ describe("AddDealModal", () => {
     expect(screen.queryByLabelText("Visible to")).toBeNull();
   });
 
-  it("lets both grid columns shrink so the body never scrolls horizontally", () => {
-    // The two-column body is a grid whose tracks default to minmax(auto, fr): without min-w-0
-    // on each child, the columns refuse to shrink below their content and the dialog gets a
-    // horizontal scrollbar (the PERSON column clipped past the right edge). min-w-0 lets the
-    // fr tracks resolve to the container width. jsdom has no layout engine, so this asserts the
-    // structural guard that the browser confirmed removes the overflow.
+  it("uses the 6.7.1 two-column FormGrid with a full-span Person section", () => {
     renderModal();
     const dialog = screen.getByRole("dialog", { name: "Add deal" });
     const grid = dialog.querySelector<HTMLElement>(".grid");
     expect(grid).not.toBeNull();
-    const columns = Array.from(grid?.children ?? []);
-    expect(columns).toHaveLength(2);
-    for (const col of columns) {
-      expect(col).toHaveClass("min-w-0");
-    }
+    expect(grid?.className).toContain("sm:grid-cols-2");
+    // The Person group sits under the fields, across both columns, under its own heading.
+    expect(dialog.querySelector('[data-span="full"]')).not.toBeNull();
+    expect(screen.getByRole("heading", { name: "Person" })).toBeInTheDocument();
   });
 
   it("submits the parsed deal (title + pipeline + first stage) via createDealAction", async () => {

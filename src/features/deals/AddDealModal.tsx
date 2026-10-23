@@ -198,6 +198,7 @@ export function AddDealModal(props: AddDealModalProps): React.ReactNode {
   return (
     <EntityCreateModalShell
       title="Add deal"
+      layout="stacked"
       personMode={state.personMode}
       phones={state.phones}
       emails={state.emails}

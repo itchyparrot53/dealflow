@@ -42,8 +42,9 @@ interface AddDealLeftColumnProps {
   dealCustomFields?: React.ReactNode;
 }
 
-// Left column of the Add deal dialog (Pipedrive field order): contact/org, title, value, pipeline,
-// stage, label, close date, owner, source, visibility. Purely presentational.
+// The fields of the Add deal body (PLAN-PART12.md 6.7.1): a fragment of FormFields for the shell's
+// two-column FormGrid, in Pipedrive's order. Contact/org lead, Title and Pipeline stage span both
+// columns, and the Person group is rendered full-span by the shell after these fields.
 export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNode {
   const {
     state,
@@ -62,7 +63,7 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
   const titleId = useId();
   const sourceChannelIdId = useId();
   return (
-    <div className="flex flex-col gap-3 text-sm">
+    <>
       <EntityCombobox
         label="Contact person"
         options={people}
@@ -85,9 +86,13 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
         onClear={() => set({ orgMode: "existing", orgId: "", newOrgName: "" })}
       />
 
-      {state.orgMode === "new" ? organizationCustomFields : null}
+      {state.orgMode === "new" ? (
+        <div data-span="full" className="sm:col-span-2">
+          {organizationCustomFields}
+        </div>
+      ) : null}
 
-      <FormField label="Title" htmlFor={titleId}>
+      <FormField label="Title" htmlFor={titleId} span="full">
         <Input
           id={titleId}
           aria-label="Deal title"
@@ -112,7 +117,9 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
             onChange={(e) => set({ value: e.target.value })}
             placeholder="0"
           />
-          <span className="flex items-center rounded-md border bg-muted px-2.5 text-sm text-muted-foreground">
+          {/* Deals are created in the workspace base currency; the create input has no currency
+              field, so this is the read-only pair the badge always was, at control height. */}
+          <span className="flex h-8 shrink-0 items-center rounded-md border border-border-strong bg-muted px-2.5 text-sm text-muted-foreground">
             {baseCurrency}
           </span>
         </div>
@@ -130,7 +137,7 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
         />
       </FormField>
 
-      <FormField label="Pipeline stage">
+      <FormField label="Pipeline stage" span="full">
         <StageChevron
           stages={stages}
           selectedId={state.stageId}
@@ -213,6 +220,6 @@ export function AddDealLeftColumn(props: AddDealLeftColumnProps): React.ReactNod
       )}
 
       {dealCustomFields}
-    </div>
+    </>
   );
 }
