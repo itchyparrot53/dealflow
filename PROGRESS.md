@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 5.3 · Last updated: 2026-11-10 18:06
+Current: 5.4 · Last updated: 2026-11-10 18:22
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -38,12 +38,13 @@ Current: 5.3 · Last updated: 2026-11-10 18:06
 - [x] 4.4 Phase 4 QA gate
 - [x] 5.1 Campaigns e2e spec, demo seed and gallery
 - [x] 5.2 Docs
-- [ ] 5.3 End-to-end, integration suite and smoke
+- [x] 5.3 End-to-end, integration suite and smoke
 - [ ] 5.4 Independent review
 - [ ] 5.5 Final checklist
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 5 full runs: e2e 73/73 passed in 6.6m (specs 00 to 18) · integration 2195/2195 in 435 files (78s) · smoke SMOKE PASS, "backup round trip ok (3 deals)", no leftover containers or volumes · campaign screenshots 16
 - Phase 4 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5567/5567 in 873 files · check:design 0 violations, 18 opt-outs · sequences, reports, insights and automations integration 38/38 in 5 files · e2e:build ok · e2e 09-automations 1/1 passed
 - Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5549/5549 in 870 files · check:design 0 violations, 18 opt-outs · campaigns and marketing integration 61/61 in 14 files · e2e:build ok · e2e 10-forms-booking and 17-email 7/7 passed
 - Phase 2 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5522/5522 in 864 files · check:design 0 violations, 18 opt-outs · campaigns files 36/36 (2 unit, 2 integration)
@@ -71,6 +72,8 @@ Current: 5.3 · Last updated: 2026-11-10 18:06
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 5.3: the full e2e run used `DEV_PG_PORT=5434` and `MINIO_PORT=9100`, not the plan's 5433 template, because 5433 and 9000 belong to the owner's production stack. The smoke run keeps its own `dealflow-smoke` compose project on 3310/3311/3312 and publishes no host Postgres port.
+- 5.3: no fixes were needed after the three full runs. The smoke backup round trip created and restored its three deals with the campaign tables present, and the script removed its project and volumes.
 - 5.2: the guide gained `docs/user-guide/campaigns.md` after Email, and the index, PDF builder and site builder list it in the same position. The PDF builder now clears the output folder before writing: adding a section renumbers every later file, and without the clear it left 25 PDFs instead of 16.
 - 5.2: the user guide is task-based and text only. The 5.1 gallery already covers the visual review, and new image references would have been broken in the PDF until a capture pass ran.
 - 5.2: `self-hosting.md` documents the campaign SMTP, rate, DOI, DKIM and bounce mailbox variables, the domain-check and warm-up checklist, and the restart requirement. The postal address, senders and consent defaults stay in Settings, not env.
