@@ -8,8 +8,6 @@ import { FakeStorageClient } from "@/features/files/storageFake";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { getCampaignAssetBytes, saveCampaignAsset } from "./assets";
 
-type Db = Parameters<Parameters<typeof withTestDb>[0]>[0];
-
 const signal = new AbortController().signal;
 const PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",

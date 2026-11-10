@@ -147,7 +147,8 @@ export function sanitizeMarketingHtml(input: string): SanitizedMarketingHtml {
       img: (tagName, attribs) => {
         const src = attribs.src ?? "";
         if (/^data:/i.test(src) && !dataImageAllowed(src)) {
-          const { src: _dropped, ...rest } = attribs;
+          const rest = { ...attribs };
+          delete rest.src;
           return { tagName, attribs: rest };
         }
         return { tagName, attribs };

@@ -1,5 +1,4 @@
 import { sanitizeAuthorHtml } from "@/features/email/sanitizeHtml";
-import { htmlToText } from "@/features/email-design/layout";
 import { EMAIL_COLORS, EMAIL_FONT_STACK, type EmailDesign } from "@/features/email-design/tokens";
 import { renderMerge } from "./personalize";
 import { renderPlainText } from "./plainText";
@@ -49,10 +48,11 @@ function sizeOf(html: string): number {
 function styleAuthorHtml(html: string, font: string): string {
   return html.replace(
     /<(p|a|h1|h2|ul|ol|li|blockquote)(\s[^>]*)?>/gi,
-    (match, tag: string, attrs = "") => {
-      if (/\bstyle=/.test(attrs)) return match;
+    (match: string, tag: string, attrs: string | undefined) => {
+      const attributes = attrs ?? "";
+      if (/\bstyle=/.test(attributes)) return match;
       const base = `font-family:${font};font-size:15px;line-height:24px;margin:0 0 16px;`;
-      return `<${tag}${attrs} style="${base}">`;
+      return `<${tag}${attributes} style="${base}">`;
     },
   );
 }
@@ -138,8 +138,6 @@ function leafHtml(block: LeafCampaignBlock, ctx: CampaignRenderContext, font: st
       return socialHtml(block, ctx);
     case "html":
       return sanitizeMarketingHtml(renderMerge(block.html, ctx.values, "html")).html;
-    default:
-      return "";
   }
 }
 
@@ -157,7 +155,14 @@ function blockHtml(block: CampaignBlock, ctx: CampaignRenderContext, font: strin
         `<td class="df-col" width="50%" valign="top" style="width:50%;padding:0 8px;">${blocks.map((inner) => leafHtml(inner, ctx, font)).join("")}</td>`;
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${cell(block.columns[0])}${cell(block.columns[1])}</tr></table>`;
     }
-    default:
+    case "heading":
+    case "text":
+    case "button":
+    case "image":
+    case "divider":
+    case "spacer":
+    case "social":
+    case "html":
       return leafHtml(block, ctx, font);
   }
 }

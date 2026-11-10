@@ -1,12 +1,13 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 2.5 · Last updated: 2026-11-10 02:09
+Current: 3.1 · Last updated: 2026-11-10 02:17
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
 - Phase 1: fee0b914419c1c4537efa16e37ea141e6009848b
 - Phase 2: 435862f58a04d9becb8ea9d9237cdc4e7ed1c8ba
+- Phase 3: 47235f9eed5ea56c0523f5a358b46d506fb7f318
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
@@ -22,7 +23,7 @@ Current: 2.5 · Last updated: 2026-11-10 02:09
 - [x] 2.2 Campaign images and the public asset route
 - [x] 2.3 Builder UI
 - [x] 2.4 Templates: starters, saved templates, test send
-- [ ] 2.5 Phase 2 QA gate
+- [x] 2.5 Phase 2 QA gate
 - [ ] 3.1 Campaign list and the four-step editor
 - [ ] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
 - [ ] 3.3 Sending engine
@@ -41,6 +42,7 @@ Current: 2.5 · Last updated: 2026-11-10 02:09
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 2 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5522/5522 in 864 files · check:design 0 violations, 18 opt-outs · campaigns files 36/36 (2 unit, 2 integration)
 - Phase 1 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5494/5494 in 862 files · check:design 0 violations, 18 opt-outs · marketing, forms and import integration 251/251 in 44 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files · check:design 0 violations, 17 opt-outs
@@ -65,6 +67,7 @@ Current: 2.5 · Last updated: 2026-11-10 02:09
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 2.5: the gate's lint pass forced three splits for the cognitive-complexity budget: the builder's properties panel and import dialog became their own components, `patchBlock` lost a mutable flag, and `styleAuthorHtml` got explicit parameter types. Behaviour is unchanged and the pure tests still pass.
 - 2.4: the four starters are static documents with stable block ids and no images, so they can be used before any asset exists; a schema test parses each one.
 - 2.4: saved templates are `campaign_templates` rows validated on save; duplicates are named "<name> copy".
 - 2.4: the test send uses the system mailer (captured under `MAIL_FAKE`) until Task 3.3 lands the marketing transport; recipients must be active users of the install, at most five, and the subject is prefixed `[Test] `.

@@ -23,12 +23,9 @@ export async function GET(
   const [, id, ext] = match;
   if (id === undefined || ext === undefined) return new Response(null, { status: 404 });
 
-  const asset = await getCampaignAssetBytes(
-    db,
-    id,
-    ext,
-    AbortSignal.timeout(5_000),
-  ).catch(() => null);
+  const asset = await getCampaignAssetBytes(db, id, ext, AbortSignal.timeout(5_000)).catch(
+    () => null,
+  );
   if (asset === null) return new Response(null, { status: 404 });
 
   return new Response(new Uint8Array(asset.bytes), {

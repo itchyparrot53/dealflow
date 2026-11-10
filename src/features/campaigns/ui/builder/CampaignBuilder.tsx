@@ -18,42 +18,21 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Redo2, Undo2 } from "lucide-react";
-import { useEffect, useId, useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { FormField } from "@/components/ui/form-field";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { Textarea } from "@/components/ui/Textarea";
-import { RichTextBody } from "@/features/email/composer/RichTextBody";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { uploadCampaignAssetAction } from "../../actions";
-import type { CampaignBlock, CampaignDocument, LeafCampaignBlock } from "../../blocks/schema";
+import type { CampaignBlock, CampaignDocument } from "../../blocks/schema";
+import { BlockProperties } from "./BlockProperties";
 import { findBlock, type HistoryState, historyReducer, newBlockId } from "./history";
-import { importHtmlBlock } from "./importHtml";
+import { ImportHtmlDialog } from "./ImportHtmlDialog";
 import { blockIdFromMessage } from "./messages";
 
 // 6.6's Content step: a palette, a live 600 px preview with click-to-select, a properties panel,
 // dnd-kit plus keyboard reorder, undo/redo and HTML import. The iframe is sandboxed with scripts
 // only (no allow-same-origin), so its messages arrive with the opaque origin and nothing it does
 // can touch this page.
-
-const MERGE_FIELDS = [
-  "person.first_name",
-  "person.last_name",
-  "person.name",
-  "organization.name",
-  "owner.name",
-  "company.name",
-];
 
 const ADDABLE: Array<{ type: string; label: string }> = [
   { type: "heading", label: "Heading" },
@@ -66,17 +45,6 @@ const ADDABLE: Array<{ type: string; label: string }> = [
   { type: "social", label: "Social links" },
   { type: "html", label: "HTML" },
 ];
-
-const ALIGN_OPTIONS = [
-  { value: "left", label: "Left" },
-  { value: "center", label: "Center" },
-  { value: "right", label: "Right" },
-];
-
-const SPACER_OPTIONS = [8, 16, 24, 32, 48].map((height) => ({
-  value: String(height),
-  label: `${height} px`,
-}));
 
 function blockLabel(block: CampaignBlock): string {
   switch (block.type) {
@@ -100,8 +68,6 @@ function blockLabel(block: CampaignBlock): string {
       return "Social links";
     case "html":
       return "HTML block";
-    default:
-      return "Block";
   }
 }
 
@@ -114,8 +80,6 @@ function blankBlock(type: string): CampaignBlock | null {
       return { id, type: "text", html: "<p>Write something.</p>" };
     case "button":
       return { id, type: "button", label: "Read more", href: "https://example.com", align: "left" };
-    case "image":
-      return null;
     case "divider":
       return { id, type: "divider" };
     case "spacer":
@@ -192,13 +156,7 @@ export function CampaignBuilder({
   } satisfies HistoryState);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const [importHtml, setImportHtml] = useState("");
-  const [removed, setRemoved] = useState<string[]>([]);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [mergeField, setMergeField] = useState("");
-  const [mergeSeq, setMergeSeq] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileInputId = useId();
 
   const preview = trpc.campaigns.preview.useQuery(
     { document: state.doc },
@@ -223,13 +181,9 @@ export function CampaignBuilder({
   useEffect(() => {
     function onKey(event: KeyboardEvent): void {
       if (!event.altKey || selectedId === null) return;
-      if (event.key === "ArrowUp") {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
         event.preventDefault();
-        dispatch({ type: "move", id: selectedId, delta: -1 });
-      }
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        dispatch({ type: "move", id: selectedId, delta: 1 });
+        dispatch({ type: "move", id: selectedId, delta: event.key === "ArrowUp" ? -1 : 1 });
       }
     }
     window.addEventListener("keydown", onKey);
@@ -248,14 +202,32 @@ export function CampaignBuilder({
     const from = ids.indexOf(String(active.id));
     const to = ids.indexOf(String(over.id));
     if (from < 0 || to < 0) return;
-    const reordered = arrayMove(state.doc.blocks, from, to);
-    dispatch({ type: "set", doc: { ...state.doc, blocks: reordered } });
+    dispatch({ type: "set", doc: { ...state.doc, blocks: arrayMove(state.doc.blocks, from, to) } });
   }
 
-  const selected = selectedId === null ? null : findBlock(state.doc, selectedId);
-
-  function patch(patchValue: Record<string, unknown>): void {
-    if (selectedId !== null) dispatch({ type: "patch", id: selectedId, patch: patchValue });
+  function addBlock(type: string): void {
+    setUploadError(null);
+    if (type === "image") {
+      const first = assets.data?.[0];
+      if (first === undefined) {
+        setUploadError("Upload an image first, then add the block.");
+        return;
+      }
+      dispatch({
+        type: "add",
+        block: {
+          id: newBlockId(),
+          type: "image",
+          assetId: first.id,
+          alt: "",
+          width: Math.min(600, first.width || 320),
+          align: "center",
+        },
+      });
+      return;
+    }
+    const block = blankBlock(type);
+    if (block !== null) dispatch({ type: "add", block });
   }
 
   async function upload(file: File): Promise<void> {
@@ -268,8 +240,11 @@ export function CampaignBuilder({
       return;
     }
     await utils.campaigns.listAssets.invalidate();
-    patch({ assetId: result.value.id });
+    if (selectedId !== null)
+      dispatch({ type: "patch", id: selectedId, patch: { assetId: result.value.id } });
   }
+
+  const selected = selectedId === null ? null : findBlock(state.doc, selectedId);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
@@ -309,31 +284,7 @@ export function CampaignBuilder({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  if (entry.type === "image") {
-                    setSelectedId(null);
-                    setImportHtml("");
-                    const first = assets.data?.[0];
-                    if (first === undefined) {
-                      setUploadError("Upload an image first, then add the block.");
-                    } else {
-                      dispatch({
-                        type: "add",
-                        block: {
-                          id: newBlockId(),
-                          type: "image",
-                          assetId: first.id,
-                          alt: "",
-                          width: Math.min(600, first.width || 320),
-                          align: "center",
-                        },
-                      });
-                    }
-                    return;
-                  }
-                  const block = blankBlock(entry.type);
-                  if (block !== null) dispatch({ type: "add", block });
-                }}
+                onClick={() => addBlock(entry.type)}
               >
                 {entry.label}
               </Button>
@@ -390,233 +341,31 @@ export function CampaignBuilder({
         {selected === null ? (
           <p className="text-sm text-muted-foreground">Select a block to edit it.</p>
         ) : (
-          <div className="space-y-3">
-            {selected.type === "heading" ? (
-              <>
-                <FormField label="Text" htmlFor="block-heading-text">
-                  <Input
-                    id="block-heading-text"
-                    value={selected.text}
-                    onChange={(event) => patch({ text: event.target.value })}
-                  />
-                </FormField>
-                <FormField label="Level" htmlFor="block-heading-level">
-                  <Select
-                    ariaLabel="Heading level"
-                    value={String(selected.level)}
-                    onChange={(value) => patch({ level: Number(value) })}
-                    options={[
-                      { value: "1", label: "Heading 1" },
-                      { value: "2", label: "Heading 2" },
-                    ]}
-                  />
-                </FormField>
-              </>
-            ) : null}
-
-            {selected.type === "text" ? (
-              <>
-                <RichTextBody
-                  html={selected.html}
-                  onChange={(html) => patch({ html })}
-                  ariaLabel="Text block"
-                  insertToken={
-                    mergeField === "" ? undefined : { text: `{{${mergeField}}}`, seq: mergeSeq }
-                  }
-                />
-                <FormField label="Insert merge field" htmlFor="block-merge">
-                  <Select
-                    ariaLabel="Insert merge field"
-                    value=""
-                    onChange={(value) => {
-                      if (value === "") return;
-                      setMergeField(value);
-                      setMergeSeq((seq) => seq + 1);
-                    }}
-                    options={MERGE_FIELDS.map((field) => ({ value: field, label: `{{${field}}}` }))}
-                    placeholder="Insert merge field"
-                  />
-                </FormField>
-              </>
-            ) : null}
-
-            {selected.type === "button" ? (
-              <>
-                <FormField label="Label" htmlFor="block-button-label">
-                  <Input
-                    id="block-button-label"
-                    value={selected.label}
-                    onChange={(event) => patch({ label: event.target.value })}
-                  />
-                </FormField>
-                <FormField label="URL" htmlFor="block-button-href">
-                  <Input
-                    id="block-button-href"
-                    value={selected.href}
-                    onChange={(event) => patch({ href: event.target.value })}
-                  />
-                </FormField>
-              </>
-            ) : null}
-
-            {selected.type === "image" ? (
-              <>
-                <FormField label="Image" htmlFor="block-image-asset">
-                  <Select
-                    ariaLabel="Image"
-                    value={selected.assetId}
-                    onChange={(value) => patch({ assetId: value })}
-                    options={(assets.data ?? []).map((asset) => ({
-                      value: asset.id,
-                      label: `${asset.width}×${asset.height}`,
-                    }))}
-                    placeholder="Choose an image"
-                  />
-                </FormField>
-                <FormField label="Alt text" htmlFor="block-image-alt" required>
-                  <Input
-                    id="block-image-alt"
-                    value={selected.alt}
-                    onChange={(event) => patch({ alt: event.target.value })}
-                  />
-                </FormField>
-                <FormField label="Width" htmlFor="block-image-width">
-                  <Input
-                    id="block-image-width"
-                    type="number"
-                    min={1}
-                    max={600}
-                    value={String(selected.width)}
-                    onChange={(event) => patch({ width: Number(event.target.value) })}
-                  />
-                </FormField>
-                <FormField label="Upload an image" htmlFor={fileInputId}>
-                  <input
-                    id={fileInputId}
-                    type="file"
-                    accept="image/png,image/jpeg,image/gif"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file !== undefined) void upload(file);
-                    }}
-                  />
-                </FormField>
-                {uploadError === null ? null : (
-                  <p className="text-sm text-destructive">Upload failed: {uploadError}</p>
-                )}
-              </>
-            ) : null}
-
-            {selected.type === "spacer" ? (
-              <FormField label="Height" htmlFor="block-spacer-height">
-                <Select
-                  ariaLabel="Spacer height"
-                  value={String(selected.height)}
-                  onChange={(value) => patch({ height: Number(value) })}
-                  options={SPACER_OPTIONS}
-                />
-              </FormField>
-            ) : null}
-
-            {selected.type === "html" ? (
-              <FormField label="HTML" htmlFor="block-html">
-                <Textarea
-                  id="block-html"
-                  rows={8}
-                  value={selected.html}
-                  onChange={(event) => patch({ html: event.target.value })}
-                />
-              </FormField>
-            ) : null}
-
-            {"align" in selected ? (
-              <FormField label="Align" htmlFor="block-align">
-                <Select
-                  ariaLabel="Block alignment"
-                  value={selected.align}
-                  onChange={(value) => patch({ align: value })}
-                  options={ALIGN_OPTIONS}
-                />
-              </FormField>
-            ) : null}
-
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  dispatch({
-                    type: "duplicate",
-                    id: selected.id,
-                    newId: newBlockId(),
-                  })
-                }
-                disabled={selected.type === "columns"}
-              >
-                Duplicate
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  dispatch({ type: "remove", id: selected.id });
-                  setSelectedId(null);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
+          <BlockProperties
+            block={selected}
+            assets={assets.data ?? []}
+            uploadError={uploadError}
+            patch={(patch) => {
+              if (selectedId !== null) dispatch({ type: "patch", id: selectedId, patch });
+            }}
+            onDuplicate={() =>
+              dispatch({ type: "duplicate", id: selected.id, newId: newBlockId() })
+            }
+            onDelete={() => {
+              dispatch({ type: "remove", id: selected.id });
+              setSelectedId(null);
+            }}
+            onUpload={(file) => void upload(file)}
+          />
         )}
       </aside>
 
-      <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent size="lg">
-          <DialogHeader>
-            <DialogTitle>Import HTML</DialogTitle>
-          </DialogHeader>
-          <DialogBody className="space-y-3">
-            <FormField label="Paste email HTML" htmlFor="import-html" hint="Styles must be inline.">
-              <Textarea
-                id="import-html"
-                rows={10}
-                value={importHtml}
-                onChange={(event) => setImportHtml(event.target.value)}
-              />
-            </FormField>
-            {removed.length === 0 ? null : (
-              <p className="text-sm text-muted-foreground">Removed: {removed.join(", ")}</p>
-            )}
-            {importError === null ? null : (
-              <p className="text-sm text-destructive">{importError}</p>
-            )}
-          </DialogBody>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setImportOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                const result = importHtmlBlock(state.doc, importHtml, newBlockId());
-                setRemoved(result.removed);
-                if (result.doc === null) {
-                  setImportError("Nothing importable was left after sanitising.");
-                  return;
-                }
-                setImportError(null);
-                dispatch({ type: "set", doc: result.doc });
-                setImportHtml("");
-                setImportOpen(false);
-              }}
-            >
-              Import
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ImportHtmlDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        document={state.doc}
+        onImported={(doc) => dispatch({ type: "set", doc })}
+      />
     </div>
   );
 }

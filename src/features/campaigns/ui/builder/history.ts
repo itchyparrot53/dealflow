@@ -57,26 +57,26 @@ export function patchBlock(
   id: string,
   patch: Record<string, unknown>,
 ): CampaignDocument {
-  let changed = false;
-  const blocks = doc.blocks.map((block) => {
-    if (block.id === id) {
-      changed = true;
-      return { ...block, ...patch } as CampaignBlock;
-    }
-    if (!isColumns(block)) return block;
-    let columnChanged = false;
-    const columns = block.columns.map((column) =>
-      column.map((inner) => {
-        if (inner.id !== id) return inner;
-        columnChanged = true;
-        return { ...inner, ...patch } as LeafCampaignBlock;
-      }),
-    ) as Extract<CampaignBlock, { type: "columns" }>["columns"];
-    if (!columnChanged) return block;
-    changed = true;
-    return { ...block, columns };
-  });
-  return changed ? { ...doc, blocks } : doc;
+  if (findBlock(doc, id) === null) return doc;
+  if (doc.blocks.some((block) => block.id === id)) {
+    return {
+      ...doc,
+      blocks: doc.blocks.map((block) => (block.id === id ? { ...block, ...patch } : block)),
+    };
+  }
+  return {
+    ...doc,
+    blocks: doc.blocks.map((block) =>
+      isColumns(block)
+        ? {
+            ...block,
+            columns: block.columns.map((column) =>
+              column.map((inner) => (inner.id === id ? { ...inner, ...patch } : inner)),
+            ) as Extract<CampaignBlock, { type: "columns" }>["columns"],
+          }
+        : block,
+    ),
+  };
 }
 
 export function removeBlock(doc: CampaignDocument, id: string): CampaignDocument {
@@ -120,7 +120,7 @@ export function duplicateBlock(doc: CampaignDocument, id: string, newId: string)
   if (index < 0) return doc;
   const source = doc.blocks[index];
   if (source === undefined || source.type === "columns") return doc;
-  const copy: CampaignBlock = { ...source, id: newId } as CampaignBlock;
+  const copy = { ...source, id: newId };
   const blocks = [...doc.blocks];
   blocks.splice(index + 1, 0, copy);
   return { ...doc, blocks };

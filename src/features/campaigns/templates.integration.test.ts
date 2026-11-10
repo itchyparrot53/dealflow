@@ -18,8 +18,6 @@ import {
 } from "./templates";
 import { sendCampaignTest } from "./testSend";
 
-type Db = Parameters<Parameters<typeof withTestDb>[0]>[0];
-
 const signal = new AbortController().signal;
 
 function actorOf(id: string, type: "admin" | "regular" = "admin"): PermSetUser {

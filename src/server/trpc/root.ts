@@ -1,6 +1,7 @@
 import { activitiesRouter } from "@/features/activities/router";
 import { aiRouter } from "@/features/ai/router";
 import { automationsRouter } from "@/features/automations/router";
+import { campaignsRouter } from "@/features/campaigns/router";
 import { collaborationRouter } from "@/features/collaboration/router";
 import { contactsRouter } from "@/features/contacts/router";
 import { currencyRouter } from "@/features/currency/router";
@@ -19,7 +20,6 @@ import { importRouter } from "@/features/import/router";
 import { insightsRouter } from "@/features/insights/router";
 import { labelsRouter } from "@/features/labels/router";
 import { leadRouter } from "@/features/leads/leadRouter";
-import { campaignsRouter } from "@/features/campaigns/router";
 import { marketingRouter } from "@/features/marketing/router";
 import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
