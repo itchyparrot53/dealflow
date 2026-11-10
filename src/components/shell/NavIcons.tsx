@@ -8,6 +8,7 @@ import {
   Kanban,
   Lightbulb,
   List,
+  Megaphone,
   Settings,
   Sprout,
   TrendingUp,
@@ -65,6 +66,10 @@ export function ActivitiesIcon({ className }: IconProps): React.ReactNode {
   return <CalendarDays aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
 
+export function CampaignsIcon({ className }: IconProps): React.ReactNode {
+  return <Megaphone aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
+}
+
 export function InboxIcon({ className }: IconProps): React.ReactNode {
   return <Inbox aria-hidden="true" className={className ?? NAV_ICON_CLASS} />;
 }
@@ -89,6 +94,7 @@ export const NAV_ICONS: Record<NavKey, (props: IconProps) => React.ReactNode> = 
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
   inbox: InboxIcon,
+  campaigns: CampaignsIcon,
   dashboard: DashboardIcon,
   settings: SettingsIcon,
 };

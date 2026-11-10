@@ -10,6 +10,9 @@ import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { type CampaignMime, campaignAssetUrl } from "./assets";
 import { renderCampaign } from "./blocks/render";
 import { campaignDocumentSchema } from "./blocks/schema";
+import { campaignSegmentSchema } from "./schemas";
+import { previewSegment } from "./segment";
+import { getCampaignEditorView, listCampaigns } from "./service";
 import { listCampaignTemplates } from "./templates";
 
 // The builder's server reads. The preview is rendered server-side so the iframe receives finished
@@ -38,6 +41,32 @@ function previewValues(companyName: string): Record<string, string> {
 }
 
 export const campaignsRouter = router({
+  list: protectedProcedure.query(async ({ ctx }) => {
+    requireView(ctx.actor);
+    return listCampaigns(ctx.db, AbortSignal.timeout(10_000));
+  }),
+
+  get: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      requireView(ctx.actor);
+      return getCampaignEditorView(ctx.db, input.id, AbortSignal.timeout(10_000));
+    }),
+
+  segmentPreview: protectedProcedure
+    .input(z.object({ segment: campaignSegmentSchema }))
+    .query(async ({ ctx, input }) => {
+      requireView(ctx.actor);
+      const result = await previewSegment(
+        ctx.db,
+        ctx.actor,
+        input.segment,
+        AbortSignal.timeout(15_000),
+      );
+      if (!result.ok) throw result.error;
+      return result.value;
+    }),
+
   preview: protectedProcedure
     .input(
       z.object({ document: campaignDocumentSchema, preheader: z.string().max(140).optional() }),

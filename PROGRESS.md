@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.1 · Last updated: 2026-11-10 02:17
+Current: 3.2 · Last updated: 2026-11-10 02:35
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -24,7 +24,7 @@ Current: 3.1 · Last updated: 2026-11-10 02:17
 - [x] 2.3 Builder UI
 - [x] 2.4 Templates: starters, saved templates, test send
 - [x] 2.5 Phase 2 QA gate
-- [ ] 3.1 Campaign list and the four-step editor
+- [x] 3.1 Campaign list and the four-step editor
 - [ ] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
 - [ ] 3.3 Sending engine
 - [ ] 3.4 Tracking routes, web version, timeline and click alerts
@@ -67,6 +67,11 @@ Current: 3.1 · Last updated: 2026-11-10 02:17
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 3.1: the editor autosaves through `updateCampaignAction` 800 ms after the last edit, and the service refuses edits once a campaign is sent.
+- 3.1: the recipient preview compiles the same people filter as the list (`compileContactFilter`), then applies `canSee` and the consent rules in `classifyPeople`; the send snapshot in 3.3 reuses this preview.
+- 3.1: the Review checklist is pure (`campaignChecklist`) fed by `auditDocument`; the Send and Schedule buttons arrive with the sending engine (3.3), so no dead control ships in 3.1.
+- 3.1: only the Campaigns and Templates tabs render; Automated and Insights are added in Phase 4 rather than shipping tabs that do nothing.
+- 3.1: the editor is a keyed form component seeded from props (no setState in an effect), which the React lint rule requires and which also keeps the four steps in separate components.
 - 2.5: the gate's lint pass forced three splits for the cognitive-complexity budget: the builder's properties panel and import dialog became their own components, `patchBlock` lost a mutable flag, and `styleAuthorHtml` got explicit parameter types. Behaviour is unchanged and the pure tests still pass.
 - 2.4: the four starters are static documents with stable block ids and no images, so they can be used before any asset exists; a schema test parses each one.
 - 2.4: saved templates are `campaign_templates` rows validated on save; duplicates are named "<name> copy".

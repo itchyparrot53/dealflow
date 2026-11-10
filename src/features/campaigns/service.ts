@@ -1,0 +1,170 @@
+import { desc, eq } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
+import type { Db } from "@/db/client";
+import { campaignSenders, campaignSettings, campaigns } from "@/db/schema";
+import { can } from "@/features/permissions/can";
+import type { PermSetUser } from "@/features/permissions/effective";
+import { err, ok, type Result } from "@/types/result";
+import type { CampaignCreateInput, CampaignUpdateInput } from "./schemas";
+
+// Campaign CRUD (3.1). A sent campaign is read-only; drafts and scheduled campaigns can be edited.
+// The list and editor read through the router, mutations through server actions.
+
+export interface CampaignListRow {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  subject: string;
+  scheduledAt: string | null;
+  createdAt: string;
+  totals: { recipients?: number };
+}
+
+export async function listCampaigns(db: Db, signal: AbortSignal): Promise<CampaignListRow[]> {
+  const rows = await db
+    .select({
+      id: campaigns.id,
+      name: campaigns.name,
+      type: campaigns.type,
+      status: campaigns.status,
+      subject: campaigns.subject,
+      scheduledAt: campaigns.scheduledAt,
+      createdAt: campaigns.createdAt,
+      totals: campaigns.totals,
+    })
+    .from(campaigns)
+    .orderBy(desc(campaigns.createdAt));
+  signal.throwIfAborted();
+  return rows.map((row) => ({
+    ...row,
+    scheduledAt: row.scheduledAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+    totals: row.totals as { recipients?: number },
+  }));
+}
+
+export async function getCampaign(db: Db, id: string, signal: AbortSignal) {
+  const [row] = await db.select().from(campaigns).where(eq(campaigns.id, id)).limit(1);
+  signal.throwIfAborted();
+  return row ?? null;
+}
+
+// Sender verification and the postal address are part of the Review checklist, so the editor reads
+// them with the campaign instead of making three calls.
+export async function getCampaignEditorView(db: Db, id: string, signal: AbortSignal) {
+  const campaign = await getCampaign(db, id, signal);
+  if (campaign === null) return null;
+  const [sender] =
+    campaign.senderId === null
+      ? []
+      : await db
+          .select({ verifiedAt: campaignSenders.verifiedAt })
+          .from(campaignSenders)
+          .where(eq(campaignSenders.id, campaign.senderId))
+          .limit(1);
+  const [settings] = await db
+    .select({ postalAddress: campaignSettings.postalAddress })
+    .from(campaignSettings)
+    .where(eq(campaignSettings.id, 1))
+    .limit(1);
+  return {
+    campaign: {
+      ...campaign,
+      scheduledAt: campaign.scheduledAt?.toISOString() ?? null,
+      startedAt: campaign.startedAt?.toISOString() ?? null,
+      finishedAt: campaign.finishedAt?.toISOString() ?? null,
+      createdAt: campaign.createdAt.toISOString(),
+      updatedAt: campaign.updatedAt.toISOString(),
+      totals: campaign.totals as { recipients?: number },
+    },
+    senderVerified: sender?.verifiedAt !== null && sender?.verifiedAt !== undefined,
+    postalAddress: settings?.postalAddress ?? "",
+  };
+}
+
+function deny(actor: PermSetUser): AppError {
+  return new AppError(ERROR_IDS.PERM_DENIED, "campaigns.edit required", { userId: actor.id });
+}
+
+export async function createCampaign(
+  db: Db,
+  actor: PermSetUser,
+  input: CampaignCreateInput,
+  signal: AbortSignal,
+): Promise<Result<{ id: string }, AppError>> {
+  signal.throwIfAborted();
+  if (!can(actor, "campaigns.edit")) return err(deny(actor));
+  const [row] = await db
+    .insert(campaigns)
+    .values({
+      name: input.name,
+      type: input.type,
+      subject: input.subject,
+      preheader: input.preheader,
+      templateId: input.templateId,
+      content: input.content,
+      createdBy: actor.id,
+    })
+    .returning({ id: campaigns.id });
+  if (row === undefined) {
+    return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "campaign insert returned no row"));
+  }
+  return ok({ id: row.id });
+}
+
+export async function updateCampaign(
+  db: Db,
+  actor: PermSetUser,
+  input: CampaignUpdateInput,
+  signal: AbortSignal,
+): Promise<Result<{ id: string }, AppError>> {
+  signal.throwIfAborted();
+  if (!can(actor, "campaigns.edit")) return err(deny(actor));
+  const current = await getCampaign(db, input.id, signal);
+  if (current === null) {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", { id: input.id }));
+  }
+  if (current.status === "sent") {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_SENDABLE, "a sent campaign is read-only", {}));
+  }
+
+  const [row] = await db
+    .update(campaigns)
+    .set({
+      ...(input.name === undefined ? {} : { name: input.name }),
+      ...(input.type === undefined ? {} : { type: input.type }),
+      ...(input.subject === undefined ? {} : { subject: input.subject }),
+      ...(input.preheader === undefined ? {} : { preheader: input.preheader }),
+      ...(input.senderId === undefined ? {} : { senderId: input.senderId }),
+      ...(input.replyTo === undefined ? {} : { replyTo: input.replyTo }),
+      ...(input.segment === undefined ? {} : { segment: input.segment }),
+      ...(input.content === undefined ? {} : { content: input.content }),
+      updatedAt: new Date(),
+    })
+    .where(eq(campaigns.id, input.id))
+    .returning({ id: campaigns.id });
+  if (row === undefined) {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", { id: input.id }));
+  }
+  return ok({ id: row.id });
+}
+
+export async function deleteCampaign(
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+): Promise<Result<void, AppError>> {
+  signal.throwIfAborted();
+  if (!can(actor, "campaigns.edit")) return err(deny(actor));
+  const current = await getCampaign(db, id, signal);
+  if (current === null) {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", { id }));
+  }
+  if (current.status !== "draft" && current.status !== "cancelled") {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_SENDABLE, "only a draft can be deleted", {}));
+  }
+  await db.delete(campaigns).where(eq(campaigns.id, id));
+  return ok(undefined);
+}

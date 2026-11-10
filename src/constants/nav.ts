@@ -10,6 +10,7 @@ export const NAV_ITEMS = [
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
   { href: "/activities", key: "activities", section: "/activities" },
   { href: "/inbox", key: "inbox", section: "/inbox" },
+  { href: "/campaigns", key: "campaigns", section: "/campaigns" },
   { href: "/dashboard", key: "dashboard", section: "/dashboard" },
   // The /settings index redirects by role (admins -> company settings, everyone else -> personal
   // preferences), so a non-admin never lands on an admin-only page.

@@ -21,6 +21,7 @@ export const STRINGS = {
     contactsTimeline: "Timeline",
     activities: "Activities",
     inbox: "Inbox",
+    campaigns: "Campaigns",
     dashboard: "Performance",
     settings: "Settings",
     docs: "Docs",
