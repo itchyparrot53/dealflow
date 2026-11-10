@@ -89,7 +89,7 @@ export function ReportView({
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">{report.campaign.name}</h1>
+          <h1 className="text-title font-semibold">{report.campaign.name}</h1>
           <p className="text-sm text-muted-foreground">
             {report.campaign.subject} · {report.campaign.status}
           </p>

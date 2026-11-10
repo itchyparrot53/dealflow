@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 4.4 · Last updated: 2026-11-10 17:14
+Current: 5.1 · Last updated: 2026-11-10 17:23
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -9,6 +9,7 @@ Current: 4.4 · Last updated: 2026-11-10 17:14
 - Phase 2: 435862f58a04d9becb8ea9d9237cdc4e7ed1c8ba
 - Phase 3: 47235f9eed5ea56c0523f5a358b46d506fb7f318
 - Phase 4: 52f70e969e9a7963582abaedbaa910e03737a9a1
+- Phase 5: b4291a968c75ee457dffe1b12b395092af26a4df
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
@@ -34,7 +35,7 @@ Current: 4.4 · Last updated: 2026-11-10 17:14
 - [x] 4.1 Sequences: model, editor, scheduler, entries and exits
 - [x] 4.2 Campaign report and recipients export
 - [x] 4.3 Campaign insights with comparison and type filter
-- [ ] 4.4 Phase 4 QA gate
+- [x] 4.4 Phase 4 QA gate
 - [ ] 5.1 Campaigns e2e spec, demo seed and gallery
 - [ ] 5.2 Docs
 - [ ] 5.3 End-to-end, integration suite and smoke
@@ -43,6 +44,7 @@ Current: 4.4 · Last updated: 2026-11-10 17:14
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 4 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5567/5567 in 873 files · check:design 0 violations, 18 opt-outs · sequences, reports, insights and automations integration 38/38 in 5 files · e2e:build ok · e2e 09-automations 1/1 passed
 - Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5549/5549 in 870 files · check:design 0 violations, 18 opt-outs · campaigns and marketing integration 61/61 in 14 files · e2e:build ok · e2e 10-forms-booking and 17-email 7/7 passed
 - Phase 2 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5522/5522 in 864 files · check:design 0 violations, 18 opt-outs · campaigns files 36/36 (2 unit, 2 integration)
 - Phase 1 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5494/5494 in 862 files · check:design 0 violations, 18 opt-outs · marketing, forms and import integration 251/251 in 44 files
@@ -69,6 +71,7 @@ Current: 4.4 · Last updated: 2026-11-10 17:14
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 4.4: the gate caught one raw `text-xl` report title; it now uses the named `text-title` step that `src/typeScale.test.ts` enforces. No other fixes were needed.
 - 4.3: "Your average" is the unweighted mean of each campaign's own rate, not a pooled rate; the arrow appears only beyond 10% relative difference and a zero average shows no arrow. Rates with no denominator are excluded from the mean.
 - 4.3: the comparison reads sent campaigns in a 30, 90 or 365 day window (default 90), applies the campaign-type and sender filters in SQL, and excludes hidden sequence step campaigns; the Automated tab reads the same event aggregates per step and groups them per sequence in JS.
 - 4.3: the Automated tab respects the same date range and sender filter (joined through the hidden campaign), while the type filter applies only to the campaign comparison because sequences have no type.
