@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 2.1 · Last updated: 2026-11-10 01:56
+Current: 2.2 · Last updated: 2026-11-10 02:02
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -18,7 +18,7 @@ Current: 2.1 · Last updated: 2026-11-10 01:56
 - [x] 1.4 Form consent field and CSV import mapping
 - [x] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
 - [x] 1.6 Phase 1 QA gate
-- [ ] 2.1 Block schema, renderer, plain text and marketing sanitiser
+- [x] 2.1 Block schema, renderer, plain text and marketing sanitiser
 - [ ] 2.2 Campaign images and the public asset route
 - [ ] 2.3 Builder UI
 - [ ] 2.4 Templates: starters, saved templates, test send
@@ -65,6 +65,10 @@ Current: 2.1 · Last updated: 2026-11-10 01:56
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 2.1: the campaign renderer is its own module (`campaigns/blocks/render.ts`) because `renderEmail` is one-to-one shaped; it reuses `EMAIL_COLORS`, `EMAIL_FONT_STACK`, `escapeHtml`, `htmlToText` and the MSO/VML patterns. Merge fallbacks (`{{person.first_name|there}}`) live in `personalize.ts` because Part 13's engine has none.
+- 2.1: the marketing sanitiser uses `sanitize-html` (the plan's choice) with a CSS property allow-list, a 32 KB cap on `data:` images and no `<style>`; it also returns the removed tag names so the import dialog can show what was stripped.
+- 2.1: the six social icons are 24 px monochrome PNGs generated once with the installed Chrome (Playwright screenshot of a letter mark) and committed under `public/email/social`; nothing hotlinks a third-party icon.
+- 2.1: the two-column block stacks via a `.df-col` media query at 620 px, and nested columns are rejected by the schema rather than flattened at render time.
 - 1.6: `CONTRACT CHANGE:` Next.js refuses a `route.ts` and a `page.tsx` at the same segment, so the one-click endpoint moved to `POST /u/{token}/one-click` (still under `/u/*`, same token-only CSRF exemption) while the preference page keeps `/u/{token}`. Task 3.3's `List-Unsubscribe` header must use the `/one-click` URL.
 - 1.6: the gate caught two regressions from the new UI: the public confirm and unsubscribe `h1`s used raw `text-2xl` (fixed to the named `text-title` step), and the person detail unit mock needed the `marketing.getPerson` query and invalidation (test wiring only, no assertion weakened).
 - 1.5: the person marketing read is a tRPC query (`marketing.getPerson`) rather than props from the server page, so the section can invalidate after a change and the IP and user agent are nulled server-side unless the actor holds `marketing.manage`.
