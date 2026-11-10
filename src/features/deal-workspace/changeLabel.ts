@@ -1,6 +1,7 @@
 // Change-log row -> display label. Split out of historyTimeline.ts, which owns the shape of the
 // feed rather than the wording of an individual audit row.
 import {
+  CHANGE_FIELD_CAMPAIGN_EVENT,
   CHANGE_FIELD_CUSTOM_PREFIX,
   CHANGE_FIELD_FOLLOWER,
   CHANGE_FIELD_ORG,
@@ -144,11 +145,23 @@ function lostStatusLabel(field: string, oldValue: unknown, newValue: unknown): s
   return suffix === "" ? head : `${head} · ${suffix}`;
 }
 
+// Campaign engagement rows carry their finished sentence in the value (6.8), because the label
+// names the campaign and, for a click, a host that the generic "field: old to new" form cannot
+// express. Anything malformed falls through to that generic form rather than rendering "[object]".
+function campaignEventLabel(field: string, newValue: unknown): string | null {
+  if (field !== CHANGE_FIELD_CAMPAIGN_EVENT) return null;
+  if (typeof newValue !== "object" || newValue === null) return null;
+  const label = (newValue as Record<string, unknown>).label;
+  return typeof label === "string" && label.length > 0 ? label : null;
+}
+
 export function formatChangeLabel(entry: {
   field: string;
   oldValue: unknown;
   newValue: unknown;
 }): string {
+  const campaign = campaignEventLabel(entry.field, entry.newValue);
+  if (campaign !== null) return campaign;
   const lost = lostStatusLabel(entry.field, entry.oldValue, entry.newValue);
   if (lost !== null) return lost;
   const directional = directionalLabel(entry.field, entry.oldValue, entry.newValue);

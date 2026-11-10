@@ -25,6 +25,8 @@ export const NOTIFICATION_TYPES = [
   "ai_bulk_score",
   // Part 8: someone was assigned a project task.
   "project_task_assigned",
+  // Part 14: a campaign recipient clicked a tracked link. Goes to the person's owner.
+  "campaign_click",
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

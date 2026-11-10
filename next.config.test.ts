@@ -132,6 +132,11 @@ describe("next.config security headers", () => {
   it("does not advertise the framework version", () => {
     expect(nextConfig.poweredByHeader).toBe(false);
   });
+
+  it("marks the public campaign web version noindex", async () => {
+    expect((await headersForPath("/v/token")).get("x-robots-tag")).toEqual(["noindex"]);
+    expect(await cspForPath("/v/token")).toContain("frame-ancestors 'none'");
+  });
 });
 
 // Part 6: /f/* and /book/* are embedded on other sites, so they are the only routes allowed to

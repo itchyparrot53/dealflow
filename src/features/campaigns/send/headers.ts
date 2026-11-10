@@ -8,7 +8,9 @@ export interface CampaignHeadersInput {
   recipientId: string;
   campaignType: string;
   baseUrl: string;
-  unsubscribeUrl: string;
+  // The RFC 8058 one-click endpoint: the mail client POSTs the List-Unsubscribe body here, so a
+  // URL that only renders the preference page would not satisfy the one-click contract.
+  unsubscribeOneClickUrl: string;
 }
 
 export function campaignSubject(subject: string): string {
@@ -18,7 +20,7 @@ export function campaignSubject(subject: string): string {
 export function campaignHeaders(input: CampaignHeadersInput): Record<string, string> {
   const domain = new URL(input.baseUrl).hostname;
   return {
-    "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
+    "List-Unsubscribe": `<${input.unsubscribeOneClickUrl}>`,
     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     Precedence: "bulk",
     "X-Dealflow-Campaign": input.campaignId,

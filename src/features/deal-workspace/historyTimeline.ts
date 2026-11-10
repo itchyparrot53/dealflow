@@ -1,4 +1,4 @@
-import { CHANGE_FIELD_STAGE_ID } from "@/constants/changeLogFields";
+import { CHANGE_FIELD_CAMPAIGN_EVENT, CHANGE_FIELD_STAGE_ID } from "@/constants/changeLogFields";
 import { type CommentableEntityType, isCommentableEntityType } from "@/constants/comments";
 import type { CalendarActivity } from "@/features/activities/calendar";
 import type { ChangeLogEntry } from "@/features/collaboration/changeLog";
@@ -27,7 +27,14 @@ export type HistoryItem =
       entityType?: CommentableEntityType;
       entityId?: string;
     }
-  | { kind: "event"; id: string; at: Date; label: string; actorName: string | null }
+  | {
+      kind: "event";
+      id: string;
+      at: Date;
+      label: string;
+      actorName: string | null;
+      campaign?: boolean;
+    }
   // One linked email, per message rather than per thread: Pipedrive splits a thread across the
   // timeline so each message sits at its own moment. The body is absent, it loads on expand.
   | { kind: "email"; id: string; at: Date; message: EmailTimelineMessage }
@@ -68,6 +75,9 @@ function toChangeItem(c: ChangeLogEntry): HistoryItem {
     at: c.createdAt,
     label,
     actorName: c.actorName,
+    // A campaign engagement row is email activity, so the Email filter includes it (6.8) and the
+    // rail gives it a megaphone instead of the neutral changelog dot.
+    campaign: c.field === CHANGE_FIELD_CAMPAIGN_EVENT,
   };
 }
 

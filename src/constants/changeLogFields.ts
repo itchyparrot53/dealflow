@@ -26,6 +26,10 @@ export const CHANGE_FIELD_ORG = "org_id";
 export const CHANGE_FIELD_PARTICIPANT = "participant";
 export const CHANGE_FIELD_FOLLOWER = "follower";
 
+// Part 14: campaign engagement rows (sent, opened, clicked, unsubscribed, bounced). The value is
+// a pre-built label, because the timeline wording names the campaign and, for a click, the host.
+export const CHANGE_FIELD_CAMPAIGN_EVENT = "campaign_event";
+
 // Custom-field edits log one row per changed key under this prefix (the raw def key is
 // dynamic, so the render layer matches on the prefix rather than an enumerated field name).
 export const CHANGE_FIELD_CUSTOM_PREFIX = "custom_field:";

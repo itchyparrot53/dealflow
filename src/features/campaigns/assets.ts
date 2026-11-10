@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
+import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { campaignAssets } from "@/db/schema";
@@ -7,6 +8,7 @@ import { imageSize } from "@/features/email-design/imageSize";
 import { makeStorageClient, type StorageClient } from "@/features/files/storage";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 
 // 6.5: campaign images. At most 1 MB, PNG/JPEG/GIF by magic bytes, stored in MinIO under
@@ -33,6 +35,24 @@ export interface CampaignAssetView {
 
 export function campaignAssetUrl(id: string, mime: CampaignMime): string {
   return `/email-assets/c/${id}.${EXT_BY_MIME[mime]}`;
+}
+
+// Absolute URLs for the renderer, which is used by both the sent email and the web version. A
+// relative /email-assets path would resolve against the inbox's domain in a mail client.
+export async function loadCampaignAssetUrls(
+  db: DbOrTx,
+  signal: AbortSignal,
+): Promise<Map<string, string>> {
+  const assets = await db
+    .select({ id: campaignAssets.id, mime: campaignAssets.mime })
+    .from(campaignAssets);
+  signal.throwIfAborted();
+  return new Map(
+    assets.map((asset) => [
+      asset.id,
+      new URL(campaignAssetUrl(asset.id, asset.mime as CampaignMime), env.BASE_URL).toString(),
+    ]),
+  );
 }
 
 function assetInvalid(message: string, context?: Record<string, unknown>): AppError {

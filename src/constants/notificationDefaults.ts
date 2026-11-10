@@ -29,6 +29,9 @@ export const DEFAULT_EMAIL_BY_TYPE: Record<NotificationType, boolean> = {
   ai_bulk_score: false,
   // Someone is waiting on you, so this interrupts by email like the other assignment type.
   project_task_assigned: true,
+  // A campaign click is useful in-app engagement signal, but it fires per link and would flood
+  // an inbox; the owner opts in to email if they want it.
+  campaign_click: false,
 };
 
 export const DEFAULT_IN_APP = true;
@@ -57,4 +60,5 @@ export const DEFAULT_PUSH_BY_TYPE: Record<NotificationType, boolean> = {
   booking_cancelled: false,
   ai_bulk_score: false,
   project_task_assigned: true,
+  campaign_click: false,
 };

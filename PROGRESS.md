@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.4 · Last updated: 2026-11-10 15:56
+Current: 3.5 · Last updated: 2026-11-10 16:18
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -27,7 +27,7 @@ Current: 3.4 · Last updated: 2026-11-10 15:56
 - [x] 3.1 Campaign list and the four-step editor
 - [x] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
 - [x] 3.3 Sending engine
-- [ ] 3.4 Tracking routes, web version, timeline and click alerts
+- [x] 3.4 Tracking routes, web version, timeline and click alerts
 - [ ] 3.5 Bounce mailbox and the DSN parser
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 Sequences: model, editor, scheduler, entries and exits
@@ -67,6 +67,16 @@ Current: 3.4 · Last updated: 2026-11-10 15:56
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 3.4: the send rewrites only the body links returned by `renderCampaign` and appends the pixel before `</body>`; the footer `/u` and `/v` links stay direct because `campaign_links` never stores them (6.8).
+- 3.4: `snapshotCampaign` renders with token-preserving values so each `campaign_links.url_template` keeps its `{{merge}}` field; the click route re-renders that template with the clicking recipient's values, so `https://example.com/?ref={{person.email}}` redirects with that person's address (tested in `events.integration.test.ts`).
+- 3.4: `List-Unsubscribe` now points at `/u/{token}/one-click`, honouring the 1.6 contract change; the footer link and the preference page stay at `/u/{token}`.
+- 3.4: the person timeline writes `change_logs` directly with `field = campaign_event` rather than through `recordChange`, because `recordChange` emits `person.updated` and an open or click is not a CRM mutation automations should react to; `formatChangeLabel` renders the stored sentence and `bucketByType` puts these rows in All and Email.
+- 3.4: a machine open is a proxy-shaped user agent (GoogleImageProxy, ggpht, Apple MPP markers) or an open within the plan's one second of `sent_at`; Apple MPP's fetch agent is not uniquely identifiable, so the timing rule is the reliable half. No raw IP or full agent is stored.
+- 3.4: `campaign_click` needed `ALTER TYPE notification_type ADD VALUE`, so `0097_dealflow_campaign_click.sql` is a new migration; the type defaults to in-app on, email and push off, and Settings > Notifications lists it from `NOTIFICATION_TYPES`.
+- 3.4: `/v/{token}` is a page, so its `X-Robots-Tag: noindex` comes from a `next.config` header row (a page cannot set response headers); `next.config.test.ts` pins it, and the two `/t/c/*` handlers set the header themselves.
+- 3.4: wiring the renderer exposed three send-path gaps from 3.3, fixed here because 3.4 owns the rewrite step: campaign images now use absolute `/email-assets` URLs, the preheader is actually sent, and the finish-tick totals come from the shared aggregate instead of the per-window `rateSentCount` sum.
+- 3.4: route integration tests mock `@/db/client` with their own `makeTestDb` handle (the existing route-test pattern) because route handlers use the singleton rather than an injected `Db`.
+- 3.4: changed tests: the notification enum count is 20 with `campaign_click`'s email default, the header test expects the one-click URL, and the send test now asserts tracked body links, the pixel, the untracked footer and the preheader-bearing HTML.
 - 3.3: the recipient raw unsubscribe token lives on `campaign_recipients.token` (migration `0096_dealflow_campaign_send.sql`), because the send must rebuild the footer link; the `marketing_tokens` row still stores only its hash, so lookup and single-use consumption stay hash-based.
 - 3.3: the tick claims rows with one `UPDATE ... FOR UPDATE SKIP LOCKED` statement, so two concurrent workers can never send the same recipient; a test runs two ticks in parallel and asserts one send.
 - 3.3: a soft failure schedules the next attempt with 5, 30 and 120 minute backoffs and leaves the row queued; the campaign's completion check counts retry-scheduled rows as remaining, so a campaign cannot be marked sent while a retry is pending.

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { env } from "@/config/env";
 import {
   campaignRecipients,
   campaignSenders,
@@ -89,19 +90,30 @@ describe("campaign sending engine", () => {
       expect(tick.value.sent).toBe(1);
       expect(tick.value.remaining).toBe(0);
 
+      const [recipient] = await db.select().from(campaignRecipients);
+      expect(recipient?.status).toBe("sent");
+      const token = recipient?.token ?? "";
+      const base = env.BASE_URL.replace(/\/$/, "");
+
       const headers = mails[0]?.headers ?? {};
-      expect(headers["List-Unsubscribe"]).toContain("/u/");
+      expect(headers["List-Unsubscribe"]).toBe(`<${base}/u/${token}/one-click>`);
       expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
       expect(headers["Message-ID"]).toMatch(
         new RegExp(`^<${campaign.id}\\.[0-9a-f-]+@app\\.example\\.com>$`),
       );
       expect(mails[0]?.subject).toBe("Something new");
-      expect(mails[0]?.html).toContain("Unsubscribe");
+
+      const html = mails[0]?.html ?? "";
+      expect(html).toContain("Unsubscribe");
+      expect(html).toContain(`/t/c/l/${token}/0`);
+      expect(html).toContain(`/t/c/o/${token}.gif`);
+      // The footer keeps the direct unsubscribe and web-version links.
+      expect(html).toContain(`href="${base}/u/${token}"`);
+      expect(html).toContain(`href="${base}/v/${token}"`);
+      expect(mails[0]?.text ?? "").toContain(`/t/c/l/${token}/0`);
 
       const [after] = await db.select().from(campaigns).where(eq(campaigns.id, campaign.id));
       expect(after?.status).toBe("sent");
-      const [recipient] = await db.select().from(campaignRecipients);
-      expect(recipient?.status).toBe("sent");
     });
   });
 

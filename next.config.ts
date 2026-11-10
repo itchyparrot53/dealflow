@@ -98,6 +98,12 @@ const nextConfig: NextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
+      // The campaign web version (Part 14) is public and token-addressed, so it must never be
+      // indexed. Pages cannot set response headers themselves; the metadata only emits a meta tag.
+      {
+        source: "/v/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
     ]);
   },
   // "x-powered-by: Next.js" hands a scanner the framework for free.

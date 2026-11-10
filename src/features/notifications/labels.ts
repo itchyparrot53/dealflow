@@ -35,6 +35,8 @@ const LABEL: Record<NotificationType, (p: Record<string, unknown>) => string> = 
   ai_bulk_score: (p) => `${L.ai_bulk_score}: ${toStr(p.message)}`,
   project_task_assigned: (p) =>
     `${L.project_task_assigned}: ${toStr(p.taskTitle) || toStr(p.projectName)}`,
+  campaign_click: (p) =>
+    `${toStr(p.personName)} clicked ${toStr(p.linkHost)} in ${toStr(p.campaignName)}`,
 };
 
 export function notificationLabel(

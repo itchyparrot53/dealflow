@@ -27,6 +27,7 @@ const FALLBACK: Record<NotificationType, string> = {
   // The score now shows on the cards and the list; the deals list is where it happened.
   ai_bulk_score: "/deals",
   project_task_assigned: "/projects",
+  campaign_click: "/campaigns",
 };
 
 // Email notifications point at a thread, which the row carries in its payload rather than as an

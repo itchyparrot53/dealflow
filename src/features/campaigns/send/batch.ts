@@ -20,12 +20,23 @@ import { transitionMarketingStatus } from "@/features/marketing/service";
 import { hashEmail } from "@/features/marketing/suppression";
 import { mintMarketingToken } from "@/features/marketing/tokens";
 import { hydrateActor } from "@/server/hydrateActor";
+import { loadCampaignAssetUrls } from "../assets";
 import { campaignMergeValues } from "../blocks/personalize";
 import { renderCampaign } from "../blocks/render";
 import type { CampaignDocument } from "../blocks/schema";
 import type { CampaignSegment } from "../schemas";
 import { previewSegment } from "../segment";
 import { getCampaignSettings } from "../settings";
+import { recordCampaignBounce } from "../tracking/events";
+import {
+  appendOpenPixel,
+  clickTrackingUrl,
+  rewriteTrackedHtml,
+  rewriteTrackedText,
+  trackingOrigin,
+} from "../tracking/links";
+import { recordCampaignTimeline } from "../tracking/timeline";
+import { refreshCampaignTotals } from "../tracking/totals";
 import { campaignHeaders, campaignSubject } from "./headers";
 import { sendCampaignMail } from "./transport";
 
@@ -98,13 +109,15 @@ export async function snapshotCampaign(
 
     const design = await getEmailDesign(tx, signal);
     const settings = await getCampaignSettings(tx, signal);
+    const assetUrls = await loadCampaignAssetUrls(tx, signal);
     const document = campaign.content as CampaignDocument;
     const sample = renderCampaign(document, {
       design,
-      values: sampleValues(design.displayName),
+      values: templateValues(env.BASE_URL),
       postalAddress: settings.postalAddress,
+      preheader: campaign.preheader ?? undefined,
       baseUrl: env.BASE_URL,
-      assetUrl: () => null,
+      assetUrl: (assetId) => assetUrls.get(assetId) ?? null,
     });
     // The footer links are per-recipient credentials, never tracked campaign links.
     const links = sample.links.filter((url) => {
@@ -159,18 +172,22 @@ export async function snapshotCampaign(
   });
 }
 
-function sampleValues(companyName: string): Record<string, string> {
+// The snapshot stores link TEMPLATES, not one recipient's rendered URL. Substituting each
+// variable with its own token keeps the merge field in the stored campaign_links row, so the click
+// redirect can render it with the clicking recipient's values (6.4 "tracked by template position").
+function templateValues(baseUrl: string): Record<string, string> {
+  const base = baseUrl.replace(/\/$/, "");
   return {
-    "person.first_name": "there",
-    "person.last_name": "",
-    "person.name": "",
-    "person.email": "",
-    "organization.name": "",
-    "owner.name": "",
-    "owner.email": "",
-    "company.name": companyName,
-    unsubscribe_url: `${env.BASE_URL}/u/preview`,
-    web_version_url: `${env.BASE_URL}/v/preview`,
+    "person.first_name": "{{person.first_name}}",
+    "person.last_name": "{{person.last_name}}",
+    "person.name": "{{person.name}}",
+    "person.email": "{{person.email}}",
+    "organization.name": "{{organization.name}}",
+    "owner.name": "{{owner.name}}",
+    "owner.email": "{{owner.email}}",
+    "company.name": "{{company.name}}",
+    unsubscribe_url: `${base}/u/preview`,
+    web_version_url: `${base}/v/preview`,
   };
 }
 
@@ -263,14 +280,12 @@ export async function runCampaignTick(
   if (remaining === 0) {
     await db
       .update(campaigns)
-      .set({
-        status: "sent",
-        finishedAt: deps.now(),
-        totals: sql`jsonb_set(jsonb_set(coalesce(${campaigns.totals}, '{}'::jsonb), '{sent}', to_jsonb(${campaign.rateSentCount + sent}::int)), '{recipients}', to_jsonb((SELECT count(*) FROM campaign_recipients WHERE campaign_id = ${campaignId})::int))`,
-      })
+      .set({ status: "sent", finishedAt: deps.now() })
       .where(eq(campaigns.id, campaignId));
+    await refreshCampaignTotals(db, campaignId, signal);
     return { ok: true, value: { sent, remaining: 0, nextAt: null } };
   }
+  await refreshCampaignTotals(db, campaignId, signal);
   return {
     ok: true,
     value: {
@@ -312,10 +327,10 @@ async function deliverRows(
   signal: AbortSignal,
 ): Promise<number> {
   if (rows.length === 0) return 0;
-  const ctx = await loadDeliveryContext(db, rows, signal);
+  const ctx = await loadDeliveryContext(db, campaign.id, rows, signal);
   const document = campaign.content as CampaignDocument;
   const subject = campaignSubject(campaign.subject);
-  const base = env.BASE_URL.replace(/\/$/, "");
+  const base = trackingOrigin(env.BASE_URL);
 
   let sent = 0;
   for (const row of rows) {
@@ -346,45 +361,77 @@ async function deliverRows(
       design: ctx.design,
       values,
       postalAddress: ctx.postalAddress,
+      preheader: campaign.preheader ?? undefined,
       baseUrl: base,
-      assetUrl: () => null,
+      assetUrl: (assetId) => ctx.assetUrls.get(assetId) ?? null,
     });
+    // The footer's /u and /v links are not in rendered.links, so they stay direct; every other
+    // http(s) link becomes a tracked redirect. The pixel closes the body.
+    const trackedByHref = new Map(
+      rendered.links.map((href, index) => [href, clickTrackingUrl(base, token, index)] as const),
+    );
+    const html =
+      token === ""
+        ? rendered.html
+        : appendOpenPixel(rewriteTrackedHtml(rendered.html, trackedByHref), base, token);
+    const text =
+      token === ""
+        ? rendered.text
+        : rewriteTrackedText(rendered.text, ctx.links, values, (index) =>
+            clickTrackingUrl(base, token, index),
+          );
+
     const result = await deps.send(
       {
         to: row.email,
         from: `"${sender.fromName}" <${sender.fromEmail}>`,
         subject,
-        html: rendered.html,
-        text: rendered.text,
+        html,
+        text,
         headers: campaignHeaders({
           campaignId: campaign.id,
           recipientId: row.id,
           campaignType: campaign.type,
           baseUrl: base,
-          unsubscribeUrl,
+          unsubscribeOneClickUrl: `${base}/u/${token}/one-click`,
         }),
       },
       signal,
     );
     if (result.ok) {
-      await db
-        .update(campaignRecipients)
-        .set({
-          status: "sent",
-          sentAt: deps.now(),
-          attempts: sql`${campaignRecipients.attempts} + 1`,
-        })
-        .where(eq(campaignRecipients.id, row.id));
-      await db.insert(campaignEvents).values({
-        campaignId: campaign.id,
-        recipientId: row.id,
-        personId: person.id,
-        type: "delivered",
+      await db.transaction(async (tx) => {
+        await tx
+          .update(campaignRecipients)
+          .set({
+            status: "sent",
+            sentAt: deps.now(),
+            attempts: sql`${campaignRecipients.attempts} + 1`,
+          })
+          .where(eq(campaignRecipients.id, row.id));
+        await tx.insert(campaignEvents).values({
+          campaignId: campaign.id,
+          recipientId: row.id,
+          personId: person.id,
+          type: "delivered",
+        });
+        await recordCampaignTimeline(
+          tx,
+          { personId: person.id, event: "sent", campaignName: campaign.name },
+          signal,
+        );
       });
       sent += 1;
       continue;
     }
-    await handleFailure(db, campaign.id, row, person.id, result.error.failure, signal);
+    await handleFailure(
+      db,
+      campaign.id,
+      campaign.name,
+      row,
+      person.id,
+      result.error.failure,
+      signal,
+    );
   }
   return sent;
 }
@@ -395,6 +442,8 @@ interface DeliveryContext {
   suppressed: Set<string>;
   orgNames: Map<string, string>;
   ownerById: Map<string, { name: string; email: string }>;
+  links: Array<{ linkIndex: number; urlTemplate: string }>;
+  assetUrls: Map<string, string>;
   design: Awaited<ReturnType<typeof getEmailDesign>>;
   postalAddress: string;
 }
@@ -414,9 +463,11 @@ function skipReasonFor(
   return suppressed.has(row.email_hash) ? "skipped_suppressed" : null;
 }
 
-// One read for the tick's batch: people, consent, suppressions, orgs, owners and the design.
+// One read for the tick's batch: people, consent, suppressions, orgs, owners, links, assets and
+// the design.
 async function loadDeliveryContext(
   db: Db,
+  campaignId: string,
   rows: ClaimedRecipient[],
   signal: AbortSignal,
 ): Promise<DeliveryContext> {
@@ -459,12 +510,22 @@ async function loadDeliveryContext(
           .where(inArray(users.id, ownerIds));
   const design = await getEmailDesign(db, signal);
   const settings = await getCampaignSettings(db, signal);
+  const links = await db
+    .select({
+      linkIndex: campaignLinks.linkIndex,
+      urlTemplate: campaignLinks.urlTemplate,
+    })
+    .from(campaignLinks)
+    .where(eq(campaignLinks.campaignId, campaignId));
+  const assetUrls = await loadCampaignAssetUrls(db, signal);
   return {
     peopleById: new Map(people.map((person) => [person.id, person])),
     statusByPerson: new Map(statuses.map((row) => [row.personId, row.status])),
     suppressed: new Set(suppressedRows.map((row) => row.emailHash)),
     orgNames: new Map(orgs.map((org) => [org.id, org.name])),
     ownerById: new Map(owners.map((owner) => [owner.id, { name: owner.name, email: owner.email }])),
+    links,
+    assetUrls,
     design,
     postalAddress: settings.postalAddress,
   };
@@ -481,6 +542,7 @@ async function skip(
 async function handleFailure(
   db: Db,
   campaignId: string,
+  campaignName: string,
   row: ClaimedRecipient,
   personId: string,
   failure: "hard" | "soft",
@@ -491,9 +553,11 @@ async function handleFailure(
       .update(campaignRecipients)
       .set({ status: "bounced_hard" })
       .where(eq(campaignRecipients.id, row.id));
-    await db
-      .insert(campaignEvents)
-      .values({ campaignId, recipientId: row.id, personId, type: "bounce_hard" });
+    await recordCampaignBounce(
+      db,
+      { campaignId, recipientId: row.id, personId, campaignName, type: "bounce_hard" },
+      signal,
+    );
     await transitionMarketingStatus(
       db,
       { personId, to: "bounced", source: "bounce", campaignId },
@@ -518,9 +582,11 @@ async function handleFailure(
     .update(campaignRecipients)
     .set({ status: "failed_soft", attempts })
     .where(eq(campaignRecipients.id, row.id));
-  await db
-    .insert(campaignEvents)
-    .values({ campaignId, recipientId: row.id, personId, type: "bounce_soft" });
+  await recordCampaignBounce(
+    db,
+    { campaignId, recipientId: row.id, personId, campaignName, type: "bounce_soft" },
+    signal,
+  );
   await db
     .update(personMarketing)
     .set({ softBounceCount: sql`${personMarketing.softBounceCount} + 1` })

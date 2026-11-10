@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Mail, Megaphone } from "lucide-react";
 import type React from "react";
 import type { DraftSummary } from "@/features/email/draftRepo";
 import { EmailDraftCard } from "@/features/email/EmailDraftCard";
@@ -41,6 +41,17 @@ function RailMarker({ item }: { item: HistoryItem }): React.ReactNode {
         className="absolute -left-11 top-0 flex size-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
       >
         <Mail className="size-4" />
+      </span>
+    );
+  }
+  if (item.kind === "event" && item.campaign === true) {
+    return (
+      <span
+        aria-hidden="true"
+        data-rail="campaign"
+        className="absolute -left-11 top-0 flex size-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground"
+      >
+        <Megaphone className="size-4" />
       </span>
     );
   }

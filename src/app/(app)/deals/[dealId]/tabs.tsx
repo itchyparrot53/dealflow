@@ -54,7 +54,13 @@ export function bucketByType(history: HistoryItem[]): Record<Tab, HistoryItem[]>
     notes: history.filter((i) => i.kind === "note"),
     changelog: history.filter((i) => i.kind === "event"),
     // Drafts sit under Email with the sent messages: same conversation, one still unsent.
-    email: history.filter((i) => i.kind === "email" || i.kind === "emailDraft"),
+    // Campaign engagement rows (Part 14) are email activity too, so they join this bucket.
+    email: history.filter(
+      (i) =>
+        i.kind === "email" ||
+        i.kind === "emailDraft" ||
+        (i.kind === "event" && i.campaign === true),
+    ),
     files: [],
   };
 }

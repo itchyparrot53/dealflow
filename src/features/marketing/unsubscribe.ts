@@ -3,6 +3,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { MarketingStatus } from "@/constants/marketing";
 import type { Db } from "@/db/client";
 import { campaignRecipients, campaigns, personMarketing, persons } from "@/db/schema";
+import { recordCampaignUnsubscribe } from "@/features/campaigns/tracking/events";
 import { getEmailDesign } from "@/features/email-design/design";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
@@ -108,6 +109,20 @@ export async function applyUnsubscribe(
       signal,
     );
     if (!transition.ok) return transition;
+    // Only a real transition is an engagement event: a repeated click on an old footer link is a
+    // no-op in the consent table and must not inflate the campaign's unsubscribe count.
+    if (transition.value.changed && campaign !== null && row.campaignRecipientId !== null) {
+      await recordCampaignUnsubscribe(
+        tx,
+        {
+          campaignId: campaign.campaignId,
+          recipientId: row.campaignRecipientId,
+          personId: row.personId,
+          campaignName: campaign.name,
+        },
+        signal,
+      );
+    }
     return ok({ personId: row.personId, campaignId: campaign?.campaignId ?? null });
   });
 }

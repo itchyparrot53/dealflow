@@ -6,13 +6,13 @@ const INPUT = {
   recipientId: "r0000000-0000-4000-8000-000000000002",
   campaignType: "announcement",
   baseUrl: "https://app.example.com",
-  unsubscribeUrl: "https://app.example.com/u/token",
+  unsubscribeOneClickUrl: "https://app.example.com/u/token/one-click",
 };
 
 describe("campaign headers", () => {
   it("sets the one-click unsubscribe pair and bulk markers", () => {
     const headers = campaignHeaders(INPUT);
-    expect(headers["List-Unsubscribe"]).toBe("<https://app.example.com/u/token>");
+    expect(headers["List-Unsubscribe"]).toBe("<https://app.example.com/u/token/one-click>");
     expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
     expect(headers.Precedence).toBe("bulk");
     expect(headers["X-Dealflow-Campaign"]).toBe(INPUT.campaignId);

@@ -127,6 +127,7 @@ export const STRINGS = {
       booking_cancelled: "Booking cancelled",
       ai_bulk_score: "AI scoring finished",
       project_task_assigned: "Task assigned to you",
+      campaign_click: "Campaign link clicked",
       fallback: "Notification",
     },
     preferences: {
@@ -156,6 +157,7 @@ export const STRINGS = {
         booking_cancelled: "Booking cancellations",
         ai_bulk_score: "AI bulk scoring",
         project_task_assigned: "Project task assignments",
+        campaign_click: "Campaign link clicks",
       },
     },
   },

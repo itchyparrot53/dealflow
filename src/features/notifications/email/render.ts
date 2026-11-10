@@ -40,6 +40,8 @@ export function notificationCta(type: NotificationRow["type"]): string {
       return "Open deal";
     case "project_task_assigned":
       return "Open Dealflow";
+    case "campaign_click":
+      return "Open contact";
     default:
       return "Open Dealflow";
   }
@@ -205,6 +207,14 @@ export function renderNotificationEmail(
         projectName.length > 0
           ? `${recipientName}, "${taskTitle}" in ${projectName} was assigned to you.`
           : `${recipientName}, "${taskTitle}" was assigned to you.`;
+      break;
+    }
+    case "campaign_click": {
+      const personName = payloadString(row.payload.personName, "A contact");
+      const campaignName = payloadString(row.payload.campaignName, "a campaign");
+      const linkHost = payloadString(row.payload.linkHost, "a link");
+      subject = `Campaign click: ${campaignName}`;
+      line = `${recipientName}, ${personName} clicked ${linkHost} in ${campaignName}.`;
       break;
     }
     default: {
