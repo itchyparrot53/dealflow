@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
-STATUS: IN PROGRESS
-Current: 5.6 · Last updated: 2026-11-10 19:24
+STATUS: COMPLETE
+Current: 5.6 · Last updated: 2026-11-10 19:29
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -41,7 +41,7 @@ Current: 5.6 · Last updated: 2026-11-10 19:24
 - [x] 5.3 End-to-end, integration suite and smoke
 - [x] 5.4 Independent review
 - [x] 5.5 Final checklist
-- [ ] 5.6 Final report and completion
+- [x] 5.6 Final report and completion
 
 ## QA log
 - Independent review: harness subagent round 1: QA RESULT FAIL · 1 blocker/11 majors/5 minors · fixed 17
@@ -219,6 +219,56 @@ Current: 5.6 · Last updated: 2026-11-10 19:24
 
 ## Final report
 
+### Definition of done
+
+- DoD 1: PASS - every person has a marketing status and consent history; suppression is keyed by email hash; double opt-in, the form consent field, the public confirm page, the unsubscribe page and one-click work; status is filterable, bulk-editable with a basis and importable.
+- DoD 2: PASS - the block builder previews at 600 px and 375 px, has an HTML block and HTML import, four starters and saved templates, public campaign images, and a mandatory footer with the address, unsubscribe and web version under 100 KB.
+- DoD 3: PASS - the campaign list and four-step editor show a live recipient count and exclusion reasons; test send, send now, schedule, pause, resume, cancel and unschedule work.
+- DoD 4: PASS - sends go through pg-boss in throttled batches, one email per recipient, with a guarded claim; status and suppression are re-checked per recipient; the List-Unsubscribe pair is set; the marketing transport falls back to SMTP_*; capture works in tests.
+- DoD 5: PASS - opens, clicks, unsubscribes and bounces are recorded per recipient; click redirects use only stored links; events appear on the person timeline; clicks notify the owner; synchronous bounces are classified and the optional bounce mailbox handles asynchronous DSNs and ARF reports.
+- DoD 6: PASS - Settings › Campaigns has verified senders, the required postal address, double opt-in on by default, the send rate, the SPF/DKIM/DMARC domain check, the bounce mailbox status and audited saves.
+- DoD 7: PASS - sequences have email and wait steps, manual/segment/automation entry, exits, the send window and per-step stats.
+- DoD 8: PASS - the campaign report, recipients table with CSV, and comparison insights with averages, trends and the campaign-type filter work.
+- DoD 9: PASS - `e2e/18-campaigns.spec.ts` passes, specs 00 to 17 still pass (73/73), the gallery has 16 screens, the Campaigns guide and PDFs exist, typecheck, lint, build, unit, full integration and smoke pass, and one independent review ran (1 blocker/11 majors/5 minors, all fixed).
+
+### Owner actions
+
+1. Configure a bulk sending account (recommended) or accept the system SMTP. Edit `.env`, then restart the app and worker:
+   ```
+   MARKETING_SMTP_HOST=smtp.your-provider.example
+   MARKETING_SMTP_PORT=465
+   MARKETING_SMTP_SECURE=true
+   MARKETING_SMTP_USER=...
+   MARKETING_SMTP_PASS=...
+   docker compose up -d app worker
+   ```
+2. Publish SPF, DKIM and DMARC for the sending domain and check them:
+   ```
+   dig +short TXT your-domain.example
+   dig +short TXT mail._domainkey.your-domain.example
+   dig +short TXT _dmarc.your-domain.example
+   ```
+   Then use **Settings › Campaigns › Domain check**.
+3. Optionally set `CAMPAIGN_DKIM_DOMAIN`, `CAMPAIGN_DKIM_SELECTOR` and one of `CAMPAIGN_DKIM_PRIVATE_KEY` or `CAMPAIGN_DKIM_PRIVATE_KEY_FILE`. Optionally set all four `CAMPAIGN_BOUNCE_IMAP_*` values for the bounce mailbox. Restart the app and worker after either change.
+4. In **Settings › Campaigns**, add and verify a sender and save the company postal address. Campaigns cannot send without both.
+5. Grant `campaigns.view`, `campaigns.edit`, `campaigns.send` and `marketing.manage` to the right permission sets. Regular users already have `campaigns.view`.
+6. Rebuild the live install:
+   ```
+   git pull
+   docker compose up -d --build
+   ```
+7. Review `e2e/screenshots/campaigns/` (16 PNGs) before the first large send.
+8. If Google sign-in is wanted, set all three `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` and `GOOGLE_WORKSPACE_DOMAIN`; otherwise leave all three blank.
+
+### Changed tests
+
+- `src/features/campaigns/send.integration.test.ts`: new snapshot blockers (address, sender, recipients, size), the four-failure retry contract, the third-consecutive-soft-bounce transition and the sender-domain Message-ID.
+- `src/features/campaigns/send/headers.test.ts`: Message-ID uses the verified sender's domain.
+- `src/features/campaigns/templates.integration.test.ts`: test sends go through the injected campaign transport.
+- `src/features/campaigns/tracking/testFixtures.ts`: the send fixture sets the required postal address.
+- `next.config.test.ts`: `/v`, `/c` and `/u` all send `X-Robots-Tag: noindex`.
+- Earlier Part 14 test updates track the deliberate contracts: notification count/defaults, PeopleList trpc mocks, the forms consent field and timeline buckets. No assertion was weakened or deleted.
+
 ### Checklist
 
 1. PASS - `git --no-optional-locks status --porcelain` is empty apart from the owner's untracked `site/public/` files; the smoke script fix is included in this commit.
@@ -239,3 +289,7 @@ Current: 5.6 · Last updated: 2026-11-10 19:24
 16. PASS - `docs/user-guide/campaigns.md`, `docs/dealflow/CAMPAIGNS.md`, `UPSTREAM.md` ("Part 14") and the 16 campaign variables in `.env.example` exist.
 17. PASS - `ls docs/user-guide/pdf/*.pdf | wc -l` is 16.
 18. PASS - after this commit, `pnpm check:progress --final` printed "PROGRESS CHECK OK: 29/30 tasks ticked, all with commits, ready to complete"; the command was run immediately after the commit.
+
+### Open issues
+
+- None. The build has no known blocker or major issue. Configure a real SMTP host before sending campaigns outside the capture/e2e environment; without one, campaign sends return a soft failure rather than logging the body.
