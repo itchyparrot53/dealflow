@@ -33,6 +33,10 @@ type GlobalAction =
   | "documents.manage"
   | "automations.manage"
   | "forms.manage"
+  | "campaigns.view"
+  | "campaigns.edit"
+  | "campaigns.send"
+  | "marketing.manage"
   | "permissions.manage";
 
 export type OwnershipAction = (typeof OWNERSHIP_ACTIONS)[number];

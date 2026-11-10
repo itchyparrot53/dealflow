@@ -15,6 +15,10 @@ export const GLOBAL_FLAGS = [
   "documents.manage",
   "automations.manage",
   "forms.manage",
+  "campaigns.view",
+  "campaigns.edit",
+  "campaigns.send",
+  "marketing.manage",
   "permissions.manage",
   // Team-manager visibility: the set holder can SEE records owned by members of any team they
   // manage (teams.managerId), across entities. Inert unless the holder actually manages a team.
@@ -74,6 +78,10 @@ export const HIGH_RISK_FLAGS = [
   "documents.manage",
   "automations.manage",
   "forms.manage",
+  "campaigns.view",
+  "campaigns.edit",
+  "campaigns.send",
+  "marketing.manage",
   "data.export",
   "data.import",
   "record.share_any",
@@ -99,6 +107,7 @@ const REGULAR_TRUE = new Set<PermissionFlagKey>([
   "contact.edit_own",
   "activity.edit_own",
   "record.share_own",
+  "campaigns.view",
 ]);
 
 export const REGULAR_DEFAULT_FLAGS: Record<PermissionFlagKey, boolean> = buildFlags((key) =>

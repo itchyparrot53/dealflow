@@ -350,6 +350,27 @@ export const ERROR_IDS = {
   EMAIL_DESIGN_ACCENT_CONTRAST: "E_EMAIL_DESIGN_004", // accent is under 4.5:1 against white button text
   EMAIL_DESIGN_TEMPLATE_UNKNOWN: "E_EMAIL_DESIGN_005", // template key is not in the registry
   EMAIL_DESIGN_INPUT_INVALID: "E_EMAIL_DESIGN_006", // design or template input failed Zod validation
+
+  // MARKETING (Part 14 consent)
+  MARKETING_TRANSITION_INVALID: "E_MARKETING_001", // a status transition outside 6.2's table
+  MARKETING_TOKEN_INVALID: "E_MARKETING_002", // token unknown, expired or already used
+  MARKETING_TOKEN_LIMIT: "E_MARKETING_003", // per-person 24h or install daily double opt-in limit
+  MARKETING_INPUT_INVALID: "E_MARKETING_004", // consent input failed Zod validation
+  MARKETING_SUPPRESSED: "E_MARKETING_005", // the address is on the suppression list
+  MARKETING_NOT_SUBSCRIBED: "E_MARKETING_006", // a send or enrolment for a non-subscribed person
+
+  // CAMPAIGN (Part 14 campaigns)
+  CAMPAIGN_INPUT_INVALID: "E_CAMPAIGN_001", // campaign, block or template input failed Zod validation
+  CAMPAIGN_NOT_FOUND: "E_CAMPAIGN_002", // campaign, template, sequence or recipient not visible
+  CAMPAIGN_NOT_SENDABLE: "E_CAMPAIGN_003", // state or review checklist blocks the action
+  CAMPAIGN_SENDER_UNVERIFIED: "E_CAMPAIGN_004", // sender has no verifiedAt
+  CAMPAIGN_ADDRESS_MISSING: "E_CAMPAIGN_005", // postal address required before sending
+  CAMPAIGN_TOO_LARGE: "E_CAMPAIGN_006", // rendered HTML over the 100 KB hard limit
+  CAMPAIGN_ASSET_INVALID: "E_CAMPAIGN_007", // image type, size or bytes rejected
+  CAMPAIGN_SEGMENT_INVALID: "E_CAMPAIGN_008", // saved filter is not a person filter, or invalid
+  CAMPAIGN_LINK_INVALID: "E_CAMPAIGN_009", // tracking link index not in campaign_links
+  CAMPAIGN_DOMAIN_CHECK_FAILED: "E_CAMPAIGN_010", // the DNS resolver returned an error
+  CAMPAIGN_SEQUENCE_LIMIT: "E_CAMPAIGN_011", // more than 20 steps or 90 days of waits
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

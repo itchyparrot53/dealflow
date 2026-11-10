@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.1 · Last updated: 2026-11-10 01:10
+Current: 1.2 · Last updated: 2026-11-10 01:21
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -11,7 +11,7 @@ Current: 1.1 · Last updated: 2026-11-10 01:10
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
 - [x] 0.2 Reuse map and design note
 - [x] 0.3 Phase 0 QA gate
-- [ ] 1.1 Schema, migration and permission flags
+- [x] 1.1 Schema, migration and permission flags
 - [ ] 1.2 Marketing status service and suppression
 - [ ] 1.3 Double opt-in, unsubscribe pages and one-click
 - [ ] 1.4 Form consent field and CSV import mapping
@@ -63,6 +63,11 @@ Current: 1.1 · Last updated: 2026-11-10 01:10
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.1: `db:generate` produced `0094_dashing_switch.sql`; it was renamed to `0094_dealflow_campaigns.sql` with the journal tag updated, and the `campaign_settings` singleton was appended with `ON CONFLICT DO NOTHING`, so a fresh database always has the row (the Part 13 convention).
+- 1.1: `marketing_tokens` carries purpose `sender` and a nullable `sender_id` in addition to 6.3's `doi` and `unsub`, because 6.9's sender verification uses the same single-use token table; the check constraint lists all three.
+- 1.1: the hidden nurture campaign link sits on `sequence_steps.campaign_id` (`ON DELETE SET NULL`), so deleting a step does not delete its history and there is no second mapping table.
+- 1.1: `campaigns.send` and `marketing.manage` joined `HIGH_RISK_FLAGS`, because they let a permission-set editor grant bulk mail and the consent export without admin authority, matching how `documents.manage` and `forms.manage` are treated.
+- 1.1: the error-id registry test's domain allow-list gained `MARKETING` and `CAMPAIGN`; the registry test fails closed on an unknown domain, so this is the required test update for the new ids.
 - 0.2: new jobs register in `registerAllJobs` (`src/server/worker.ts`) with queue names in `src/constants/jobNames.ts` and producers through `getBoss()`; the e2e harness already runs that worker.
 
 ## Owner actions
