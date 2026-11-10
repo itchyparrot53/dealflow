@@ -20,6 +20,7 @@ import {
   seedStandaloneActivities,
 } from "./seed-demo-activities";
 import { seedAutomations } from "./seed-demo-automations";
+import { seedCampaigns } from "./seed-demo-campaigns";
 import {
   seedCustomFieldDefs,
   seedEmailTemplates,
@@ -250,6 +251,14 @@ async function main(): Promise<void> {
   // Soft-delete a few records last so archive/trash views are populated.
   await softDeleteSamples(db, dealIds, personIds);
 
+  // Part 14 campaigns last: the five E2E people must stay active, and the campaign events refer to
+  // the demo people's final (post-soft-delete) state only for display.
+  const campaignsSeed = await seedCampaigns({
+    db,
+    ownerId: at(userIds, 0),
+    personIds,
+  });
+
   console.warn(`demo_users=${DEMO_USERS.map((u) => u.email).join(",")} (+demo6 deactivated)`);
   console.warn(`demo_orgs=${orgIds.length} demo_people=${personIds.length}`);
   console.warn(
@@ -276,6 +285,9 @@ async function main(): Promise<void> {
   );
   console.warn(
     `demo_recurring=${productivity.recurring} demo_calls=${productivity.calls} demo_duplicate_pairs=${productivity.duplicatePairs}`,
+  );
+  console.warn(
+    `demo_campaign_subscribers=${campaignsSeed.subscribed} demo_sent_campaigns=${campaignsSeed.sentCampaigns} demo_sequence_enrollments=${campaignsSeed.sequenceEnrollments}`,
   );
   console.warn(`demo_pipeline=${pipelineId} demo_login=/auth/dev-login?email=demo1@example.com`);
 }

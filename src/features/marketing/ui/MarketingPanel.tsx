@@ -82,9 +82,11 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
     <CollapsibleSection title="Marketing">
       <div className="space-y-2 px-1 py-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={STATUS_VARIANT[data.status]}>
-            {MARKETING_STATUS_LABELS[data.status]}
-          </Badge>
+          <span data-testid="marketing-status">
+            <Badge variant={STATUS_VARIANT[data.status]}>
+              {MARKETING_STATUS_LABELS[data.status]}
+            </Badge>
+          </span>
           {data.consentBasis === null ? null : (
             <span className="text-xs text-muted-foreground">{baseline(data.consentBasis)}</span>
           )}
@@ -104,6 +106,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             type="button"
             variant="outline"
             size="sm"
+            data-testid="marketing-change"
             disabled={!data.canManage || targets.length === 0}
             onClick={() => {
               setError(null);
@@ -117,6 +120,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             type="button"
             variant="ghost"
             size="sm"
+            data-testid="marketing-history"
             onClick={() => setDialog("history")}
             disabled={data.events.length === 0}
           >
@@ -134,6 +138,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             <FormField label="New status" htmlFor="marketing-status-target">
               <Select
                 ariaLabel="New marketing status"
+                testId="marketing-status-target"
                 value={target}
                 onChange={setTarget}
                 options={targets}
@@ -149,6 +154,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
               >
                 <Select
                   ariaLabel="Consent basis"
+                  testId="marketing-basis"
                   value={basis}
                   onChange={setBasis}
                   options={MANUAL_SUBSCRIBE_BASES.map((value) => ({
@@ -167,6 +173,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             </Button>
             <Button
               type="button"
+              data-testid="marketing-save"
               disabled={busy || target === "" || (needsBasis && basis === "")}
               onClick={() => void apply()}
             >
@@ -182,7 +189,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             <DialogTitle>Consent history</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <ul className="divide-y text-sm">
+            <ul className="divide-y text-sm" data-testid="marketing-history-list">
               {data.events.map((event) => (
                 <li key={event.id} className="space-y-1 py-2">
                   <div className="flex flex-wrap items-center gap-2">

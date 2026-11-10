@@ -1,13 +1,20 @@
 "use client";
 
+import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CAMPAIGN_STATUS_LABELS, CAMPAIGN_TYPE_LABELS } from "@/constants/campaigns";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { createCampaignAction, deleteCampaignAction } from "../actions";
+import { createCampaignAction, deleteCampaignAction, duplicateCampaignAction } from "../actions";
 import { CAMPAIGN_STARTERS } from "../blocks/starters";
 import { InsightsView } from "./InsightsView";
 import { TemplatesView } from "./TemplatesView";
@@ -47,6 +54,16 @@ export function CampaignsPage({
       { name: name ?? "Untitled campaign", content: content ?? null },
       readCsrfToken(),
     );
+    if (!result.ok) {
+      setError(result.error.id);
+      return;
+    }
+    router.push(`/campaigns/${result.value.id}`);
+  }
+
+  async function duplicate(id: string): Promise<void> {
+    setError(null);
+    const result = await duplicateCampaignAction({ id }, readCsrfToken());
     if (!result.ok) {
       setError(result.error.id);
       return;
@@ -167,16 +184,32 @@ export function CampaignsPage({
                         Report
                       </a>
                     ) : null}
-                    {campaign.status === "draft" ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void remove(campaign.id)}
-                      >
-                        Delete
-                      </Button>
-                    ) : null}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Actions for ${campaign.name}`}
+                          data-testid="campaign-row-menu"
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          data-testid="campaign-duplicate"
+                          onSelect={() => void duplicate(campaign.id)}
+                        >
+                          Duplicate
+                        </DropdownMenuItem>
+                        {campaign.status === "draft" ? (
+                          <DropdownMenuItem onSelect={() => void remove(campaign.id)}>
+                            Delete draft
+                          </DropdownMenuItem>
+                        ) : null}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}

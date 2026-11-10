@@ -39,6 +39,7 @@ import {
   resumeCampaignAction,
   scheduleCampaignAction,
   sendCampaignNowAction,
+  sendCampaignTestAction,
   suggestCampaignSubjectsAction,
   updateCampaignAction,
 } from "../actions";
@@ -68,6 +69,7 @@ export interface EditorFormState {
   subject: string;
   preheader: string;
   replyTo: string;
+  senderId: string | null;
   segment: CampaignSegment | null;
   content: CampaignDocument | null;
 }
@@ -98,7 +100,7 @@ export function CampaignEditor({ campaignId }: { campaignId: string }): React.Re
       campaignId={campaignId}
       campaign={data.data.campaign}
       status={data.data.campaign.status}
-      senderVerified={data.data.senderVerified}
+      senders={data.data.senders}
       postalAddress={data.data.postalAddress}
     />
   );
@@ -112,12 +114,13 @@ interface EditorFormProps {
     subject: string;
     preheader: string | null;
     replyTo: string | null;
+    senderId: string | null;
     segment: unknown;
     content: unknown;
     status: string;
   };
   status: string;
-  senderVerified: boolean;
+  senders: { id: string; fromName: string; fromEmail: string; verified: boolean }[];
   postalAddress: string;
 }
 
@@ -125,7 +128,7 @@ export function EditorForm({
   campaignId,
   campaign,
   status,
-  senderVerified,
+  senders,
   postalAddress,
 }: EditorFormProps): React.ReactNode {
   const [form, setForm] = useState<EditorFormState>({
@@ -134,6 +137,7 @@ export function EditorForm({
     subject: campaign.subject,
     preheader: campaign.preheader ?? "",
     replyTo: campaign.replyTo ?? "",
+    senderId: campaign.senderId,
     segment: (campaign.segment as CampaignSegment | null) ?? null,
     content: (campaign.content as CampaignDocument | null) ?? null,
   });
@@ -144,6 +148,11 @@ export function EditorForm({
   const [buildFilter, setBuildFilter] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [confirmSend, setConfirmSend] = useState(false);
+  const [testOpen, setTestOpen] = useState(false);
+  const [testRecipients, setTestRecipients] = useState("");
+  const [testPersonId, setTestPersonId] = useState("");
+  const [testMessage, setTestMessage] = useState<string | null>(null);
+  const [testSent, setTestSent] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleDate, setScheduleDate] = useState<string | null>(null);
   const [scheduleHour, setScheduleHour] = useState("10");
@@ -167,6 +176,7 @@ export function EditorForm({
             subject: form.subject,
             preheader: form.preheader === "" ? null : form.preheader,
             replyTo: form.replyTo === "" ? null : form.replyTo,
+            senderId: form.senderId,
             segment: form.segment,
             content: form.content,
           },
@@ -197,20 +207,21 @@ export function EditorForm({
     { enabled: form.content !== null, placeholderData: (previous) => previous },
   );
 
+  const selectedSender = senders.find((sender) => sender.id === form.senderId);
   const checklist = useMemo(() => {
     const audit = auditDocument(form.content ?? BLANK_DOC);
     return campaignChecklist({
       subject: form.subject,
-      senderVerified,
+      senderVerified: selectedSender?.verified ?? false,
       postalAddress,
       recipientCount: segmentQuery.data?.eligible.length ?? 0,
       imagesWithoutAlt: audit.imagesWithoutAlt,
       buttonsWithoutUrl: audit.buttonsWithoutUrl,
       htmlBytes: preview.data?.bytes ?? 0,
       domainCheck: null,
-      testSent: false,
+      testSent,
     });
-  }, [form, senderVerified, postalAddress, segmentQuery.data, preview.data]);
+  }, [form, selectedSender, postalAddress, segmentQuery.data, preview.data, testSent]);
 
   async function run(
     action: () => Promise<{ ok: boolean; error?: { id: string } }>,
@@ -227,6 +238,34 @@ export function EditorForm({
   async function sendNow(): Promise<void> {
     setConfirmSend(false);
     await run(() => sendCampaignNowAction({ id: campaignId }, readCsrfToken()));
+  }
+
+  async function sendTest(): Promise<void> {
+    const recipients = testRecipients
+      .split(/[,\s]+/)
+      .map((value) => value.trim())
+      .filter((value) => value !== "");
+    if (recipients.length === 0 || testPersonId === "") {
+      setTestMessage("Add a recipient and choose a sample person.");
+      return;
+    }
+    setTestMessage(null);
+    const result = await sendCampaignTestAction(
+      {
+        document: form.content ?? BLANK_DOC,
+        subject: form.subject,
+        preheader: form.preheader === "" ? undefined : form.preheader,
+        personId: testPersonId,
+        recipients,
+      },
+      readCsrfToken(),
+    );
+    if (!result.ok) {
+      setTestMessage(result.error.id);
+      return;
+    }
+    setTestSent(true);
+    setTestMessage(`Sent ${result.value.sent} test email${result.value.sent === 1 ? "" : "s"}.`);
   }
 
   async function schedule(): Promise<void> {
@@ -281,12 +320,29 @@ export function EditorForm({
               Cancel campaign
             </Button>
           ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            data-testid="campaign-send-test"
+            disabled={form.content === null}
+            onClick={() => {
+              setTestMessage(null);
+              if (testPersonId === "") {
+                setTestPersonId(segmentQuery.data?.eligible[0]?.id ?? "");
+              }
+              setTestOpen(true);
+            }}
+          >
+            Send test
+          </Button>
           {STEPS.map((value) => (
             <Button
               key={value}
               type="button"
               size="sm"
               variant={step === value ? "default" : "outline"}
+              data-testid={`campaign-step-${value}`}
               onClick={() => setStep(value)}
             >
               {STEP_LABELS[value]}
@@ -301,6 +357,7 @@ export function EditorForm({
         <DetailsStep
           form={form}
           patch={patch}
+          senders={senders}
           suggestions={suggestions}
           onSuggest={() =>
             void (async () => {
@@ -355,6 +412,63 @@ export function EditorForm({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={testOpen} onOpenChange={setTestOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Send a test email</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-3">
+            <FormField
+              label="Recipients"
+              htmlFor="campaign-test-recipients"
+              hint="Up to 5 active users of this install, comma separated."
+            >
+              <Input
+                id="campaign-test-recipients"
+                data-testid="campaign-test-recipients"
+                value={testRecipients}
+                onChange={(event) => setTestRecipients(event.target.value)}
+                placeholder="you@example.com"
+              />
+            </FormField>
+            <FormField label="Sample person" htmlFor="campaign-test-person">
+              <Select
+                ariaLabel="Sample person"
+                testId="campaign-test-person"
+                value={testPersonId}
+                onChange={setTestPersonId}
+                options={(segmentQuery.data?.eligible ?? []).map((person) => ({
+                  value: person.id,
+                  label: `${person.name} <${person.email}>`,
+                }))}
+                placeholder="Choose a person"
+              />
+            </FormField>
+            {testMessage === null ? null : (
+              <p
+                data-testid={testSent ? "campaign-test-sent" : undefined}
+                className={testSent ? "text-sm text-link-record" : "text-sm text-destructive"}
+              >
+                {testMessage}
+              </p>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setTestOpen(false)}>
+              Close
+            </Button>
+            <Button
+              type="button"
+              data-testid="campaign-test-send"
+              disabled={testPersonId === "" || testRecipients.trim() === ""}
+              onClick={() => void sendTest()}
+            >
+              Send test
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
         <DialogContent size="md">
@@ -417,12 +531,14 @@ export function EditorForm({
 function DetailsStep({
   form,
   patch,
+  senders,
   suggestions,
   onSuggest,
   onPick,
 }: {
   form: EditorFormState;
   patch: (next: Partial<EditorFormState>) => void;
+  senders: { id: string; fromName: string; fromEmail: string; verified: boolean }[];
   suggestions: string[];
   onSuggest: () => void;
   onPick: (subject: string) => void;
@@ -442,6 +558,27 @@ function DetailsStep({
           value={form.type}
           onChange={(value) => patch({ type: value as CampaignType })}
           options={CAMPAIGN_TYPES.map((value) => ({ value, label: CAMPAIGN_TYPE_LABELS[value] }))}
+        />
+      </FormField>
+      <FormField
+        label="Sender"
+        htmlFor="campaign-sender"
+        hint={
+          <a href="/settings/campaigns" className="text-link-record hover:underline">
+            Add a sender
+          </a>
+        }
+      >
+        <Select
+          ariaLabel="Sender"
+          testId="campaign-sender"
+          value={form.senderId ?? ""}
+          onChange={(value) => patch({ senderId: value === "" ? null : value })}
+          options={senders.map((sender) => ({
+            value: sender.id,
+            label: `${sender.fromName} <${sender.fromEmail}>${sender.verified ? "" : " (unverified)"}`,
+          }))}
+          placeholder="Choose a sender"
         />
       </FormField>
       <FormField label="Subject" htmlFor="campaign-subject" required span="full">
@@ -517,6 +654,7 @@ function RecipientsStep({
       <FormField label="Saved filter" htmlFor="campaign-saved-filter">
         <Select
           ariaLabel="Saved people filter"
+          testId="campaign-saved-filter"
           value={form.segment?.kind === "saved_filter" ? form.segment.savedFilterId : ""}
           onChange={(value) =>
             patch({
@@ -622,7 +760,7 @@ function ReviewStep({
       </ul>
       {status === "draft" ? (
         <div className="flex gap-2">
-          <Button type="button" disabled={blocked} onClick={onSend}>
+          <Button type="button" data-testid="campaign-send-now" disabled={blocked} onClick={onSend}>
             Send now
           </Button>
           <Button type="button" variant="outline" disabled={blocked} onClick={onSchedule}>

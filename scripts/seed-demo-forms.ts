@@ -25,6 +25,14 @@ const FIELDS = [
   { key: "email", label: "Email", required: true, placeholder: null },
   { key: "organization", label: "Organization", required: false, placeholder: null },
   { key: "message", label: "Message", required: false, placeholder: null },
+  // Part 14: the consent field the campaign e2e ticks; unticked on the other specs, where it
+  // changes nothing.
+  {
+    key: "marketing_consent",
+    label: "I'd like to receive news and offers by email. I can unsubscribe at any time.",
+    required: false,
+    placeholder: null,
+  },
 ];
 
 async function meetingTypeId(db: Db): Promise<string | null> {

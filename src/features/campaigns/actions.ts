@@ -17,7 +17,7 @@ import { snapshotCampaign } from "./send/batch";
 import { enqueueCampaignStart, enqueueCampaignTick } from "./send/job";
 import { cancelCampaign, pauseCampaign, resumeCampaign, scheduleCampaign } from "./send/state";
 import { addSender, setDefaultSender } from "./senders";
-import { createCampaign, deleteCampaign, updateCampaign } from "./service";
+import { createCampaign, deleteCampaign, duplicateCampaign, updateCampaign } from "./service";
 import { saveCampaignSettings } from "./settings";
 import {
   deleteCampaignTemplate,
@@ -164,6 +164,21 @@ export async function createCampaignAction(
   const parsed = campaignCreateInput.safeParse(raw);
   if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
   const result = await createCampaign(db, actor, parsed.data, AbortSignal.timeout(15_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: result.value };
+}
+
+export async function duplicateCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ id: string }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = idInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await duplicateCampaign(db, actor, parsed.data.id, AbortSignal.timeout(15_000));
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return { ok: true, value: result.value };
 }

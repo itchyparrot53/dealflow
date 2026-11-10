@@ -155,6 +155,7 @@ export function CampaignBuilder({
     future: [],
   } satisfies HistoryState);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [importOpen, setImportOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -316,12 +317,38 @@ export function CampaignBuilder({
       </aside>
 
       <section className="min-w-0">
-        <iframe
-          title="Campaign preview"
-          sandbox="allow-scripts"
-          srcDoc={preview.data?.html ?? ""}
-          className="h-[660px] w-full rounded-lg border"
-        />
+        <div className="mb-2 flex gap-1">
+          <Button
+            type="button"
+            size="sm"
+            data-testid="builder-desktop"
+            variant={previewMode === "desktop" ? "default" : "outline"}
+            onClick={() => setPreviewMode("desktop")}
+          >
+            Desktop
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            data-testid="builder-mobile"
+            variant={previewMode === "mobile" ? "default" : "outline"}
+            onClick={() => setPreviewMode("mobile")}
+          >
+            Mobile
+          </Button>
+        </div>
+        <div className={previewMode === "mobile" ? "mx-auto w-[375px] max-w-full" : ""}>
+          <iframe
+            title="Campaign preview"
+            sandbox="allow-scripts"
+            srcDoc={preview.data?.html ?? ""}
+            className={
+              previewMode === "mobile"
+                ? "h-[660px] w-full rounded-lg border"
+                : "h-[660px] w-full rounded-lg border"
+            }
+          />
+        </div>
         <p className="mt-2 text-xs text-muted-foreground">
           Click a block in the preview to edit it. Selected blocks can be moved with Alt+Up/Down.
         </p>

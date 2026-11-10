@@ -6,6 +6,7 @@ import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
 import type { CampaignCreateInput, CampaignUpdateInput } from "./schemas";
+import { listSenders } from "./senders";
 
 // Campaign CRUD (3.1). A sent campaign is read-only; drafts and scheduled campaigns can be edited.
 // The list and editor read through the router, mutations through server actions.
@@ -82,6 +83,7 @@ export async function getCampaignEditorView(db: Db, id: string, signal: AbortSig
       totals: campaign.totals as { recipients?: number },
     },
     senderVerified: sender?.verifiedAt !== null && sender?.verifiedAt !== undefined,
+    senders: await listSenders(db, signal),
     postalAddress: settings?.postalAddress ?? "",
   };
 }
@@ -149,6 +151,38 @@ export async function updateCampaign(
     .returning({ id: campaigns.id });
   if (row === undefined) {
     return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", { id: input.id }));
+  }
+  return ok({ id: row.id });
+}
+
+export async function duplicateCampaign(
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+): Promise<Result<{ id: string }, AppError>> {
+  signal.throwIfAborted();
+  if (!can(actor, "campaigns.edit")) return err(deny(actor));
+  const current = await getCampaign(db, id, signal);
+  if (current === null) {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", { id }));
+  }
+  const [row] = await db
+    .insert(campaigns)
+    .values({
+      name: `${current.name} copy`.slice(0, 120),
+      type: current.type,
+      subject: current.subject,
+      preheader: current.preheader,
+      senderId: current.senderId,
+      replyTo: current.replyTo,
+      segment: current.segment,
+      content: current.content,
+      createdBy: actor.id,
+    })
+    .returning({ id: campaigns.id });
+  if (row === undefined) {
+    return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "campaign copy insert returned no row"));
   }
   return ok({ id: row.id });
 }

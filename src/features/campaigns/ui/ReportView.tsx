@@ -52,13 +52,15 @@ function Tile({
   label,
   value,
   detail,
+  testId,
 }: {
   label: string;
   value: string;
   detail?: string;
+  testId?: string;
 }): React.ReactNode {
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-lg border p-4" data-testid={testId}>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
       {detail === undefined ? null : (
@@ -86,7 +88,7 @@ export function ReportView({
   const hasActivity = report.series.some((point) => point.opens + point.clicks > 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="campaign-report">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-title font-semibold">{report.campaign.name}</h1>
@@ -105,30 +107,46 @@ export function ReportView({
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Tile label="Recipients" value={formatNumber(report.summary.recipients)} />
-        <Tile label="Delivered" value={formatNumber(report.summary.delivered)} />
         <Tile
+          testId="report-recipients"
+          label="Recipients"
+          value={formatNumber(report.summary.recipients)}
+        />
+        <Tile
+          testId="report-delivered"
+          label="Delivered"
+          value={formatNumber(report.summary.delivered)}
+        />
+        <Tile
+          testId="report-unique-opens"
           label={includeMachineOpens ? "Unique opens (all)" : "Unique opens"}
           value={formatNumber(opens)}
           detail={rateText(rates.openRate)}
         />
         <Tile
+          testId="report-unique-clicks"
           label="Unique clicks"
           value={formatNumber(report.summary.uniqueClicks)}
           detail={rateText(rates.clickRate)}
         />
-        <Tile label="Click-to-open" value={rateText(rates.ctor)} />
+        <Tile testId="report-ctor" label="Click-to-open" value={rateText(rates.ctor)} />
         <Tile
+          testId="report-unsubscribes"
           label="Unsubscribes"
           value={formatNumber(report.summary.unsubscribes)}
           detail={rateText(rates.unsubscribeRate)}
         />
         <Tile
+          testId="report-bounces"
           label="Bounces"
           value={`${formatNumber(report.summary.bouncesHard)} hard, ${formatNumber(report.summary.bouncesSoft)} soft`}
           detail={rateText(rates.bounceRate)}
         />
-        <Tile label="Reported as spam" value={formatNumber(report.summary.complaints)} />
+        <Tile
+          testId="report-complaints"
+          label="Reported as spam"
+          value={formatNumber(report.summary.complaints)}
+        />
       </section>
 
       <label htmlFor="include-machine-opens" className="flex items-center gap-2 text-sm">

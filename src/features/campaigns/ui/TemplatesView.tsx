@@ -66,6 +66,7 @@ export function TemplatesView({ onUse }: TemplatesViewProps): React.ReactNode {
                 type="button"
                 size="sm"
                 variant="outline"
+                data-testid={`starter-use-${starter.key}`}
                 onClick={() => onUse(starter.document, starter.name)}
               >
                 Use

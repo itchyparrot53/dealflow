@@ -281,6 +281,7 @@ export function SequenceEditor({ view }: { view: SequenceEditorView }): React.Re
         <FormField label="Sender" htmlFor="sequence-sender">
           <Select
             ariaLabel="Sender"
+            testId="sequence-sender"
             value={senderId}
             onChange={setSenderId}
             placeholder="No sender"
