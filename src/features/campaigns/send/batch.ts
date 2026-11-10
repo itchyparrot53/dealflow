@@ -16,16 +16,18 @@ import {
   users,
 } from "@/db/schema";
 import { getEmailDesign } from "@/features/email-design/design";
-import { transitionMarketingStatus } from "@/features/marketing/service";
+import { applyMarketingTransition, transitionMarketingStatus } from "@/features/marketing/service";
 import { hashEmail } from "@/features/marketing/suppression";
 import { mintMarketingToken } from "@/features/marketing/tokens";
 import { hydrateActor } from "@/server/hydrateActor";
 import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { loadCampaignAssetUrls } from "../assets";
+import { auditDocument } from "../blocks/audit";
 import { campaignMergeValues } from "../blocks/personalize";
 import { renderCampaign } from "../blocks/render";
 import type { CampaignDocument } from "../blocks/schema";
+import { blockingFailures, campaignChecklist } from "../checklist";
 import type { CampaignSegment } from "../schemas";
 import { previewSegment } from "../segment";
 import { getCampaignSettings } from "../settings";
@@ -108,6 +110,56 @@ export interface TickResult {
   nextAt: Date | null;
 }
 
+interface SnapshotReviewInput {
+  subject: string;
+  senderVerified: boolean;
+  postalAddress: string;
+  recipientCount: number;
+  document: CampaignDocument;
+  design: Awaited<ReturnType<typeof getEmailDesign>>;
+  assetUrls: Map<string, string>;
+  baseUrl: string;
+}
+
+// The send path enforces the same Review checklist the editor shows, so an API caller or a
+// scheduled start cannot skip the postal address, the size limit or the verified sender.
+function snapshotReviewFailure(input: SnapshotReviewInput): AppError | null {
+  const audit = auditDocument(input.document);
+  const sample = renderCampaign(input.document, {
+    design: input.design,
+    values: templateValues(input.baseUrl),
+    postalAddress: input.postalAddress,
+    baseUrl: input.baseUrl,
+    assetUrl: (assetId) => input.assetUrls.get(assetId) ?? null,
+  });
+  const failed = blockingFailures(
+    campaignChecklist({
+      subject: input.subject,
+      senderVerified: input.senderVerified,
+      postalAddress: input.postalAddress,
+      recipientCount: input.recipientCount,
+      imagesWithoutAlt: audit.imagesWithoutAlt,
+      buttonsWithoutUrl: audit.buttonsWithoutUrl,
+      htmlBytes: Buffer.byteLength(sample.html, "utf8"),
+      domainCheck: null,
+      testSent: true,
+    }),
+  );
+  if (failed.length === 0) return null;
+  const key = failed[0]?.key;
+  const id =
+    key === "address"
+      ? ERROR_IDS.CAMPAIGN_ADDRESS_MISSING
+      : key === "size"
+        ? ERROR_IDS.CAMPAIGN_TOO_LARGE
+        : key === "sender"
+          ? ERROR_IDS.CAMPAIGN_SENDER_UNVERIFIED
+          : ERROR_IDS.CAMPAIGN_NOT_SENDABLE;
+  return new AppError(id, "campaign review blocked", {
+    failed: failed.map((item) => item.key),
+  });
+}
+
 export async function snapshotCampaign(
   db: Db,
   campaignId: string,
@@ -159,6 +211,18 @@ export async function snapshotCampaign(
     const settings = await getCampaignSettings(tx, signal);
     const assetUrls = await loadCampaignAssetUrls(tx, signal);
     const document = campaign.content as CampaignDocument;
+    const verifiedSender = await loadVerifiedCampaignSender(tx, campaign.senderId, signal);
+    const blocked = snapshotReviewFailure({
+      subject: campaign.subject,
+      senderVerified: verifiedSender !== null,
+      postalAddress: settings.postalAddress,
+      recipientCount: preview.value.eligible.length,
+      document,
+      design,
+      assetUrls,
+      baseUrl: env.BASE_URL,
+    });
+    if (blocked !== null) return { ok: false as const, error: blocked };
     await freezeCampaignLinks(
       tx,
       campaignId,
@@ -199,6 +263,12 @@ export async function snapshotCampaign(
       });
     }
 
+    if (inserted === 0) {
+      return {
+        ok: false as const,
+        error: new AppError(ERROR_IDS.CAMPAIGN_NOT_SENDABLE, "no eligible recipients", {}),
+      };
+    }
     await tx
       .update(campaigns)
       .set({
@@ -345,7 +415,7 @@ export interface VerifiedSender {
 }
 
 export async function loadVerifiedCampaignSender(
-  db: Db,
+  db: DbOrTx,
   senderId: string | null,
   signal: AbortSignal,
 ): Promise<VerifiedSender | null> {
@@ -450,6 +520,7 @@ async function deliverRows(
       {
         to: row.email,
         from: `"${sender.fromName}" <${sender.fromEmail}>`,
+        replyTo: campaign.replyTo ?? undefined,
         subject,
         html,
         text,
@@ -458,6 +529,7 @@ async function deliverRows(
           recipientId: row.id,
           campaignType: campaign.type,
           baseUrl: base,
+          senderDomain: sender.fromEmail.split("@")[1] ?? new URL(base).hostname,
           unsubscribeOneClickUrl: `${base}/u/${token}/one-click`,
         }),
       },
@@ -635,7 +707,7 @@ async function handleFailure(
     .from(campaignRecipients)
     .where(eq(campaignRecipients.id, row.id));
   const attempts = (current?.attempts ?? 0) + 1;
-  if (attempts < 3) {
+  if (attempts <= BACKOFF_MINUTES.length) {
     const retryAt = new Date(Date.now() + (BACKOFF_MINUTES[attempts - 1] ?? 120) * 60_000);
     await db
       .update(campaignRecipients)
@@ -652,8 +724,22 @@ async function handleFailure(
     { campaignId, recipientId: row.id, personId, campaignName, type: "bounce_soft" },
     signal,
   );
-  await db
-    .update(personMarketing)
-    .set({ softBounceCount: sql`${personMarketing.softBounceCount} + 1` })
-    .where(eq(personMarketing.personId, personId));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(personMarketing)
+      .set({ softBounceCount: sql`${personMarketing.softBounceCount} + 1` })
+      .where(eq(personMarketing.personId, personId));
+    const [marketing] = await tx
+      .select({ softBounceCount: personMarketing.softBounceCount })
+      .from(personMarketing)
+      .where(eq(personMarketing.personId, personId))
+      .limit(1);
+    if ((marketing?.softBounceCount ?? 0) >= 3) {
+      await applyMarketingTransition(
+        tx,
+        { personId, to: "bounced", source: "bounce", campaignId },
+        signal,
+      );
+    }
+  });
 }

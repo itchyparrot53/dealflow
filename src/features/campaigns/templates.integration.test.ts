@@ -7,6 +7,7 @@ import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
 import { captureMailer } from "@/features/mailer/captureMailer";
 import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
+import type { SystemMail } from "@/features/mailer/types";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { campaignDocumentSchema } from "./blocks/schema";
 import { CAMPAIGN_STARTERS } from "./blocks/starters";
@@ -122,6 +123,12 @@ describe("test send", () => {
 
       const dir = await mkdtemp(join(tmpdir(), "dealflow-test-send-"));
       setSystemMailerForTest(captureMailer(dir));
+      const send = async (mail: SystemMail, sendSignal: AbortSignal) => {
+        const result = await captureMailer(dir).send(mail, sendSignal);
+        return result.ok
+          ? result
+          : { ok: false as const, error: { failure: "soft" as const, detail: result.error.id } };
+      };
       const result = await sendCampaignTest(
         db,
         actorOf(owner.id),
@@ -132,6 +139,7 @@ describe("test send", () => {
           recipients: [recipient.email],
         },
         signal,
+        send,
       );
       expect(result.ok).toBe(true);
       if (result.ok) expect(result.value.sent).toBe(1);
@@ -147,6 +155,11 @@ describe("test send", () => {
 
   it("refuses a recipient who is not a user of the install", async () => {
     await withTestDb(async (db) => {
+      const send = () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { failure: "soft" as const, detail: "unused" },
+        });
       const owner = await seedUser(db);
       const [person] = await db
         .insert(persons)
@@ -167,6 +180,7 @@ describe("test send", () => {
           recipients: ["outsider@example.com"],
         },
         signal,
+        send,
       );
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error.id).toBe("E_CAMPAIGN_001");
@@ -175,6 +189,11 @@ describe("test send", () => {
 
   it("refuses more than five recipients", async () => {
     await withTestDb(async (db) => {
+      const send = () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { failure: "soft" as const, detail: "unused" },
+        });
       const owner = await seedUser(db);
       const [person] = await db
         .insert(persons)
@@ -195,6 +214,7 @@ describe("test send", () => {
           recipients: Array.from({ length: 6 }, (_, index) => `u${index}@example.com`),
         },
         signal,
+        send,
       );
       expect(result.ok).toBe(false);
     });

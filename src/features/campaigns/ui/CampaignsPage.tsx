@@ -27,6 +27,14 @@ import { TemplatesView } from "./TemplatesView";
 const TYPE_LABELS: Record<string, string> = CAMPAIGN_TYPE_LABELS;
 const STATUS_LABELS: Record<string, string> = CAMPAIGN_STATUS_LABELS;
 
+function formatRate(rate: number | null): string {
+  return rate === null ? "-" : `${(rate * 100).toFixed(1)}%`;
+}
+
+function formatDate(value: string | null): string {
+  return value === null ? "-" : new Date(value).toLocaleDateString();
+}
+
 const STATUS_VARIANT: Record<string, "outline" | "secondary" | "success" | "destructive"> = {
   draft: "outline",
   scheduled: "secondary",
@@ -144,7 +152,10 @@ export function CampaignsPage({
                 <th className="px-3 py-2 font-medium">Name</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-3 py-2 font-medium">Recipients</th>
-                <th className="px-3 py-2 font-medium">Created</th>
+                <th className="px-3 py-2 font-medium">Open rate</th>
+                <th className="px-3 py-2 font-medium">Click rate</th>
+                <th className="px-3 py-2 font-medium">Sent or scheduled</th>
+                <th className="px-3 py-2 font-medium">Owner</th>
                 <th className="px-3 py-2" />
               </tr>
             </thead>
@@ -166,12 +177,35 @@ export function CampaignsPage({
                     <Badge variant={STATUS_VARIANT[campaign.status] ?? "outline"}>
                       {STATUS_LABELS[campaign.status] ?? campaign.status}
                     </Badge>
+                    {campaign.status === "scheduled" && campaign.scheduledAt !== null ? (
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        Scheduled {new Date(campaign.scheduledAt).toLocaleString()}
+                      </span>
+                    ) : null}
+                    {campaign.status === "sending" && campaign.sendingPercent !== null ? (
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        Sending {campaign.sendingPercent}%
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-3 py-2 tabular-nums text-muted-foreground">
                     {campaign.totals.recipients ?? 0}
                   </td>
+                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                    {formatRate(campaign.openRate)}
+                  </td>
+                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                    {formatRate(campaign.clickRate)}
+                  </td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {new Date(campaign.createdAt).toLocaleDateString()}
+                    {formatDate(
+                      campaign.status === "scheduled"
+                        ? campaign.scheduledAt
+                        : (campaign.startedAt ?? campaign.finishedAt),
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">
+                    {campaign.ownerName ?? "Unassigned"}
                   </td>
                   <td className="px-3 py-2 text-right">
                     {campaign.status === "sent" ||

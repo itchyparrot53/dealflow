@@ -41,6 +41,7 @@ import {
   sendCampaignNowAction,
   sendCampaignTestAction,
   suggestCampaignSubjectsAction,
+  unscheduleCampaignAction,
   updateCampaignAction,
 } from "../actions";
 import { auditDocument } from "../blocks/audit";
@@ -122,6 +123,57 @@ interface EditorFormProps {
   status: string;
   senders: { id: string; fromName: string; fromEmail: string; verified: boolean }[];
   postalAddress: string;
+}
+
+function TestSendMessage({
+  message,
+  sent,
+}: {
+  message: string | null;
+  sent: boolean;
+}): React.ReactNode {
+  if (message === null) return null;
+  return (
+    <p
+      data-testid={sent ? "campaign-test-sent" : undefined}
+      className={sent ? "text-sm text-link-record" : "text-sm text-destructive"}
+    >
+      {message}
+    </p>
+  );
+}
+
+interface TestSendInput {
+  document: CampaignDocument;
+  subject: string;
+  preheader: string;
+  personId: string;
+  recipients: string;
+  senderId: string | null;
+}
+
+async function runTestSend(
+  input: TestSendInput,
+): Promise<{ ok: true; sent: number } | { ok: false; error: string }> {
+  const recipients = input.recipients
+    .split(/[,\s]+/)
+    .map((value) => value.trim())
+    .filter((value) => value !== "");
+  if (recipients.length === 0 || input.personId === "") {
+    return { ok: false, error: "Add a recipient and choose a sample person." };
+  }
+  const result = await sendCampaignTestAction(
+    {
+      document: input.document,
+      subject: input.subject,
+      preheader: input.preheader === "" ? undefined : input.preheader,
+      personId: input.personId,
+      recipients,
+      senderId: input.senderId,
+    },
+    readCsrfToken(),
+  );
+  return result.ok ? { ok: true, sent: result.value.sent } : { ok: false, error: result.error.id };
 }
 
 export function EditorForm({
@@ -241,31 +293,21 @@ export function EditorForm({
   }
 
   async function sendTest(): Promise<void> {
-    const recipients = testRecipients
-      .split(/[,\s]+/)
-      .map((value) => value.trim())
-      .filter((value) => value !== "");
-    if (recipients.length === 0 || testPersonId === "") {
-      setTestMessage("Add a recipient and choose a sample person.");
-      return;
-    }
     setTestMessage(null);
-    const result = await sendCampaignTestAction(
-      {
-        document: form.content ?? BLANK_DOC,
-        subject: form.subject,
-        preheader: form.preheader === "" ? undefined : form.preheader,
-        personId: testPersonId,
-        recipients,
-      },
-      readCsrfToken(),
-    );
+    const result = await runTestSend({
+      document: form.content ?? BLANK_DOC,
+      subject: form.subject,
+      preheader: form.preheader,
+      personId: testPersonId,
+      recipients: testRecipients,
+      senderId: form.senderId,
+    });
     if (!result.ok) {
-      setTestMessage(result.error.id);
+      setTestMessage(result.error);
       return;
     }
     setTestSent(true);
-    setTestMessage(`Sent ${result.value.sent} test email${result.value.sent === 1 ? "" : "s"}.`);
+    setTestMessage(`Sent ${result.sent} test email${result.sent === 1 ? "" : "s"}.`);
   }
 
   async function schedule(): Promise<void> {
@@ -308,6 +350,18 @@ export function EditorForm({
               Resume
             </Button>
           ) : null}
+          {status === "scheduled" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                void run(() => unscheduleCampaignAction({ id: campaignId }, readCsrfToken()))
+              }
+            >
+              Unschedule
+            </Button>
+          ) : null}
           {["sending", "paused", "scheduled"].includes(status) ? (
             <Button
               type="button"
@@ -328,9 +382,9 @@ export function EditorForm({
             disabled={form.content === null}
             onClick={() => {
               setTestMessage(null);
-              if (testPersonId === "") {
-                setTestPersonId(segmentQuery.data?.eligible[0]?.id ?? "");
-              }
+              setTestPersonId((current) =>
+                current === "" ? (segmentQuery.data?.eligible[0]?.id ?? "") : current,
+              );
               setTestOpen(true);
             }}
           >
@@ -445,14 +499,7 @@ export function EditorForm({
                 placeholder="Choose a person"
               />
             </FormField>
-            {testMessage === null ? null : (
-              <p
-                data-testid={testSent ? "campaign-test-sent" : undefined}
-                className={testSent ? "text-sm text-link-record" : "text-sm text-destructive"}
-              >
-                {testMessage}
-              </p>
-            )}
+            <TestSendMessage message={testMessage} sent={testSent} />
           </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setTestOpen(false)}>

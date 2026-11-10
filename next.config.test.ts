@@ -133,9 +133,11 @@ describe("next.config security headers", () => {
     expect(nextConfig.poweredByHeader).toBe(false);
   });
 
-  it("marks the public campaign web version noindex", async () => {
-    expect((await headersForPath("/v/token")).get("x-robots-tag")).toEqual(["noindex"]);
-    expect(await cspForPath("/v/token")).toContain("frame-ancestors 'none'");
+  it("marks the public campaign pages noindex", async () => {
+    for (const path of ["/v/token", "/c/token", "/u/token"]) {
+      expect((await headersForPath(path)).get("x-robots-tag")).toEqual(["noindex"]);
+      expect(await cspForPath(path)).toContain("frame-ancestors 'none'");
+    }
   });
 });
 

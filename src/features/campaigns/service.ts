@@ -1,7 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
-import { campaignSenders, campaignSettings, campaigns } from "@/db/schema";
+import { campaignSenders, campaignSettings, campaigns, users } from "@/db/schema";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
@@ -18,8 +18,20 @@ export interface CampaignListRow {
   status: string;
   subject: string;
   scheduledAt: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
   createdAt: string;
-  totals: { recipients?: number };
+  ownerName: string | null;
+  totals: {
+    recipients?: number;
+    sent?: number;
+    delivered?: number;
+    uniqueHumanOpens?: number;
+    uniqueClicks?: number;
+  };
+  openRate: number | null;
+  clickRate: number | null;
+  sendingPercent: number | null;
 }
 
 export async function listCampaigns(db: Db, signal: AbortSignal): Promise<CampaignListRow[]> {
@@ -31,21 +43,40 @@ export async function listCampaigns(db: Db, signal: AbortSignal): Promise<Campai
       status: campaigns.status,
       subject: campaigns.subject,
       scheduledAt: campaigns.scheduledAt,
+      startedAt: campaigns.startedAt,
+      finishedAt: campaigns.finishedAt,
       createdAt: campaigns.createdAt,
       totals: campaigns.totals,
+      ownerName: users.name,
     })
     .from(campaigns)
+    .leftJoin(users, sql`${users.id} = coalesce(${campaigns.sendAsUserId}, ${campaigns.createdBy})`)
     // A sequence step's nurture campaign is internal: it appears in the sequence editor's per-step
     // stats, never in the campaign list.
     .where(sql`not exists (select 1 from sequence_steps ss where ss.campaign_id = ${campaigns.id})`)
     .orderBy(desc(campaigns.createdAt));
   signal.throwIfAborted();
-  return rows.map((row) => ({
-    ...row,
-    scheduledAt: row.scheduledAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    totals: row.totals as { recipients?: number },
-  }));
+  return rows.map((row) => {
+    const totals = row.totals as CampaignListRow["totals"] | null;
+    const delivered = totals?.delivered ?? 0;
+    const recipients = totals?.recipients ?? 0;
+    const sent = totals?.sent ?? 0;
+    return {
+      ...row,
+      scheduledAt: row.scheduledAt?.toISOString() ?? null,
+      startedAt: row.startedAt?.toISOString() ?? null,
+      finishedAt: row.finishedAt?.toISOString() ?? null,
+      createdAt: row.createdAt.toISOString(),
+      ownerName: row.ownerName ?? null,
+      totals: totals ?? {},
+      openRate: delivered === 0 ? null : (totals?.uniqueHumanOpens ?? 0) / delivered,
+      clickRate: delivered === 0 ? null : (totals?.uniqueClicks ?? 0) / delivered,
+      sendingPercent:
+        row.status === "sending" && recipients > 0
+          ? Math.min(100, Math.round((sent / recipients) * 100))
+          : null,
+    };
+  });
 }
 
 export async function getCampaign(db: Db, id: string, signal: AbortSignal) {

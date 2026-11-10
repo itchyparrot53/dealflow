@@ -5,6 +5,7 @@ import { campaignRecipients, campaigns } from "@/db/schema";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
+import { cancelCampaignStart, enqueueCampaignTick } from "./job";
 
 // 6.6's state actions. Every one checks campaigns.send; a sent campaign never changes state again.
 
@@ -49,6 +50,9 @@ export async function resumeCampaign(
     return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", {}));
   if (campaign.status !== "paused") return err(notSendable(campaign.status));
   await db.update(campaigns).set({ status: "sending" }).where(eq(campaigns.id, id));
+  // A paused campaign has no live tick: the one that paused it has already returned. Resume must
+  // enqueue the next one or the queued recipients would never move again.
+  await enqueueCampaignTick(id);
   return ok({ status: "sending" });
 }
 
@@ -80,7 +84,27 @@ export async function cancelCampaign(
         ),
       );
   });
+  if (campaign.status === "scheduled") await cancelCampaignStart(id).catch(() => undefined);
   return ok({ status: "cancelled" });
+}
+
+export async function unscheduleCampaign(
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+): Promise<Result<{ status: string }, AppError>> {
+  if (!can(actor, "campaigns.send")) return err(deny(actor));
+  const campaign = await requireCampaign(db, id, signal);
+  if (campaign === null)
+    return err(new AppError(ERROR_IDS.CAMPAIGN_NOT_FOUND, "campaign not found", {}));
+  if (campaign.status !== "scheduled") return err(notSendable(campaign.status));
+  await db
+    .update(campaigns)
+    .set({ status: "draft", scheduledAt: null })
+    .where(eq(campaigns.id, id));
+  await cancelCampaignStart(id).catch(() => undefined);
+  return ok({ status: "draft" });
 }
 
 // 6.6: schedule, send now. Scheduling requires campaigns.send and at least ten minutes of lead time.

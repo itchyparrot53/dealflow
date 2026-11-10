@@ -21,6 +21,22 @@ export async function enqueueCampaignStart(campaignId: string, at: Date): Promis
   await boss.send(PGBOSS_QUEUE_CAMPAIGN_START, { campaignId }, { startAfter: delaySeconds });
 }
 
+// The start job carries the campaign id, so unschedule can cancel every queued start for it even
+// after a reschedule has created another row.
+export async function cancelCampaignStart(campaignId: string): Promise<void> {
+  const boss = getBoss();
+  if (boss === null) return;
+  const jobs = await boss.findJobs(PGBOSS_QUEUE_CAMPAIGN_START, {
+    data: { campaignId },
+    queued: true,
+  });
+  if (jobs.length === 0) return;
+  await boss.cancel(
+    PGBOSS_QUEUE_CAMPAIGN_START,
+    jobs.map((job) => job.id),
+  );
+}
+
 export async function registerCampaignJobs(boss: PgBoss): Promise<void> {
   await boss.createQueue(PGBOSS_QUEUE_CAMPAIGN_SEND);
   await boss.createQueue(PGBOSS_QUEUE_CAMPAIGN_START);

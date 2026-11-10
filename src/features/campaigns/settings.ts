@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { campaignSettings } from "@/db/schema";
 import { bounceMailboxConfigured } from "@/features/campaigns/bounces/config";
+import { recordAudit } from "@/features/identity/audit";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
@@ -98,6 +99,11 @@ export async function saveCampaignSettings(
   if (address.length > 1000) {
     return err(new AppError(ERROR_IDS.CAMPAIGN_INPUT_INVALID, "postal address is too long", {}));
   }
+  const [before] = await db
+    .select()
+    .from(campaignSettings)
+    .where(eq(campaignSettings.id, 1))
+    .limit(1);
   await db
     .insert(campaignSettings)
     .values({
@@ -119,5 +125,30 @@ export async function saveCampaignSettings(
         updatedAt: new Date(),
       },
     });
+  await recordAudit(
+    db,
+    {
+      actorId: actor.id,
+      targetType: "settings",
+      targetId: null,
+      action: "campaign_settings.updated",
+      before:
+        before === undefined
+          ? null
+          : {
+              postalAddress: before.postalAddress,
+              requireDoubleOptIn: before.requireDoubleOptIn,
+              consentLabel: before.consentLabel,
+              sendRatePerMinute: before.sendRatePerMinute,
+            },
+      after: {
+        postalAddress: address === "" ? null : address,
+        requireDoubleOptIn: input.requireDoubleOptIn,
+        consentLabel: input.consentLabel?.trim() ?? null,
+        sendRatePerMinute: rate,
+      },
+    },
+    signal,
+  );
   return ok(undefined);
 }

@@ -11,6 +11,8 @@ export interface SystemMail {
   to: string;
   // Campaign mail carries its own verified From; system mail uses SMTP_FROM.
   from?: string;
+  // Campaign mail may set a different Reply-To; system mail leaves it unset.
+  replyTo?: string;
   subject: string;
   text: string;
   html: string;

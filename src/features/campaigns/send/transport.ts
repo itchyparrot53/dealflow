@@ -3,7 +3,6 @@ import nodemailer from "nodemailer";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { captureMailer } from "@/features/mailer/captureMailer";
-import { getSystemMailer } from "@/features/mailer/systemMailer";
 import type { SystemMail } from "@/features/mailer/types";
 import { err, ok, type Result } from "@/types/result";
 
@@ -45,16 +44,22 @@ function classify(error: unknown): SendFailure {
   return code !== null && code >= 500 ? "hard" : "soft";
 }
 
-function marketingTransport() {
+function campaignTransport() {
   const dkim = dkimConfig();
+  const usingMarketing = env.MARKETING_SMTP_HOST !== "";
+  const host = usingMarketing ? env.MARKETING_SMTP_HOST : env.SMTP_HOST;
+  if (host === "") return null;
   return nodemailer.createTransport({
-    host: env.MARKETING_SMTP_HOST,
-    port: env.MARKETING_SMTP_PORT,
-    secure: env.MARKETING_SMTP_SECURE,
+    host,
+    port: usingMarketing ? env.MARKETING_SMTP_PORT : env.SMTP_PORT,
+    secure: usingMarketing ? env.MARKETING_SMTP_SECURE : env.SMTP_SECURE,
     auth:
-      env.MARKETING_SMTP_USER === ""
+      (usingMarketing ? env.MARKETING_SMTP_USER : env.SMTP_USER) === ""
         ? undefined
-        : { user: env.MARKETING_SMTP_USER, pass: env.MARKETING_SMTP_PASS },
+        : {
+            user: usingMarketing ? env.MARKETING_SMTP_USER : env.SMTP_USER,
+            pass: usingMarketing ? env.MARKETING_SMTP_PASS : env.SMTP_PASS,
+          },
     ...(dkim === null ? {} : { dkim }),
   });
 }
@@ -69,20 +74,28 @@ export async function sendCampaignMail(
     const result = await captureMailer().send(mail, signal);
     return result.ok ? ok(result.value) : err({ failure: "soft", detail: result.error.id });
   }
-  if (env.MARKETING_SMTP_HOST === "") {
-    const result = await getSystemMailer().send(mail, signal);
-    return result.ok ? ok(result.value) : err({ failure: "soft", detail: result.error.id });
+  const transport = campaignTransport();
+  if (transport === null) {
+    // Never fall through to the log mailer: its body would contain merge values and a live
+    // unsubscribe token. A failed send is a value and goes through the soft retry path.
+    return err({ failure: "soft", detail: "no SMTP host" });
   }
 
   signal.throwIfAborted();
   try {
-    const info = await marketingTransport().sendMail({
+    const info = await transport.sendMail({
       from: mail.from ?? env.SMTP_FROM,
+      replyTo: mail.replyTo,
       to: mail.to,
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
       headers: mail.headers,
+      attachments: mail.attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        contentType: attachment.contentType,
+        content: attachment.content,
+      })),
     });
     signal.throwIfAborted();
     return ok({ messageId: info.messageId });

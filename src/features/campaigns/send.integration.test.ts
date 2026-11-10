@@ -4,6 +4,7 @@ import { env } from "@/config/env";
 import {
   campaignRecipients,
   campaignSenders,
+  campaignSettings,
   campaigns,
   personMarketing,
   persons,
@@ -39,6 +40,13 @@ async function setup(db: Parameters<Parameters<typeof withTestDb>[0]>[0], status
     .insert(campaignSenders)
     .values({ fromName: "Northwind News", fromEmail: "news@example.com", verifiedAt: new Date() })
     .returning();
+  await db
+    .insert(campaignSettings)
+    .values({ id: 1, postalAddress: "1 Test Street, London" })
+    .onConflictDoUpdate({
+      target: campaignSettings.id,
+      set: { postalAddress: "1 Test Street, London" },
+    });
   const [campaign] = await db
     .insert(campaigns)
     .values({
@@ -99,7 +107,7 @@ describe("campaign sending engine", () => {
       expect(headers["List-Unsubscribe"]).toBe(`<${base}/u/${token}/one-click>`);
       expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
       expect(headers["Message-ID"]).toMatch(
-        new RegExp(`^<${campaign.id}\\.[0-9a-f-]+@app\\.example\\.com>$`),
+        new RegExp(`^<${campaign.id}\\.[0-9a-f-]+@example\\.com>$`),
       );
       expect(mails[0]?.subject).toBe("Something new");
 
@@ -114,6 +122,74 @@ describe("campaign sending engine", () => {
 
       const [after] = await db.select().from(campaigns).where(eq(campaigns.id, campaign.id));
       expect(after?.status).toBe("sent");
+    });
+  });
+
+  it("blocks a send without a postal address", async () => {
+    await withTestDb(async (db) => {
+      const { campaign } = await setup(db);
+      await db.update(campaignSettings).set({ postalAddress: null });
+      const result = await snapshotCampaign(db, campaign.id, signal);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_CAMPAIGN_005");
+    });
+  });
+
+  it("blocks a send with an unverified sender", async () => {
+    await withTestDb(async (db) => {
+      const { campaign } = await setup(db);
+      await db
+        .update(campaignSenders)
+        .set({ verifiedAt: null })
+        .where(eq(campaignSenders.id, campaign.senderId ?? ""));
+      const result = await snapshotCampaign(db, campaign.id, signal);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_CAMPAIGN_004");
+    });
+  });
+
+  it("blocks a send with no eligible recipients", async () => {
+    await withTestDb(async (db) => {
+      const { campaign } = await setup(db);
+      await db
+        .update(campaigns)
+        .set({
+          segment: {
+            kind: "definition",
+            definition: {
+              combinator: "and",
+              conditions: [{ field: "name", op: "contains", value: "Nobody" }],
+            },
+          },
+        })
+        .where(eq(campaigns.id, campaign.id));
+      const result = await snapshotCampaign(db, campaign.id, signal);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_CAMPAIGN_003");
+    });
+  });
+
+  it("blocks a send whose rendered HTML is over the hard limit", async () => {
+    await withTestDb(async (db) => {
+      const { campaign } = await setup(db);
+      await db
+        .update(campaigns)
+        .set({
+          content: {
+            version: 1,
+            settings: {
+              backgroundColor: "#F4F4F2",
+              contentWidth: 600,
+              fontFamily: "system",
+              linkColor: "#2D8548",
+            },
+            blocks: [{ id: "huge", type: "html", html: `<p>${"x".repeat(110 * 1024)}</p>` }],
+          },
+        })
+        .where(eq(campaigns.id, campaign.id));
+      const result = await snapshotCampaign(db, campaign.id, signal);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.id).toBe("E_CAMPAIGN_006");
     });
   });
 
@@ -152,28 +228,51 @@ describe("campaign sending engine", () => {
     });
   });
 
-  it("retries a soft failure and gives up after three attempts", async () => {
+  it("retries a soft failure three times and gives up on the fourth", async () => {
     await withTestDb(async (db) => {
       const { campaign } = await setup(db);
       await snapshotCampaign(db, campaign.id, signal);
       const send: FakeSend = () =>
         Promise.resolve({ ok: false, error: { failure: "soft", detail: "status 421" } });
 
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        await runCampaignTick(db, campaign.id, signal, { send, now: () => new Date() });
+        const [recipient] = await db.select().from(campaignRecipients);
+        expect(recipient?.status).toBe("queued");
+        expect(recipient?.attempts).toBe(attempt);
+        // Clear the backoff so the next tick can claim it again.
+        await db.update(campaignRecipients).set({ retryAt: null });
+      }
       await runCampaignTick(db, campaign.id, signal, { send, now: () => new Date() });
-      let [recipient] = await db.select().from(campaignRecipients);
-      expect(recipient?.status).toBe("queued");
-      expect(recipient?.attempts).toBe(1);
-
-      // Clear the backoff so the next tick can claim it again.
-      await db.update(campaignRecipients).set({ retryAt: null });
-      await runCampaignTick(db, campaign.id, signal, { send, now: () => new Date() });
-      [recipient] = await db.select().from(campaignRecipients);
-      expect(recipient?.attempts).toBe(2);
-
-      await db.update(campaignRecipients).set({ retryAt: null });
-      await runCampaignTick(db, campaign.id, signal, { send, now: () => new Date() });
-      [recipient] = await db.select().from(campaignRecipients);
+      const [recipient] = await db.select().from(campaignRecipients);
       expect(recipient?.status).toBe("failed_soft");
+      expect(recipient?.attempts).toBe(4);
+    });
+  });
+
+  it("moves a person to bounced on the third consecutive soft bounce", async () => {
+    await withTestDb(async (db) => {
+      const { campaign, person } = await setup(db);
+      await snapshotCampaign(db, campaign.id, signal);
+      await db
+        .update(personMarketing)
+        .set({ softBounceCount: 2 })
+        .where(eq(personMarketing.personId, person.id));
+      const send: FakeSend = () =>
+        Promise.resolve({ ok: false, error: { failure: "soft", detail: "status 421" } });
+
+      for (let attempt = 1; attempt <= 4; attempt += 1) {
+        await runCampaignTick(db, campaign.id, signal, { send, now: () => new Date() });
+        await db.update(campaignRecipients).set({ retryAt: null });
+      }
+      const [recipient] = await db.select().from(campaignRecipients);
+      expect(recipient?.status).toBe("failed_soft");
+      const [marketing] = await db
+        .select()
+        .from(personMarketing)
+        .where(eq(personMarketing.personId, person.id));
+      expect(marketing?.status).toBe("bounced");
+      expect(marketing?.softBounceCount).toBe(3);
     });
   });
 

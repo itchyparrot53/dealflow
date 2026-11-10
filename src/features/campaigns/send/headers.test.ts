@@ -6,6 +6,7 @@ const INPUT = {
   recipientId: "r0000000-0000-4000-8000-000000000002",
   campaignType: "announcement",
   baseUrl: "https://app.example.com",
+  senderDomain: "news.example.com",
   unsubscribeOneClickUrl: "https://app.example.com/u/token/one-click",
 };
 
@@ -23,7 +24,7 @@ describe("campaign headers", () => {
     const first = campaignHeaders(INPUT)["Message-ID"];
     const second = campaignHeaders(INPUT)["Message-ID"];
     expect(first).toBe(second);
-    expect(first).toBe(`<${INPUT.campaignId}.${INPUT.recipientId}@app.example.com>`);
+    expect(first).toBe(`<${INPUT.campaignId}.${INPUT.recipientId}@news.example.com>`);
   });
 
   it("strips CR and LF from the subject", () => {

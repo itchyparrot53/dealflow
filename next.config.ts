@@ -104,6 +104,14 @@ const nextConfig: NextConfig = {
         source: "/v/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],
       },
+      {
+        source: "/c/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      {
+        source: "/u/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
     ]);
   },
   // "x-powered-by: Next.js" hands a scanner the framework for free.

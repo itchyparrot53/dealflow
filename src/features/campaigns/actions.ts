@@ -15,7 +15,13 @@ import { checkDomain, defaultResolver } from "./domainCheck";
 import { campaignCreateInput, campaignUpdateInput } from "./schemas";
 import { snapshotCampaign } from "./send/batch";
 import { enqueueCampaignStart, enqueueCampaignTick } from "./send/job";
-import { cancelCampaign, pauseCampaign, resumeCampaign, scheduleCampaign } from "./send/state";
+import {
+  cancelCampaign,
+  pauseCampaign,
+  resumeCampaign,
+  scheduleCampaign,
+  unscheduleCampaign,
+} from "./send/state";
 import { addSender, setDefaultSender } from "./senders";
 import { createCampaign, deleteCampaign, duplicateCampaign, updateCampaign } from "./service";
 import { saveCampaignSettings } from "./settings";
@@ -66,6 +72,7 @@ const testInput = z.object({
   preheader: z.string().max(140).optional(),
   personId: z.string().uuid(),
   recipients: z.array(z.string().email()).min(1).max(5),
+  senderId: z.string().uuid().nullable().optional(),
 });
 
 const idInput = z.object({ id: z.string().uuid() });
@@ -146,6 +153,7 @@ export async function sendCampaignTestAction(
       preheader: parsed.data.preheader,
       personId: parsed.data.personId,
       recipients: parsed.data.recipients,
+      senderId: parsed.data.senderId,
     },
     AbortSignal.timeout(30_000),
   );
@@ -360,6 +368,13 @@ export async function resumeCampaignAction(
   csrfToken: string | null = null,
 ): Promise<ActionResult<{ status: string }>> {
   return changeState(raw, csrfToken, resumeCampaign);
+}
+
+export async function unscheduleCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ status: string }>> {
+  return changeState(raw, csrfToken, unscheduleCampaign);
 }
 
 export async function cancelCampaignAction(

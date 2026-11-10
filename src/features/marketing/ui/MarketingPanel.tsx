@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Dialog,
   DialogBody,
@@ -22,7 +23,7 @@ import {
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { changeMarketingStatusAction } from "../actions";
+import { changeMarketingStatusAction, exportConsentHistoryAction } from "../actions";
 import { allowedTargets } from "../status";
 
 // 6.12's person Marketing section: status, evidence, the change dialog (allowed targets only) and
@@ -48,7 +49,9 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
   const [dialog, setDialog] = useState<"change" | "history" | null>(null);
   const [target, setTarget] = useState("");
   const [basis, setBasis] = useState("");
+  const [sendDoubleOptIn, setSendDoubleOptIn] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (data === undefined || data === null) return null;
@@ -59,12 +62,35 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
   }));
   const needsBasis = target === "subscribed";
 
+  async function exportHistory(): Promise<void> {
+    setExporting(true);
+    setError(null);
+    const result = await exportConsentHistoryAction({ personId }, readCsrfToken());
+    setExporting(false);
+    if (!result.ok) {
+      setError(result.error.id);
+      return;
+    }
+    const blob = new Blob([result.value.csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = result.value.filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function apply(): Promise<void> {
     if (target === "") return;
     setBusy(true);
     setError(null);
     const result = await changeMarketingStatusAction(
-      { personId, to: target, basis: needsBasis ? basis : null },
+      {
+        personId,
+        to: target,
+        basis: needsBasis ? basis : null,
+        sendDoubleOptIn: target === "pending" ? sendDoubleOptIn : false,
+      },
       readCsrfToken(),
     );
     setBusy(false);
@@ -75,6 +101,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
     setDialog(null);
     setTarget("");
     setBasis("");
+    setSendDoubleOptIn(true);
     await utils.marketing.getPerson.invalidate({ personId });
   }
 
@@ -111,6 +138,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             onClick={() => {
               setError(null);
               setTarget("");
+              setSendDoubleOptIn(true);
               setDialog("change");
             }}
           >
@@ -165,6 +193,18 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
                 />
               </FormField>
             ) : null}
+            {target === "pending" ? (
+              <label htmlFor="marketing-doi" className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  id="marketing-doi"
+                  testId="marketing-doi"
+                  checked={sendDoubleOptIn}
+                  onCheckedChange={setSendDoubleOptIn}
+                  label="Send the double opt-in email"
+                />
+                Send the double opt-in email
+              </label>
+            ) : null}
             {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
           </DialogBody>
           <DialogFooter>
@@ -189,6 +229,7 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             <DialogTitle>Consent history</DialogTitle>
           </DialogHeader>
           <DialogBody>
+            {error === null ? null : <p className="mb-2 text-sm text-destructive">{error}</p>}
             <ul className="divide-y text-sm" data-testid="marketing-history-list">
               {data.events.map((event) => (
                 <li key={event.id} className="space-y-1 py-2">
@@ -219,6 +260,15 @@ export function MarketingPanel({ personId }: { personId: string }): React.ReactN
             </ul>
           </DialogBody>
           <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              data-testid="marketing-export-csv"
+              disabled={exporting}
+              onClick={() => void exportHistory()}
+            >
+              Export CSV
+            </Button>
             <Button type="button" variant="outline" onClick={() => setDialog(null)}>
               Close
             </Button>

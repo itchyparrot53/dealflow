@@ -19,7 +19,8 @@ export function smtpMailer(): SystemMailer {
       signal.throwIfAborted();
       try {
         const info = await transport.sendMail({
-          from: env.SMTP_FROM,
+          from: mail.from ?? env.SMTP_FROM,
+          replyTo: mail.replyTo,
           to: mail.to,
           subject: mail.subject,
           text: mail.text,

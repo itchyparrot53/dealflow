@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { db } from "@/db/client";
 import { loadCampaignWebVersion } from "@/features/campaigns/tracking/webVersion";
+import { checkRateLimit } from "@/server/rateLimitGuard";
 
 // Public web version of a campaign email (6.8). The token is the only credential and the message
 // is rendered exactly as that recipient received it, without tracked links. It never records an
@@ -19,6 +21,7 @@ export default async function CampaignWebVersionPage({
   params: Promise<{ token: string }>;
 }): Promise<ReactNode> {
   const { token } = await params;
+  if (!checkRateLimit("emailTracking", await headers()).allowed) notFound();
   const version = await loadCampaignWebVersion(db, token, AbortSignal.timeout(5_000));
   if (version === null) notFound();
 

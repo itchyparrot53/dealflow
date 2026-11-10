@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { db } from "@/db/client";
 import { loadUnsubscribeContext } from "@/features/marketing/unsubscribe";
+import { checkRateLimit } from "@/server/rateLimitGuard";
 import { resubscribeAction, unsubscribeAction } from "./actions";
 
 // Public preference page behind the mandatory footer link. The token is the credential; there is
@@ -21,6 +23,16 @@ export default async function UnsubscribePage({
 }): Promise<ReactNode> {
   const { token } = await params;
   const { state } = await searchParams;
+  if (!checkRateLimit("emailTracking", await headers()).allowed) {
+    return (
+      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
+        <h1 className="text-title text-center">Too many requests</h1>
+        <p className="text-center text-sm text-muted-foreground">
+          Try this link again in a minute.
+        </p>
+      </main>
+    );
+  }
   const context = await loadUnsubscribeContext(db, token, AbortSignal.timeout(5000));
 
   if (context === null || !context.valid) {

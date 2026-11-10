@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { db } from "@/db/client";
 import { loadDoubleOptInContext } from "@/features/marketing/doubleOptIn";
+import { checkRateLimit } from "@/server/rateLimitGuard";
 import { confirmSubscriptionAction } from "./actions";
 
 // Public page: no session, the token is the whole credential. Lives outside the (app) group like
@@ -21,6 +23,16 @@ export default async function ConfirmSubscriptionPage({
 }): Promise<ReactNode> {
   const { token } = await params;
   const { state } = await searchParams;
+  if (!checkRateLimit("emailTracking", await headers()).allowed) {
+    return (
+      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
+        <h1 className="text-title text-center">Too many requests</h1>
+        <p className="text-center text-sm text-muted-foreground">
+          Try this link again in a minute.
+        </p>
+      </main>
+    );
+  }
   const context = await loadDoubleOptInContext(db, token, AbortSignal.timeout(5000));
 
   const confirmed = state === "subscribed";

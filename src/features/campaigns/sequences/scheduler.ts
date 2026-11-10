@@ -393,6 +393,20 @@ async function sendStepEmail(
 
   const minted = mintMarketingToken();
   const emailHash = hashEmail(input.email);
+  const [existing] = await db
+    .select({ status: campaignRecipients.status })
+    .from(campaignRecipients)
+    .where(
+      and(
+        eq(campaignRecipients.campaignId, input.campaignId),
+        eq(campaignRecipients.emailHash, emailHash),
+      ),
+    )
+    .limit(1);
+  signal.throwIfAborted();
+  if (existing?.status === "sent") return { status: "sent" };
+  if (existing?.status === "bounced_hard") return { status: "bounced" };
+  if (existing?.status === "failed_soft") return { status: "failed" };
   const [recipient] = await db
     .insert(campaignRecipients)
     .values({
@@ -410,9 +424,6 @@ async function sendStepEmail(
         email: input.email,
         token: minted.token,
         tokenHash: minted.tokenHash,
-        attempts: 0,
-        retryAt: null,
-        sentAt: null,
       },
     })
     .returning({ id: campaignRecipients.id });

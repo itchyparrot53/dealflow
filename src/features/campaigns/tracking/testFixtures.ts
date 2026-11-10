@@ -5,6 +5,7 @@ import {
   campaignEvents,
   campaignRecipients,
   campaignSenders,
+  campaignSettings,
   campaigns,
   personMarketing,
   persons,
@@ -109,6 +110,13 @@ export async function seedTrackingCampaign(
     "campaign",
   );
 
+  await db
+    .insert(campaignSettings)
+    .values({ id: 1, postalAddress: "1 Test Street, London" })
+    .onConflictDoUpdate({
+      target: campaignSettings.id,
+      set: { postalAddress: "1 Test Street, London" },
+    });
   const snapshot = await snapshotCampaign(db, campaign.id, signal);
   if (!snapshot.ok) {
     throw new AppError(ERROR_IDS.CAMPAIGN_NOT_SENDABLE, `snapshot failed: ${snapshot.error.id}`);

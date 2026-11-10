@@ -121,3 +121,30 @@ export async function getPersonMarketingView(
           },
   };
 }
+
+// Consent history CSV for the person's Marketing section (6.12). Quoted per RFC 4180; the caller
+// has already applied marketing.manage and person visibility, so the IP and user agent are present
+// only when the actor may see the evidence.
+export function consentHistoryCsv(events: readonly ConsentEventView[]): string {
+  const quote = (value: string): string => `"${value.replaceAll('"', '""')}"`;
+  const lines = [
+    ["Date", "From", "To", "Source", "Basis", "Actor", "IP", "User agent"].map(quote).join(","),
+  ];
+  for (const event of events) {
+    lines.push(
+      [
+        event.createdAt,
+        event.fromStatus ?? "",
+        event.toStatus,
+        event.source,
+        event.basis ?? "",
+        event.actorName ?? "",
+        event.ip ?? "",
+        event.userAgent ?? "",
+      ]
+        .map(quote)
+        .join(","),
+    );
+  }
+  return `${lines.join("\n")}\n`;
+}
