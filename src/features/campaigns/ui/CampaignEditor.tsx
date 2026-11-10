@@ -2,8 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/components/shell/pageTitle";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogBody,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { DatePicker } from "@/components/ui/DatePicker";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -13,7 +33,15 @@ import { PERSON_FILTER_CONFIG } from "@/features/contacts/contactFilterConfig";
 import { PERSON_FILTER_LABELS } from "@/features/contacts/contactFilterRows";
 import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
-import { suggestCampaignSubjectsAction, updateCampaignAction } from "../actions";
+import {
+  cancelCampaignAction,
+  pauseCampaignAction,
+  resumeCampaignAction,
+  scheduleCampaignAction,
+  sendCampaignNowAction,
+  suggestCampaignSubjectsAction,
+  updateCampaignAction,
+} from "../actions";
 import { auditDocument } from "../blocks/audit";
 import type { CampaignDocument } from "../blocks/schema";
 import { type ChecklistItem, campaignChecklist } from "../checklist";
@@ -69,6 +97,7 @@ export function CampaignEditor({ campaignId }: { campaignId: string }): React.Re
       key={campaignId}
       campaignId={campaignId}
       campaign={data.data.campaign}
+      status={data.data.campaign.status}
       senderVerified={data.data.senderVerified}
       postalAddress={data.data.postalAddress}
     />
@@ -87,6 +116,7 @@ interface EditorFormProps {
     content: unknown;
     status: string;
   };
+  status: string;
   senderVerified: boolean;
   postalAddress: string;
 }
@@ -94,6 +124,7 @@ interface EditorFormProps {
 export function EditorForm({
   campaignId,
   campaign,
+  status,
   senderVerified,
   postalAddress,
 }: EditorFormProps): React.ReactNode {
@@ -112,6 +143,11 @@ export function EditorForm({
   const [error, setError] = useState<string | null>(null);
   const [buildFilter, setBuildFilter] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [confirmSend, setConfirmSend] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState<string | null>(null);
+  const [scheduleHour, setScheduleHour] = useState("10");
+  const [scheduleMinute, setScheduleMinute] = useState("00");
   usePageTitle(form.name);
 
   function patch(next: Partial<EditorFormState>): void {
@@ -176,6 +212,31 @@ export function EditorForm({
     });
   }, [form, senderVerified, postalAddress, segmentQuery.data, preview.data]);
 
+  async function run(
+    action: () => Promise<{ ok: boolean; error?: { id: string } }>,
+  ): Promise<void> {
+    setError(null);
+    const result = await action();
+    if (!result.ok) {
+      setError(result.error?.id ?? "error");
+      return;
+    }
+    window.location.reload();
+  }
+
+  async function sendNow(): Promise<void> {
+    setConfirmSend(false);
+    await run(() => sendCampaignNowAction({ id: campaignId }, readCsrfToken()));
+  }
+
+  async function schedule(): Promise<void> {
+    if (scheduleDate === null) return;
+    const at = new Date(`${scheduleDate}T${scheduleHour}:${scheduleMinute}:00`);
+    await run(() =>
+      scheduleCampaignAction({ id: campaignId, scheduledAt: at.toISOString() }, readCsrfToken()),
+    );
+  }
+
   return (
     <main className="space-y-5 p-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -183,7 +244,43 @@ export function EditorForm({
           <Badge variant="outline">{campaign.status}</Badge>
           {saved && !dirty ? <span className="text-xs text-muted-foreground">Saved</span> : null}
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          {status === "sending" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                void run(() => pauseCampaignAction({ id: campaignId }, readCsrfToken()))
+              }
+            >
+              Pause
+            </Button>
+          ) : null}
+          {status === "paused" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                void run(() => resumeCampaignAction({ id: campaignId }, readCsrfToken()))
+              }
+            >
+              Resume
+            </Button>
+          ) : null}
+          {["sending", "paused", "scheduled"].includes(status) ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onClick={() =>
+                void run(() => cancelCampaignAction({ id: campaignId }, readCsrfToken()))
+              }
+            >
+              Cancel campaign
+            </Button>
+          ) : null}
           {STEPS.map((value) => (
             <Button
               key={value}
@@ -239,7 +336,80 @@ export function EditorForm({
         />
       ) : null}
 
-      {step === "review" ? <ReviewStep items={checklist} /> : null}
+      <AlertDialog open={confirmSend} onOpenChange={setConfirmSend}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Send to {segmentQuery.data?.eligible.length ?? 0} people now?
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogBody>
+            <AlertDialogDescription>
+              The recipient list is frozen when sending starts. Pause or cancel from this page if
+              something looks wrong.
+            </AlertDialogDescription>
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void sendNow()}>Send now</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Schedule this campaign</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-3">
+            <FormField label="Date" htmlFor="schedule-date">
+              <DatePicker value={scheduleDate} onChange={setScheduleDate} ariaLabel="Send date" />
+            </FormField>
+            <div className="grid grid-cols-2 gap-2">
+              <FormField label="Hour" htmlFor="schedule-hour">
+                <Select
+                  ariaLabel="Send hour"
+                  value={scheduleHour}
+                  onChange={setScheduleHour}
+                  options={Array.from({ length: 24 }, (_, hour) => ({
+                    value: String(hour).padStart(2, "0"),
+                    label: `${String(hour).padStart(2, "0")}:00`,
+                  }))}
+                />
+              </FormField>
+              <FormField label="Minute" htmlFor="schedule-minute">
+                <Select
+                  ariaLabel="Send minute"
+                  value={scheduleMinute}
+                  onChange={setScheduleMinute}
+                  options={["00", "15", "30", "45"].map((minute) => ({
+                    value: minute,
+                    label: minute,
+                  }))}
+                />
+              </FormField>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setScheduleOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" disabled={scheduleDate === null} onClick={() => void schedule()}>
+              Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {step === "review" ? (
+        <ReviewStep
+          items={checklist}
+          status={status}
+          recipientCount={segmentQuery.data?.eligible.length ?? 0}
+          onSend={() => setConfirmSend(true)}
+          onSchedule={() => setScheduleOpen(true)}
+        />
+      ) : null}
     </main>
   );
 }
@@ -413,7 +583,20 @@ function RecipientsStep({
   );
 }
 
-function ReviewStep({ items }: { items: ChecklistItem[] }): React.ReactNode {
+function ReviewStep({
+  items,
+  status,
+  recipientCount,
+  onSend,
+  onSchedule,
+}: {
+  items: ChecklistItem[];
+  status: string;
+  recipientCount: number;
+  onSend: () => void;
+  onSchedule: () => void;
+}): React.ReactNode {
+  const blocked = items.some((item) => item.status === "fail") || recipientCount === 0;
   return (
     <section className="max-w-2xl space-y-3">
       <ul className="divide-y rounded-lg border">
@@ -437,9 +620,18 @@ function ReviewStep({ items }: { items: ChecklistItem[] }): React.ReactNode {
           </li>
         ))}
       </ul>
-      <p className="text-xs text-muted-foreground">
-        Sending is enabled once the sending engine lands; the checklist above is what it enforces.
-      </p>
+      {status === "draft" ? (
+        <div className="flex gap-2">
+          <Button type="button" disabled={blocked} onClick={onSend}>
+            Send now
+          </Button>
+          <Button type="button" variant="outline" disabled={blocked} onClick={onSchedule}>
+            Schedule
+          </Button>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">This campaign is {status}.</p>
+      )}
     </section>
   );
 }

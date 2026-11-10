@@ -65,3 +65,7 @@ export const PGBOSS_QUEUE_AI_BULK_SCORE = "ai.bulk-score";
 // Daily schedules, UTC: rotting after the overnight sync work, retention after that.
 export const DEAL_ROTTING_CRON = "0 5 * * *";
 export const EVENT_RETENTION_CRON = "30 4 * * *";
+
+// Part 14: campaign sending. One tick job per campaign, plus the scheduled start.
+export const PGBOSS_QUEUE_CAMPAIGN_SEND = "campaign.send.tick";
+export const PGBOSS_QUEUE_CAMPAIGN_START = "campaign.start";

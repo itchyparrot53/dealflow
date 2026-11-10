@@ -5,6 +5,7 @@ import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerBulkScoreJob } from "@/features/ai/bulkScoreJob";
 import { registerAutomationRunner } from "@/features/automations/runner";
 import { registerBackupJob } from "@/features/backups/backupJob";
+import { registerCampaignJobs } from "@/features/campaigns/send/job";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerEventJobs } from "@/features/events/dispatcherJob";
@@ -50,6 +51,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   // Part 8 daily backup (02:00 UTC) and recycle-bin purge (03:00 UTC).
   await registerBackupJob(boss);
   await registerRecyclePurgeJob(boss);
+  // Part 14 campaign sending: the tick queue and the scheduled start.
+  await registerCampaignJobs(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

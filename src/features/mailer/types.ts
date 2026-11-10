@@ -9,6 +9,8 @@ export interface SystemAttachment {
 
 export interface SystemMail {
   to: string;
+  // Campaign mail carries its own verified From; system mail uses SMTP_FROM.
+  from?: string;
   subject: string;
   text: string;
   html: string;

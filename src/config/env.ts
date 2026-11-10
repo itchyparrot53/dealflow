@@ -103,6 +103,11 @@ const base = z.object({
   MARKETING_SMTP_PASS: z.string().default(""),
   CAMPAIGN_SEND_RATE_PER_MINUTE: z.coerce.number().int().min(1).max(10_000).default(60),
   CAMPAIGN_BATCH_SIZE: z.coerce.number().int().min(1).max(1000).default(50),
+  // Optional DKIM signing for campaign mail; signing switches on only when all three are set.
+  CAMPAIGN_DKIM_DOMAIN: z.string().default(""),
+  CAMPAIGN_DKIM_SELECTOR: z.string().default(""),
+  CAMPAIGN_DKIM_PRIVATE_KEY: z.string().default(""),
+  CAMPAIGN_DKIM_PRIVATE_KEY_FILE: z.string().default(""),
   // Filesystem fake for the IMAP/SMTP transports (tests and e2e). Non-empty = fake for every
   // IMAP account; empty = the real imapflow/nodemailer transports.
   MAIL_PROVIDER_FAKE_DIR: z.string().default(""),

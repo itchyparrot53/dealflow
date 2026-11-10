@@ -2,15 +2,20 @@
 
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
+import type { Db } from "@/db/client";
 import { db } from "@/db/client";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { can } from "@/features/permissions/can";
+import type { PermSetUser } from "@/features/permissions/effective";
 import { createContext } from "@/server/trpc/context";
 import { suggestCampaignSubjects } from "./ai";
 import { type CampaignAssetView, saveCampaignAsset } from "./assets";
 import { campaignDocumentSchema } from "./blocks/schema";
 import { checkDomain, defaultResolver } from "./domainCheck";
 import { campaignCreateInput, campaignUpdateInput } from "./schemas";
+import { snapshotCampaign } from "./send/batch";
+import { enqueueCampaignStart, enqueueCampaignTick } from "./send/job";
+import { cancelCampaign, pauseCampaign, resumeCampaign, scheduleCampaign } from "./send/state";
 import { addSender, setDefaultSender } from "./senders";
 import { createCampaign, deleteCampaign, updateCampaign } from "./service";
 import { saveCampaignSettings } from "./settings";
@@ -290,4 +295,84 @@ export async function checkCampaignDomainAction(
     AbortSignal.timeout(15_000),
   );
   return { ok: true, value: result };
+}
+
+const scheduleInput = z.object({ id: z.string().uuid(), scheduledAt: z.string().datetime() });
+
+export async function sendCampaignNowAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ recipients: number }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  if (!can(actor, "campaigns.send")) return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
+  const parsed = idInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const snapshot = await snapshotCampaign(db, parsed.data.id, AbortSignal.timeout(60_000));
+  if (!snapshot.ok) return { ok: false, error: { id: snapshot.error.id } };
+  await enqueueCampaignTick(parsed.data.id);
+  return { ok: true, value: { recipients: snapshot.recipients } };
+}
+
+export async function scheduleCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ scheduledAt: string }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = scheduleInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const at = new Date(parsed.data.scheduledAt);
+  const result = await scheduleCampaign(db, actor, parsed.data.id, at, AbortSignal.timeout(15_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  await enqueueCampaignStart(parsed.data.id, at);
+  return { ok: true, value: result.value };
+}
+
+export async function pauseCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ status: string }>> {
+  return changeState(raw, csrfToken, pauseCampaign);
+}
+
+export async function resumeCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ status: string }>> {
+  return changeState(raw, csrfToken, resumeCampaign);
+}
+
+export async function cancelCampaignAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ status: string }>> {
+  return changeState(raw, csrfToken, cancelCampaign);
+}
+
+type StateChange = (
+  db: Db,
+  actor: PermSetUser,
+  id: string,
+  signal: AbortSignal,
+) => Promise<{ ok: true; value: { status: string } } | { ok: false; error: { id: string } }>;
+
+async function changeState(
+  raw: unknown,
+  csrfToken: string | null,
+  change: StateChange,
+): Promise<ActionResult<{ status: string }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = idInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await change(db, actor, parsed.data.id, AbortSignal.timeout(15_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: result.value };
 }

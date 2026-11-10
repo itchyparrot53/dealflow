@@ -186,7 +186,10 @@ export const campaignRecipients = pgTable(
     email: text("email").notNull(),
     emailHash: text("email_hash").notNull(),
     status: text("status").notNull().default("queued"),
-    // The one token behind the pixel, the click redirects and the unsubscribe page.
+    // The one token behind the pixel, the click redirects and the unsubscribe page. The raw value
+    // is kept on this per-recipient row because the send must rebuild the footer link; the
+    // marketing_tokens row stores only its hash, so lookup and consumption stay hash-based.
+    token: text("token"),
     tokenHash: text("token_hash").notNull(),
     attempts: integer("attempts").notNull().default(0),
     retryAt: timestamp("retry_at", { withTimezone: true }),

@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.3 · Last updated: 2026-11-10 03:01
+Current: 3.4 · Last updated: 2026-11-10 15:56
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -26,7 +26,7 @@ Current: 3.3 · Last updated: 2026-11-10 03:01
 - [x] 2.5 Phase 2 QA gate
 - [x] 3.1 Campaign list and the four-step editor
 - [x] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
-- [ ] 3.3 Sending engine
+- [x] 3.3 Sending engine
 - [ ] 3.4 Tracking routes, web version, timeline and click alerts
 - [ ] 3.5 Bounce mailbox and the DSN parser
 - [ ] 3.6 Phase 3 QA gate
@@ -67,6 +67,11 @@ Current: 3.3 · Last updated: 2026-11-10 03:01
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 3.3: the recipient raw unsubscribe token lives on `campaign_recipients.token` (migration `0096_dealflow_campaign_send.sql`), because the send must rebuild the footer link; the `marketing_tokens` row still stores only its hash, so lookup and single-use consumption stay hash-based.
+- 3.3: the tick claims rows with one `UPDATE ... FOR UPDATE SKIP LOCKED` statement, so two concurrent workers can never send the same recipient; a test runs two ticks in parallel and asserts one send.
+- 3.3: a soft failure schedules the next attempt with 5, 30 and 120 minute backoffs and leaves the row queued; the campaign's completion check counts retry-scheduled rows as remaining, so a campaign cannot be marked sent while a retry is pending.
+- 3.3: the marketing transport uses `MARKETING_SMTP_*` when set, falls back to the system transport, and always captures under `MAIL_FAKE`; DKIM signs only when domain, selector and key are all present (unit tested through a mocked env boundary).
+- 3.3: link rewriting to `/t/c/l/{token}/{n}` and the tracking pixel are deferred to Task 3.4, which owns those routes; 3.3 sends the rendered links untracked and stores `campaign_links` for that step.
 - 3.2: sender verification is a GET `/campaign-verify/{token}` link (the token is the credential; a scanner prefetch only completes a verification the team requested), single-use with the 48 hour expiry; a failed verification email deletes its token so the sender can be re-verified.
 - 3.2: `getCampaignSettings` falls back to the 6.9 defaults when the singleton row is missing, and `saveCampaignSettings` rejects a rate above the env ceiling; `MARKETING_SMTP_*`, `CAMPAIGN_SEND_RATE_PER_MINUTE` and `CAMPAIGN_BATCH_SIZE` were added to env now because the settings page displays them and Task 3.3 consumes them.
 - 3.2: the domain check injects the DNS resolver, caps each lookup at 5 seconds with a per-record error and caches results for an hour; tests cover pass, missing, resolver error and timeout with fake timers.

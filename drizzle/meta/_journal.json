@@ -673,6 +673,13 @@
       "when": 1794274341026,
       "tag": "0095_dealflow_campaign_import",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1794325543263,
+      "tag": "0096_dealflow_campaign_send",
+      "breakpoints": true
     }
   ]
 }
