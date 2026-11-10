@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 2.4 · Last updated: 2026-11-10 02:07
+Current: 2.5 · Last updated: 2026-11-10 02:09
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -21,7 +21,7 @@ Current: 2.4 · Last updated: 2026-11-10 02:07
 - [x] 2.1 Block schema, renderer, plain text and marketing sanitiser
 - [x] 2.2 Campaign images and the public asset route
 - [x] 2.3 Builder UI
-- [ ] 2.4 Templates: starters, saved templates, test send
+- [x] 2.4 Templates: starters, saved templates, test send
 - [ ] 2.5 Phase 2 QA gate
 - [ ] 3.1 Campaign list and the four-step editor
 - [ ] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
@@ -65,6 +65,10 @@ Current: 2.4 · Last updated: 2026-11-10 02:07
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 2.4: the four starters are static documents with stable block ids and no images, so they can be used before any asset exists; a schema test parses each one.
+- 2.4: saved templates are `campaign_templates` rows validated on save; duplicates are named "<name> copy".
+- 2.4: the test send uses the system mailer (captured under `MAIL_FAKE`) until Task 3.3 lands the marketing transport; recipients must be active users of the install, at most five, and the subject is prefixed `[Test] `.
+- 2.4: `TemplatesView` delegates "Use" to its parent because creating a campaign row belongs to Task 3.1's editor flow; 3.1 mounts this view behind `?view=templates`.
 - 2.3: the builder preview is server-rendered by the same `renderCampaign` via `campaigns.preview`, and the iframe is sandboxed with `allow-scripts` only; a selection message is accepted only from the opaque `"null"` origin and after shape validation (`blockIdFromMessage`).
 - 2.3: reordering uses dnd-kit on a compact block list plus Alt+Arrow on the selection, because dragging inside the sandboxed preview would need same-origin control of the iframe; both paths dispatch the same reducer action.
 - 2.3: text blocks reuse the composer's TipTap `RichTextBody` with the merge-field insert, so one editor owns campaign body text and merge tokens.

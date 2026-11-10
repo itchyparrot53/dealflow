@@ -10,6 +10,7 @@ import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { type CampaignMime, campaignAssetUrl } from "./assets";
 import { renderCampaign } from "./blocks/render";
 import { campaignDocumentSchema } from "./blocks/schema";
+import { listCampaignTemplates } from "./templates";
 
 // The builder's server reads. The preview is rendered server-side so the iframe receives finished
 // HTML with no client renderer to keep in sync with the real send path.
@@ -74,6 +75,11 @@ export const campaignsRouter = router({
         overLimit: rendered.overLimit,
       };
     }),
+
+  templates: protectedProcedure.query(async ({ ctx }) => {
+    requireView(ctx.actor);
+    return listCampaignTemplates(ctx.db, AbortSignal.timeout(10_000));
+  }),
 
   listAssets: protectedProcedure.query(async ({ ctx }) => {
     requireView(ctx.actor);

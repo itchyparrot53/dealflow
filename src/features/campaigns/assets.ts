@@ -59,7 +59,9 @@ export async function saveCampaignAsset(
 ): Promise<Result<CampaignAssetView, AppError>> {
   signal.throwIfAborted();
   if (!can(actor, "campaigns.edit")) {
-    return err(new AppError(ERROR_IDS.PERM_DENIED, "campaigns.edit required", { userId: actor.id }));
+    return err(
+      new AppError(ERROR_IDS.PERM_DENIED, "campaigns.edit required", { userId: actor.id }),
+    );
   }
   if (input.bytes.length === 0) return err(assetInvalid("empty file"));
   if (input.bytes.length > CAMPAIGN_ASSET_MAX_BYTES) {

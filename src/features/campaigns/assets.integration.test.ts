@@ -35,13 +35,7 @@ describe("campaign assets", () => {
     await withTestDb(async (db) => {
       const user = await seedUser(db);
       const storage = new FakeStorageClient();
-      const saved = await saveCampaignAsset(
-        db,
-        admin(user.id),
-        { bytes: PNG },
-        signal,
-        storage,
-      );
+      const saved = await saveCampaignAsset(db, admin(user.id), { bytes: PNG }, signal, storage);
       expect(saved.ok).toBe(true);
       if (!saved.ok) return;
       expect(saved.value.url).toBe(`/email-assets/c/${saved.value.id}.png`);
@@ -81,7 +75,13 @@ describe("campaign assets", () => {
     await withTestDb(async (db) => {
       const user = await seedUser(db);
       const storage = new FakeStorageClient();
-      const empty = await saveCampaignAsset(db, admin(user.id), { bytes: Buffer.alloc(0) }, signal, storage);
+      const empty = await saveCampaignAsset(
+        db,
+        admin(user.id),
+        { bytes: Buffer.alloc(0) },
+        signal,
+        storage,
+      );
       expect(empty.ok).toBe(false);
       const big = await saveCampaignAsset(
         db,
@@ -116,7 +116,9 @@ describe("campaign assets", () => {
       );
       expect(denied.ok).toBe(false);
       if (!denied.ok) expect(denied.error.id).toBe("E_PERM_001");
-      expect(await db.select().from(campaignAssets).where(eq(campaignAssets.sha256, "x"))).toHaveLength(0);
+      expect(
+        await db.select().from(campaignAssets).where(eq(campaignAssets.sha256, "x")),
+      ).toHaveLength(0);
     });
   });
 });
