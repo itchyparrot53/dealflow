@@ -15,8 +15,15 @@ import {
 // metadata to build the zod validators, so the client dropdown and server allow-list cannot drift.
 describe("contactFilterConfig", () => {
   it("exposes person filter field metadata", () => {
-    expect(PERSON_FILTER_CONFIG.fields).toEqual(["name", "primaryEmail", "ownerId", "labels"]);
+    expect(PERSON_FILTER_CONFIG.fields).toEqual([
+      "name",
+      "primaryEmail",
+      "ownerId",
+      "labels",
+      "marketingStatus",
+    ]);
     expect(PERSON_FILTER_CONFIG.opsByField.ownerId).toEqual(["eq", "neq"]);
+    expect(PERSON_FILTER_CONFIG.opsByField.marketingStatus).toEqual(["eq", "neq"]);
     expect(PERSON_FILTER_CONFIG.numericFields).toEqual([]);
   });
 

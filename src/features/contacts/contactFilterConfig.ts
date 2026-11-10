@@ -28,12 +28,14 @@ export interface ContactFilterConfig {
 }
 
 export const PERSON_FILTER_CONFIG: ContactFilterConfig = {
-  fields: ["name", "primaryEmail", "ownerId", "labels"],
+  fields: ["name", "primaryEmail", "ownerId", "labels", "marketingStatus"],
   opsByField: {
     name: TEXT_OPS,
     primaryEmail: TEXT_OPS,
     ownerId: EXACT_OPS,
     labels: ARRAY_OPS,
+    // Part 14: "is" / "is not" only, over the five marketing statuses.
+    marketingStatus: EXACT_OPS,
   },
   numericFields: [],
   arrayFields: CONTACT_ARRAY_FIELDS,

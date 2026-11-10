@@ -8,6 +8,7 @@ import { STRINGS } from "@/constants/strings";
 import type { PersonDetail } from "@/features/contacts/personsRepo";
 import { CollapsibleSection } from "@/features/deal-workspace/CollapsibleSection";
 import { PersonSection } from "@/features/deal-workspace/sidebar/PersonSection";
+import { MarketingPanel } from "@/features/marketing/ui/MarketingPanel";
 import { trpc } from "@/lib/trpc-client";
 import type { CustomFieldDef } from "@/types/customFields";
 import { ContactOverviewSection } from "../../ContactOverviewSection";
@@ -66,6 +67,8 @@ export function PersonSidebar({
       )}
 
       <ContactOverviewSection entityType="person" entityId={person.id} />
+
+      <MarketingPanel personId={person.id} />
 
       <CollapsibleSection title={sections.deals}>
         <ListPanel

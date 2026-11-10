@@ -20,6 +20,7 @@ import {
   EMPTY_REF_LABELS,
 } from "@/features/custom-fields/refLabelsContext";
 import { pushDeleteUndo } from "@/features/feedback/undo";
+import { BulkMarketingStatus } from "@/features/marketing/ui/BulkMarketingStatus";
 import { useIsMobile } from "@/features/navigation/mobile/useIsMobile";
 import { SavedViewControl } from "@/features/saved-filters/SavedViewControl";
 import { savedFilterDefinitionSchema } from "@/features/saved-filters/schemas";
@@ -251,6 +252,13 @@ export function PeopleList({
                 options={ownerOptions}
               />
             </span>
+            <BulkMarketingStatus
+              personIds={[...selection.selected]}
+              onDone={() => {
+                selection.clear();
+                void reload();
+              }}
+            />
             {mergePair !== null && (
               <button
                 type="button"

@@ -37,6 +37,7 @@ export const STRINGS = {
     colEmail: "Email",
     colPhone: "Phone",
     colClosedDeals: "Closed deals",
+    colMarketing: "Marketing",
     empty: "No people are visible to you yet.",
     orgsHeading: "Organizations",
     orgsEmpty: "No organizations are visible to you yet.",

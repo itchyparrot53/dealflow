@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { tableStyles } from "@/components/ui/table-styles";
 import { DEFAULT_BASE_CURRENCY } from "@/constants/currency";
+import { MARKETING_STATUS_LABELS, type MarketingStatus } from "@/constants/marketing";
 import { useInterfacePrefs } from "@/features/identity/InterfacePrefsProvider";
 import { RecordLink } from "@/features/navigation/RecordLink";
 import { formatUsPhone } from "@/utils/phone";
@@ -25,6 +26,7 @@ export interface PeopleListRow {
   // Won+lost deal count (Closed deals column); server-computed via a batched deal-count join.
   closedDeals: number;
   customFields: Record<string, unknown>;
+  marketingStatus?: MarketingStatus;
 }
 
 // Raw persons.list row shape the load-more query returns (a subset of Person plus closedDeals).
@@ -37,6 +39,7 @@ export interface RawPersonRow {
   orgId: string | null;
   closedDeals: number;
   customFields: Record<string, unknown>;
+  marketingStatus?: MarketingStatus;
 }
 
 export function toRow(raw: RawPersonRow, orgNames: Record<string, string>): PeopleListRow {
@@ -51,6 +54,7 @@ export function toRow(raw: RawPersonRow, orgNames: Record<string, string>): Peop
     orgName: raw.orgId !== null ? (orgNames[raw.orgId] ?? null) : null,
     closedDeals: raw.closedDeals,
     customFields: raw.customFields,
+    marketingStatus: raw.marketingStatus ?? "not_subscribed",
   };
 }
 
@@ -156,6 +160,8 @@ function renderPersonCell(
       return row.phone === null ? "" : usPhoneFormat ? formatUsPhone(row.phone) : row.phone;
     case "closedDeals":
       return row.closedDeals;
+    case "marketing":
+      return MARKETING_STATUS_LABELS[row.marketingStatus ?? "not_subscribed"];
     default:
       return "";
   }

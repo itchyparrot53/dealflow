@@ -7,9 +7,10 @@ import {
   type MarketingStatus,
 } from "@/constants/marketing";
 import type { Db } from "@/db/client";
-import { marketingTokens, persons } from "@/db/schema";
+import { campaignSettings, marketingTokens, persons } from "@/db/schema";
 import { getEmailDesign } from "@/features/email-design/design";
 import { sendSystemEmail } from "@/features/email-design/sendSystemEmail";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
 import { err, ok, type Result } from "@/types/result";
 import { applyMarketingTransition } from "./service";
 import {
@@ -27,6 +28,19 @@ export type DoubleOptInLimit = "person" | "install" | null;
 export interface DoubleOptInRequestResult {
   sent: boolean;
   limited: DoubleOptInLimit;
+}
+
+// 6.9's default is on; a missing row reads as on so a fresh install never subscribes people
+// without confirmation before the settings page has been opened.
+export async function isDoubleOptInRequired(db: DbOrTx, signal: AbortSignal): Promise<boolean> {
+  signal.throwIfAborted();
+  const [row] = await db
+    .select({ required: campaignSettings.requireDoubleOptIn })
+    .from(campaignSettings)
+    .where(eq(campaignSettings.id, 1))
+    .limit(1);
+  signal.throwIfAborted();
+  return row?.required ?? true;
 }
 
 export function maskEmail(email: string): string {

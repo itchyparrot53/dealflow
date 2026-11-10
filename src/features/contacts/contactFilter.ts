@@ -48,6 +48,9 @@ export const PERSON_COLUMN_SQL: Record<string, SQL> = {
   primaryEmail: sql`${persons.primaryEmail}`,
   ownerId: sql`${persons.ownerId}`,
   labels: sql`${persons.labels}`,
+  // Part 14: a missing row means not_subscribed, so the filter reads the status through a
+  // correlated subquery instead of forcing a join every people query would carry.
+  marketingStatus: sql`coalesce((select pm.status::text from person_marketing pm where pm.person_id = ${persons.id}), 'not_subscribed')`,
 };
 export const ORG_COLUMN_SQL: Record<string, SQL> = {
   name: sql`${organizations.name}`,

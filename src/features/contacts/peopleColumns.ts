@@ -27,4 +27,6 @@ export const PEOPLE_COLUMNS: readonly PeopleColumn[] = [
   },
   { key: "phone", header: STRINGS.contacts.colPhone, defaultVisible: true },
   { key: "closedDeals", header: STRINGS.contacts.colClosedDeals, defaultVisible: true },
+  // Part 14: optional (hidden by default) so the list stays as wide as it was unless asked.
+  { key: "marketing", header: STRINGS.contacts.colMarketing, defaultVisible: false },
 ] as const;

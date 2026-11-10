@@ -1,7 +1,8 @@
 import { and, asc, desc, inArray, isNull, type SQL } from "drizzle-orm";
+import type { MarketingStatus } from "@/constants/marketing";
 import type { Db } from "@/db/client";
 import type { Person } from "@/db/schema";
-import { persons, users } from "@/db/schema";
+import { personMarketing, persons, users } from "@/db/schema";
 import { isCustomFieldSortKey } from "@/features/custom-fields/sortKey";
 import { customFieldOrderBy, resolveCustomFieldSort } from "@/features/custom-fields/sortSql";
 import { canSee } from "@/features/permissions/canSee";
@@ -20,6 +21,8 @@ type PersonListItem = Person & {
   closedDeals: number;
   customFields: Record<string, unknown>;
   ownerName: string | null;
+  // Part 14: missing person_marketing row reads as not_subscribed.
+  marketingStatus: MarketingStatus;
 };
 
 export interface ListPeopleResult {
@@ -122,6 +125,17 @@ export async function listPeople(
     page.map((p) => p.ownerId),
     signal,
   );
+  // Part 14: one batched read for the visible page, same shape as closedDealCounts.
+  const marketingRows = await db
+    .select({ personId: personMarketing.personId, status: personMarketing.status })
+    .from(personMarketing)
+    .where(
+      inArray(
+        personMarketing.personId,
+        page.map((p) => p.id),
+      ),
+    );
+  const marketingByPerson = new Map(marketingRows.map((row) => [row.personId, row.status]));
   return {
     total: visible.length,
     rows: page.map((p) => ({
@@ -129,6 +143,7 @@ export async function listPeople(
       closedDeals: closedCounts.get(p.id) ?? 0,
       customFields: p.customFields as Record<string, unknown>,
       ownerName: ownerNames.get(p.ownerId) ?? null,
+      marketingStatus: marketingByPerson.get(p.id) ?? "not_subscribed",
     })),
   };
 }

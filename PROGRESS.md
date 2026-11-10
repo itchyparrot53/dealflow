@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.5 · Last updated: 2026-11-10 01:38
+Current: 1.6 · Last updated: 2026-11-10 01:44
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -15,7 +15,7 @@ Current: 1.5 · Last updated: 2026-11-10 01:38
 - [x] 1.2 Marketing status service and suppression
 - [x] 1.3 Double opt-in, unsubscribe pages and one-click
 - [x] 1.4 Form consent field and CSV import mapping
-- [ ] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
+- [x] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
 - [ ] 1.6 Phase 1 QA gate
 - [ ] 2.1 Block schema, renderer, plain text and marketing sanitiser
 - [ ] 2.2 Campaign images and the public asset route
@@ -63,6 +63,11 @@ Current: 1.5 · Last updated: 2026-11-10 01:38
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.5: the person marketing read is a tRPC query (`marketing.getPerson`) rather than props from the server page, so the section can invalidate after a change and the IP and user agent are nulled server-side unless the actor holds `marketing.manage`.
+- 1.5: the `marketingStatus` filter compiles through a correlated `coalesce` subquery (a missing row reads as `not_subscribed`), so people queries need no join and the saved-filter engine treats it as an is / is not text field.
+- 1.5: the Marketing column is optional (`defaultVisible: false`) so the existing table width is unchanged; it is available from Customize columns.
+- 1.5: the bulk change is its own server action with a 5,000 cap and one transaction; it pre-filters the selection to transitions the table allows, so a single disallowed person cannot abort the batch.
+- 1.5: changed tests: the contact filter config test expects the new `marketingStatus` field and its eq/neq ops; new tests cover the SQL compile, the list filter with row status, and the bulk service (permission, cap, events).
 - 1.4: `CONTRACT CHANGE:` the 6.2 transition table gained the import edges (`subscribed` or `pending` to `unsubscribed` with source `import`, `pending` or `subscribed` to `not_subscribed` with source `import`), because 6.12 requires the CSV import to set those three values and the original table had no path for them. The matrix test in `status.test.ts` was extended with exactly those edges.
 - 1.4: the imported marketing status lives on `MappedRow` beside `primary`, not inside it, because `personCreateInput` would strip the field; validation normalises subscribed / unsubscribed / not subscribed and reports any other cell as a row error.
 - 1.4: the import-wide confirmation is `import_batches.marketing_consent` (migration `0095_dealflow_campaign_import.sql`), set from the Preview step checkbox, and `commitRow` refuses a row mapped to subscribed before it creates or updates anything.

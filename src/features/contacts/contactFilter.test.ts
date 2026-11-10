@@ -54,6 +54,34 @@ describe("contactFilter schemas (boundary validation)", () => {
   });
 });
 
+describe("marketing status filter", () => {
+  it("compiles to the coalesced person_marketing subquery", () => {
+    const compiled = compileContactFilter(
+      {
+        combinator: "and",
+        conditions: [{ field: "marketingStatus", op: "eq", value: "subscribed" }],
+      },
+      PERSON_FILTER_CONFIG,
+      PERSON_COLUMN_SQL,
+    );
+    expect(compiled).not.toBeNull();
+    const query = new PgDialect().sqlToQuery(compiled!);
+    expect(query.sql).toContain("person_marketing");
+    expect(query.sql).toContain("coalesce");
+    expect(query.params).toContain("subscribed");
+  });
+
+  it("rejects an operator the status field does not allow", () => {
+    expect(() => {
+      const schema = personFilterSchema.safeParse({
+        combinator: "and",
+        conditions: [{ field: "marketingStatus", op: "contains", value: "sub" }],
+      });
+      if (!schema.success) throw new Error("rejected");
+    }).toThrow();
+  });
+});
+
 describe("compileContactFilter (defense in depth)", () => {
   it("throws on a field outside the allow-list even if it slips past Zod", () => {
     expect(() =>

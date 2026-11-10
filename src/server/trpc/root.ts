@@ -19,6 +19,7 @@ import { importRouter } from "@/features/import/router";
 import { insightsRouter } from "@/features/insights/router";
 import { labelsRouter } from "@/features/labels/router";
 import { leadRouter } from "@/features/leads/leadRouter";
+import { marketingRouter } from "@/features/marketing/router";
 import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
@@ -49,6 +50,7 @@ export const appRouter = router({
   emailDesign: emailDesignRouter,
   automations: automationsRouter,
   forms: formsRouter,
+  marketing: marketingRouter,
   insights: insightsRouter,
   scheduling: schedulingRouter,
   webhooks: webhooksRouter,

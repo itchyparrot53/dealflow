@@ -26,6 +26,7 @@ export const PERSON_FILTER_LABELS: Record<string, string> = {
   primaryEmail: "Email",
   ownerId: "Owner",
   labels: "Label",
+  marketingStatus: "Marketing status",
 };
 export const ORG_FILTER_LABELS: Record<string, string> = {
   name: "Name",
