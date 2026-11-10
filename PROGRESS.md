@@ -288,7 +288,7 @@ Current: 5.6 · Last updated: 2026-11-10 19:29
 15. PASS - no em dash in any authored text file changed by this part. The exact binary scan flags one generated PDF's compressed stream; `pdftotext` of that PDF finds no U+2014, so this is a binary false positive, not an authored dash.
 16. PASS - `docs/user-guide/campaigns.md`, `docs/dealflow/CAMPAIGNS.md`, `UPSTREAM.md` ("Part 14") and the 16 campaign variables in `.env.example` exist.
 17. PASS - `ls docs/user-guide/pdf/*.pdf | wc -l` is 16.
-18. PASS - after this commit, `pnpm check:progress --final` printed "PROGRESS CHECK OK: 29/30 tasks ticked, all with commits, ready to complete"; the command was run immediately after the commit.
+18. PASS - `pnpm check:progress --final` printed "PROGRESS CHECK OK: 30/30 tasks ticked, all with commits, ready to complete" on the completed tree.
 
 ### Open issues
 
