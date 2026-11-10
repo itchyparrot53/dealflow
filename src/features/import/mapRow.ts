@@ -55,19 +55,19 @@ function deriveDisplayName(group: Record<string, unknown> | undefined): void {
 }
 
 // Where the cells of one row accumulate as the mapping is walked.
-const MARKETING_STATUS_VALUES = {
+const MARKETING_STATUS_VALUES: Record<string, "subscribed" | "unsubscribed" | "not_subscribed"> = {
   subscribed: "subscribed",
   unsubscribed: "unsubscribed",
   "not subscribed": "not_subscribed",
   not_subscribed: "not_subscribed",
   notsubscribed: "not_subscribed",
-} as const;
+};
 
 export function parseMarketingStatusCell(
   cell: string,
 ): "subscribed" | "unsubscribed" | "not_subscribed" | null {
   const key = cell.trim().toLowerCase().replace(/\s+/g, " ").replace(/-/g, " ");
-  return MARKETING_STATUS_VALUES[key as keyof typeof MARKETING_STATUS_VALUES] ?? null;
+  return MARKETING_STATUS_VALUES[key] ?? null;
 }
 
 interface RowGroups {
@@ -199,18 +199,26 @@ export function validateMappedRow(
     if (note.success) out.note = note.data;
     else errors.push(...issuesOf(note.error, "note."));
   }
-  if (mapped.marketingStatus !== undefined) {
-    const parsed = parseMarketingStatusCell(mapped.marketingStatus);
-    if (parsed === null) {
-      errors.push({
-        field: "marketingStatus",
-        message: "Use subscribed, unsubscribed or not subscribed.",
-      });
-    } else {
-      out.marketingStatus = parsed;
-    }
-  }
+  addMarketingStatus(out, mapped, errors);
 
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: out };
+}
+
+// Kept out of validateMappedRow so its branch count stays within the lint complexity budget.
+function addMarketingStatus(
+  out: MappedRow,
+  mapped: MappedRow,
+  errors: { field: string; message: string }[],
+): void {
+  if (mapped.marketingStatus === undefined) return;
+  const parsed = parseMarketingStatusCell(mapped.marketingStatus);
+  if (parsed === null) {
+    errors.push({
+      field: "marketingStatus",
+      message: "Use subscribed, unsubscribed or not subscribed.",
+    });
+    return;
+  }
+  out.marketingStatus = parsed;
 }

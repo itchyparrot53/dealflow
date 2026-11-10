@@ -29,7 +29,7 @@ export default async function ConfirmSubscriptionPage({
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
       <div className="space-y-2 text-center">
         <p className="text-sm font-medium text-muted-foreground">{context.companyName}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-title">
           {confirmed
             ? "You're subscribed"
             : context.valid

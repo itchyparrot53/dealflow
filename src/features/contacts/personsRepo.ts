@@ -126,6 +126,22 @@ export async function createPerson(
 
 export type PersonEditAuthority = "requires-contact-edit" | "actor-just-created-this-person";
 
+// The tail of an update (label names, the 6.2 suppression re-check). Extracted so updatePerson's
+// branch count stays inside the lint complexity budget; the suppression sync is idempotent.
+async function finalizePersonUpdate(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  row: Person,
+  input: PersonUpdateInput,
+  signal: AbortSignal,
+): Promise<Result<Person, AppError>> {
+  if (input.labels !== undefined) {
+    await syncEntityLabelNames(tx, "person", row.id, row.labels, signal);
+  }
+  const suppression = await syncPersonSuppressionForEmail(tx, row.id, row.primaryEmail, signal);
+  if (!suppression.ok) return err(suppression.error);
+  return ok(row);
+}
+
 export async function updatePerson(
   db: Db,
   actor: ContactActor,
@@ -213,15 +229,7 @@ export async function updatePerson(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "update returned no rows", {}));
     }
-    if (input.labels !== undefined) {
-      await syncEntityLabelNames(tx, "person", row.id, row.labels, signal);
-    }
-    // 6.2: a new address may be suppressed; the status follows the suppression immediately.
-    if (row.primaryEmail !== current.primaryEmail) {
-      const suppression = await syncPersonSuppressionForEmail(tx, row.id, row.primaryEmail, signal);
-      if (!suppression.ok) return err(suppression.error);
-    }
-    return ok(row);
+    return finalizePersonUpdate(tx, row, input, signal);
   });
 }
 

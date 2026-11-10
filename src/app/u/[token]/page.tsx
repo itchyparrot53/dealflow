@@ -26,7 +26,7 @@ export default async function UnsubscribePage({
   if (context === null || !context.valid) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
-        <h1 className="text-center text-2xl font-semibold tracking-tight">This link has expired</h1>
+        <h1 className="text-title text-center">This link has expired</h1>
         <p className="text-center text-sm text-muted-foreground">
           This unsubscribe link is no longer valid. Use the link in a more recent email.
         </p>
@@ -43,7 +43,7 @@ export default async function UnsubscribePage({
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
       <div className="space-y-2 text-center">
         <p className="text-sm font-medium text-muted-foreground">{context.companyName}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-title">
           {stateUnsubscribed
             ? "You're unsubscribed"
             : alreadyOut

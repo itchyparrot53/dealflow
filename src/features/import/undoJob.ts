@@ -103,23 +103,7 @@ export async function undoBatch(
     }
   }
 
-  // Revert the consent edits an update-mode row made. Rows whose primary was this import's own
-  // creation are skipped: their contact is being removed, not restored.
-  for (const row of rows) {
-    if (row.marketingStatusBefore === null || row.marketingPersonId === null) continue;
-    if (row.id !== null && row.id === row.marketingPersonId) continue;
-    const restored = await restoreMarketingStatus(
-      db,
-      row.marketingPersonId,
-      row.marketingStatusBefore as MarketingStatus,
-      signal,
-    );
-    if (!restored.ok) {
-      console.warn(
-        `import undo: marketing status not restored for ${row.marketingPersonId}: ${restored.error.id}`,
-      );
-    }
-  }
+  await restoreImportMarketingStatuses(db, rows, signal);
 
   // Only claim "undone" when every created record was actually removed: all primary entities AND
   // every side-effect org/person/note. If some deletions were skipped (permission denied on a row
@@ -159,4 +143,33 @@ export async function registerImportUndoWorker(boss: PgBoss): Promise<void> {
   await registerBatchWorker(boss, PGBOSS_QUEUE_IMPORT_UNDO, (job) =>
     handleUndoJob(prodDb, job, AbortSignal.timeout(IMPORT_JOB_TIMEOUT_MS)),
   );
+}
+
+// Revert the consent edits an update-mode row made. Rows whose primary was this import's own
+// creation are skipped: their contact is being removed, not restored. Extracted from undoBatch to
+// keep its branch count inside the lint budget.
+async function restoreImportMarketingStatuses(
+  db: Db,
+  rows: Array<{
+    id: string | null;
+    marketingStatusBefore: string | null;
+    marketingPersonId: string | null;
+  }>,
+  signal: AbortSignal,
+): Promise<void> {
+  for (const row of rows) {
+    if (row.marketingStatusBefore === null || row.marketingPersonId === null) continue;
+    if (row.id !== null && row.id === row.marketingPersonId) continue;
+    const restored = await restoreMarketingStatus(
+      db,
+      row.marketingPersonId,
+      row.marketingStatusBefore as MarketingStatus,
+      signal,
+    );
+    if (!restored.ok) {
+      console.warn(
+        `import undo: marketing status not restored for ${row.marketingPersonId}: ${restored.error.id}`,
+      );
+    }
+  }
 }

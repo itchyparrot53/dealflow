@@ -45,15 +45,7 @@ export async function commitRow(
       RETURNING id, mapped, batch_id
     `);
 
-    if (claimed.rows.length === 0) {
-      // Already imported/skipped/held by a live lease: read back the terminal
-      // status (idempotent no-op, the heart of retry safety).
-      const [existing] = await tx.select().from(importRows).where(sql`${importRows.id} = ${rowId}`);
-      if (existing === undefined) {
-        return err(new AppError(ERROR_IDS.IMPORT_ROW_GONE, "row gone", { rowId }));
-      }
-      return ok({ status: existing.status, entityId: existing.createdEntityId });
-    }
+    if (claimed.rows.length === 0) return readClaimedRow(tx, rowId);
 
     const first = claimed.rows[0] as ClaimedRow | undefined;
     if (first === undefined) {
@@ -65,25 +57,8 @@ export async function commitRow(
 
     // 6.12: subscribing people on import needs the operator's import-wide confirmation. The check
     // runs before any record is created, so a refused row leaves nothing behind.
-    const mappedStatus =
-      mapped.marketingStatus === undefined
-        ? null
-        : parseMarketingStatusCell(mapped.marketingStatus);
-    if (mappedStatus === "subscribed") {
-      const [batch] = await tx
-        .select({ consent: importBatches.marketingConsent })
-        .from(importBatches)
-        .where(eq(importBatches.id, first.batch_id))
-        .limit(1);
-      if (batch?.consent !== true) {
-        return finalize(tx, rowId, "invalid", null, [
-          {
-            field: "marketingStatus",
-            message: "Confirm that you have consent to email the people marked subscribed.",
-          },
-        ]);
-      }
-    }
+    const consentError = await importConsentError(tx, first.batch_id, mapped);
+    if (consentError !== null) return finalize(tx, rowId, "invalid", null, [consentError]);
 
     // 2. Visibility-scoped dedup (Task 23). Only person/organization have a natural dedup key
     // (email / name), and it lives on the row's PRIMARY record; deal/lead/activity always create.
@@ -232,4 +207,36 @@ async function applyImportMarketingStatus(
     .set({ marketingStatusBefore: from, marketingPersonId: personId })
     .where(eq(importRows.id, rowId));
   return null;
+}
+
+// The gate is its own function: keeping it inline pushed commitRow past the complexity budget.
+async function importConsentError(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  batchId: string,
+  mapped: MappedRow,
+): Promise<{ field: string; message: string } | null> {
+  if (mapped.marketingStatus === undefined) return null;
+  if (parseMarketingStatusCell(mapped.marketingStatus) !== "subscribed") return null;
+  const [batch] = await tx
+    .select({ consent: importBatches.marketingConsent })
+    .from(importBatches)
+    .where(eq(importBatches.id, batchId))
+    .limit(1);
+  if (batch?.consent === true) return null;
+  return {
+    field: "marketingStatus",
+    message: "Confirm that you have consent to email the people marked subscribed.",
+  };
+}
+
+// The idempotent no-op half of the claim: the row was imported, skipped, or held by a live lease.
+async function readClaimedRow(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  rowId: string,
+): Promise<Result<Commit, AppError>> {
+  const [existing] = await tx.select().from(importRows).where(sql`${importRows.id} = ${rowId}`);
+  if (existing === undefined) {
+    return err(new AppError(ERROR_IDS.IMPORT_ROW_GONE, "row gone", { rowId }));
+  }
+  return ok({ status: existing.status, entityId: existing.createdEntityId });
 }

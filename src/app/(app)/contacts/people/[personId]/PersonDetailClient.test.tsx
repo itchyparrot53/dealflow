@@ -69,7 +69,9 @@ vi.mock("@/lib/trpc-client", () => ({
         contactTimeline: { invalidate: () => {} },
         activityStats: { invalidate: () => {} },
       },
+      marketing: { getPerson: { invalidate: () => {} } },
     }),
+    marketing: { getPerson: { useQuery: () => ({ data: null }) } },
     contacts: {
       dealsForPerson: {
         useQuery: () => ({

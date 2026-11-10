@@ -1,11 +1,12 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.6 · Last updated: 2026-11-10 01:44
+Current: 2.1 · Last updated: 2026-11-10 01:56
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
 - Phase 1: fee0b914419c1c4537efa16e37ea141e6009848b
+- Phase 2: 435862f58a04d9becb8ea9d9237cdc4e7ed1c8ba
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
@@ -16,7 +17,7 @@ Current: 1.6 · Last updated: 2026-11-10 01:44
 - [x] 1.3 Double opt-in, unsubscribe pages and one-click
 - [x] 1.4 Form consent field and CSV import mapping
 - [x] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
-- [ ] 1.6 Phase 1 QA gate
+- [x] 1.6 Phase 1 QA gate
 - [ ] 2.1 Block schema, renderer, plain text and marketing sanitiser
 - [ ] 2.2 Campaign images and the public asset route
 - [ ] 2.3 Builder UI
@@ -40,6 +41,7 @@ Current: 1.6 · Last updated: 2026-11-10 01:44
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 1 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5494/5494 in 862 files · check:design 0 violations, 18 opt-outs · marketing, forms and import integration 251/251 in 44 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files · check:design 0 violations, 17 opt-outs
 
@@ -63,6 +65,8 @@ Current: 1.6 · Last updated: 2026-11-10 01:44
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.6: `CONTRACT CHANGE:` Next.js refuses a `route.ts` and a `page.tsx` at the same segment, so the one-click endpoint moved to `POST /u/{token}/one-click` (still under `/u/*`, same token-only CSRF exemption) while the preference page keeps `/u/{token}`. Task 3.3's `List-Unsubscribe` header must use the `/one-click` URL.
+- 1.6: the gate caught two regressions from the new UI: the public confirm and unsubscribe `h1`s used raw `text-2xl` (fixed to the named `text-title` step), and the person detail unit mock needed the `marketing.getPerson` query and invalidation (test wiring only, no assertion weakened).
 - 1.5: the person marketing read is a tRPC query (`marketing.getPerson`) rather than props from the server page, so the section can invalidate after a change and the IP and user agent are nulled server-side unless the actor holds `marketing.manage`.
 - 1.5: the `marketingStatus` filter compiles through a correlated `coalesce` subquery (a missing row reads as `not_subscribed`), so people queries need no join and the saved-filter engine treats it as an is / is not text field.
 - 1.5: the Marketing column is optional (`defaultVisible: false`) so the existing table width is unchanged; it is available from Customize columns.

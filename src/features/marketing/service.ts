@@ -94,24 +94,9 @@ export async function applyMarketingTransition(
     );
   }
 
-  const implied = impliedBasis(input.to, input.source);
-  const supplied = input.basis ?? null;
-  if (supplied !== null && !(CONSENT_BASES as readonly ConsentBasis[]).includes(supplied)) {
-    return err(invalid("unknown consent basis", { basis: supplied }));
-  }
-  if (requiresBasis(from, input.to, input.source)) {
-    if (supplied === null) {
-      return err(invalid("a direct subscribe needs a consent basis", { to: input.to }));
-    }
-    if (!(MANUAL_SUBSCRIBE_BASES as readonly ConsentBasis[]).includes(supplied)) {
-      return err(
-        invalid("a direct subscribe needs an explicit, legitimate-interest or imported basis", {
-          basis: supplied,
-        }),
-      );
-    }
-  }
-  const basis = supplied ?? implied;
+  const resolvedBasis = resolveBasis(from, input.to, input.source, input.basis ?? null);
+  if (resolvedBasis.ok === false) return resolvedBasis;
+  const basis = resolvedBasis.value;
   const nextBasis =
     basis ?? (input.to === "not_subscribed" ? null : (existing?.consentBasis ?? null));
 
@@ -311,4 +296,31 @@ export async function restoreMarketingStatus(
     );
     return ok({ changed: true });
   });
+}
+
+// The basis rules of 6.2, extracted so applyMarketingTransition stays inside the lint complexity
+// budget. A direct subscribe needs an evidenced basis; a flow that proves its own supplies it.
+function resolveBasis(
+  from: MarketingStatus,
+  to: MarketingStatus,
+  source: ConsentSource,
+  supplied: ConsentBasis | null,
+): Result<ConsentBasis | null, AppError> {
+  if (supplied !== null && !(CONSENT_BASES as readonly ConsentBasis[]).includes(supplied)) {
+    return err(invalid("unknown consent basis", { basis: supplied }));
+  }
+  if (requiresBasis(from, to, source)) {
+    if (supplied === null) {
+      return err(invalid("a direct subscribe needs a consent basis", { to }));
+    }
+    if (!(MANUAL_SUBSCRIBE_BASES as readonly ConsentBasis[]).includes(supplied)) {
+      return err(
+        invalid("a direct subscribe needs an explicit, legitimate-interest or imported basis", {
+          basis: supplied,
+        }),
+      );
+    }
+  }
+  const basis = supplied ?? impliedBasis(to, source);
+  return ok(basis);
 }

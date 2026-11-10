@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { POST as oneClickPost } from "@/app/u/[token]/route";
+import { POST as oneClickPost } from "@/app/u/[token]/one-click/route";
 import { consentEvents, marketingTokens, personMarketing, persons } from "@/db/schema";
 import { withTestDb } from "@/db/testing";
 import { seedUser } from "@/db/testing/factories";
@@ -174,7 +174,7 @@ describe("double opt-in and unsubscribe", () => {
       const token = randomUUID();
       const call = (body: string) =>
         oneClickPost(
-          new NextRequest(`http://localhost/u/${token}`, {
+          new NextRequest(`http://localhost/u/${token}/one-click`, {
             method: "POST",
             body,
             headers: { "content-type": "application/x-www-form-urlencoded" },

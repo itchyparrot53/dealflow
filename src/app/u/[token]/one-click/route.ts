@@ -4,7 +4,9 @@ import { applyUnsubscribe } from "@/features/marketing/unsubscribe";
 import { clientIp } from "@/features/net/clientIp";
 import { checkRateLimit } from "@/server/rateLimitGuard";
 
-// RFC 8058 one-click unsubscribe: POST /u/{token} with the exact body `List-Unsubscribe=One-Click`.
+// RFC 8058 one-click unsubscribe: POST /u/{token}/one-click with the exact body
+// `List-Unsubscribe=One-Click`. It is a child segment because Next.js refuses a route.ts and a
+// page.tsx at the same segment, and the preference page keeps the short /u/{token} link.
 // The token is the credential, so this route is the one deliberate CSRF exemption in the feature;
 // it never trusts a person or campaign id from the request.
 //
