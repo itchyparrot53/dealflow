@@ -80,11 +80,14 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
   }
 
   // Enqueue the background commit job; the commit step follows progress and reads the split.
-  async function commit(): Promise<void> {
+  async function commit(marketingConsent: boolean): Promise<void> {
     if (state.batchId === null) return;
     setBusy(true);
     setError(null);
-    const r = await commitBatchAction({ batchId: state.batchId }, readCsrfToken());
+    const r = await commitBatchAction(
+      { batchId: state.batchId, marketingConsent },
+      readCsrfToken(),
+    );
     setBusy(false);
     if (r.ok === false) {
       setError(r.error.id);
@@ -161,7 +164,10 @@ export function ImportWizard(props: ImportWizardProps): React.ReactNode {
             batchId={state.batchId}
             validation={state.validation}
             busy={busy}
-            onCommit={() => void commit()}
+            needsMarketingConsent={Object.values(state.columns).some(
+              (choice) => choice.entity === "person" && choice.field === "marketingStatus",
+            )}
+            onCommit={(marketingConsent) => void commit(marketingConsent)}
           />
         )}
         {state.step === "commit" && state.batchId !== null && (

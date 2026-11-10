@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.4 · Last updated: 2026-11-10 01:30
+Current: 1.5 · Last updated: 2026-11-10 01:38
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -14,7 +14,7 @@ Current: 1.4 · Last updated: 2026-11-10 01:30
 - [x] 1.1 Schema, migration and permission flags
 - [x] 1.2 Marketing status service and suppression
 - [x] 1.3 Double opt-in, unsubscribe pages and one-click
-- [ ] 1.4 Form consent field and CSV import mapping
+- [x] 1.4 Form consent field and CSV import mapping
 - [ ] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
 - [ ] 1.6 Phase 1 QA gate
 - [ ] 2.1 Block schema, renderer, plain text and marketing sanitiser
@@ -63,6 +63,12 @@ Current: 1.4 · Last updated: 2026-11-10 01:30
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.4: `CONTRACT CHANGE:` the 6.2 transition table gained the import edges (`subscribed` or `pending` to `unsubscribed` with source `import`, `pending` or `subscribed` to `not_subscribed` with source `import`), because 6.12 requires the CSV import to set those three values and the original table had no path for them. The matrix test in `status.test.ts` was extended with exactly those edges.
+- 1.4: the imported marketing status lives on `MappedRow` beside `primary`, not inside it, because `personCreateInput` would strip the field; validation normalises subscribed / unsubscribed / not subscribed and reports any other cell as a row error.
+- 1.4: the import-wide confirmation is `import_batches.marketing_consent` (migration `0095_dealflow_campaign_import.sql`), set from the Preview step checkbox, and `commitRow` refuses a row mapped to subscribed before it creates or updates anything.
+- 1.4: undo restores the previous status through `restoreMarketingStatus` (source `system`, outside the table) using `import_rows.marketing_status_before` and `marketing_person_id`; a person the import itself created is skipped because undo removes that contact.
+- 1.4: the public form's consent checkbox is a native input on purpose (the form must work without JavaScript); an unticked box changes nothing, and a refused consent write is logged instead of failing the visitor's submission.
+- 1.4: changed tests: the Preview step tests gained `needsMarketingConsent`, the status matrix gained the import edges, and the forms integration suite gained the two consent cases (pending plus one captured email, and untouched when unticked).
 - 1.3: the double opt-in and sender verification links are registry templates whose URL arrives as a variable (`confirm_url`, `verify_url`), so the button label is editable while the path is built by code; this satisfies "structural URL" without adding a new registry field.
 - 1.3: `CAMPAIGN_DOI_DAILY_LIMIT` (default 500) was added to `src/config/env.ts` in this task because 6.3 needs the install-wide cap, and to `.env.example` directly (only `scripts/dealflow/env-sync.mjs` may touch `.env`).
 - 1.3: double opt-in tokens are single-use through one guarded `UPDATE ... RETURNING` (`consumeMarketingToken`); unsubscribe tokens are reusable and never expire, because the same link can appear in many sends and the token is the credential.

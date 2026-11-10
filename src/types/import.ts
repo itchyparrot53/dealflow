@@ -7,6 +7,10 @@
 // groups appear only when the row actually carried cells for them.
 export interface MappedRow {
   primary: Record<string, unknown>;
+  // Part 14: the import's marketing-status cell. Raw until validateMappedRow normalises it to
+  // subscribed / unsubscribed / not_subscribed. Beside the entity payload because
+  // personCreateInput would strip it.
+  marketingStatus?: string;
   organization?: Record<string, unknown>;
   person?: Record<string, unknown>;
   note?: { body: string };

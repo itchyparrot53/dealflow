@@ -15,6 +15,9 @@ export const FIXED_FIELD_KEYS = [
   "organization",
   "job_title",
   "message",
+  // Part 14: an optional consent checkbox. Not a custom field because it drives the marketing
+  // status instead of being stored on the record.
+  "marketing_consent",
 ] as const;
 
 export type FixedFieldKey = (typeof FIXED_FIELD_KEYS)[number];
@@ -149,6 +152,13 @@ function validateField(
   if (text === "") return field.required ? { error: FIELD_ERRORS.required } : {};
   if (text.length > FORM_FIELD_MAX_CHARS) return { error: FIELD_ERRORS.tooLong };
   if (field.key === "email") return isEmail(text) ? { value: text } : { error: FIELD_ERRORS.email };
+  // Checkbox inputs submit "on"; accept the usual truthy spellings and normalise to "on" so the
+  // submit handler has one value to test.
+  if (field.key === "marketing_consent") {
+    return ["on", "true", "1", "yes"].includes(text.toLowerCase())
+      ? { value: "on" }
+      : { error: FIELD_ERRORS.boolean };
+  }
   if (field.key.startsWith("cf_")) {
     return validateCustomField(customDefs.get(field.key.slice(3)), text);
   }

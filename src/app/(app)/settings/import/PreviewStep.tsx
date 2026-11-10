@@ -1,5 +1,7 @@
 "use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { STRINGS } from "@/constants/strings";
 import { trpc } from "@/lib/trpc-client";
 
@@ -9,16 +11,20 @@ export interface PreviewStepProps {
   batchId: string;
   validation: { valid: number; invalid: number };
   busy: boolean;
-  onCommit: () => void;
+  // True when any column maps Person > Marketing status, so the consent confirmation is required.
+  needsMarketingConsent: boolean;
+  onCommit: (marketingConsent: boolean) => void;
 }
 
 export function PreviewStep({
   batchId,
   validation,
   busy,
+  needsMarketingConsent,
   onCommit,
 }: PreviewStepProps): React.ReactNode {
   const rows = trpc.import.listRows.useQuery({ batchId }).data ?? [];
+  const [consent, setConsent] = useState(false);
   const invalid = rows.filter((r) => r.status === "invalid");
 
   return (
@@ -50,7 +56,24 @@ export function PreviewStep({
         </div>
       )}
 
-      <Button type="button" disabled={validation.valid === 0 || busy} onClick={onCommit} size="sm">
+      {needsMarketingConsent ? (
+        <label htmlFor="import-marketing-consent" className="flex items-start gap-2 text-sm">
+          <Checkbox
+            id="import-marketing-consent"
+            checked={consent}
+            onCheckedChange={setConsent}
+            label="I have consent to email the people marked subscribed"
+            testId="import-marketing-consent"
+          />
+          <span>I have consent to email the people marked subscribed</span>
+        </label>
+      ) : null}
+      <Button
+        type="button"
+        disabled={validation.valid === 0 || busy || (needsMarketingConsent && !consent)}
+        onClick={() => onCommit(consent)}
+        size="sm"
+      >
         {IMP.commitButton(validation.valid)}
       </Button>
     </section>

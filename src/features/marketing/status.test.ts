@@ -13,7 +13,8 @@ const ALLOWED: Record<string, readonly string[]> = {
   "not_subscribed>pending": ["form", "manual", "bulk"],
   "not_subscribed>subscribed": ["manual", "bulk", "import", "form", "double_opt_in"],
   "pending>subscribed": ["double_opt_in"],
-  "pending>not_subscribed": ["manual", "bulk", "system"],
+  "pending>not_subscribed": ["manual", "bulk", "system", "import"],
+  "subscribed>not_subscribed": ["import"],
   "subscribed>unsubscribed": [
     "unsubscribe_link",
     "one_click",
@@ -21,6 +22,7 @@ const ALLOWED: Record<string, readonly string[]> = {
     "manual",
     "bulk",
     "complaint",
+    "import",
   ],
   "pending>unsubscribed": [
     "unsubscribe_link",
@@ -29,6 +31,7 @@ const ALLOWED: Record<string, readonly string[]> = {
     "manual",
     "bulk",
     "complaint",
+    "import",
   ],
   "subscribed>bounced": ["bounce"],
   "pending>bounced": ["bounce"],
@@ -62,22 +65,28 @@ describe("marketing status machine", () => {
     expect(requiresBasis("not_subscribed", "pending", "manual")).toBe(false);
   });
 
-  test("the dialog targets never include an unavailable status", () => {
+  test("the manual dialog never offers an import-only target", () => {
     expect(
-      allowedTargets("subscribed")
+      allowedTargets("subscribed", ["manual"])
         .map((t) => t.to)
         .sort(),
-    ).toEqual(["bounced", "unsubscribed"]);
+    ).toEqual(["unsubscribed"]);
     expect(
-      allowedTargets("bounced")
+      allowedTargets("bounced", ["manual"])
+        .map((t) => t.to)
+        .sort(),
+    ).toEqual(["pending"]);
+    expect(
+      allowedTargets("not_subscribed", ["manual"])
         .map((t) => t.to)
         .sort(),
     ).toEqual(["pending", "subscribed"]);
+    // The import edges are reachable, but only through the import source.
     expect(
-      allowedTargets("not_subscribed")
+      allowedTargets("subscribed", ["import"])
         .map((t) => t.to)
         .sort(),
-    ).toEqual(["pending", "subscribed"]);
+    ).toEqual(["not_subscribed", "unsubscribed"]);
   });
 
   test("the flow supplies the basis it proves", () => {

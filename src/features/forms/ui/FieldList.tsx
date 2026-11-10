@@ -23,6 +23,7 @@ const FIXED_ADDABLE: { key: FormFieldKey; label: string }[] = [
   { key: "organization", label: S.fieldLabels.organization },
   { key: "job_title", label: S.fieldLabels.job_title },
   { key: "message", label: S.fieldLabels.message },
+  { key: "marketing_consent", label: S.fieldLabels.marketing_consent },
 ];
 
 export function FieldList({

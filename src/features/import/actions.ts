@@ -1,8 +1,10 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { ERROR_IDS } from "@/constants/errorIds";
 import { db } from "@/db/client";
+import { importBatches } from "@/db/schema";
 import { makeStorageClient, type PresignedPost } from "@/features/files/storage";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { SIG } from "@/features/identity/actions/sig";
@@ -24,6 +26,11 @@ const setMappingInput = z.object({
   mapping: columnMappingSchema,
 });
 const batchIdInput = z.object({ batchId: z.string().uuid() });
+const commitInput = batchIdInput.extend({
+  // 6.12: the import-wide consent confirmation. Only ever flips to true; a batch keeps the
+  // confirmation it was committed with.
+  marketingConsent: z.boolean().optional().default(false),
+});
 
 export async function setMappingAction(
   input: z.infer<typeof setMappingInput>,
@@ -53,7 +60,7 @@ export async function setMappingAction(
 }
 
 export async function commitBatchAction(
-  input: z.infer<typeof batchIdInput>,
+  input: z.infer<typeof commitInput>,
   csrfToken: string | null = null,
 ): Promise<ActionResult<{ imported: number; skipped: number; invalid: number }>> {
   const csrfOk = await guardCsrf(csrfToken);
@@ -63,7 +70,7 @@ export async function commitBatchAction(
   if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
   if (!can(actor, "data.import")) return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
 
-  const { batchId } = batchIdInput.parse(input);
+  const { batchId, marketingConsent } = commitInput.parse(input);
   // Ownership + state gate BEFORE enqueue: the commit job runs as the batch creator, so
   // without this any data.import user could trigger commit of another user's ready batch.
   // loadOwnedBatch enforces caller == owner (or admin); status must be "ready" (validated).
@@ -71,6 +78,12 @@ export async function commitBatchAction(
   if (!owned.ok) return { ok: false, error: { id: owned.error.id } };
   if (owned.value.status !== "ready") {
     return { ok: false, error: { id: ERROR_IDS.IMPORT_BAD_STATE } };
+  }
+  if (marketingConsent) {
+    await db
+      .update(importBatches)
+      .set({ marketingConsent: true })
+      .where(eq(importBatches.id, batchId));
   }
   // Commit runs in a background job (import.commit); the wizard follows progress over
   // realtime and reads the exact split via import.getResult once terminal.

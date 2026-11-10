@@ -1,9 +1,10 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { DedupMode } from "@/constants/importStatus";
 import { IMPORTING_LEASE_MS } from "@/constants/importStatus";
 import type { Db } from "@/db/client";
-import { importRows, organizations, persons } from "@/db/schema";
+import { importBatches, importRows, organizations, personMarketing, persons } from "@/db/schema";
+import { applyMarketingTransition } from "@/features/marketing/service";
 import { can } from "@/features/permissions/can";
 import type { VisiblePersonOrOrg } from "@/features/permissions/types";
 import { type MappedRow, upgradeMappedRow } from "@/types/import";
@@ -11,11 +12,12 @@ import { err, ok, type Result } from "@/types/result";
 import { type Commit, finalize, type ImportActor } from "./commitHelpers";
 import { createWithRelations, updateWithRelations } from "./commitRelations";
 import { findCandidates } from "./dedup";
+import { parseMarketingStatusCell } from "./mapRow";
 import type { ImportTarget } from "./wizardState";
 
 export type { ImportActor } from "./commitHelpers";
 
-type ClaimedRow = { id: string; mapped: MappedRow };
+type ClaimedRow = { id: string; mapped: MappedRow; batch_id: string };
 
 // Retry-safe commit of a single validated import row. claim + dedup + create/
 // update + finalize all run in ONE transaction: a failure rolls back the whole
@@ -40,7 +42,7 @@ export async function commitRow(
       UPDATE import_rows SET status = 'importing', claimed_at = now()
       WHERE id = ${rowId}
         AND (status = 'valid' OR (status = 'importing' AND claimed_at < ${lease}))
-      RETURNING id, mapped
+      RETURNING id, mapped, batch_id
     `);
 
     if (claimed.rows.length === 0) {
@@ -60,6 +62,28 @@ export async function commitRow(
     // Upgrade in place: a row validated before cross-entity mapping holds a flat mapped object and
     // is already "valid", so nothing else would ever convert it.
     const mapped = upgradeMappedRow(first.mapped);
+
+    // 6.12: subscribing people on import needs the operator's import-wide confirmation. The check
+    // runs before any record is created, so a refused row leaves nothing behind.
+    const mappedStatus =
+      mapped.marketingStatus === undefined
+        ? null
+        : parseMarketingStatusCell(mapped.marketingStatus);
+    if (mappedStatus === "subscribed") {
+      const [batch] = await tx
+        .select({ consent: importBatches.marketingConsent })
+        .from(importBatches)
+        .where(eq(importBatches.id, first.batch_id))
+        .limit(1);
+      if (batch?.consent !== true) {
+        return finalize(tx, rowId, "invalid", null, [
+          {
+            field: "marketingStatus",
+            message: "Confirm that you have consent to email the people marked subscribed.",
+          },
+        ]);
+      }
+    }
 
     // 2. Visibility-scoped dedup (Task 23). Only person/organization have a natural dedup key
     // (email / name), and it lives on the row's PRIMARY record; deal/lead/activity always create.
@@ -88,7 +112,24 @@ export async function commitRow(
     if (created.ok === false) {
       return finalize(tx, rowId, "invalid", null, created.error);
     }
-    return finalize(tx, rowId, "imported", created.value.entityId, [], created.value.side);
+    const statusError =
+      target === "person"
+        ? await applyImportMarketingStatus(
+            tx,
+            rowId,
+            created.value.entityId,
+            mapped.marketingStatus,
+            signal,
+          )
+        : null;
+    return finalize(
+      tx,
+      rowId,
+      "imported",
+      created.value.entityId,
+      statusError === null ? [] : [statusError],
+      created.value.side,
+    );
   });
 }
 
@@ -134,5 +175,61 @@ async function applyOneUpdate(
   // one. Undo deletes only rows with a non-null createdEntityId, so a pre-existing record
   // that an "update"-mode import merely edited is never soft-deleted by undo (data-loss guard).
   // Its side effects (an org/note this row DID create) still carry, so undo can clean those up.
-  return finalize(tx, rowId, "imported", null, [], updated.value);
+  const statusError =
+    target === "person"
+      ? await applyImportMarketingStatus(tx, rowId, candidateId, mapped.marketingStatus, signal)
+      : null;
+  return finalize(
+    tx,
+    rowId,
+    "imported",
+    null,
+    statusError === null ? [] : [statusError],
+    updated.value,
+  );
+}
+
+// 6.12: apply the imported marketing status through the consent service, and remember what it
+// replaced so undo can put the previous status back. The row itself still imports when the status
+// cannot change; the failure becomes a row error instead of losing the contact.
+async function applyImportMarketingStatus(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  rowId: string,
+  personId: string,
+  cell: string | undefined,
+  signal: AbortSignal,
+): Promise<{ field: string; message: string } | null> {
+  if (cell === undefined) return null;
+  const status = parseMarketingStatusCell(cell);
+  if (status === null) return null;
+
+  const [current] = await tx
+    .select({ status: personMarketing.status })
+    .from(personMarketing)
+    .where(eq(personMarketing.personId, personId))
+    .limit(1);
+  const from = current?.status ?? "not_subscribed";
+  if (from === status) return null;
+
+  const transition = await applyMarketingTransition(
+    tx,
+    {
+      personId,
+      to: status,
+      source: "import",
+      basis: status === "subscribed" ? "imported" : null,
+    },
+    signal,
+  );
+  if (!transition.ok) {
+    return {
+      field: "marketingStatus",
+      message: `The marketing status could not change from ${from}.`,
+    };
+  }
+  await tx
+    .update(importRows)
+    .set({ marketingStatusBefore: from, marketingPersonId: personId })
+    .where(eq(importRows.id, rowId));
+  return null;
 }

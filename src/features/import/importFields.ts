@@ -37,6 +37,8 @@ export const ENTITY_FIELDS: Record<MappableEntity, readonly StandardImportField[
     { field: "lastName", label: "Last name", required: false },
     { field: "emails", label: "Email", required: false },
     { field: "phones", label: "Phone", required: false },
+    // Part 14: not a person column; it drives the marketing status row and its consent evidence.
+    { field: "marketingStatus", label: "Marketing status", required: false },
   ],
   organization: [
     { field: "name", label: "Name", required: true },

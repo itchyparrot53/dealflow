@@ -1,3 +1,6 @@
+import { mkdtemp, readdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -11,6 +14,7 @@ import {
   notes,
   notifications,
   organizations,
+  personMarketing,
   persons,
   webFormSubmissions,
   webForms,
@@ -19,6 +23,8 @@ import { seedPipelineWithStages, seedUser } from "@/db/testing/factories";
 import { runAutomation } from "@/features/automations/runner";
 import { dispatchEvents } from "@/features/events/dispatcher";
 import { issueFormToken } from "@/features/forms/spamToken";
+import { captureMailer } from "@/features/mailer/captureMailer";
+import { setSystemMailerForTest } from "@/features/mailer/systemMailer";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { makeTestDb, type TestDb } from "@/test/db";
 import { publicJsonHeaders } from "@/test/publicRequest";
@@ -364,5 +370,54 @@ describe("public form route input handling", () => {
       token: freshToken(form.publicId),
     });
     expect(res.status).toBe(413);
+  });
+});
+
+describe("form marketing consent", () => {
+  const CONSENT = {
+    key: "marketing_consent",
+    label: "I'd like to receive news and offers by email.",
+    required: false,
+    placeholder: null,
+  } as const;
+
+  it("sets a consenting visitor to pending and sends one double opt-in email", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "dealflow-form-doi-"));
+    setSystemMailerForTest(captureMailer(dir));
+    try {
+      const form = await createTestForm({ fields: [NAME, EMAIL, CONSENT] });
+      const res = await post(form.publicId, {
+        values: { name: "Ada Lovelace", email: "ada@example.com", marketing_consent: "on" },
+        token: freshToken(form.publicId),
+      });
+      expect(res.status).toBe(200);
+
+      const [person] = await h.db.select().from(persons);
+      const [marketing] = await h.db
+        .select()
+        .from(personMarketing)
+        .where(eq(personMarketing.personId, person!.id));
+      expect(marketing?.status).toBe("pending");
+
+      const files = (await readdir(dir)).filter((name) => name.endsWith(".json"));
+      expect(files).toHaveLength(1);
+    } finally {
+      setSystemMailerForTest(null);
+    }
+  });
+
+  it("leaves the status alone when the box is unticked", async () => {
+    const form = await createTestForm({ fields: [NAME, EMAIL, CONSENT] });
+    const res = await post(form.publicId, {
+      values: { name: "Grace Hopper", email: "grace@example.com" },
+      token: freshToken(form.publicId),
+    });
+    expect(res.status).toBe(200);
+    const [person] = await h.db.select().from(persons);
+    const marketing = await h.db
+      .select()
+      .from(personMarketing)
+      .where(eq(personMarketing.personId, person!.id));
+    expect(marketing).toHaveLength(0);
   });
 });

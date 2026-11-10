@@ -24,6 +24,7 @@ export const FIELD_ERRORS = {
   date: "Enter a date as YYYY-MM-DD.",
   option: "Choose one of the listed options.",
   unavailable: "This field is no longer available.",
+  boolean: "Tick the box or leave it empty.",
 } as const;
 
 export const FORMS_STRINGS = {
@@ -86,6 +87,8 @@ export const FORMS_STRINGS = {
     organization: "Organization",
     job_title: "Job title",
     message: "Message",
+    marketing_consent:
+      "I'd like to receive news and offers by email. I can unsubscribe at any time.",
   },
 } as const;
 

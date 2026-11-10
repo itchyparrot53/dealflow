@@ -19,7 +19,9 @@ export const UNSUBSCRIBE_SOURCES = [
   "bulk",
 ] as const satisfies readonly ConsentSource[];
 
-const UNSUBSCRIBE_ALL = [...UNSUBSCRIBE_SOURCES, "complaint"] as const;
+// Import may also mark a contact unsubscribed (6.12 lists it as an importable value); it is not
+// an unsubscribe request, so it stays out of UNSUBSCRIBE_SOURCES and out of the manual dialog.
+const UNSUBSCRIBE_ALL = [...UNSUBSCRIBE_SOURCES, "complaint", "import"] as const;
 
 export const TRANSITIONS: readonly TransitionRule[] = [
   { from: "not_subscribed", to: "pending", sources: ["form", "manual", "bulk"] },
@@ -29,7 +31,9 @@ export const TRANSITIONS: readonly TransitionRule[] = [
     sources: ["manual", "bulk", "import", "form", "double_opt_in"],
   },
   { from: "pending", to: "subscribed", sources: ["double_opt_in"] },
-  { from: "pending", to: "not_subscribed", sources: ["manual", "bulk", "system"] },
+  // Import may reset a contact too (6.12 lists "not subscribed" as an importable value).
+  { from: "pending", to: "not_subscribed", sources: ["manual", "bulk", "system", "import"] },
+  { from: "subscribed", to: "not_subscribed", sources: ["import"] },
   { from: "subscribed", to: "unsubscribed", sources: UNSUBSCRIBE_ALL },
   { from: "pending", to: "unsubscribed", sources: UNSUBSCRIBE_ALL },
   { from: "subscribed", to: "bounced", sources: ["bounce"] },
@@ -69,13 +73,23 @@ export interface AllowedTarget {
   sources: readonly ConsentSource[];
 }
 
-// What the change dialog and the bulk action may offer from a status, in table order.
-export function allowedTargets(from: MarketingStatus): AllowedTarget[] {
+// What the change dialog and the bulk action may offer from a status, in table order. The optional
+// source filter keeps import-only edges (such as subscribed -> not_subscribed) out of the manual
+// dialog: pass the sources the caller can actually use.
+export function allowedTargets(
+  from: MarketingStatus,
+  availableSources?: readonly ConsentSource[],
+): AllowedTarget[] {
   const byTarget = new Map<MarketingStatus, ConsentSource[]>();
   for (const rule of TRANSITIONS) {
     if (rule.from !== from) continue;
+    const sources =
+      availableSources === undefined
+        ? rule.sources
+        : rule.sources.filter((source) => availableSources.includes(source));
+    if (sources.length === 0) continue;
     const existing = byTarget.get(rule.to) ?? [];
-    byTarget.set(rule.to, [...existing, ...rule.sources]);
+    byTarget.set(rule.to, [...existing, ...sources]);
   }
   return [...byTarget].map(([to, sources]) => ({ to, sources: [...new Set(sources)] }));
 }

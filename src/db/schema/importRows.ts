@@ -5,6 +5,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  text,
   timestamp,
   unique,
   uuid,
@@ -40,6 +41,10 @@ export const importRows = pgTable(
     createdOrgId: uuid("created_org_id"),
     createdPersonId: uuid("created_person_id"),
     createdNoteId: uuid("created_note_id"),
+    // Part 14: the status the import overwrote, and whose contact it belongs to, so undo can put
+    // the previous consent state back instead of leaving an imported status behind.
+    marketingStatusBefore: text("marketing_status_before"),
+    marketingPersonId: uuid("marketing_person_id"),
     claimedAt: timestamp("claimed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

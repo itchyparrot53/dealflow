@@ -55,8 +55,24 @@ function deriveDisplayName(group: Record<string, unknown> | undefined): void {
 }
 
 // Where the cells of one row accumulate as the mapping is walked.
+const MARKETING_STATUS_VALUES = {
+  subscribed: "subscribed",
+  unsubscribed: "unsubscribed",
+  "not subscribed": "not_subscribed",
+  not_subscribed: "not_subscribed",
+  notsubscribed: "not_subscribed",
+} as const;
+
+export function parseMarketingStatusCell(
+  cell: string,
+): "subscribed" | "unsubscribed" | "not_subscribed" | null {
+  const key = cell.trim().toLowerCase().replace(/\s+/g, " ").replace(/-/g, " ");
+  return MARKETING_STATUS_VALUES[key as keyof typeof MARKETING_STATUS_VALUES] ?? null;
+}
+
 interface RowGroups {
   primary: Record<string, unknown>;
+  marketingStatus?: string;
   customFields: Record<string, unknown>;
   related: Record<string, Record<string, unknown>>;
   noteBody: string | null;
@@ -75,6 +91,10 @@ function routeCell(
     return;
   }
   if (col.field === "") return;
+  if (col.field === "marketingStatus") {
+    acc.marketingStatus = cell;
+    return;
+  }
   if (col.entity === "note") {
     if (col.field === "body") acc.noteBody = cell;
     return;
@@ -111,6 +131,7 @@ export function applyMapping(
   deriveDisplayName(acc.related.person);
 
   const out: MappedRow = { primary: acc.primary };
+  if (acc.marketingStatus !== undefined) out.marketingStatus = acc.marketingStatus;
   if (acc.related.organization !== undefined) out.organization = acc.related.organization;
   if (acc.related.person !== undefined) out.person = acc.related.person;
 
@@ -177,6 +198,17 @@ export function validateMappedRow(
     const note = noteImportGroupSchema.safeParse(mapped.note);
     if (note.success) out.note = note.data;
     else errors.push(...issuesOf(note.error, "note."));
+  }
+  if (mapped.marketingStatus !== undefined) {
+    const parsed = parseMarketingStatusCell(mapped.marketingStatus);
+    if (parsed === null) {
+      errors.push({
+        field: "marketingStatus",
+        message: "Use subscribed, unsubscribed or not subscribed.",
+      });
+    } else {
+      out.marketingStatus = parsed;
+    }
   }
 
   if (errors.length > 0) return { ok: false, errors };

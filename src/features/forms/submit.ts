@@ -11,6 +11,8 @@ import { createDeal } from "@/features/deals/dealActions";
 import { loadEntityCreateSession } from "@/features/entity-create/session";
 import { emitDomainEvent } from "@/features/events/emit";
 import { createLead } from "@/features/leads/leadActions";
+import { isDoubleOptInRequired, requestDoubleOptIn } from "@/features/marketing/doubleOptIn";
+import { applyMarketingTransition } from "@/features/marketing/service";
 import { createNotification } from "@/features/notifications/produce";
 import type { PermSetUser } from "@/features/permissions/effective";
 import type { EntityCreateSession } from "@/features/permissions/entityCreate";
@@ -264,6 +266,9 @@ interface CreatedSubmission extends CreatedRecord {
   entityType: "lead" | "deal";
   entityId: string;
   submissionId: string;
+  personId: string;
+  // What the consent checkbox produced, so the confirmation email is sent after the commit.
+  marketingConsent: "pending" | "subscribed" | null;
 }
 
 async function persistSubmission(
@@ -271,6 +276,7 @@ async function persistSubmission(
   ctx: SubmitContext,
   person: Person,
   created: CreatedRecord,
+  marketingConsent: "pending" | "subscribed" | null,
   signal: AbortSignal,
 ): Promise<CreatedSubmission> {
   const entityType = created.leadId === null ? "deal" : "lead";
@@ -324,7 +330,28 @@ async function persistSubmission(
     entityType,
     entityId,
     submissionId: submission.id,
+    personId: person.id,
+    marketingConsent,
   };
+}
+
+// The consent checkbox (6.3). A refusal is logged and swallowed: a consent write must never lose
+// the visitor's submission, and the person simply keeps the status they had.
+async function applyFormConsent(
+  tx: Tx,
+  personId: string,
+  optedIn: boolean,
+  signal: AbortSignal,
+): Promise<"pending" | "subscribed" | null> {
+  if (!optedIn) return null;
+  const doubleOptIn = await isDoubleOptInRequired(tx, signal);
+  const to = doubleOptIn ? "pending" : "subscribed";
+  const transition = await applyMarketingTransition(tx, { personId, to, source: "form" }, signal);
+  if (!transition.ok) {
+    console.warn(`form consent refused: ${transition.error.id}`);
+    return null;
+  }
+  return to;
 }
 
 async function performSubmission(
@@ -334,9 +361,15 @@ async function performSubmission(
 ): Promise<CreatedSubmission> {
   return db.transaction(async (tx) => {
     const person = await findOrCreatePerson(tx, ctx, signal);
+    const marketingConsent = await applyFormConsent(
+      tx,
+      person.id,
+      (ctx.values.marketing_consent ?? "") === "on",
+      signal,
+    );
     const orgId = await resolveOrganizationId(tx, ctx, person, signal);
     const created = await createRecord(tx, ctx, person, orgId, signal);
-    return persistSubmission(tx, ctx, person, created, signal);
+    return persistSubmission(tx, ctx, person, created, marketingConsent, signal);
   });
 }
 
@@ -402,6 +435,13 @@ export async function submitForm(
   } catch (error) {
     if (error instanceof AppError) return err(error);
     throw error;
+  }
+
+  // The pending state is committed; the confirmation email goes out afterwards so a mail failure
+  // cannot roll back the submission. A rate-limited or failed send is only logged.
+  if (created.marketingConsent === "pending") {
+    const doi = await requestDoubleOptIn(db, created.personId, signal);
+    if (!doi.ok) console.warn(`double opt-in send failed: ${doi.error.id}`);
   }
 
   // After commit. A failed in-app notification must not fail a submission the visitor completed.

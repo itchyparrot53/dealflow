@@ -2,9 +2,11 @@ import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
 import type { AppError } from "@/constants/errorIds";
 import { IMPORT_JOB_TIMEOUT_MS, PGBOSS_QUEUE_IMPORT_UNDO } from "@/constants/jobNames";
+import type { MarketingStatus } from "@/constants/marketing";
 import type { Db } from "@/db/client";
 import { db as prodDb } from "@/db/client";
 import { importBatches, importRows } from "@/db/schema";
+import { restoreMarketingStatus } from "@/features/marketing/service";
 import { ok, type Result } from "@/types/result";
 import { narrowTarget } from "./batchHelpers";
 import type { ImportActor } from "./commit";
@@ -58,6 +60,8 @@ export async function undoBatch(
       orgId: importRows.createdOrgId,
       personId: importRows.createdPersonId,
       noteId: importRows.createdNoteId,
+      marketingStatusBefore: importRows.marketingStatusBefore,
+      marketingPersonId: importRows.marketingPersonId,
     })
     .from(importRows)
     .where(
@@ -69,6 +73,7 @@ export async function undoBatch(
           isNotNull(importRows.createdOrgId),
           isNotNull(importRows.createdPersonId),
           isNotNull(importRows.createdNoteId),
+          isNotNull(importRows.marketingStatusBefore),
         ),
       ),
     );
@@ -95,6 +100,24 @@ export async function undoBatch(
         signal,
       );
       lastEmitted = processed;
+    }
+  }
+
+  // Revert the consent edits an update-mode row made. Rows whose primary was this import's own
+  // creation are skipped: their contact is being removed, not restored.
+  for (const row of rows) {
+    if (row.marketingStatusBefore === null || row.marketingPersonId === null) continue;
+    if (row.id !== null && row.id === row.marketingPersonId) continue;
+    const restored = await restoreMarketingStatus(
+      db,
+      row.marketingPersonId,
+      row.marketingStatusBefore as MarketingStatus,
+      signal,
+    );
+    if (!restored.ok) {
+      console.warn(
+        `import undo: marketing status not restored for ${row.marketingPersonId}: ${restored.error.id}`,
+      );
     }
   }
 

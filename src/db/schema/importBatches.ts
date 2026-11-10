@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { IMPORT_STATUS } from "@/constants/importStatus";
 import { users } from "./identity";
 
@@ -25,6 +34,9 @@ export const importBatches = pgTable("import_batches", {
   processedRows: integer("processed_rows").notNull().default(0),
   headers: jsonb("headers").$type<string[]>(),
   previewRows: jsonb("preview_rows").$type<Record<string, string>[]>(),
+  // Part 14: the operator ticked "I have consent to email the people marked subscribed". Required
+  // before any row may import a marketing status of subscribed.
+  marketingConsent: boolean("marketing_consent").notNull().default(false),
   undoneAt: timestamp("undone_at", { withTimezone: true }),
   createdBy: uuid("created_by")
     .notNull()

@@ -133,32 +133,54 @@ export function PublicForm({
                 data-testid="public-form-field"
                 data-key={field.key}
               >
-                <label htmlFor={`field-${field.key}`} className="block text-sm font-medium">
-                  {field.label}
-                  {field.required ? <span className="text-destructive"> *</span> : null}
-                </label>
-                {field.key === "message" ? (
-                  <Textarea
-                    id={`field-${field.key}`}
-                    name={field.key}
-                    required={field.required}
-                    placeholder={field.placeholder ?? undefined}
-                    rows={4}
-                    maxLength={2000}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValue(field.key, event.target.value)}
-                  />
+                {field.key === "marketing_consent" ? (
+                  <span className="flex items-start gap-2">
+                    {/* design-ok: a public form must work without JavaScript, and the design-system
+                        Checkbox is a script-driven button. */}
+                    <input
+                      id={`field-${field.key}`}
+                      name={field.key}
+                      type="checkbox"
+                      required={field.required}
+                      checked={values[field.key] === "on"}
+                      onChange={(event) => setValue(field.key, event.target.checked ? "on" : "")}
+                      className="mt-0.5 size-4 accent-primary"
+                    />
+                    <label htmlFor={`field-${field.key}`} className="text-sm">
+                      {field.label}
+                      {field.required ? <span className="text-destructive"> *</span> : null}
+                    </label>
+                  </span>
                 ) : (
-                  <Input
-                    id={`field-${field.key}`}
-                    name={field.key}
-                    type={INPUT_TYPES[field.key] ?? "text"}
-                    required={field.required}
-                    placeholder={field.placeholder ?? undefined}
-                    maxLength={field.key === "email" ? 320 : 2000}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValue(field.key, event.target.value)}
-                  />
+                  <>
+                    <label htmlFor={`field-${field.key}`} className="block text-sm font-medium">
+                      {field.label}
+                      {field.required ? <span className="text-destructive"> *</span> : null}
+                    </label>
+                    {field.key === "message" ? (
+                      <Textarea
+                        id={`field-${field.key}`}
+                        name={field.key}
+                        required={field.required}
+                        placeholder={field.placeholder ?? undefined}
+                        rows={4}
+                        maxLength={2000}
+                        value={values[field.key] ?? ""}
+                        onChange={(event) => setValue(field.key, event.target.value)}
+                      />
+                    ) : (
+                      <Input
+                        id={`field-${field.key}`}
+                        name={field.key}
+                        type={INPUT_TYPES[field.key] ?? "text"}
+                        required={field.required}
+                        placeholder={field.placeholder ?? undefined}
+                        maxLength={field.key === "email" ? 320 : 2000}
+                        value={values[field.key] ?? ""}
+                        onChange={(event) => setValue(field.key, event.target.value)}
+                      />
+                    )}
+                  </>
                 )}
                 {errors[field.key] === undefined ? null : (
                   <p className="text-xs text-destructive">{errors[field.key]}</p>

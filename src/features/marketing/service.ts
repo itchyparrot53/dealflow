@@ -238,3 +238,77 @@ export async function syncPersonSuppressionForEmail(
   );
   return ok({ status: target, changed: true });
 }
+
+// Undo path for an import: put the previous status back without asking the transition table. The
+// table describes what a person or operator may do; reverting an import's own edit is bookkeeping,
+// and the consent event records it as source `system`.
+export async function restoreMarketingStatus(
+  db: Db,
+  personId: string,
+  status: MarketingStatus,
+  signal: AbortSignal,
+): Promise<Result<{ changed: boolean }, AppError>> {
+  signal.throwIfAborted();
+  return db.transaction(async (tx) => {
+    const [person] = await tx
+      .select({ email: persons.primaryEmail })
+      .from(persons)
+      .where(and(eq(persons.id, personId), isNull(persons.deletedAt)))
+      .limit(1);
+    if (person === undefined || person.email === null || person.email.trim() === "") {
+      return ok({ changed: false });
+    }
+    const emailHash = hashEmail(person.email);
+    const [existing] = await tx
+      .select()
+      .from(personMarketing)
+      .where(eq(personMarketing.personId, personId))
+      .limit(1);
+    const from: MarketingStatus = existing?.status ?? "not_subscribed";
+    if (from === status) return ok({ changed: false });
+
+    const now = new Date();
+    await tx
+      .insert(personMarketing)
+      .values({
+        personId,
+        status,
+        consentBasis: existing?.consentBasis ?? null,
+        statusChangedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: personMarketing.personId,
+        set: {
+          status,
+          consentBasis: existing?.consentBasis ?? null,
+          statusChangedAt: now,
+        },
+      });
+    await tx.insert(consentEvents).values({
+      personId,
+      emailHash,
+      fromStatus: from,
+      toStatus: status,
+      source: "system",
+    });
+    if (status === "subscribed") {
+      await removeSuppression(tx, emailHash, signal);
+    } else if (status === "unsubscribed") {
+      await addSuppression(tx, emailHash, "unsubscribed", signal);
+    } else if (status === "bounced") {
+      await addSuppression(tx, emailHash, "hard_bounce", signal);
+    }
+    await emitDomainEvent(
+      tx,
+      {
+        type: "person.marketing_status_changed",
+        entityType: "person",
+        entityId: personId,
+        actorId: null,
+        changes: [{ field: "marketing_status", old: from, new: status }],
+      },
+      signal,
+    );
+    return ok({ changed: true });
+  });
+}

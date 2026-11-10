@@ -29,6 +29,7 @@ it("shows the valid/invalid summary and lists row errors", () => {
       batchId="b1"
       validation={{ valid: 1, invalid: 1 }}
       busy={false}
+      needsMarketingConsent={false}
       onCommit={vi.fn()}
     />,
   );
@@ -45,6 +46,7 @@ it("commits the valid rows when clicked and disables when nothing is valid", () 
       batchId="b1"
       validation={{ valid: 2, invalid: 0 }}
       busy={false}
+      needsMarketingConsent={false}
       onCommit={onCommit}
     />,
   );
@@ -56,6 +58,7 @@ it("commits the valid rows when clicked and disables when nothing is valid", () 
       batchId="b1"
       validation={{ valid: 0, invalid: 3 }}
       busy={false}
+      needsMarketingConsent={false}
       onCommit={onCommit}
     />,
   );
