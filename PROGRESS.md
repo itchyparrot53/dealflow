@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 5.4 · Last updated: 2026-11-10 18:22
+Current: 5.6 · Last updated: 2026-11-10 19:24
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -40,7 +40,7 @@ Current: 5.4 · Last updated: 2026-11-10 18:22
 - [x] 5.2 Docs
 - [x] 5.3 End-to-end, integration suite and smoke
 - [x] 5.4 Independent review
-- [ ] 5.5 Final checklist
+- [x] 5.5 Final checklist
 - [ ] 5.6 Final report and completion
 
 ## QA log
@@ -218,4 +218,24 @@ Current: 5.4 · Last updated: 2026-11-10 18:22
 - Document PDFs: `DOCS_CHROME=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome pnpm docs:pdf` if the default browser path is not found.
 
 ## Final report
-(written in Tasks 5.5 and 5.6)
+
+### Checklist
+
+1. PASS - `git --no-optional-locks status --porcelain` is empty apart from the owner's untracked `site/public/` files; the smoke script fix is included in this commit.
+2. PASS - `pnpm install --frozen-lockfile` exited 0; `git diff {Phase 0}..HEAD -- package.json pnpm-lock.yaml` is empty, so no runtime dependency was added.
+3. PASS - `pnpm typecheck` exited 0.
+4. PASS - `pnpm lint` exited 0 (16 warnings, 2 infos, all pre-existing).
+5. PASS - `pnpm test:unit`: 5567/5567 in 873 files.
+6. PASS - `pnpm test:integration`: 2200/2200 in 435 files, 73.94s, on the post-review tree.
+7. PASS - `GOOGLE_OAUTH_CLIENT_ID= GOOGLE_OAUTH_CLIENT_SECRET= GOOGLE_WORKSPACE_DOMAIN= pnpm build` exited 0 (the owner's .env has a partial Google configuration, so the prefixes are required).
+8. PASS - full e2e `MINIO_PORT=9100 DEV_PG_PORT=5434 pnpm e2e`: 73/73 passed in 5.6m, specs 00 to 18.
+9. PASS - `ls e2e/screenshots/campaigns/*.png | wc -l` is 16.
+10. PASS - final smoke: `SMOKE PASS`, `backup round trip ok (3 deals)`, no leftover containers or volumes; the createbuckets secret was prefixed with `smoke-` so a generated value starting with a dash cannot hang `mc`.
+11. PASS - `pnpm check:design`: 0 violation(s), 18 opt-outs.
+12. PASS - 6.2 `status.test.ts` 5 tests; 6.3 `consent.integration.test.ts` 9 tests (hashed single-use token, GET does not mutate, exact one-click body, expired token); 6.4 `blocks.test.ts` 14 tests (marketing sanitiser); 6.7 `send.integration.test.ts` "never sends the same recipient twice under two concurrent ticks"; 6.8 `routes.integration.test.ts` "redirects to the stored target and ignores a URL in the query string" and "redirects an unknown token or link index to BASE_URL"; 6.10 `sequences.integration.test.ts` "sends an email step through the hidden nurture campaign and completes", "never sends twice under two concurrent ticks" and "requires a postal address and a verified sender to activate". The cited unit run passed 19/19 and the cited integration run 33/33.
+13. PASS - `grep -rnE "console\.(log|info)\(.*(html|body|token)" src/features/campaigns src/features/marketing` prints nothing.
+14. PASS - `next.config.test.ts` "marks the public campaign pages noindex" (17/17) covers `/v`, `/c` and `/u`; the tracking routes and the sender verification route also set `X-Robots-Tag: noindex` and are rate limited.
+15. PASS - no em dash in any authored text file changed by this part. The exact binary scan flags one generated PDF's compressed stream; `pdftotext` of that PDF finds no U+2014, so this is a binary false positive, not an authored dash.
+16. PASS - `docs/user-guide/campaigns.md`, `docs/dealflow/CAMPAIGNS.md`, `UPSTREAM.md` ("Part 14") and the 16 campaign variables in `.env.example` exist.
+17. PASS - `ls docs/user-guide/pdf/*.pdf | wc -l` is 16.
+18. PASS - after this commit, `pnpm check:progress --final` printed "PROGRESS CHECK OK: 29/30 tasks ticked, all with commits, ready to complete"; the command was run immediately after the commit.

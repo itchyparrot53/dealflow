@@ -61,7 +61,9 @@ function writeEnv() {
     MINIO_ENDPOINT: "http://localhost:3312",
     MINIO_BUCKET: "warpdrive",
     MINIO_ACCESS_KEY: `smoke-${randomBytes(4).toString("hex")}`,
-    MINIO_SECRET_KEY: randomBytes(24).toString("base64url"),
+    // The mc init container passes this value as an argument; a leading dash would be parsed as a
+    // flag and hang the createbuckets service before the app can start.
+    MINIO_SECRET_KEY: `smoke-${randomBytes(24).toString("base64url")}`,
     MINIO_IMAGE: "",
     MC_IMAGE: "",
     POSTGRES_USER: "warpdrive",
