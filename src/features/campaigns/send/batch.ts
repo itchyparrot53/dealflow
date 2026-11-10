@@ -20,6 +20,8 @@ import { transitionMarketingStatus } from "@/features/marketing/service";
 import { hashEmail } from "@/features/marketing/suppression";
 import { mintMarketingToken } from "@/features/marketing/tokens";
 import { hydrateActor } from "@/server/hydrateActor";
+import type { DbOrTx } from "@/server/realtime/channelVersions";
+import { err, ok, type Result } from "@/types/result";
 import { loadCampaignAssetUrls } from "../assets";
 import { campaignMergeValues } from "../blocks/personalize";
 import { renderCampaign } from "../blocks/render";
@@ -52,6 +54,52 @@ export interface TickDeps {
 }
 
 const DEFAULT_DEPS: TickDeps = { send: sendCampaignMail, now: () => new Date() };
+
+export type ClaimedRecipient = {
+  id: string;
+  person_id: string | null;
+  email: string;
+  email_hash: string;
+  token: string | null;
+};
+
+export interface CampaignSendContext {
+  design: Awaited<ReturnType<typeof getEmailDesign>>;
+  postalAddress: string;
+  baseUrl: string;
+  assetUrls: Map<string, string>;
+}
+
+// Freeze the ordered link templates for a campaign. The sequence scheduler reuses this for each
+// hidden nurture campaign, so a step email's tracked links redirect exactly like a campaign's.
+export async function freezeCampaignLinks(
+  tx: DbOrTx,
+  campaignId: string,
+  document: CampaignDocument,
+  ctx: CampaignSendContext,
+  signal: AbortSignal,
+): Promise<void> {
+  signal.throwIfAborted();
+  const sample = renderCampaign(document, {
+    design: ctx.design,
+    values: templateValues(ctx.baseUrl),
+    postalAddress: ctx.postalAddress,
+    baseUrl: ctx.baseUrl,
+    assetUrl: (assetId) => ctx.assetUrls.get(assetId) ?? null,
+  });
+  const links = sample.links.filter((url) => {
+    const path = new URL(url).pathname;
+    return !path.startsWith("/u/") && !path.startsWith("/v/");
+  });
+  await tx.execute(sql`DELETE FROM campaign_links WHERE campaign_id = ${campaignId}::uuid`);
+  if (links.length === 0) return;
+  const values = links.map((url, index) => sql`(${campaignId}::uuid, ${index}, ${url})`);
+  await tx.execute(sql`
+    INSERT INTO campaign_links (campaign_id, link_index, url_template)
+    VALUES ${sql.join(values, sql`, `)}
+  `);
+  signal.throwIfAborted();
+}
 
 export interface TickResult {
   sent: number;
@@ -111,26 +159,18 @@ export async function snapshotCampaign(
     const settings = await getCampaignSettings(tx, signal);
     const assetUrls = await loadCampaignAssetUrls(tx, signal);
     const document = campaign.content as CampaignDocument;
-    const sample = renderCampaign(document, {
-      design,
-      values: templateValues(env.BASE_URL),
-      postalAddress: settings.postalAddress,
-      preheader: campaign.preheader ?? undefined,
-      baseUrl: env.BASE_URL,
-      assetUrl: (assetId) => assetUrls.get(assetId) ?? null,
-    });
-    // The footer links are per-recipient credentials, never tracked campaign links.
-    const links = sample.links.filter((url) => {
-      const path = new URL(url).pathname;
-      return !path.startsWith("/u/") && !path.startsWith("/v/");
-    });
-
-    await tx.delete(campaignLinks).where(eq(campaignLinks.campaignId, campaignId));
-    if (links.length > 0) {
-      await tx
-        .insert(campaignLinks)
-        .values(links.map((urlTemplate, linkIndex) => ({ campaignId, linkIndex, urlTemplate })));
-    }
+    await freezeCampaignLinks(
+      tx,
+      campaignId,
+      document,
+      {
+        design,
+        postalAddress: settings.postalAddress,
+        baseUrl: env.BASE_URL,
+        assetUrls,
+      },
+      signal,
+    );
 
     let inserted = 0;
     for (const person of preview.value.eligible) {
@@ -230,19 +270,8 @@ export async function runCampaignTick(
     };
   }
 
-  const [sender] =
-    campaign.senderId === null
-      ? []
-      : await db
-          .select({
-            fromName: campaignSenders.fromName,
-            fromEmail: campaignSenders.fromEmail,
-            verifiedAt: campaignSenders.verifiedAt,
-          })
-          .from(campaignSenders)
-          .where(eq(campaignSenders.id, campaign.senderId))
-          .limit(1);
-  if (sender === undefined || sender.verifiedAt === null) {
+  const sender = await loadVerifiedCampaignSender(db, campaign.senderId, signal);
+  if (sender === null) {
     return {
       ok: false,
       error: new AppError(ERROR_IDS.CAMPAIGN_SENDER_UNVERIFIED, "sender is not verified", {}),
@@ -310,12 +339,48 @@ async function queuedCount(db: Db, campaignId: string): Promise<number> {
   return row?.count ?? 0;
 }
 
-interface ClaimedRecipient {
-  id: string;
-  person_id: string | null;
-  email: string;
-  email_hash: string;
-  token: string | null;
+export interface VerifiedSender {
+  fromName: string;
+  fromEmail: string;
+}
+
+export async function loadVerifiedCampaignSender(
+  db: Db,
+  senderId: string | null,
+  signal: AbortSignal,
+): Promise<VerifiedSender | null> {
+  if (senderId === null) return null;
+  const [row] = await db
+    .select({
+      fromName: campaignSenders.fromName,
+      fromEmail: campaignSenders.fromEmail,
+      verifiedAt: campaignSenders.verifiedAt,
+    })
+    .from(campaignSenders)
+    .where(eq(campaignSenders.id, senderId))
+    .limit(1);
+  signal.throwIfAborted();
+  if (row === undefined || row.verifiedAt === null) return null;
+  return { fromName: row.fromName, fromEmail: row.fromEmail };
+}
+
+// Send a specific set of already-claimed recipients. The sequence scheduler uses this for a hidden
+// step campaign (one recipient), while runCampaignTick keeps owning the claim/throttle loop.
+export async function sendCampaignRows(
+  db: Db,
+  campaign: typeof campaigns.$inferSelect,
+  rows: ClaimedRecipient[],
+  signal: AbortSignal,
+  deps: TickDeps = DEFAULT_DEPS,
+): Promise<Result<{ sent: number }, AppError>> {
+  if (rows.length === 0) return ok({ sent: 0 });
+  const sender = await loadVerifiedCampaignSender(db, campaign.senderId, signal);
+  if (sender === null) {
+    return err(new AppError(ERROR_IDS.CAMPAIGN_SENDER_UNVERIFIED, "sender is not verified", {}));
+  }
+  const sent = await deliverRows(db, campaign, rows, sender, deps, signal);
+  await refreshCampaignTotals(db, campaign.id, signal);
+  return ok({ sent });
 }
 
 async function deliverRows(

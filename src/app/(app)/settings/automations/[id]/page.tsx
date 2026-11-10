@@ -5,7 +5,15 @@ import { PageTitle } from "@/components/shell/pageTitle";
 import { AUTOMATIONS_STRINGS } from "@/constants/automationsStrings";
 import { SETTINGS_STRINGS } from "@/constants/settingsStrings";
 import { db } from "@/db/client";
-import { activityTypes, emailTemplates, pipelines, stages, users, webForms } from "@/db/schema";
+import {
+  activityTypes,
+  emailTemplates,
+  pipelines,
+  sequences,
+  stages,
+  users,
+  webForms,
+} from "@/db/schema";
 import { getAutomation } from "@/features/automations/service";
 import { AutomationEditor } from "@/features/automations/ui/AutomationEditor";
 import { can } from "@/features/permissions/can";
@@ -36,23 +44,30 @@ export default async function AutomationEditorPage({
   const automation = await getAutomation(db, id, signal);
   if (automation === null) notFound();
 
-  const [pipelineRows, stageRows, userRows, typeRows, templateRows, formRows] = await Promise.all([
-    db.select({ id: pipelines.id, name: pipelines.name }).from(pipelines),
-    db
-      .select({ id: stages.id, name: stages.name, pipelineId: stages.pipelineId })
-      .from(stages)
-      .orderBy(asc(stages.order)),
-    db.select({ id: users.id, name: users.name }).from(users).where(eq(users.isActive, true)),
-    db
-      .select({ id: activityTypes.id, name: activityTypes.name })
-      .from(activityTypes)
-      .where(isNull(activityTypes.archivedAt)),
-    db
-      .select({ id: emailTemplates.id, name: emailTemplates.name })
-      .from(emailTemplates)
-      .where(or(eq(emailTemplates.ownerId, actor.id), eq(emailTemplates.isShared, true))),
-    db.select({ id: webForms.id, name: webForms.name }).from(webForms),
-  ]);
+  const [pipelineRows, stageRows, userRows, typeRows, templateRows, formRows, sequenceRows] =
+    await Promise.all([
+      db.select({ id: pipelines.id, name: pipelines.name }).from(pipelines),
+      db
+        .select({ id: stages.id, name: stages.name, pipelineId: stages.pipelineId })
+        .from(stages)
+        .orderBy(asc(stages.order)),
+      db.select({ id: users.id, name: users.name }).from(users).where(eq(users.isActive, true)),
+      db
+        .select({ id: activityTypes.id, name: activityTypes.name })
+        .from(activityTypes)
+        .where(isNull(activityTypes.archivedAt)),
+      db
+        .select({ id: emailTemplates.id, name: emailTemplates.name })
+        .from(emailTemplates)
+        .where(or(eq(emailTemplates.ownerId, actor.id), eq(emailTemplates.isShared, true))),
+      db.select({ id: webForms.id, name: webForms.name }).from(webForms),
+      // Only an active sequence can be enrolled in; the picker shows exactly those.
+      db
+        .select({ id: sequences.id, name: sequences.name })
+        .from(sequences)
+        .where(eq(sequences.status, "active"))
+        .orderBy(asc(sequences.name)),
+    ]);
 
   return (
     <SettingsPage className="max-w-3xl">
@@ -72,6 +87,7 @@ export default async function AutomationEditorPage({
           activityTypes: typeRows,
           emailTemplates: templateRows,
           forms: formRows,
+          sequences: sequenceRows,
         }}
       />
     </SettingsPage>

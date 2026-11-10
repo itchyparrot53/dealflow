@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 4.1 · Last updated: 2026-11-10 16:34
+Current: 4.2 · Last updated: 2026-11-10 16:58
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -31,7 +31,7 @@ Current: 4.1 · Last updated: 2026-11-10 16:34
 - [x] 3.4 Tracking routes, web version, timeline and click alerts
 - [x] 3.5 Bounce mailbox and the DSN parser
 - [x] 3.6 Phase 3 QA gate
-- [ ] 4.1 Sequences: model, editor, scheduler, entries and exits
+- [x] 4.1 Sequences: model, editor, scheduler, entries and exits
 - [ ] 4.2 Campaign report and recipients export
 - [ ] 4.3 Campaign insights with comparison and type filter
 - [ ] 4.4 Phase 4 QA gate
@@ -69,6 +69,15 @@ Current: 4.1 · Last updated: 2026-11-10 16:34
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 4.1: each email step owns one hidden `nurture` campaign linked from `sequence_steps.campaign_id`; the campaigns list excludes those rows with a `not exists` predicate, and deleting a step or sequence deletes its hidden campaign.
+- 4.1: a step send reuses `sendCampaignRows` (extracted from the campaign tick) with one recipient row per enrollment, so headers, tracking, consent re-checks, events and totals are identical to a campaign. Re-entry upserts the same recipient row and mints a fresh unsubscribe token.
+- 4.1: the scheduler claims up to 200 due enrollments with a 15 minute lease in one `UPDATE ... FOR UPDATE SKIP LOCKED`, then processes outside the claim, so two concurrent ticks can never send the same enrollment and a crashed tick retries after the lease.
+- 4.1: send-window arithmetic is pure and timezone-aware without a new dependency (`Intl.DateTimeFormat` plus an offset correction for DST); a Friday 18:00 wait with a weekdays-only 09:00 to 17:00 window lands on Monday 09:00, and the model tests pin it.
+- 4.1: always-on exits are a deleted person and a status other than `subscribed`; optional exits are a won deal, an inbound reply and a saved filter. Paused sequences are filtered out of the claim query, so enrollments wait and resume when reactivated.
+- 4.1: segment entry scans every 15 minutes, remembers membership in `sequence_segment_members`, and drops a member when they leave only if `allowReentry` is on.
+- 4.1: `enroll_in_sequence` is selectable in the manual automation editor but excluded from the AI "describe" prompt, because the model cannot know real sequence ids and would invent one.
+- 4.1: the update action returns the saved step ids so a newly added step adopts its id on the first save; otherwise a second save would insert a duplicate step and delete the first one's campaign stats.
+- 4.1: changed tests: the PeopleList unit mocks gained the `campaigns.activeSequences` query; the automation definition and integration suites already cover the new action through the schema.
 - 3.5: the bounce mailbox reuses `getMailTransportFactory`; tests inject `createFakeTransportFactory` plus explicit credentials instead of flipping `MAIL_PROVIDER_FAKE_DIR` (env validates at import), so they still run against the plan's filesystem fake store.
 - 3.5: `ImapSession` gained `listUnseen`, `markSeen` and `createFolder` (real and fake), because 6.8 needs unseen selection and a Processed folder that may not exist yet.
 - 3.5: `CAMPAIGN_BOUNCE_IMAP_*` are opt-in; `secure` is true only for port 993 because the plan names no `_SECURE` variable, and a partly set mailbox registers nothing rather than failing worker boot.

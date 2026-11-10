@@ -233,6 +233,18 @@ function ActionFields({
     case "ai_summarize_deal":
     case "ai_score_deal":
       return <p className="text-sm text-muted-foreground">{S.actionTypes[action.type]}</p>;
+    case "enroll_in_sequence":
+      return (
+        <Select
+          value={action.sequenceId}
+          onChange={(next) => onChange({ ...action, sequenceId: next })}
+          options={lookups.sequences.map((sequence) => ({
+            value: sequence.id,
+            label: sequence.name,
+          }))}
+          ariaLabel={S.fields.sequence}
+        />
+      );
   }
 }
 

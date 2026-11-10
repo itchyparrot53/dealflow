@@ -72,3 +72,9 @@ export const PGBOSS_QUEUE_CAMPAIGN_START = "campaign.start";
 // The optional bounce mailbox reads unseen DSNs and ARF reports every ten minutes.
 export const PGBOSS_QUEUE_CAMPAIGN_BOUNCE = "campaign.bounce";
 export const CAMPAIGN_BOUNCE_CRON = "*/10 * * * *";
+
+// Part 14 sequences. The tick runs every minute; the segment-entry scan runs every fifteen minutes.
+export const PGBOSS_QUEUE_SEQUENCE_TICK = "sequences.tick";
+export const SEQUENCE_TICK_CRON = "* * * * *";
+export const PGBOSS_QUEUE_SEQUENCE_SEGMENT = "sequences.segment";
+export const SEQUENCE_SEGMENT_CRON = "*/15 * * * *";

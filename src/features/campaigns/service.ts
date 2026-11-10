@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { campaignSenders, campaignSettings, campaigns } from "@/db/schema";
@@ -34,6 +34,9 @@ export async function listCampaigns(db: Db, signal: AbortSignal): Promise<Campai
       totals: campaigns.totals,
     })
     .from(campaigns)
+    // A sequence step's nurture campaign is internal: it appears in the sequence editor's per-step
+    // stats, never in the campaign list.
+    .where(sql`not exists (select 1 from sequence_steps ss where ss.campaign_id = ${campaigns.id})`)
     .orderBy(desc(campaigns.createdAt));
   signal.throwIfAborted();
   return rows.map((row) => ({

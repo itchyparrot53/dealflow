@@ -4,6 +4,7 @@ import "./addNote";
 import "./aiActions";
 import "./createActivity";
 import "./createProject";
+import "./enrollInSequence";
 import "./notifyUser";
 import "./sendEmail";
 import "./updateDeal";

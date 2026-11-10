@@ -16,6 +16,7 @@ vi.mock("@/lib/trpc-client", () => ({
       savedFilters: { listByTarget: { invalidate: vi.fn() } },
     }),
     identity: { assignableUsers: { useQuery: () => ({ data: [] }) } },
+    campaigns: { activeSequences: { useQuery: () => ({ data: [] }) } },
     ai: { status: { useQuery: () => ({ data: undefined }) } },
     // The filter builder's Label condition reads the label catalog.
     labels: {

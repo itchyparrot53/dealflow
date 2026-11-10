@@ -88,6 +88,11 @@ export function PeopleList({
     () => (ownersQ.data ?? []).map((user) => ({ value: user.id, label: user.name })),
     [ownersQ.data],
   );
+  const sequencesQ = trpc.campaigns.activeSequences.useQuery();
+  const sequenceOptions = useMemo(
+    () => (sequencesQ.data ?? []).map((sequence) => ({ value: sequence.id, label: sequence.name })),
+    [sequencesQ.data],
+  );
   // Depend on the stable callback, not the selection object, which is recreated every render.
   const clearSelection = selection.clear;
   const { effective, cycle } = useColumnSort<PersonSortField>(DEFAULT_SORT);
@@ -136,6 +141,22 @@ export function PeopleList({
     for (const failure of result.error.failed) selection.toggle(failure.id);
     await reload();
     setError(PRODUCTIVITY_STRINGS.bulkPartial);
+  }
+
+  async function bulkEnroll(sequenceId: string): Promise<void> {
+    const ids = [...selection.selected];
+    if (ids.length === 0) return;
+    const result = await bulkContactAction(
+      { entity: "person", kind: "enroll_sequence", ids, sequenceId },
+      readCsrfToken(),
+    );
+    selection.clear();
+    await reload();
+    if (!result.ok) {
+      setError(PRODUCTIVITY_STRINGS.bulkPartial);
+      return;
+    }
+    setError(null);
   }
 
   async function bulkDelete(): Promise<void> {
@@ -250,6 +271,18 @@ export function PeopleList({
                 }}
                 placeholder="Change owner"
                 options={ownerOptions}
+              />
+            </span>
+            <span className="w-48">
+              <Select
+                ariaLabel="Enroll selected people in a sequence"
+                testId="bulk-enroll-sequence"
+                value=""
+                onChange={(value) => {
+                  if (value !== "") void bulkEnroll(value);
+                }}
+                placeholder="Enroll in sequence"
+                options={sequenceOptions}
               />
             </span>
             <BulkMarketingStatus

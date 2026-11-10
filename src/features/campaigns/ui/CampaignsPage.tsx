@@ -82,6 +82,13 @@ export function CampaignsPage(): React.ReactNode {
             {value === "campaigns" ? "Campaigns" : "Templates"}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => router.push("/campaigns/automated")}
+          className="px-3 py-2 text-sm text-muted-foreground"
+        >
+          Automated
+        </button>
       </div>
 
       {error === null ? null : <p className="text-sm text-destructive">{error}</p>}

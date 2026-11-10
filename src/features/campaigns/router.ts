@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
-import { campaignAssets, campaignSettings } from "@/db/schema";
+import { campaignAssets, campaignSettings, sequences } from "@/db/schema";
 import { getEmailDesign } from "@/features/email-design/design";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -41,6 +41,17 @@ function previewValues(companyName: string): Record<string, string> {
 }
 
 export const campaignsRouter = router({
+  activeSequences: protectedProcedure.query(async ({ ctx }) => {
+    // The people list asks for this even for a user without campaigns.view; an empty list keeps
+    // that page quiet instead of surfacing a permission error for a picker they cannot use.
+    if (!can(ctx.actor, "campaigns.view")) return [];
+    return ctx.db
+      .select({ id: sequences.id, name: sequences.name })
+      .from(sequences)
+      .where(eq(sequences.status, "active"))
+      .orderBy(asc(sequences.name));
+  }),
+
   list: protectedProcedure.query(async ({ ctx }) => {
     requireView(ctx.actor);
     return listCampaigns(ctx.db, AbortSignal.timeout(10_000));

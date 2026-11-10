@@ -114,6 +114,8 @@ export const ACTION_TYPES = [
   "ai_draft_email",
   // Part 8: projects.
   "create_project",
+  // Part 14: automated campaigns.
+  "enroll_in_sequence",
 ] as const;
 
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -174,6 +176,7 @@ export const actionSchema = z.discriminatedUnion("type", [
     // Variables are rendered by the runner; unset means the deal title.
     nameTemplate: z.string().min(1).max(200).optional(),
   }),
+  z.object({ type: z.literal("enroll_in_sequence"), sequenceId: uuid }),
 ]);
 
 export type Action = z.infer<typeof actionSchema>;

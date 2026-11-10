@@ -21,10 +21,12 @@ import {
 
 export const describeInput = z.object({ text: z.string().trim().min(1).max(2000) });
 
+const AI_ACTION_TYPES = ACTION_TYPES.filter((type) => type !== "enroll_in_sequence");
+
 const SYSTEM_PROMPT = `You are the Dealflow automation builder. Turn the user's sentence into one automation definition.
 Return ONLY JSON with this shape: {"trigger": {...}, "condition": null, "actions": [...]}.
 Allowed trigger types: ${TRIGGER_TYPES.join(", ")}.
-Allowed action types: ${ACTION_TYPES.join(", ")}.
+Allowed action types: ${AI_ACTION_TYPES.join(", ")}.
 A trigger may carry pipelineId, stageId (the stage entered), kind ("quote" or "invoice") or fields (an array of deal field names).
 Actions: update_deal {set: {stageId?, ownerId?, status?: "won"|"lost", lostReasonId?, expectedCloseInDays?}},
 create_activity {activityTypeId, subject, dueInDays, assignee: "deal_owner"|"automation_owner"|{userId}},

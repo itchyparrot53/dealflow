@@ -7,6 +7,8 @@ export interface EditorLookups {
   emailTemplates: { id: string; name: string }[];
   // Part 6: the optional form filter on a form.submitted trigger.
   forms: { id: string; name: string }[];
+  // Part 14: the sequences the enroll_in_sequence action can target.
+  sequences: { id: string; name: string }[];
 }
 
 export type TriggerType = Trigger["type"];
@@ -80,6 +82,8 @@ export function defaultAction(type: Action["type"], lookups: EditorLookups): Act
         nameTemplate: "{{deal.title}}",
         phases: ["Kickoff", "Delivery", "Wrap-up"],
       };
+    case "enroll_in_sequence":
+      return { type: "enroll_in_sequence", sequenceId: lookups.sequences[0]?.id ?? "" };
   }
 }
 
