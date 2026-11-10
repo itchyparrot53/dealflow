@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 4.2 · Last updated: 2026-11-10 16:58
+Current: 4.3 · Last updated: 2026-11-10 17:07
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -32,7 +32,7 @@ Current: 4.2 · Last updated: 2026-11-10 16:58
 - [x] 3.5 Bounce mailbox and the DSN parser
 - [x] 3.6 Phase 3 QA gate
 - [x] 4.1 Sequences: model, editor, scheduler, entries and exits
-- [ ] 4.2 Campaign report and recipients export
+- [x] 4.2 Campaign report and recipients export
 - [ ] 4.3 Campaign insights with comparison and type filter
 - [ ] 4.4 Phase 4 QA gate
 - [ ] 5.1 Campaigns e2e spec, demo seed and gallery
@@ -69,6 +69,13 @@ Current: 4.2 · Last updated: 2026-11-10 16:58
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 4.2: report counts aggregate in SQL over `campaign_events` and `campaign_recipients`; the rate formulas and report types live in client-safe `reportsShared.ts` so `ReportView` never pulls the pg pool into the browser bundle (the first build failed exactly that way).
+- 4.2: both unique-open numerators (human-only and all) are returned and the toggle swaps only the numerator; every rate uses delivered (sent minus hard and soft bounces) as its denominator, and click-to-open uses unique opens.
+- 4.2: the chart is hourly for the first 48 hours and daily for 30 days after that, anchored to the database's `date_trunc` bucket start so an event after a half-hour start cannot land in a negative index.
+- 4.2: the recipients table shows at most 2,000 visible rows; the CSV route exports every visible row and additionally requires `data.export`. Both use the same visibility-filtered read, so the export cannot contain a person the table hides.
+- 4.2: a live person must pass `canSee`; a recipient whose person was deleted has no visibility record and stays visible to the campaign viewer as "Deleted contact". Totals always count every recipient, including hidden people.
+- 4.2: the report is available for `sending`, `paused` and `sent` campaigns; a draft or scheduled campaign returns not found.
+- 4.2: `reports.test.ts` pins every rate formula including divide-by-zero (rendered as "-"), `reports.integration.test.ts` seeds opens (human and machine), clicks, unsubscribe and bounce events and checks statuses, the CSV visibility rule and the draft rule, and `reportsCsv.integration.test.ts` covers the route's 200, 403 and 401 paths.
 - 4.1: each email step owns one hidden `nurture` campaign linked from `sequence_steps.campaign_id`; the campaigns list excludes those rows with a `not exists` predicate, and deleting a step or sequence deletes its hidden campaign.
 - 4.1: a step send reuses `sendCampaignRows` (extracted from the campaign tick) with one recipient row per enrollment, so headers, tracking, consent re-checks, events and totals are identical to a campaign. Re-entry upserts the same recipient row and mints a fresh unsubscribe token.
 - 4.1: the scheduler claims up to 200 due enrollments with a 15 minute lease in one `UPDATE ... FOR UPDATE SKIP LOCKED`, then processes outside the claim, so two concurrent ticks can never send the same enrollment and a crashed tick retries after the lease.

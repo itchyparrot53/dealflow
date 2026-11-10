@@ -150,6 +150,16 @@ export function CampaignsPage(): React.ReactNode {
                     {new Date(campaign.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-3 py-2 text-right">
+                    {campaign.status === "sent" ||
+                    campaign.status === "sending" ||
+                    campaign.status === "paused" ? (
+                      <a
+                        href={`/campaigns/${campaign.id}/report`}
+                        className="mr-2 text-sm text-link-record hover:underline"
+                      >
+                        Report
+                      </a>
+                    ) : null}
                     {campaign.status === "draft" ? (
                       <Button
                         type="button"
