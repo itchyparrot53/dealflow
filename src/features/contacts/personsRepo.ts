@@ -5,6 +5,7 @@ import type { Person } from "@/db/schema";
 import { persons, users } from "@/db/schema";
 import { emitDomainEvent } from "@/features/events/emit";
 import { syncEntityLabelNames } from "@/features/labels/labelsRepo.entities";
+import { syncPersonSuppressionForEmail } from "@/features/marketing/service";
 import { can } from "@/features/permissions/can";
 import { canSee } from "@/features/permissions/canSee";
 import type { PermSetUser } from "@/features/permissions/effective";
@@ -109,6 +110,11 @@ export async function createPerson(
     if (row === undefined) {
       return err(new AppError(ERROR_IDS.DB_INSERT_FAILED, "insert returned no rows", {}));
     }
+    // 6.2: a suppressed address never starts as not_subscribed, or the first campaign would
+    // reach someone who unsubscribed under the same email.
+    const suppression = await syncPersonSuppressionForEmail(tx, row.id, row.primaryEmail, signal);
+    if (!suppression.ok) return err(suppression.error);
+
     await emitDomainEvent(
       tx,
       { type: "person.created", entityType: "person", entityId: row.id, actorId: actor.id },
@@ -209,6 +215,11 @@ export async function updatePerson(
     }
     if (input.labels !== undefined) {
       await syncEntityLabelNames(tx, "person", row.id, row.labels, signal);
+    }
+    // 6.2: a new address may be suppressed; the status follows the suppression immediately.
+    if (row.primaryEmail !== current.primaryEmail) {
+      const suppression = await syncPersonSuppressionForEmail(tx, row.id, row.primaryEmail, signal);
+      if (!suppression.ok) return err(suppression.error);
     }
     return ok(row);
   });

@@ -12,6 +12,8 @@ export const DOMAIN_EVENT_TYPES = [
   "deal.rotting",
   "person.created",
   "person.updated",
+  // Part 14: consent. Emitted inside the transition transaction.
+  "person.marketing_status_changed",
   "organization.created",
   "organization.updated",
   "activity.created",

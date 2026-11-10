@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm";
 import { check, index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  CONSENT_BASES,
+  CONSENT_SOURCES,
+  MARKETING_STATUSES,
+  SUPPRESSION_REASONS,
+} from "@/constants/marketing";
 import { users } from "./identity";
 import { persons } from "./persons";
 
@@ -7,41 +13,7 @@ import { persons } from "./persons";
 // so a person delete removes the marketing record but leaves the suppression keyed by email hash:
 // the same address must stay suppressed if it is imported again as a new person.
 
-export const MARKETING_STATUSES = [
-  "not_subscribed",
-  "pending",
-  "subscribed",
-  "unsubscribed",
-  "bounced",
-] as const;
-
 export const marketingStatusEnum = pgEnum("marketing_status", MARKETING_STATUSES);
-
-export const CONSENT_SOURCES = [
-  "manual",
-  "bulk",
-  "import",
-  "form",
-  "double_opt_in",
-  "unsubscribe_link",
-  "one_click",
-  "preference_page",
-  "bounce",
-  "complaint",
-  "system",
-] as const;
-
-export const CONSENT_BASES = [
-  "double_opt_in",
-  "form_consent",
-  "explicit",
-  "legitimate_interest",
-  "imported",
-] as const;
-
-export const SUPPRESSION_REASONS = ["unsubscribed", "hard_bounce", "complaint"] as const;
-
-export const MARKETING_TOKEN_PURPOSES = ["doi", "unsub", "sender"] as const;
 
 // A missing row means not_subscribed (6.2), so rows are only written on the first change.
 export const personMarketing = pgTable(
@@ -136,6 +108,8 @@ export const marketingTokens = pgTable(
     check("marketing_tokens_purpose_ck", sql`${t.purpose} in ('doi','unsub','sender')`),
   ],
 );
+
+export { CONSENT_BASES, CONSENT_SOURCES, MARKETING_STATUSES, SUPPRESSION_REASONS };
 
 export type PersonMarketingRow = typeof personMarketing.$inferSelect;
 export type ConsentEventRow = typeof consentEvents.$inferSelect;

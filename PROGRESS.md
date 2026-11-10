@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.2 · Last updated: 2026-11-10 01:21
+Current: 1.3 · Last updated: 2026-11-10 01:25
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -12,7 +12,7 @@ Current: 1.2 · Last updated: 2026-11-10 01:21
 - [x] 0.2 Reuse map and design note
 - [x] 0.3 Phase 0 QA gate
 - [x] 1.1 Schema, migration and permission flags
-- [ ] 1.2 Marketing status service and suppression
+- [x] 1.2 Marketing status service and suppression
 - [ ] 1.3 Double opt-in, unsubscribe pages and one-click
 - [ ] 1.4 Form consent field and CSV import mapping
 - [ ] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
@@ -63,6 +63,10 @@ Current: 1.2 · Last updated: 2026-11-10 01:21
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.2: the marketing and campaign vocabularies moved to `src/constants/{marketing,campaigns}.ts` so the status chip and the change dialog can import them without the drizzle schema; the schema files re-export the same arrays and `db:generate` reports no schema change.
+- 1.2: a repeat of the current status is a no-op (no consent event), because the event log must not claim a transition that did not happen.
+- 1.2: the suppression sync (new person, changed primary email) writes the suppression status with source `system` outside the 6.2 table, because the table has no `not_subscribed` to `unsubscribed` edge while 6.2 requires the suppressed address to land on the suppression status.
+- 1.2: `person.marketing_status_changed` joined `DOMAIN_EVENT_TYPES`; `conditionTarget` in `automations/definition.ts` maps it to person, and it is not a trigger type, so automations are unaffected.
 - 1.1: `db:generate` produced `0094_dashing_switch.sql`; it was renamed to `0094_dealflow_campaigns.sql` with the journal tag updated, and the `campaign_settings` singleton was appended with `ON CONFLICT DO NOTHING`, so a fresh database always has the row (the Part 13 convention).
 - 1.1: `marketing_tokens` carries purpose `sender` and a nullable `sender_id` in addition to 6.3's `doi` and `unsub`, because 6.9's sender verification uses the same single-use token table; the check constraint lists all three.
 - 1.1: the hidden nurture campaign link sits on `sequence_steps.campaign_id` (`ON DELETE SET NULL`), so deleting a step does not delete its history and there is no second mapping table.

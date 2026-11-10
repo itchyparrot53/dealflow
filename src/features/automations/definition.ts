@@ -258,6 +258,7 @@ export function conditionTarget(event: {
   switch (event.type) {
     case "person.created":
     case "person.updated":
+    case "person.marketing_status_changed":
       return "person";
     case "organization.created":
     case "organization.updated":

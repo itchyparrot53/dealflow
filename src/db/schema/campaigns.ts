@@ -13,55 +13,21 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import {
+  CAMPAIGN_EVENT_TYPES,
+  CAMPAIGN_RECIPIENT_STATUSES,
+  CAMPAIGN_STATUSES,
+  CAMPAIGN_TYPES,
+  SEQUENCE_ENROLLMENT_STATUSES,
+  SEQUENCE_STATUSES,
+  SEQUENCE_STEP_KINDS,
+} from "@/constants/campaigns";
 import { citext, users } from "./identity";
 import { persons } from "./persons";
 
 // Part 14: campaigns, the send snapshot, tracking events and automated sequences. The block
 // document and the segment are jsonb because they are documents the editor owns; anything the
 // sender or the report filters on is a real column.
-
-export const CAMPAIGN_TYPES = [
-  "newsletter",
-  "announcement",
-  "promotion",
-  "event",
-  "nurture",
-  "other",
-] as const;
-
-export const CAMPAIGN_STATUSES = [
-  "draft",
-  "scheduled",
-  "sending",
-  "paused",
-  "sent",
-  "cancelled",
-] as const;
-
-export const CAMPAIGN_RECIPIENT_STATUSES = [
-  "queued",
-  "sending",
-  "sent",
-  "bounced_hard",
-  "failed_soft",
-  "skipped_status",
-  "skipped_suppressed",
-  "skipped_cancelled",
-] as const;
-
-export const CAMPAIGN_EVENT_TYPES = [
-  "open",
-  "click",
-  "unsubscribe",
-  "bounce_hard",
-  "bounce_soft",
-  "complaint",
-  "delivered",
-] as const;
-
-export const SEQUENCE_STATUSES = ["draft", "active", "paused"] as const;
-export const SEQUENCE_STEP_KINDS = ["email", "wait"] as const;
-export const SEQUENCE_ENROLLMENT_STATUSES = ["active", "completed", "exited", "failed"] as const;
 
 // The bulk sender address. Citext keeps a case-only duplicate from becoming a second sender.
 export const campaignSenders = pgTable(
@@ -355,6 +321,16 @@ export const sequenceSegmentMembers = pgTable(
   },
   (t) => [primaryKey({ columns: [t.sequenceId, t.personId] })],
 );
+
+export {
+  CAMPAIGN_EVENT_TYPES,
+  CAMPAIGN_RECIPIENT_STATUSES,
+  CAMPAIGN_STATUSES,
+  CAMPAIGN_TYPES,
+  SEQUENCE_ENROLLMENT_STATUSES,
+  SEQUENCE_STATUSES,
+  SEQUENCE_STEP_KINDS,
+};
 
 export type CampaignRow = typeof campaigns.$inferSelect;
 export type CampaignRecipientRow = typeof campaignRecipients.$inferSelect;
