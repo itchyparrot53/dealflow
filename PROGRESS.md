@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 2.2 · Last updated: 2026-11-10 02:02
+Current: 2.3 · Last updated: 2026-11-10 02:04
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -19,7 +19,7 @@ Current: 2.2 · Last updated: 2026-11-10 02:02
 - [x] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
 - [x] 1.6 Phase 1 QA gate
 - [x] 2.1 Block schema, renderer, plain text and marketing sanitiser
-- [ ] 2.2 Campaign images and the public asset route
+- [x] 2.2 Campaign images and the public asset route
 - [ ] 2.3 Builder UI
 - [ ] 2.4 Templates: starters, saved templates, test send
 - [ ] 2.5 Phase 2 QA gate
@@ -65,6 +65,10 @@ Current: 2.2 · Last updated: 2026-11-10 02:02
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 2.2: uploads take the server-action path (the 1 MB limit makes the presigned handshake unnecessary) and write through `StorageClient.putObject`, which the real client already implements; tests inject `FakeStorageClient`.
+- 2.2: assets deduplicate by sha256, so the same image uploaded twice reuses one row and one object.
+- 2.2: `imageSize` now reads GIF logical-screen dimensions and its mime union includes `image/gif`; PNG and JPEG parsing are unchanged.
+- 2.2: the public asset route answers 404 for an unknown id, a mismatched extension and a vanished object alike, and is fail-open on the public `emailTracking` limiter.
 - 2.1: the campaign renderer is its own module (`campaigns/blocks/render.ts`) because `renderEmail` is one-to-one shaped; it reuses `EMAIL_COLORS`, `EMAIL_FONT_STACK`, `escapeHtml`, `htmlToText` and the MSO/VML patterns. Merge fallbacks (`{{person.first_name|there}}`) live in `personalize.ts` because Part 13's engine has none.
 - 2.1: the marketing sanitiser uses `sanitize-html` (the plan's choice) with a CSS property allow-list, a 32 KB cap on `data:` images and no `<style>`; it also returns the removed tag names so the import dialog can show what was stripped.
 - 2.1: the six social icons are 24 px monochrome PNGs generated once with the installed Chrome (Playwright screenshot of a letter mark) and committed under `public/email/social`; nothing hotlinks a third-party icon.

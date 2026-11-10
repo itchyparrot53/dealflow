@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { Buffer } from "node:buffer";
 import { imageSize } from "./imageSize";
 
 function pngHeader(width: number, height: number): Uint8Array {
@@ -86,5 +87,21 @@ describe("imageSize", () => {
     expect(imageSize(truncatedPng)).toBeNull();
     const zeroPng = pngHeader(0, 10);
     expect(imageSize(zeroPng)).toBeNull();
+  });
+});
+
+describe("imageSize GIF", () => {
+  it("reads a 1x1 GIF", () => {
+    const bytes = Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64");
+    expect(imageSize(new Uint8Array(bytes))).toEqual({
+      mime: "image/gif",
+      width: 1,
+      height: 1,
+    });
+  });
+
+  it("rejects a truncated or unknown header", () => {
+    expect(imageSize(new Uint8Array([0x47, 0x49, 0x46]))).toBeNull();
+    expect(imageSize(new Uint8Array(10))).toBeNull();
   });
 });

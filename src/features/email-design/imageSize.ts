@@ -3,7 +3,7 @@
 // needs and rejects anything malformed.
 
 export interface ImageInfo {
-  mime: "image/png" | "image/jpeg";
+  mime: "image/png" | "image/jpeg" | "image/gif";
   width: number;
   height: number;
 }
@@ -78,8 +78,19 @@ function jpegSize(bytes: Uint8Array): ImageInfo | null {
   return null;
 }
 
+// GIF87a / GIF89a carry the logical screen size as little-endian u16 at offsets 6 and 8.
+function gifSize(bytes: Uint8Array): ImageInfo | null {
+  if (bytes.length < 10) return null;
+  const signature = String.fromCharCode(...bytes.slice(0, 6));
+  if (signature !== "GIF87a" && signature !== "GIF89a") return null;
+  const width = (bytes[6] ?? 0) | ((bytes[7] ?? 0) << 8);
+  const height = (bytes[8] ?? 0) | ((bytes[9] ?? 0) << 8);
+  if (width === 0 || height === 0) return null;
+  return { mime: "image/gif", width, height };
+}
+
 export function imageSize(bytes: Uint8Array): ImageInfo | null {
   if (isPng(bytes)) return pngSize(bytes);
   if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8) return jpegSize(bytes);
-  return null;
+  return gifSize(bytes);
 }
