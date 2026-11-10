@@ -91,6 +91,9 @@ const base = z.object({
   // the e2e harness runs a production build with it on; the captured mail never leaves the box.
   MAIL_FAKE: boolFromString.default(false),
   MAIL_CAPTURE_DIR: z.string().default(".mail-capture"),
+  // Part 14: the install-wide cap on double opt-in requests per UTC day (6.3). The per-person
+  // 24 hour cap is a constant, not a setting.
+  CAMPAIGN_DOI_DAILY_LIMIT: z.coerce.number().int().min(1).max(100_000).default(500),
   // Filesystem fake for the IMAP/SMTP transports (tests and e2e). Non-empty = fake for every
   // IMAP account; empty = the real imapflow/nodemailer transports.
   MAIL_PROVIDER_FAKE_DIR: z.string().default(""),

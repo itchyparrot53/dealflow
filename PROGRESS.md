@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 1.3 · Last updated: 2026-11-10 01:25
+Current: 1.4 · Last updated: 2026-11-10 01:30
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -13,7 +13,7 @@ Current: 1.3 · Last updated: 2026-11-10 01:25
 - [x] 0.3 Phase 0 QA gate
 - [x] 1.1 Schema, migration and permission flags
 - [x] 1.2 Marketing status service and suppression
-- [ ] 1.3 Double opt-in, unsubscribe pages and one-click
+- [x] 1.3 Double opt-in, unsubscribe pages and one-click
 - [ ] 1.4 Form consent field and CSV import mapping
 - [ ] 1.5 Contacts UI: marketing section, list column, filter field, bulk change
 - [ ] 1.6 Phase 1 QA gate
@@ -63,6 +63,11 @@ Current: 1.3 · Last updated: 2026-11-10 01:25
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 1.3: the double opt-in and sender verification links are registry templates whose URL arrives as a variable (`confirm_url`, `verify_url`), so the button label is editable while the path is built by code; this satisfies "structural URL" without adding a new registry field.
+- 1.3: `CAMPAIGN_DOI_DAILY_LIMIT` (default 500) was added to `src/config/env.ts` in this task because 6.3 needs the install-wide cap, and to `.env.example` directly (only `scripts/dealflow/env-sync.mjs` may touch `.env`).
+- 1.3: double opt-in tokens are single-use through one guarded `UPDATE ... RETURNING` (`consumeMarketingToken`); unsubscribe tokens are reusable and never expire, because the same link can appear in many sends and the token is the credential.
+- 1.3: this codebase has no CSRF middleware or public path allow-list (Part 13 Decision), so the "exemption" is simply that the `/u/{token}` POST route never calls `guardCsrf`; the page buttons are server actions and the one-click path is the route.
+- 1.3: the one-click route answers 200 for an unknown token as well, so the endpoint cannot be probed, and it uses the public `emailTracking` limiter fail-open, because a real recipient must be able to unsubscribe during a flood.
 - 1.2: the marketing and campaign vocabularies moved to `src/constants/{marketing,campaigns}.ts` so the status chip and the change dialog can import them without the drizzle schema; the schema files re-export the same arrays and `db:generate` reports no schema change.
 - 1.2: a repeat of the current status is a no-op (no consent event), because the event log must not claim a transition that did not happen.
 - 1.2: the suppression sync (new person, changed primary email) writes the suppression status with source `system` outside the 6.2 table, because the table has no `not_subscribed` to `unsubscribed` edge while 6.2 requires the suppressed address to land on the suppression status.

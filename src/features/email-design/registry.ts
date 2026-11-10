@@ -15,6 +15,9 @@ export const EMAIL_TEMPLATE_KEYS = [
   "quote_sent",
   "invoice_sent",
   "customer_message",
+  // Part 14: consent and campaign senders.
+  "marketing_double_opt_in",
+  "campaign_sender_verification",
 ] as const;
 
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
@@ -339,6 +342,57 @@ const INVOICE_SENT: EmailTemplateDef = define({
   ],
 });
 
+// Part 14: the confirmation email a marketing contact receives. The confirm link is structural:
+// it is passed as a variable built by sendDoubleOptIn, never authored in the editor.
+const MARKETING_DOUBLE_OPT_IN: EmailTemplateDef = define({
+  key: "marketing_double_opt_in",
+  family: "customer",
+  name: "Marketing double opt-in",
+  description: "Asks a contact to confirm that they want to receive marketing email.",
+  audience: "Customers",
+  variables: [
+    {
+      name: "confirm_url",
+      description: "The confirmation link",
+      sample: "https://app.example.com/c/sample",
+    },
+  ],
+  defaults: {
+    subject: "Please confirm your subscription to {{company.name}}",
+    preheader: "One click to confirm, and you can unsubscribe at any time.",
+    bodyHtml:
+      "<p>Hi {{recipient.name}},</p><p>Please confirm that you want to receive emails from {{company.name}}. You can unsubscribe at any time.</p><p>If you didn't ask for this, ignore this email and you won't hear from us.</p>",
+    ctaLabel: "Confirm subscription",
+  },
+  cta: { urlVariable: "confirm_url" },
+});
+
+// Part 14: sender ownership. The verification link is structural for the same reason.
+const CAMPAIGN_SENDER_VERIFICATION: EmailTemplateDef = define({
+  key: "campaign_sender_verification",
+  family: "product",
+  name: "Campaign sender verification",
+  description: "Confirms that the team owns the From address a campaign will send from.",
+  audience: "Your team",
+  variables: [
+    { name: "sender.name", description: "The sender's display name", sample: "Northwind News" },
+    { name: "sender.email", description: "The sender's address", sample: "news@example.com" },
+    {
+      name: "verify_url",
+      description: "The verification link",
+      sample: "https://app.example.com/settings/campaigns",
+    },
+  ],
+  defaults: {
+    subject: "Verify {{sender.email}} to send campaigns",
+    preheader: "One click confirms the address before it can send.",
+    bodyHtml:
+      "<p>Confirm that {{sender.email}} may send campaigns from {{company.name}}.</p><p>Once verified, this address can be chosen as the sender on a campaign.</p><p>If you didn't ask for this, ignore this email.</p>",
+    ctaLabel: "Verify sender",
+  },
+  cta: { urlVariable: "verify_url" },
+});
+
 const CUSTOMER_MESSAGE: EmailTemplateDef = define({
   key: "customer_message",
   family: "customer",
@@ -365,6 +419,8 @@ export const EMAIL_TEMPLATES: Record<EmailTemplateKey, EmailTemplateDef> = {
   quote_sent: QUOTE_SENT,
   invoice_sent: INVOICE_SENT,
   customer_message: CUSTOMER_MESSAGE,
+  marketing_double_opt_in: MARKETING_DOUBLE_OPT_IN,
+  campaign_sender_verification: CAMPAIGN_SENDER_VERIFICATION,
 };
 
 export function isTemplateKey(value: string): value is EmailTemplateKey {
