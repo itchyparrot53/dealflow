@@ -1,13 +1,14 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.6 · Last updated: 2026-11-10 16:28
+Current: 4.1 · Last updated: 2026-11-10 16:34
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
 - Phase 1: fee0b914419c1c4537efa16e37ea141e6009848b
 - Phase 2: 435862f58a04d9becb8ea9d9237cdc4e7ed1c8ba
 - Phase 3: 47235f9eed5ea56c0523f5a358b46d506fb7f318
+- Phase 4: 52f70e969e9a7963582abaedbaa910e03737a9a1
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
@@ -29,7 +30,7 @@ Current: 3.6 · Last updated: 2026-11-10 16:28
 - [x] 3.3 Sending engine
 - [x] 3.4 Tracking routes, web version, timeline and click alerts
 - [x] 3.5 Bounce mailbox and the DSN parser
-- [ ] 3.6 Phase 3 QA gate
+- [x] 3.6 Phase 3 QA gate
 - [ ] 4.1 Sequences: model, editor, scheduler, entries and exits
 - [ ] 4.2 Campaign report and recipients export
 - [ ] 4.3 Campaign insights with comparison and type filter
@@ -42,6 +43,7 @@ Current: 3.6 · Last updated: 2026-11-10 16:28
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5549/5549 in 870 files · check:design 0 violations, 18 opt-outs · campaigns and marketing integration 61/61 in 14 files · e2e:build ok · e2e 10-forms-booking and 17-email 7/7 passed
 - Phase 2 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5522/5522 in 864 files · check:design 0 violations, 18 opt-outs · campaigns files 36/36 (2 unit, 2 integration)
 - Phase 1 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5494/5494 in 862 files · check:design 0 violations, 18 opt-outs · marketing, forms and import integration 251/251 in 44 files
 - Phase 0 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files
