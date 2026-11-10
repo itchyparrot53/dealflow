@@ -9,8 +9,11 @@ import { createContext } from "@/server/trpc/context";
 import { suggestCampaignSubjects } from "./ai";
 import { type CampaignAssetView, saveCampaignAsset } from "./assets";
 import { campaignDocumentSchema } from "./blocks/schema";
+import { checkDomain, defaultResolver } from "./domainCheck";
 import { campaignCreateInput, campaignUpdateInput } from "./schemas";
+import { addSender, setDefaultSender } from "./senders";
 import { createCampaign, deleteCampaign, updateCampaign } from "./service";
+import { saveCampaignSettings } from "./settings";
 import {
   deleteCampaignTemplate,
   duplicateCampaignTemplate,
@@ -203,4 +206,88 @@ export async function suggestCampaignSubjectsAction(
   const result = await suggestCampaignSubjects(db, actor, parsed.data, AbortSignal.timeout(30_000));
   if (!result.ok) return { ok: false, error: { id: result.error.id } };
   return { ok: true, value: { subjects: result.value } };
+}
+
+const senderInput = z.object({
+  fromName: z.string().trim().min(1).max(120),
+  fromEmail: z.string().trim().email().max(320),
+});
+
+const settingsInput = z.object({
+  postalAddress: z.string().max(1000).nullable(),
+  requireDoubleOptIn: z.boolean(),
+  consentLabel: z.string().max(500).nullable(),
+  sendRatePerMinute: z.number().int().min(1).max(10_000),
+});
+
+const domainInput = z.object({
+  domain: z.string().trim().min(1).max(255),
+  selector: z.string().trim().max(100).nullable(),
+});
+
+export async function addCampaignSenderAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ id: string; verificationSent: boolean }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = senderInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await addSender(db, actor, parsed.data, AbortSignal.timeout(20_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: result.value };
+}
+
+export async function setDefaultCampaignSenderAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ id: string }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = idInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await setDefaultSender(db, actor, parsed.data.id, AbortSignal.timeout(15_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: { id: parsed.data.id } };
+}
+
+export async function saveCampaignSettingsAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<{ saved: boolean }>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  const parsed = settingsInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await saveCampaignSettings(db, actor, parsed.data, AbortSignal.timeout(15_000));
+  if (!result.ok) return { ok: false, error: { id: result.error.id } };
+  return { ok: true, value: { saved: true } };
+}
+
+export async function checkCampaignDomainAction(
+  raw: unknown,
+  csrfToken: string | null = null,
+): Promise<ActionResult<Awaited<ReturnType<typeof checkDomain>>>> {
+  const csrfOk = await guardCsrf(csrfToken);
+  if (!csrfOk.ok) return { ok: false, error: { id: "E_AUTH_CSRF" } };
+  const { actor } = await createContext();
+  if (actor === null) return { ok: false, error: { id: ERROR_IDS.AUTH_SESSION_DEAD } };
+  if (!can(actor, "marketing.manage")) {
+    return { ok: false, error: { id: ERROR_IDS.PERM_DENIED } };
+  }
+  const parsed = domainInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: { id: ERROR_IDS.CAMPAIGN_INPUT_INVALID } };
+  const result = await checkDomain(
+    parsed.data.domain,
+    parsed.data.selector,
+    defaultResolver,
+    AbortSignal.timeout(15_000),
+  );
+  return { ok: true, value: result };
 }

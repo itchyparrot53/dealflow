@@ -94,6 +94,15 @@ const base = z.object({
   // Part 14: the install-wide cap on double opt-in requests per UTC day (6.3). The per-person
   // 24 hour cap is a constant, not a setting.
   CAMPAIGN_DOI_DAILY_LIMIT: z.coerce.number().int().min(1).max(100_000).default(500),
+  // 6.7 / 6.9: the campaign transport and its ceiling. Empty MARKETING_SMTP_HOST falls back to
+  // the system SMTP; the rate can be lowered in Settings but never raised above this env value.
+  MARKETING_SMTP_HOST: z.string().default(""),
+  MARKETING_SMTP_PORT: z.coerce.number().int().positive().default(465),
+  MARKETING_SMTP_SECURE: boolFromString.default(true),
+  MARKETING_SMTP_USER: z.string().default(""),
+  MARKETING_SMTP_PASS: z.string().default(""),
+  CAMPAIGN_SEND_RATE_PER_MINUTE: z.coerce.number().int().min(1).max(10_000).default(60),
+  CAMPAIGN_BATCH_SIZE: z.coerce.number().int().min(1).max(1000).default(50),
   // Filesystem fake for the IMAP/SMTP transports (tests and e2e). Non-empty = fake for every
   // IMAP account; empty = the real imapflow/nodemailer transports.
   MAIL_PROVIDER_FAKE_DIR: z.string().default(""),

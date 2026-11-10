@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.2 · Last updated: 2026-11-10 02:35
+Current: 3.3 · Last updated: 2026-11-10 03:01
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -25,7 +25,7 @@ Current: 3.2 · Last updated: 2026-11-10 02:35
 - [x] 2.4 Templates: starters, saved templates, test send
 - [x] 2.5 Phase 2 QA gate
 - [x] 3.1 Campaign list and the four-step editor
-- [ ] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
+- [x] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
 - [ ] 3.3 Sending engine
 - [ ] 3.4 Tracking routes, web version, timeline and click alerts
 - [ ] 3.5 Bounce mailbox and the DSN parser
@@ -67,6 +67,10 @@ Current: 3.2 · Last updated: 2026-11-10 02:35
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 3.2: sender verification is a GET `/campaign-verify/{token}` link (the token is the credential; a scanner prefetch only completes a verification the team requested), single-use with the 48 hour expiry; a failed verification email deletes its token so the sender can be re-verified.
+- 3.2: `getCampaignSettings` falls back to the 6.9 defaults when the singleton row is missing, and `saveCampaignSettings` rejects a rate above the env ceiling; `MARKETING_SMTP_*`, `CAMPAIGN_SEND_RATE_PER_MINUTE` and `CAMPAIGN_BATCH_SIZE` were added to env now because the settings page displays them and Task 3.3 consumes them.
+- 3.2: the domain check injects the DNS resolver, caps each lookup at 5 seconds with a per-record error and caches results for an hour; tests cover pass, missing, resolver error and timeout with fake timers.
+- 3.2: the transport label reports marketing SMTP when configured, otherwise the system SMTP, otherwise log-only, and never returns credentials.
 - 3.1: the editor autosaves through `updateCampaignAction` 800 ms after the last edit, and the service refuses edits once a campaign is sent.
 - 3.1: the recipient preview compiles the same people filter as the list (`compileContactFilter`), then applies `canSee` and the consent rules in `classifyPeople`; the send snapshot in 3.3 reuses this preview.
 - 3.1: the Review checklist is pure (`campaignChecklist`) fed by `auditDocument`; the Send and Schedule buttons arrive with the sending engine (3.3), so no dead control ships in 3.1.
