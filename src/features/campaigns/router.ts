@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "@/config/env";
+import { CAMPAIGN_TYPES } from "@/constants/campaigns";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { campaignAssets, campaignSettings, sequences } from "@/db/schema";
 import { getEmailDesign } from "@/features/email-design/design";
@@ -10,6 +11,7 @@ import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { type CampaignMime, campaignAssetUrl } from "./assets";
 import { renderCampaign } from "./blocks/render";
 import { campaignDocumentSchema } from "./blocks/schema";
+import { getCampaignInsights } from "./insights";
 import { campaignSegmentSchema } from "./schemas";
 import { previewSegment } from "./segment";
 import { getCampaignEditorView, listCampaigns } from "./service";
@@ -41,6 +43,27 @@ function previewValues(companyName: string): Record<string, string> {
 }
 
 export const campaignsRouter = router({
+  insights: protectedProcedure
+    .input(
+      z.object({
+        days: z.union([z.literal(30), z.literal(90), z.literal(365)]).default(90),
+        type: z.enum(CAMPAIGN_TYPES).optional(),
+        senderId: z.string().uuid().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      requireView(ctx.actor);
+      const since = new Date(Date.now() - input.days * 24 * 60 * 60 * 1000);
+      const result = await getCampaignInsights(
+        ctx.db,
+        ctx.actor,
+        { since, type: input.type, senderId: input.senderId },
+        AbortSignal.timeout(20_000),
+      );
+      if (!result.ok) throw result.error;
+      return result.value;
+    }),
+
   activeSequences: protectedProcedure.query(async ({ ctx }) => {
     // The people list asks for this even for a user without campaigns.view; an empty list keeps
     // that page quiet instead of surfacing a permission error for a picker they cannot use.

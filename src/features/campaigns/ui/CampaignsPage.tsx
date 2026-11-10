@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import { createCampaignAction, deleteCampaignAction } from "../actions";
 import { CAMPAIGN_STARTERS } from "../blocks/starters";
+import { InsightsView } from "./InsightsView";
 import { TemplatesView } from "./TemplatesView";
 
 // 3.1's list page. Automated and Insights are added in Phase 4; the tab row grows then, rather
@@ -28,9 +29,13 @@ const STATUS_VARIANT: Record<string, "outline" | "secondary" | "success" | "dest
   cancelled: "destructive",
 };
 
-export function CampaignsPage(): React.ReactNode {
+export function CampaignsPage({
+  initialView = "campaigns",
+}: {
+  initialView?: "campaigns" | "templates" | "insights";
+}): React.ReactNode {
   const router = useRouter();
-  const [tab, setTab] = useState<"campaigns" | "templates">("campaigns");
+  const [tab, setTab] = useState<"campaigns" | "templates" | "insights">(initialView);
   const [error, setError] = useState<string | null>(null);
   const list = trpc.campaigns.list.useQuery();
   const subscribed = trpc.marketing.subscribedCount.useQuery();
@@ -71,7 +76,7 @@ export function CampaignsPage(): React.ReactNode {
       </header>
 
       <div className="flex gap-1 border-b">
-        {(["campaigns", "templates"] as const).map((value) => (
+        {(["campaigns", "templates", "insights"] as const).map((value) => (
           <button
             key={value}
             type="button"
@@ -79,7 +84,7 @@ export function CampaignsPage(): React.ReactNode {
             aria-current={tab === value ? "page" : undefined}
             className={`px-3 py-2 text-sm ${tab === value ? "border-b-2 border-primary font-medium" : "text-muted-foreground"}`}
           >
-            {value === "campaigns" ? "Campaigns" : "Templates"}
+            {value === "campaigns" ? "Campaigns" : value === "templates" ? "Templates" : "Insights"}
           </button>
         ))}
         <button
@@ -93,7 +98,9 @@ export function CampaignsPage(): React.ReactNode {
 
       {error === null ? null : <p className="text-sm text-destructive">{error}</p>}
 
-      {tab === "templates" ? (
+      {tab === "insights" ? (
+        <InsightsView />
+      ) : tab === "templates" ? (
         <TemplatesView onUse={(document, name) => void create(document, name)} />
       ) : (list.data ?? []).length === 0 ? (
         <section className="space-y-3 rounded-lg border p-6">

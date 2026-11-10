@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 4.3 · Last updated: 2026-11-10 17:07
+Current: 4.4 · Last updated: 2026-11-10 17:14
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -33,7 +33,7 @@ Current: 4.3 · Last updated: 2026-11-10 17:07
 - [x] 3.6 Phase 3 QA gate
 - [x] 4.1 Sequences: model, editor, scheduler, entries and exits
 - [x] 4.2 Campaign report and recipients export
-- [ ] 4.3 Campaign insights with comparison and type filter
+- [x] 4.3 Campaign insights with comparison and type filter
 - [ ] 4.4 Phase 4 QA gate
 - [ ] 5.1 Campaigns e2e spec, demo seed and gallery
 - [ ] 5.2 Docs
@@ -69,6 +69,13 @@ Current: 4.3 · Last updated: 2026-11-10 17:07
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 4.3: "Your average" is the unweighted mean of each campaign's own rate, not a pooled rate; the arrow appears only beyond 10% relative difference and a zero average shows no arrow. Rates with no denominator are excluded from the mean.
+- 4.3: the comparison reads sent campaigns in a 30, 90 or 365 day window (default 90), applies the campaign-type and sender filters in SQL, and excludes hidden sequence step campaigns; the Automated tab reads the same event aggregates per step and groups them per sequence in JS.
+- 4.3: the Automated tab respects the same date range and sender filter (joined through the hidden campaign), while the type filter applies only to the campaign comparison because sequences have no type.
+- 4.3: the insights payload is split into `insightsShared.ts` (types, averages, arrow rule) so the client view never imports the SQL/pg module; this mirrors the 4.2 `reportsShared.ts` split and keeps the build clean.
+- 4.3: `/campaigns?view=insights` opens the Insights tab by passing the server page's validated `view` into `CampaignsPage`; the in-page tab row also offers it, and sorting/filtering is client-side over the one tRPC payload.
+- 4.3: insights open rates use human opens only, matching the report's default; the comparison uses `openRate`, `clickRate`, `ctor`, `unsubscribeRate` and `bounceRate` from the same formulas as 4.2.
+- 4.3: tests: `insights.test.ts` pins the unweighted average, the 10% arrow threshold and the all-null case; `insights.integration.test.ts` seeds two current campaigns, one old campaign and one hidden sequence step and checks the range, type, sender, automated metrics and the permission refusal.
 - 4.2: report counts aggregate in SQL over `campaign_events` and `campaign_recipients`; the rate formulas and report types live in client-safe `reportsShared.ts` so `ReportView` never pulls the pg pool into the browser bundle (the first build failed exactly that way).
 - 4.2: both unique-open numerators (human-only and all) are returned and the toggle swaps only the numerator; every rate uses delivered (sent minus hard and soft bounces) as its denominator, and click-to-open uses unique opens.
 - 4.2: the chart is hourly for the first 48 hours and daily for 30 days after that, anchored to the database's `date_trunc` bucket start so an event after a half-hour start cannot land in a negative index.
