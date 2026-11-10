@@ -20,7 +20,7 @@ const EXT_BY_MIME = {
   "image/gif": "gif",
 } as const;
 
-type CampaignMime = keyof typeof EXT_BY_MIME;
+export type CampaignMime = keyof typeof EXT_BY_MIME;
 
 export interface CampaignAssetView {
   id: string;

@@ -18,6 +18,8 @@ export interface CampaignRenderContext {
   postalAddress: string;
   // The inbox preview line; rendered hidden at the top of the body.
   preheader?: string;
+  // Builder preview only: wraps each top-level block for selection and injects a click bridge.
+  preview?: boolean;
   // Absolute app origin, for the social icons under /email/social.
   baseUrl: string;
   assetUrl: (assetId: string) => string | null;
@@ -205,7 +207,13 @@ export function renderCampaign(
 ): RenderedCampaign {
   const font = contentFont(doc.settings);
   const title = renderMerge(ctx.design.displayName, ctx.values, "html");
-  const sections = doc.blocks.map((block) => blockHtml(block, ctx, font)).join("");
+  const sections = doc.blocks
+    .map((block) =>
+      ctx.preview === true
+        ? `<div data-df-block="${block.id}" style="cursor:pointer;">${blockHtml(block, ctx, font)}</div>`
+        : blockHtml(block, ctx, font),
+    )
+    .join("");
   const html = [
     headHtml(doc, title, ctx.preheader, ctx.values),
     '<!--[if mso]><table role="presentation" width="600" align="center"><tr><td><![endif]-->',
@@ -216,6 +224,9 @@ export function renderCampaign(
     `<tr><td class="df-pad" style="padding:0 32px 28px;">${footerHtml(ctx, font)}</td></tr>`,
     "</table></td></tr></table>",
     "<!--[if mso]></td></tr></table><![endif]-->",
+    ctx.preview === true
+      ? '<script>(function(){document.addEventListener("click",function(e){var n=e.target;while(n&&n!==document.body){if(n.getAttribute&&n.getAttribute("data-df-block")){parent.postMessage({type:"df-block-click",id:n.getAttribute("data-df-block")},"*");return;}n=n.parentNode;}},true);})();</script>'
+      : "",
     "</body></html>",
   ].join("");
 
