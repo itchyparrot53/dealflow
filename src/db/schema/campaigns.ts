@@ -63,6 +63,10 @@ export const campaignSettings = pgTable(
     consentLabel: text("consent_label"),
     // The effective ceiling is min(this, CAMPAIGN_SEND_RATE_PER_MINUTE); settings can lower it.
     sendRatePerMinute: integer("send_rate_per_minute").notNull().default(60),
+    // Bounce mailbox observability (6.9): written by the ten-minute job after a run, read by the
+    // settings page. The mailbox credentials stay in the environment and never reach this row.
+    bounceLastRunAt: timestamp("bounce_last_run_at", { withTimezone: true }),
+    bounceLastProcessed: integer("bounce_last_processed"),
     updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
@@ -72,6 +76,10 @@ export const campaignSettings = pgTable(
   (t) => [
     check("campaign_settings_singleton_ck", sql`${t.id} = 1`),
     check("campaign_settings_rate_ck", sql`${t.sendRatePerMinute} > 0`),
+    check(
+      "campaign_settings_bounce_count_ck",
+      sql`${t.bounceLastProcessed} is null or ${t.bounceLastProcessed} >= 0`,
+    ),
   ],
 );
 

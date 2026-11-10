@@ -687,6 +687,13 @@
       "when": 1794327014178,
       "tag": "0097_dealflow_campaign_click",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1794327775870,
+      "tag": "0098_dealflow_campaign_bounce_state",
+      "breakpoints": true
     }
   ]
 }

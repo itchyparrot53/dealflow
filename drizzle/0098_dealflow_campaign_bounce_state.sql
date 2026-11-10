@@ -1,0 +1,3 @@
+ALTER TABLE "campaign_settings" ADD COLUMN "bounce_last_run_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "campaign_settings" ADD COLUMN "bounce_last_processed" integer;--> statement-breakpoint
+ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_bounce_count_ck" CHECK ("campaign_settings"."bounce_last_processed" is null or "campaign_settings"."bounce_last_processed" >= 0);

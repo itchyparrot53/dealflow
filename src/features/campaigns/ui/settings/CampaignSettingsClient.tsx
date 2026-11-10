@@ -286,10 +286,21 @@ export function CampaignSettingsClient({
 
       <section className="space-y-2 rounded-lg border p-4">
         <h2 className="text-sm font-medium">Bounce mailbox</h2>
-        <p className="text-sm text-muted-foreground">
-          Not configured. Set CAMPAIGN_BOUNCE_IMAP_HOST, CAMPAIGN_BOUNCE_IMAP_PORT,
-          CAMPAIGN_BOUNCE_IMAP_USER and CAMPAIGN_BOUNCE_IMAP_PASS to collect asynchronous bounces.
-        </p>
+        {settings.bounceMailbox.configured ? (
+          <p className="text-sm text-muted-foreground">
+            Configured. Last run:{" "}
+            {settings.bounceMailbox.lastRunAt === null
+              ? "not yet"
+              : new Date(settings.bounceMailbox.lastRunAt).toLocaleString()}
+            . Last processed: {settings.bounceMailbox.lastProcessed ?? 0} report
+            {(settings.bounceMailbox.lastProcessed ?? 0) === 1 ? "" : "s"}.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Not configured. Set CAMPAIGN_BOUNCE_IMAP_HOST, CAMPAIGN_BOUNCE_IMAP_PORT,
+            CAMPAIGN_BOUNCE_IMAP_USER and CAMPAIGN_BOUNCE_IMAP_PASS to collect asynchronous bounces.
+          </p>
+        )}
       </section>
 
       <div className="flex items-center gap-3">

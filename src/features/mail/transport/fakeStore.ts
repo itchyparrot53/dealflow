@@ -123,6 +123,16 @@ export function fakeLogin(dir: string, address: string, password: string): Resul
   return ok(undefined);
 }
 
+// Create one extra folder (the campaign bounce mailbox's Processed folder). No-op when it exists.
+export function fakeCreateFolder(dir: string, address: string, folder: string): void {
+  ensureMailbox(dir, address);
+  const path = folderDir(dir, address, folder);
+  if (!existsSync(path)) mkdirSync(path, { recursive: true });
+  if (!existsSync(metaPath(dir, address, folder))) {
+    writeMeta(dir, address, folder, { uidValidity: "1", uidNext: 1, modseq: 1 });
+  }
+}
+
 // Append one RFC 822 message to a folder. Bumps uidNext and modseq.
 export function fakeAppend(
   dir: string,

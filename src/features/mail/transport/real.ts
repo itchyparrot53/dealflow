@@ -128,6 +128,46 @@ function sessionFor(creds: ImapCredentials, client: ImapFlow): ImapSession {
       }
     },
 
+    async listUnseen(folder, signal) {
+      signal.throwIfAborted();
+      try {
+        const found = await withLock(client, folder, () =>
+          client.search({ seen: false }, { uid: true }),
+        );
+        return ok(Array.isArray(found) ? found : []);
+      } catch (error) {
+        return err(mapImapError(error, "listUnseen"));
+      }
+    },
+
+    async markSeen(folder, uids, signal) {
+      signal.throwIfAborted();
+      if (uids.length === 0) return ok(undefined);
+      try {
+        const changed = await withLock(client, folder, () =>
+          client.messageFlagsAdd(uids.join(","), ["\\Seen"], { uid: true }),
+        );
+        if (changed === false) {
+          return err(
+            new AppError(ERROR_IDS.MAIL_IMAP_FAILED, "mark seen failed", { command: "markSeen" }),
+          );
+        }
+        return ok(undefined);
+      } catch (error) {
+        return err(mapImapError(error, "markSeen"));
+      }
+    },
+
+    async createFolder(folder, signal) {
+      signal.throwIfAborted();
+      try {
+        await client.mailboxCreate(folder);
+        return ok(undefined);
+      } catch (error) {
+        return err(mapImapError(error, "createFolder"));
+      }
+    },
+
     async uidsInRange(folder, since, before, signal) {
       signal.throwIfAborted();
       try {

@@ -274,6 +274,29 @@ export async function recordCampaignBounce(
   });
 }
 
+// 6.8: an ARF report. The person is unsubscribed with source `complaint`, which also adds the
+// complaint suppression reason; the event keeps "Reported as spam" countable in the report.
+export async function recordCampaignComplaint(
+  db: Db,
+  input: CampaignUnsubscribeInput,
+  signal: AbortSignal,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.insert(campaignEvents).values({
+      campaignId: input.campaignId,
+      recipientId: input.recipientId,
+      personId: input.personId,
+      type: "complaint",
+    });
+    await recordCampaignTimeline(
+      tx,
+      { personId: input.personId, event: "complaint", campaignName: input.campaignName },
+      signal,
+    );
+    await refreshCampaignTotals(tx, input.campaignId, signal);
+  });
+}
+
 export interface CampaignUnsubscribeInput {
   campaignId: string;
   recipientId: string;

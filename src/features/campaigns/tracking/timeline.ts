@@ -12,6 +12,7 @@ export type CampaignTimelineEvent =
   | "open"
   | "click"
   | "unsubscribe"
+  | "complaint"
   | "bounce_hard"
   | "bounce_soft";
 
@@ -33,6 +34,8 @@ export function campaignTimelineLabel(input: CampaignTimelineInput): string {
       return `Clicked ${input.linkHost ?? "a link"} in ${input.campaignName}`;
     case "unsubscribe":
       return `Unsubscribed via ${input.campaignName}`;
+    case "complaint":
+      return `Reported as spam in ${input.campaignName}`;
     case "bounce_hard":
       return "Bounced (hard)";
     case "bounce_soft":

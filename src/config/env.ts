@@ -108,6 +108,12 @@ const base = z.object({
   CAMPAIGN_DKIM_SELECTOR: z.string().default(""),
   CAMPAIGN_DKIM_PRIVATE_KEY: z.string().default(""),
   CAMPAIGN_DKIM_PRIVATE_KEY_FILE: z.string().default(""),
+  // 6.8: optional bounce mailbox. All four values must be set before the ten-minute job reads it;
+  // an unset or partly set mailbox disables the job rather than failing worker boot.
+  CAMPAIGN_BOUNCE_IMAP_HOST: z.string().default(""),
+  CAMPAIGN_BOUNCE_IMAP_PORT: z.coerce.number().int().positive().default(993),
+  CAMPAIGN_BOUNCE_IMAP_USER: z.string().default(""),
+  CAMPAIGN_BOUNCE_IMAP_PASS: z.string().default(""),
   // Filesystem fake for the IMAP/SMTP transports (tests and e2e). Non-empty = fake for every
   // IMAP account; empty = the real imapflow/nodemailer transports.
   MAIL_PROVIDER_FAKE_DIR: z.string().default(""),

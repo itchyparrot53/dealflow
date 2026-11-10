@@ -3,6 +3,7 @@ import { err, ok } from "@/types/result";
 import {
   FAKE_FOLDERS,
   fakeAppend,
+  fakeCreateFolder,
   fakeList,
   fakeLogin,
   fakeLogSmtp,
@@ -43,6 +44,16 @@ function session(dir: string, creds: ImapCredentials): ImapSession {
     status: (folder) => Promise.resolve(ok(fakeStatus(dir, address, folder))),
 
     listUids: (folder) => Promise.resolve(ok(fakeList(dir, address, folder))),
+
+    // The fake stores no flags, so every message is unseen until it is moved out of INBOX.
+    listUnseen: (folder) => Promise.resolve(ok(fakeList(dir, address, folder))),
+
+    markSeen: () => Promise.resolve(ok(undefined)),
+
+    createFolder: (folder) => {
+      fakeCreateFolder(dir, address, folder);
+      return Promise.resolve(ok(undefined));
+    },
 
     uidsInRange: (folder, since, before) => {
       const uids = fakeList(dir, address, folder).filter((uid) => {

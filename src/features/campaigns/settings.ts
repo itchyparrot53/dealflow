@@ -3,6 +3,7 @@ import { env } from "@/config/env";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { campaignSettings } from "@/db/schema";
+import { bounceMailboxConfigured } from "@/features/campaigns/bounces/config";
 import { can } from "@/features/permissions/can";
 import type { PermSetUser } from "@/features/permissions/effective";
 import { err, ok, type Result } from "@/types/result";
@@ -23,6 +24,12 @@ export interface CampaignSettingsView {
   maxRatePerMinute: number;
   transport: TransportMode;
   transportHost: string | null;
+  // Read-only observability for 6.9's bounce mailbox section. Credentials never enter this view.
+  bounceMailbox: {
+    configured: boolean;
+    lastRunAt: string | null;
+    lastProcessed: number | null;
+  };
 }
 
 export function transportMode(): TransportMode {
@@ -51,6 +58,11 @@ export async function getCampaignSettings(
     maxRatePerMinute: env.CAMPAIGN_SEND_RATE_PER_MINUTE,
     transport: transportMode(),
     transportHost: transportHostLabel(),
+    bounceMailbox: {
+      configured: bounceMailboxConfigured(),
+      lastRunAt: row?.bounceLastRunAt?.toISOString() ?? null,
+      lastProcessed: row?.bounceLastProcessed ?? null,
+    },
   };
 }
 

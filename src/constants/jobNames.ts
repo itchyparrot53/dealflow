@@ -69,3 +69,6 @@ export const EVENT_RETENTION_CRON = "30 4 * * *";
 // Part 14: campaign sending. One tick job per campaign, plus the scheduled start.
 export const PGBOSS_QUEUE_CAMPAIGN_SEND = "campaign.send.tick";
 export const PGBOSS_QUEUE_CAMPAIGN_START = "campaign.start";
+// The optional bounce mailbox reads unseen DSNs and ARF reports every ten minutes.
+export const PGBOSS_QUEUE_CAMPAIGN_BOUNCE = "campaign.bounce";
+export const CAMPAIGN_BOUNCE_CRON = "*/10 * * * *";

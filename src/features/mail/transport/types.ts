@@ -45,6 +45,10 @@ export interface ImapSession {
   listFolders(signal: AbortSignal): Promise<Result<FolderInfo[], AppError>>;
   status(folder: string, signal: AbortSignal): Promise<Result<FolderStatus, AppError>>;
   listUids(folder: string, signal: AbortSignal): Promise<Result<number[], AppError>>; // FETCH 1:* (UID)
+  // Messages without the \Seen flag. The campaign bounce mailbox reads only unseen reports.
+  listUnseen(folder: string, signal: AbortSignal): Promise<Result<number[], AppError>>;
+  markSeen(folder: string, uids: number[], signal: AbortSignal): Promise<Result<void, AppError>>;
+  createFolder(folder: string, signal: AbortSignal): Promise<Result<void, AppError>>;
   uidsInRange(
     folder: string,
     since: Date,

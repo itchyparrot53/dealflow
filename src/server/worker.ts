@@ -5,6 +5,7 @@ import { registerReminderWorker } from "@/features/activities/reminders";
 import { registerBulkScoreJob } from "@/features/ai/bulkScoreJob";
 import { registerAutomationRunner } from "@/features/automations/runner";
 import { registerBackupJob } from "@/features/backups/backupJob";
+import { registerCampaignBounceJob } from "@/features/campaigns/bounces/mailbox";
 import { registerCampaignJobs } from "@/features/campaigns/send/job";
 import { registerOverdueDocumentsJob } from "@/features/documents/overdueJob";
 import { registerEmailJobs } from "@/features/email/workerJobs";
@@ -53,6 +54,8 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerRecyclePurgeJob(boss);
   // Part 14 campaign sending: the tick queue and the scheduled start.
   await registerCampaignJobs(boss);
+  // Optional Part 14 bounce mailbox. It registers nothing unless all four env values are set.
+  await registerCampaignBounceJob(boss);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

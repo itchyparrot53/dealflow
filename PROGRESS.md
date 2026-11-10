@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 3.5 · Last updated: 2026-11-10 16:18
+Current: 3.6 · Last updated: 2026-11-10 16:28
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -28,7 +28,7 @@ Current: 3.5 · Last updated: 2026-11-10 16:18
 - [x] 3.2 Settings › Campaigns: senders, address, consent, sending, domain check
 - [x] 3.3 Sending engine
 - [x] 3.4 Tracking routes, web version, timeline and click alerts
-- [ ] 3.5 Bounce mailbox and the DSN parser
+- [x] 3.5 Bounce mailbox and the DSN parser
 - [ ] 3.6 Phase 3 QA gate
 - [ ] 4.1 Sequences: model, editor, scheduler, entries and exits
 - [ ] 4.2 Campaign report and recipients export
@@ -67,6 +67,14 @@ Current: 3.5 · Last updated: 2026-11-10 16:18
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 3.5: the bounce mailbox reuses `getMailTransportFactory`; tests inject `createFakeTransportFactory` plus explicit credentials instead of flipping `MAIL_PROVIDER_FAKE_DIR` (env validates at import), so they still run against the plan's filesystem fake store.
+- 3.5: `ImapSession` gained `listUnseen`, `markSeen` and `createFolder` (real and fake), because 6.8 needs unseen selection and a Processed folder that may not exist yet.
+- 3.5: `CAMPAIGN_BOUNCE_IMAP_*` are opt-in; `secure` is true only for port 993 because the plan names no `_SECURE` variable, and a partly set mailbox registers nothing rather than failing worker boot.
+- 3.5: messages are marked seen before the move, so a failed move can never re-fetch and double-apply a hard bounce or a complaint; a repeated hard bounce or complaint for the same recipient is also skipped by an existing-event check.
+- 3.5: a soft DSN sets the recipient `failed_soft`, increments `soft_bounce_count`, and the third soft bounce moves the person to `bounced` (6.2); a hard DSN sets `bounced_hard` and the person to `bounced`.
+- 3.5: the ARF `message/feedback-report` part arrives as an attachment, not in `parsed.text`, so the parser reads that part explicitly and applies source `complaint`.
+- 3.5: 3.2's Settings page showed a static "Not configured" line, so the bounce section now reads `campaign_settings.bounce_last_run_at` and `bounce_last_processed` (migration `0098_dealflow_campaign_bounce_state.sql`), written after each run by the job.
+- 3.5: the DSN fixtures are `src/features/campaigns/bounces/fixtures/{gmail-hard,outlook-hard,postfix-soft,arf-complaint}.eml`, with one deterministic campaign id and Message-ID shared by all four.
 - 3.4: the send rewrites only the body links returned by `renderCampaign` and appends the pixel before `</body>`; the footer `/u` and `/v` links stay direct because `campaign_links` never stores them (6.8).
 - 3.4: `snapshotCampaign` renders with token-preserving values so each `campaign_links.url_template` keeps its `{{merge}}` field; the click route re-renders that template with the clicking recipient's values, so `https://example.com/?ref={{person.email}}` redirects with that person's address (tested in `events.integration.test.ts`).
 - 3.4: `List-Unsubscribe` now points at `/u/{token}/one-click`, honouring the 1.6 contract change; the footer link and the preference page stay at `/u/{token}`.
