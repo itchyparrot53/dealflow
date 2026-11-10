@@ -20,6 +20,7 @@ const SECTIONS = [
   "activities",
   "contacts-and-organizations",
   "email",
+  "campaigns",
   "notifications",
   "stats-and-reporting",
   "quotes-and-invoices",

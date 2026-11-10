@@ -13,6 +13,7 @@ This guide is for the people who use Dealflow every day: sales and business-deve
 | [Activities and calendar](activities.md) | Scheduling calls, meetings and tasks, repeating activities, logging calls, the calendar |
 | [Contacts and organizations](contacts-and-organizations.md) | People, organizations, the contacts timeline, duplicates, importing and exporting |
 | [Email](email.md) | Connecting your mailbox, the inbox, sending and replying, templates and signatures, tracking |
+| [Campaigns](campaigns.md) | Setting up campaign sending and consent, building and scheduling a campaign, reports and insights, sequences, unsubscribes and bounces |
 | [Notifications](notifications.md) | The notification bell and choosing what you are told about |
 | [Stats and reporting](stats-and-reporting.md) | Performance, goals, Insights dashboards and reports |
 | [Quotes and invoices](quotes-and-invoices.md) | Products, quotes, the customer's accept page, invoices and payments |

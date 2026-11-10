@@ -1,7 +1,7 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 5.2 · Last updated: 2026-11-10 17:57
+Current: 5.3 · Last updated: 2026-11-10 18:06
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
@@ -37,7 +37,7 @@ Current: 5.2 · Last updated: 2026-11-10 17:57
 - [x] 4.3 Campaign insights with comparison and type filter
 - [x] 4.4 Phase 4 QA gate
 - [x] 5.1 Campaigns e2e spec, demo seed and gallery
-- [ ] 5.2 Docs
+- [x] 5.2 Docs
 - [ ] 5.3 End-to-end, integration suite and smoke
 - [ ] 5.4 Independent review
 - [ ] 5.5 Final checklist
@@ -71,6 +71,12 @@ Current: 5.2 · Last updated: 2026-11-10 17:57
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 5.2: the guide gained `docs/user-guide/campaigns.md` after Email, and the index, PDF builder and site builder list it in the same position. The PDF builder now clears the output folder before writing: adding a section renumbers every later file, and without the clear it left 25 PDFs instead of 16.
+- 5.2: the user guide is task-based and text only. The 5.1 gallery already covers the visual review, and new image references would have been broken in the PDF until a capture pass ran.
+- 5.2: `self-hosting.md` documents the campaign SMTP, rate, DOI, DKIM and bounce mailbox variables, the domain-check and warm-up checklist, and the restart requirement. The postal address, senders and consent defaults stay in Settings, not env.
+- 5.2: `docs/dealflow/CAMPAIGNS.md` now finishes the reuse map with the architecture (tables, send pipeline, tracking routes, sequences, reports/insights, permissions), the env table, deliverability and operations. The test-send footer uses a placeholder unsubscribe link, and the docs say so; the preference page supports unsubscribe and resubscribe, not per-category choices.
+- 5.2: `UPSTREAM.md` gained the Part 14 section with the new folders, migrations, routes, changed upstream files and the updated test contracts. No upstream assertion was weakened.
+- 5.2: `pnpm docs:pdf` rebuilt the 15 section PDFs plus the combined guide, 16 in total.
 - 5.1: writing the spec exposed three missing 6.6 surfaces, now implemented: the campaign sender picker and the "Send test" dialog in the editor, and the row menu's Duplicate action (the duplicate is a draft copy with the same content/segment/sender). It also added the builder's Desktop/Mobile preview toggle, which the gallery's builder-mobile screen needs.
 - 5.1: the demo campaign seed uses its own PRNG and fixed names/emails, so the core demo RNG and existing e2e fixtures are unchanged. It subscribes 60% of the demo people, creates five "Campaign E2E" people (one already subscribed, three left for the consent test, one subscribed so the test can unsubscribe it), a shared "Campaign E2E" saved filter, two verified senders, two sent campaigns with realistic events, a scheduled campaign, a draft, and an active three-step sequence with twelve future enrollments.
 - 5.1: the seed writes `.e2e/campaigns.json` with the sent campaigns' raw web-version tokens, the E2E people and the filter/sequence ids, so the gallery can render both seeded emails without navigating through a recipient.

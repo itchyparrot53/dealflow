@@ -247,3 +247,160 @@ This is the one place where the plan's wording and the code diverge, so it gets 
 3. Timeline mechanism: change log plus `HistoryItem.event`, not a new feed table (Decision 0.2).
 4. Campaign transport: new module, reusing the capture and SMTP factories (Decision 0.2).
 5. Public routes: top-level app folders, no allow-list to edit (Decision 0.2).
+
+## 17. Architecture
+
+The feature is split into two folders so the consent record stays independent of any one campaign:
+
+- `src/features/marketing/` owns the person's marketing status, consent evidence, suppression,
+  double opt-in, unsubscribe, marketing tokens and the person-facing Marketing panel.
+- `src/features/campaigns/` owns senders, settings, assets, campaigns, blocks, the send engine,
+  tracking, reports, insights, sequences and the campaign UI.
+
+### Tables
+
+| Table | Purpose |
+|---|---|
+| `campaign_senders` | Verified From name/address, default flag, verification token hash. |
+| `campaign_settings` | Postal address, consent defaults, effective send rate, bounce run state. One row. |
+| `campaign_assets` | Uploaded images, immutable object key, width/height, uploaded by. |
+| `campaign_templates` | Saved builder documents that appear in the Templates view. |
+| `campaigns` | Name, type, status, subject, preheader, sender, reply-to, segment, content JSON, schedule and totals cache. |
+| `campaign_links` | Stable link index to destination URL, frozen before the first send. |
+| `campaign_recipients` | One row per person/email per campaign, unique email hash, status, raw token and token hash. |
+| `campaign_events` | Delivered, open, click, unsubscribe, bounce, complaint; carries recipient/person and link index. |
+| `person_marketing` | Current status, consent basis, status-changed timestamp. |
+| `consent_events` | Append-only transition history with source, basis, actor, IP/user agent when allowed. |
+| `marketing_suppressions` | Email-hash suppression by reason (unsubscribed, hard bounce, complaint). |
+| `marketing_tokens` | Hashed token to purpose/person/recipient; the raw token is never stored here. |
+| `sequences` / `sequence_steps` | Automated campaign definition, entry/exit rules, send window, email or wait steps. |
+| `sequence_enrollments` | Per-person position, status, lease, next run time. |
+| `sequence_segment_members` | Membership memory for segment entry, so leaving and re-entering is explicit. |
+
+Migrations are `0094_dealflow_campaigns.sql`, `0095_dealflow_campaign_import.sql`,
+`0096_dealflow_campaign_send.sql`, `0097_dealflow_campaign_click.sql` and
+`0098_dealflow_campaign_bounce_state.sql`.
+
+### Send pipeline
+
+1. `sendCampaignNowAction` / the schedule job calls `snapshotCampaign`. It evaluates the saved
+   filter or inline definition with the contacts engine, applies `canSee` as the campaign creator,
+   drops ineligible people, freezes the link templates, inserts `campaign_recipients` and sets the
+   status to `sending`. The document and sender are read from the campaign at batch time.
+2. `campaign.start` enqueues the first `campaign-send` tick. `runCampaignTick` claims a batch with
+   `FOR UPDATE SKIP LOCKED`, sends through `send/batch.ts`, records `delivered` and enqueues the
+   next tick when rows remain.
+3. `send/batch.ts` renders the document with merge values, rewrites links to `/t/c/l/...`, appends
+   the open pixel, adds the one-click `List-Unsubscribe` headers and the postal footer, attaches the
+   inline logo, and sends through the campaign transport. Totals are refreshed after the batch.
+4. The rate ceiling is `CAMPAIGN_SEND_RATE_PER_MINUTE`; the batch size is `CAMPAIGN_BATCH_SIZE`.
+   A pause stops the next tick, a resume enqueues one, and a cancel stops the remaining rows.
+
+The campaign transport (`send/transport.ts`) reads `MARKETING_SMTP_*` and falls back to `SMTP_*`.
+It is separate from the system mailer because campaign mail needs per-message headers and optional
+DKIM. Under `MAIL_FAKE=true` it writes the wire copy to the capture store, tagged with the campaign
+id in `X-Dealflow-Campaign`, so tests and the e2e spec read the exact MIME parts.
+
+### Tracking and public routes
+
+| Route | Behaviour |
+|---|---|
+| `GET /t/c/o/{token}.gif` | Records an open (human or proxy by user agent), returns a 1x1 GIF. |
+| `GET /t/c/l/{token}/{n}` | Records a click and returns a 302 to the stored destination; the destination is never read from the request. |
+| `GET /u/{token}` | Preference page: confirm unsubscribe, choose categories. |
+| `POST /u/{token}/one-click` | RFC 8058 one-click unsubscribe; the token is the credential, so CSRF is intentionally not required. |
+| `GET /c/{token}` | Double opt-in confirmation page; the POST confirms. |
+| `GET /v/{token}` | Web version of a sent campaign. |
+
+`marketing_tokens` stores only the SHA-256 hash. `campaign_recipients.token` keeps the raw token
+because the send path needs it to build the URLs (Decision in Task 0.2/3.3). Opens and clicks write
+`campaign_events`, `change_logs` (field `campaign_event`) for the person timeline and refresh the
+`campaigns.totals` cache.
+
+### Sequences
+
+Each email step owns a hidden campaign, so step sends reuse the same sender, footer, tracking,
+unsubscribe and suppression rules. `registerSequenceJobs` schedules a one-minute tick and a
+fifteen-minute segment scan. `processEnrollment` claims due rows with a lease
+(`FOR UPDATE SKIP LOCKED`), evaluates the send window in the sequence's time zone with
+`Intl.DateTimeFormat`, sends the step and advances the position. Exits (deal won, replied, optional
+filter) and optional segment entry are evaluated in the same tick. Hidden campaigns are excluded
+from the campaign list and from the campaign comparison; the Automated insights read them per step.
+
+### Reports and insights
+
+`reports.ts` computes the report from SQL aggregates over `campaign_events` and
+`campaign_recipients`: summary, hourly/daily series, links and recipients. Human opens are the
+default; the machine-open toggle includes proxy/scanner opens. The recipients table is capped at
+2,000 rows in the view and the CSV exports the full list, both gated by `campaigns.view` and
+`data.export`. `insights.ts` compares campaigns (type, sender, date range) and sequence steps; the
+average is the unweighted mean of each campaign's own rate and the arrows appear only beyond 10%
+relative difference.
+
+### Permissions and visibility
+
+`campaigns.view`, `campaigns.edit`, `campaigns.send` and `marketing.manage` are global flags.
+`campaigns.view` is on for Regular users; the other three are off by default and can be granted
+through a permission set. `marketing.manage` also governs the person's consent changes and the
+sending settings. The send path
+hydrates `send_as_user_id` with `hydrateActor` and applies the same `canSee` as the people list, so
+the preview and the snapshot never disagree about who can be mailed.
+
+## 18. Environment variables
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `MARKETING_SMTP_HOST` | empty | Campaign SMTP host. Empty falls back to `SMTP_*`. |
+| `MARKETING_SMTP_PORT` | `465` | Campaign SMTP port. |
+| `MARKETING_SMTP_SECURE` | `true` | TLS for the campaign SMTP connection. |
+| `MARKETING_SMTP_USER` / `MARKETING_SMTP_PASS` | empty | Campaign SMTP credentials. |
+| `CAMPAIGN_SEND_RATE_PER_MINUTE` | `60` | Hard ceiling. Settings can lower it, never raise it. |
+| `CAMPAIGN_BATCH_SIZE` | `50` | Recipients per send tick. |
+| `CAMPAIGN_DOI_DAILY_LIMIT` | `500` | Confirmation emails per UTC day across the install. |
+| `CAMPAIGN_DKIM_DOMAIN` | empty | DKIM signing domain. |
+| `CAMPAIGN_DKIM_SELECTOR` | empty | DKIM selector. |
+| `CAMPAIGN_DKIM_PRIVATE_KEY` | empty | Inline private key. |
+| `CAMPAIGN_DKIM_PRIVATE_KEY_FILE` | empty | Path to the private key, used when the inline value is empty. |
+| `CAMPAIGN_BOUNCE_IMAP_HOST` | empty | Bounce mailbox host. All four bounce values are required to enable the job. |
+| `CAMPAIGN_BOUNCE_IMAP_PORT` | `993` | Bounce mailbox port; secure for 993. |
+| `CAMPAIGN_BOUNCE_IMAP_USER` / `CAMPAIGN_BOUNCE_IMAP_PASS` | empty | Bounce mailbox credentials. |
+
+DKIM signing switches on only when the domain, selector and one key field are all set. The postal
+address, senders and consent defaults are settings in the database, not env vars. Env changes need a
+restart of `app` and `worker`.
+
+## 19. Deliverability
+
+- **SPF**: publish the sending provider's include or IP ranges for the campaign sending domain.
+- **DKIM**: publish the provider's selector, or Dealflow's `CAMPAIGN_DKIM_SELECTOR` when signing in
+  the app. Set the domain, selector and key together.
+- **DMARC**: start with `p=none` and a reporting address, read the aggregate reports, then move to
+  `p=quarantine` and `p=reject` when every legitimate source aligns.
+- **Bulk SMTP provider**: set `MARKETING_SMTP_*` to a provider that supports the volume and has a
+  feedback loop. Do not send campaigns from a personal mailbox.
+- **Bounce mailbox**: set all four `CAMPAIGN_BOUNCE_IMAP_*` values. The ten-minute job reads DSNs
+  and ARF reports, marks hard bounces as `bounced`, and records complaints. A partly set mailbox
+  disables the job rather than failing worker boot.
+- **Warm-up**: start with engaged contacts and a low rate, then increase over several days.
+- **List hygiene**: keep consent evidence, honour one-click unsubscribes immediately, and never
+  re-add an address that is suppressed without a new, recorded consent event.
+
+The **Domain check** in Settings uses an injected DNS resolver in tests and never calls a real
+resolver there. It reports SPF, DKIM and DMARC status separately.
+
+## 20. Operations and verification
+
+- Jobs are registered in `src/server/worker.ts` by `registerCampaignJobs(boss)` and
+  `registerSequenceJobs(boss)`; the worker entrypoint is the same one the compose stack runs.
+- Backups include the campaign and marketing tables, so a restore keeps consent history and
+  suppressions. The smoke backup round trip covers them.
+- Unit tests cover the pure pieces: blocks, checklist, domain parsing, DKIM, headers, links, rates,
+  segment compilation and sequence time maths.
+- Integration tests cover the real Postgres paths: send, tracking routes, bounce mailbox, reports,
+  CSV, insights, sequences, assets, senders, settings and the marketing transitions.
+- `e2e/18-campaigns.spec.ts` covers settings and sender verification, consent and double opt-in,
+  a full campaign send with test send and scheduling of the capture, tracking and report, one-click
+  unsubscribe and duplication, a sequence send, and the 16-screen gallery.
+- `scripts/seed-demo-campaigns.ts` seeds the demo dataset: 60% consent, two senders, two sent
+  campaigns with events, a scheduled campaign, a draft, an active three-step sequence with twelve
+  enrollments, and the five `Campaign E2E` people used by the spec.

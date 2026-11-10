@@ -594,3 +594,33 @@ scheduled and signature MIME decoders handle the new text part; the booking inte
 customer marker and the `.ics` attachment. No assertion was weakened; the changes track the deliberate
 contract in the Part 13 Decisions.
 
+
+## Part 14: campaigns
+
+New feature folders `src/features/campaigns/` and `src/features/marketing/`, with new schema files
+`src/db/schema/campaigns.ts` and `src/db/schema/marketing.ts` exported from the schema index, and
+migrations `0094_dealflow_campaigns.sql` to `0098_dealflow_campaign_bounce_state.sql` (the last two
+add the `campaign_click` notification type and the bounce-run state). New public routes
+`src/app/{c,u,v,t/c,campaign-verify,email-assets/c}/`, the pages under
+`src/app/(app)/campaigns/` and `src/app/(app)/settings/campaigns/`, and the new user guide section
+`docs/user-guide/campaigns.md` with its PDF. New e2e spec `e2e/18-campaigns.spec.ts`, helpers
+`e2e/campaigns/helpers.ts`, and demo seed `scripts/seed-demo-campaigns.ts` wired into
+`scripts/seed-demo.ts`.
+
+Upstream files changed: `src/config/env.ts` and `.env.example` (campaign transport, rate, DKIM and
+bounce mailbox settings), `src/constants/{permissionFlags,errorIds,notificationTypes,notificationDefaults}.ts`,
+`src/features/permissions/actions-meta.ts`, `src/server/worker.ts` and `src/constants/jobNames.ts`
+(the campaign, sequence and bounce jobs), `src/server/trpc/root.ts`, the settings navigation, and
+`src/features/email-design/registry.ts` (the double opt-in and sender verification templates).
+
+Campaign integration changed these existing surfaces: the contacts detail and list (the Marketing
+panel, the marketing-status filter and bulk enroll), the person timeline and deal history
+(`campaign_event`), forms (`marketing_consent`, the `Pending` transition and the
+`marketing.manage` gate), automations (`enroll_in_sequence`), import/export (marketing status and
+the CSV permission), notifications (the `campaign_click` type and preferences default), the mail
+transport (`listUnseen`, `markSeen`, `createFolder` for the bounce mailbox), and the save/segment
+plumbing. The visible copy follows the brand rule; internal `warpdrive.*` names are unchanged.
+
+Tests updated for the new contracts: the notification-type count and defaults, the PeopleList trpc
+mocks, the forms consent field, the contacts timeline buckets and the import field list. No upstream
+assertion was weakened or deleted.

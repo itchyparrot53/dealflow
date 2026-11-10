@@ -9,7 +9,7 @@ The full technical references are [`docs/deploy.md`](../deploy.md) and [`docs/re
 - A Linux server with Docker and the Docker Compose plugin.
 - A domain for the app (for example `crm.example.com`) and a second one for file storage (for example `s3.crm.example.com`), both pointing at the server.
 - A reverse proxy that handles HTTPS (for example Caddy or nginx). Dealflow does not include one.
-- An SMTP account for the emails Dealflow sends (sign-in links, invites, notifications, quotes).
+- An SMTP account for the emails Dealflow sends (sign-in links, invites, notifications, quotes). Campaigns can use the same account or a separate bulk provider (see [Campaign email](#campaign-email)).
 - Optionally, an OpenRouter API key for the AI features.
 
 ## What runs
@@ -64,6 +64,34 @@ The full technical references are [`docs/deploy.md`](../deploy.md) and [`docs/re
    ```
 
    **Result:** `{"ok":true}`.
+
+## Campaign email
+
+Campaigns send through a separate account so a large marketing send does not share the reputation of your sign-in and notification mail. Leave `MARKETING_SMTP_HOST` empty to fall back to the `SMTP_*` account above.
+
+| Setting | What to put |
+|---|---|
+| `MARKETING_SMTP_HOST`, `MARKETING_SMTP_PORT`, `MARKETING_SMTP_SECURE`, `MARKETING_SMTP_USER`, `MARKETING_SMTP_PASS` | Your bulk sending account. Port 465 with `MARKETING_SMTP_SECURE=true` is the common choice. |
+| `CAMPAIGN_SEND_RATE_PER_MINUTE` | The hard ceiling on messages per minute. The team can lower it in **Settings › Campaigns**, never raise it above this value. |
+| `CAMPAIGN_BATCH_SIZE` | How many recipients one worker tick takes. 50 is the default; lower it if your provider is strict. |
+| `CAMPAIGN_DOI_DAILY_LIMIT` | The install-wide cap on double opt-in emails per UTC day. 500 is the default. |
+| `CAMPAIGN_DKIM_DOMAIN`, `CAMPAIGN_DKIM_SELECTOR`, `CAMPAIGN_DKIM_PRIVATE_KEY` or `CAMPAIGN_DKIM_PRIVATE_KEY_FILE` | Optional DKIM signing. Set the domain, the selector and one key field. Signing turns on only when all of them are present. |
+| `CAMPAIGN_BOUNCE_IMAP_HOST`, `CAMPAIGN_BOUNCE_IMAP_PORT`, `CAMPAIGN_BOUNCE_IMAP_USER`, `CAMPAIGN_BOUNCE_IMAP_PASS` | Optional bounce mailbox. Set all four to collect asynchronous bounces and complaints; leave them empty to disable the job. Port 993 is the secure default. |
+
+The **From name**, **From email**, postal address and the consent defaults are set by an admin in **Settings › Campaigns**, not in `.env`. The first sender still has to open its verification email before the account can send.
+
+### Deliverability checklist
+
+1. Use a sending domain (or subdomain) you control. Do not send campaigns from a free mailbox.
+2. Publish SPF for the sending provider, DKIM for the selector in `CAMPAIGN_DKIM_SELECTOR`, and a DMARC record. Start DMARC with `p=none`, read the reports, then move to `p=quarantine` and `p=reject` once the legitimate sources are aligned.
+3. Sign in to your bulk provider and verify the domain there too. The provider's own DKIM and SPF records must be present even when Dealflow signs the message.
+4. Put the provider credentials in `MARKETING_SMTP_*`, restart the stack, then use **Settings › Campaigns › Domain check** to confirm what public DNS returns.
+5. Warm up slowly: send to your most engaged contacts first, keep `CAMPAIGN_SEND_RATE_PER_MINUTE` low, and increase it over several days. A new domain that starts with a large list is the fastest way to land in spam.
+6. Configure the bounce mailbox. It catches bounces that arrive after the send, marks hard-bounced addresses as suppressed and keeps the list clean.
+7. Keep the postal address and the unsubscribe link in every campaign. They are required, and the one-click unsubscribe header depends on them.
+8. After changing any of these values, run `docker compose up -d` so the app and worker pick them up.
+
+For the team's day-to-day instructions, see [Campaigns](campaigns.md).
 
 ## Reverse proxy routes
 

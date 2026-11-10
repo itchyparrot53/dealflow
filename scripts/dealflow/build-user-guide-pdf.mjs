@@ -3,7 +3,7 @@
 // Pipeline: Markdown -> HTML (marked) -> Chromium PDF, rendered twice so the table of contents can
 // carry real page numbers (read back from the PDF's named destinations), then pdf-lib prepends the
 // cover and stamps the footer. Chromium's own footer cannot skip the cover, which is why pdf-lib does it.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
@@ -22,6 +22,7 @@ const SECTIONS = [
   "activities",
   "contacts-and-organizations",
   "email",
+  "campaigns",
   "notifications",
   "stats-and-reporting",
   "quotes-and-invoices",
@@ -271,6 +272,11 @@ async function buildDocument(page, { title, footer, parts, combined }) {
 }
 
 mkdirSync(OUT, { recursive: true });
+// A section added or removed changes the numbering; clear the old PDFs so the folder is exactly the
+// current set (one per section plus the combined guide).
+for (const file of readdirSync(OUT)) {
+  if (file.endsWith(".pdf")) rmSync(path.join(OUT, file), { force: true });
+}
 const browser = await chromium.launch(
   process.env.DOCS_CHROME ? { executablePath: process.env.DOCS_CHROME } : {},
 );
