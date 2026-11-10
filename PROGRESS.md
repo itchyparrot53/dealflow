@@ -1,15 +1,16 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 0.2 · Last updated: 2026-11-10 01:15
+Current: 1.1 · Last updated: 2026-11-10 01:10
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
+- Phase 1: fee0b914419c1c4537efa16e37ea141e6009848b
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
 - [x] 0.2 Reuse map and design note
-- [ ] 0.3 Phase 0 QA gate
+- [x] 0.3 Phase 0 QA gate
 - [ ] 1.1 Schema, migration and permission flags
 - [ ] 1.2 Marketing status service and suppression
 - [ ] 1.3 Double opt-in, unsubscribe pages and one-click
@@ -39,6 +40,7 @@ Current: 0.2 · Last updated: 2026-11-10 01:15
 - [ ] 5.6 Final report and completion
 
 ## QA log
+- Phase 0 gate: commands green · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files
 - Baseline: install ok (frozen lockfile) · typecheck ok · lint ok (16 warnings, 1 info) · build ok · unit 5486/5486 in 861 files · check:design 0 violations, 17 opt-outs
 
 ## Decisions
