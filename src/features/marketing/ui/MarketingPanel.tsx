@@ -37,9 +37,9 @@ const STATUS_VARIANT: Record<MarketingStatus, "success" | "secondary" | "outline
     bounced: "destructive",
   };
 
-function baseline(status: string | null): string {
-  if (status === null) return "";
-  return CONSENT_BASIS_LABELS[status as keyof typeof CONSENT_BASIS_LABELS] ?? status;
+function baseline(status: string): string {
+  const labels: Record<string, string> = CONSENT_BASIS_LABELS;
+  return labels[status] ?? status;
 }
 
 export function MarketingPanel({ personId }: { personId: string }): React.ReactNode {
