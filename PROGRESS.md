@@ -39,12 +39,13 @@ Current: 5.4 · Last updated: 2026-11-10 18:22
 - [x] 5.1 Campaigns e2e spec, demo seed and gallery
 - [x] 5.2 Docs
 - [x] 5.3 End-to-end, integration suite and smoke
-- [ ] 5.4 Independent review
+- [x] 5.4 Independent review
 - [ ] 5.5 Final checklist
 - [ ] 5.6 Final report and completion
 
 ## QA log
 - Independent review: harness subagent round 1: QA RESULT FAIL · 1 blocker/11 majors/5 minors · fixed 17
+- Post-fix gate: typecheck ok · lint ok (16 warnings, 2 infos) · build ok (GOOGLE_OAUTH_* blanked for the owner's partial .env) · unit 5567/5567 in 873 files · check:design 0 violations, 18 opt-outs · sequences, reports, CSV, insights and automations integration 38/38 in 5 files · e2e:build ok · 09-automations 1/1 passed · full e2e 73/73 in 5.6m · full integration 2200/2200 in 435 files (74s)
 - Phase 5 full runs: e2e 73/73 passed in 6.6m (specs 00 to 18) · integration 2195/2195 in 435 files (78s) · smoke SMOKE PASS, "backup round trip ok (3 deals)", no leftover containers or volumes · campaign screenshots 16
 - Phase 4 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5567/5567 in 873 files · check:design 0 violations, 18 opt-outs · sequences, reports, insights and automations integration 38/38 in 5 files · e2e:build ok · e2e 09-automations 1/1 passed
 - Phase 3 gate: commands green · typecheck ok · lint ok (17 warnings, 1 info) · build ok · unit 5549/5549 in 870 files · check:design 0 violations, 18 opt-outs · campaigns and marketing integration 61/61 in 14 files · e2e:build ok · e2e 10-forms-booking and 17-email 7/7 passed
@@ -73,6 +74,9 @@ Current: 5.4 · Last updated: 2026-11-10 18:22
 - 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
 - 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
 - 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 5.4: the post-fix gate ran after round 1 and was green: typecheck, lint, build, unit, design, the five named integration files, 09-automations, the full 00 to 18 e2e suite and the full integration suite. The local build needed the three GOOGLE_OAUTH_* variables blanked on the command line because the owner's .env has a partial Google configuration; no code fix was involved.
+- 5.4: the campaign transport no longer falls back to the system or log mailer. If neither MARKETING_SMTP_HOST nor SMTP_HOST is set it returns a soft failure, so a local campaign send cannot print a body, merge value or unsubscribe token. The unschedule cancel uses pg-boss `findJobs` by the campaign id in the job data, so a reschedule does not collide with a stored job id.
+- 5.4: the soft-failure retry contract now uses all three backoffs (5, 30 and 120 minutes) and gives up on the fourth failure; the test was renamed and expanded, and a new test covers the third consecutive soft bounce moving the person to bounced. Snapshot tests cover the missing address, unverified sender, zero recipients and over-limit HTML blockers.
 - 5.4: the independent review found one blocker and eleven majors, all fixed in round 1. The send path now enforces the Review checklist before snapshotting (postal address, verified sender, at least one recipient, rendered size under 100 KB), and the campaign transport builds its own SMTP transport from MARKETING_SMTP_* or SMTP_* with the verified From, Reply-To and DKIM, so it never falls through to the system or log mailer. Resume enqueues a tick, unschedule returns to draft and cancels queued start jobs, the synchronous soft path uses the 5/30/120 backoff and moves the person to bounced on the third consecutive soft bounce, settings saves are audited as campaign_settings.updated, consent history exports CSV behind marketing.manage, a manual move to pending offers the double opt-in email, Message-ID uses the sender domain, public pages are rate limited and noindex, test sends use the campaign transport, sequence retries keep their attempts, and the campaign list shows rates, owner and sent/scheduled detail.
 - 5.4: the review's five minors were fixed in the same round; no blocker or major was accepted or deferred.
 - 5.3: the full e2e run used `DEV_PG_PORT=5434` and `MINIO_PORT=9100`, not the plan's 5433 template, because 5433 and 9000 belong to the owner's production stack. The smoke run keeps its own `dealflow-smoke` compose project on 3310/3311/3312 and publishes no host Postgres port.
