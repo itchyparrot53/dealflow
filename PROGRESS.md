@@ -1,14 +1,14 @@
 # PROGRESS: dealflow-wd-p14-v1
 
 STATUS: IN PROGRESS
-Current: 0.1 · Last updated: 2026-11-10 00:57
+Current: 0.2 · Last updated: 2026-11-10 01:15
 
 ## Phase base commits
 - Phase 0: 427c4673a950cb0964601a44b257d43c686ff594
 
 ## Tasks
 - [x] 0.1 Start Part 14: progress files, kit, baseline and environment
-- [ ] 0.2 Reuse map and design note
+- [x] 0.2 Reuse map and design note
 - [ ] 0.3 Phase 0 QA gate
 - [ ] 1.1 Schema, migration and permission flags
 - [ ] 1.2 Marketing status service and suppression
@@ -54,6 +54,14 @@ Current: 0.1 · Last updated: 2026-11-10 00:57
 - 0.1: pnpm 9.15.9 in `/tmp/dealflow-tools` had been partly garbage collected (the `pnpm` symlink pointed at a missing package), so it was reinstalled with the documented `npm install --prefix /tmp/dealflow-tools --cache /tmp/npm-cache pnpm@9.15.9` command. The global pnpm is 8.9.2 and is never used.
 - 0.1: Docker is up (24.0.5) but the VM has 8.2 GB free of 95.0 GB (91% used). That is below the 10 GB comfort threshold Part 13 recorded, so builds and the smoke run are watched for "no space left" and never pruned (section 0 rule 14).
 - 0.1: `.env` had its three `GOOGLE_*` values blanked in the previous session (they were two placeholders plus an empty domain, which the all-or-nothing rule rejects), so env validation now passes. The Environment `GOOGLE_*=` command prefixes are kept but are redundant; `.env` is not edited again by this run (rule 17).
+- 0.2: person segments compile with the contacts engine (`contacts/contactFilter.ts compileContactFilter` plus `PERSON_FILTER_CONFIG` and `PERSON_COLUMN_SQL`); `filterAst.ts`/`filterAstSql.ts` are the deal-only compiler, so no entity adapter is added there (section 4 allows this fallback).
+- 0.2: people visibility has no SQL clause; `listPeople` filters candidate rows with `canSee` in process, so the segment preview and the send-time snapshot do the same, hydrating the campaign creator with `hydrateActor` instead of inventing a person visibility clause.
+- 0.2: `GLOBAL_FLAGS` and the `GlobalAction` union are two hand-maintained lists in different files, so each of the four campaign flags is added to both and the permission tests cover both.
+- 0.2: the outbound email registry is a closed union, so `marketing_double_opt_in` and `campaign_sender_verification` are appended to `EMAIL_TEMPLATE_KEYS` and `EMAIL_TEMPLATES`, and the brand test gains their pinned copy.
+- 0.2: campaign timeline entries use the existing change log (`recordChange`) rendered as `HistoryItem.event` by `contactTimeline`, not a new feed table.
+- 0.2: campaign mail gets its own transport module reading `MARKETING_SMTP_*` then `SMTP_*`, and reuses the `MAIL_FAKE` capture store so tests read the wire copy; one-to-one `renderEmail` is not reused for campaign layout, only its tokens, variables and `htmlToText`.
+- 0.2: public routes are top-level app folders with no middleware allow-list to edit, so `/c`, `/u`, `/v` and `/t/c/...` need none; all reuse the public fail-open `emailTracking` limiter.
+- 0.2: new jobs register in `registerAllJobs` (`src/server/worker.ts`) with queue names in `src/constants/jobNames.ts` and producers through `getBoss()`; the e2e harness already runs that worker.
 
 ## Owner actions
 - TODO(owner): set all three `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` and `GOOGLE_WORKSPACE_DOMAIN` values in `.env` if you want Google sign-in; they are blank now so the app runs without Google SSO.
