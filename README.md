@@ -11,6 +11,8 @@ Pipeline, deals, contacts, two-way email, campaigns, projects and AI on your own
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white&labelColor=211C52)
 ![Postgres](https://img.shields.io/badge/Postgres-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white&labelColor=211C52)
 
+**Website:** https://itchyparrot53.github.io/dealflow/
+
 <img src="docs/screenshots/pipeline-diorama.webp" alt="The Dealflow pipeline diorama: a 3D board with stage columns and the Dealflow logo" width="100%" />
 
 </div>

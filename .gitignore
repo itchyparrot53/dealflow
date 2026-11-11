@@ -54,3 +54,6 @@ docs/parity-captures/
 
 # Local overrides of feature notes
 docs/dealflow/*.local.*
+
+# Landing site check screenshots
+site/tools/screens/

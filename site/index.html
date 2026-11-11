@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dealflow: the business-development CRM you run yourself</title>
+  <meta name="description" content="Dealflow is an open-source, self-hosted CRM for business development: pipeline, deals, contacts, two-way email, campaigns, projects and optional AI on your own server. MIT licensed.">
+  <link rel="canonical" href="https://itchyparrot53.github.io/dealflow/">
+  <meta name="theme-color" content="#211c52">
+  <meta name="color-scheme" content="light">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Dealflow">
+  <meta property="og:url" content="https://itchyparrot53.github.io/dealflow/">
+  <meta property="og:title" content="Dealflow">
+  <meta property="og:description" content="The business-development CRM you run yourself.">
+  <meta property="og:image" content="https://itchyparrot53.github.io/dealflow/assets/brand/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Dealflow logo on an indigo background">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dealflow">
+  <meta name="twitter:description" content="The business-development CRM you run yourself.">
+  <meta name="twitter:image" content="https://itchyparrot53.github.io/dealflow/assets/brand/x-card.png">
+
+  <link rel="icon" href="./assets/brand/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/brand/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./assets/brand/apple-touch-icon-180x180.png">
+
+  <link rel="preload" href="./assets/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./main.js" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Dealflow",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Linux, Docker",
+    "description": "Dealflow is an open-source, self-hosted CRM for business development: pipeline, deals, contacts, two-way email, campaigns, projects and optional AI on your own server. MIT licensed.",
+    "license": "https://opensource.org/licenses/MIT",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "GBP"
+    },
+    "codeRepository": "https://github.com/itchyparrot53/dealflow"
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" data-header>
+    <div class="container header-inner">
+      <a class="brand-link" href="#top" aria-label="Dealflow home">
+        <img src="./assets/brand/dealflow-logo-horizontal.svg" width="135" height="28" alt="Dealflow" decoding="async">
+      </a>
+
+      <nav class="header-nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#email">Email</a>
+        <a href="#self-host">Self-host</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/index.md">Docs</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="btn btn-glass btn-small header-cta" href="https://github.com/itchyparrot53/dealflow">
+          <svg role="presentation" class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 .5C5.73.5.6 5.63.6 11.9c0 5.03 3.26 9.3 7.78 10.8.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.16.69-3.83-1.34-3.83-1.34-.52-1.31-1.27-1.66-1.27-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.65 1.24 3.3.95.1-.73.4-1.24.72-1.53-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.44.11-3 0 0 .95-.3 3.12 1.16a10.8 10.8 0 0 1 2.84-.38c.96 0 1.93.13 2.84.38 2.16-1.46 3.11-1.16 3.11-1.16.62 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.35-2.66 5.31-5.19 5.59.41.35.77 1.04.77 2.1 0 1.51-.01 2.73-.01 3.1 0 .3.2.66.79.55A10.9 10.9 0 0 0 23.4 11.9C23.4 5.63 18.27.5 12 .5Z" fill="currentColor"/></svg>
+          <span>Star</span>
+          <span class="star-count" data-stars hidden></span>
+        </a>
+        <a class="btn btn-primary btn-small header-cta" href="#install">Get started</a>
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-button>Menu</button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <nav aria-label="Mobile">
+        <a href="#features">Features</a>
+        <a href="#email">Email</a>
+        <a href="#self-host">Self-host</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/index.md">Docs</a>
+      </nav>
+      <div class="mobile-actions">
+        <a class="btn btn-glass" href="https://github.com/itchyparrot53/dealflow">
+          <svg role="presentation" class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 .5C5.73.5.6 5.63.6 11.9c0 5.03 3.26 9.3 7.78 10.8.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.16.69-3.83-1.34-3.83-1.34-.52-1.31-1.27-1.66-1.27-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.65 1.24 3.3.95.1-.73.4-1.24.72-1.53-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.44.11-3 0 0 .95-.3 3.12 1.16a10.8 10.8 0 0 1 2.84-.38c.96 0 1.93.13 2.84.38 2.16-1.46 3.11-1.16 3.11-1.16.62 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.35-2.66 5.31-5.19 5.59.41.35.77 1.04.77 2.1 0 1.51-.01 2.73-.01 3.1 0 .3.2.66.79.55A10.9 10.9 0 0 0 23.4 11.9C23.4 5.63 18.27.5 12 .5Z" fill="currentColor"/></svg>
+          <span>Star</span>
+          <span class="star-count" data-stars hidden></span>
+        </a>
+        <a class="btn btn-primary" href="#install">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="light" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="badge"><span class="dot" aria-hidden="true"></span>Open source &middot; MIT &middot; Self-hosted</p>
+          <h1>Your pipeline, on your own server.</h1>
+          <p class="lead">Dealflow is a self-hosted CRM for business development: pipeline, deals, contacts, two-way email and campaigns, on your own Postgres and your own domain. No per-seat bill.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#install">Get started</a>
+            <a class="btn btn-glass" href="https://github.com/itchyparrot53/dealflow">
+              <svg role="presentation" class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 .5C5.73.5.6 5.63.6 11.9c0 5.03 3.26 9.3 7.78 10.8.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.16.69-3.83-1.34-3.83-1.34-.52-1.31-1.27-1.66-1.27-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.65 1.24 3.3.95.1-.73.4-1.24.72-1.53-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.44.11-3 0 0 .95-.3 3.12 1.16a10.8 10.8 0 0 1 2.84-.38c.96 0 1.93.13 2.84.38 2.16-1.46 3.11-1.16 3.11-1.16.62 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.35-2.66 5.31-5.19 5.59.41.35.77 1.04.77 2.1 0 1.51-.01 2.73-.01 3.1 0 .3.2.66.79.55A10.9 10.9 0 0 0 23.4 11.9C23.4 5.63 18.27.5 12 .5Z" fill="currentColor"/></svg>
+              View on GitHub
+            </a>
+          </div>
+          <div class="install-chip">
+            <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: the command scrolls inside the chip and must be keyboard focusable -->
+            <code id="clone-command" tabindex="0">$ git clone https://github.com/itchyparrot53/dealflow.git</code>
+            <button class="copy-icon" type="button" data-copy-target="clone-command" aria-label="Copy install command">
+              <svg role="presentation" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            </button>
+            <span class="copy-feedback" aria-hidden="true">Copied</span>
+          </div>
+          <p class="hero-note">Runs on Docker Compose. Not affiliated with Pipedrive.</p>
+        </div>
+
+        <figure class="hero-art">
+          <img src="./assets/hero.webp" width="1600" height="640" alt="The Dealflow pipeline diorama: a miniature 3D pipeline with stage columns, cards and the Dealflow logo" fetchpriority="high" decoding="async">
+        </figure>
+
+        <div class="facts glass">
+          <div class="fact">
+            <div class="fact-big">1 Compose file</div>
+            <p class="fact-label">App, WebSocket, worker, Postgres and MinIO</p>
+          </div>
+          <div class="fact">
+            <div class="fact-big">1 database</div>
+            <p class="fact-label">Postgres for records, MinIO for files</p>
+          </div>
+          <div class="fact">
+            <div class="fact-big">0 per-seat fees</div>
+            <p class="fact-label">MIT licensed, no hosted tier</p>
+          </div>
+          <div class="fact">
+            <div class="fact-big">Your mailboxes</div>
+            <p class="fact-label">Gmail or any IMAP/SMTP account</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band-mint" id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="badge">See it</p>
+          <h2>Everything the deal touches, in one place.</h2>
+          <p class="lead">The pipeline, the deal workspace, the inbox, campaigns and reports share the same records and the same permission model.</p>
+        </div>
+
+        <div class="tour">
+          <div class="tabs" role="tablist" aria-label="Product tour" data-tablist>
+            <button type="button" role="tab" id="tab-pipeline" aria-selected="true" aria-controls="panel-pipeline" tabindex="0">Pipeline</button>
+            <button type="button" role="tab" id="tab-deal" aria-selected="false" aria-controls="panel-deal" tabindex="-1">Deal</button>
+            <button type="button" role="tab" id="tab-inbox" aria-selected="false" aria-controls="panel-inbox" tabindex="-1">Inbox</button>
+            <button type="button" role="tab" id="tab-campaigns" aria-selected="false" aria-controls="panel-campaigns" tabindex="-1">Campaigns</button>
+            <button type="button" role="tab" id="tab-reports" aria-selected="false" aria-controls="panel-reports" tabindex="-1">Reports</button>
+            <button type="button" role="tab" id="tab-activities" aria-selected="false" aria-controls="panel-activities" tabindex="-1">Activities</button>
+            <button type="button" role="tab" id="tab-projects" aria-selected="false" aria-controls="panel-projects" tabindex="-1">Projects</button>
+          </div>
+
+          <div class="tour-panels">
+            <div class="tour-panel is-active" id="panel-pipeline" role="tabpanel" aria-labelledby="tab-pipeline">
+              <div class="shot">
+                <img src="./assets/shots/pipeline.webp" width="1440" height="900" alt="The Dealflow pipeline board with stage columns and deal cards" decoding="async">
+              </div>
+              <p class="caption">Custom stages, weighted totals and every deal in one board.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-deal" role="tabpanel" aria-labelledby="tab-deal">
+              <div class="shot">
+                <img src="./assets/shots/deal.webp" width="1440" height="900" loading="lazy" alt="The Dealflow deal workspace with activities, notes, files and email on one timeline" decoding="async">
+              </div>
+              <p class="caption">Activities, notes, files, email and change history on one timeline.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-inbox" role="tabpanel" aria-labelledby="tab-inbox">
+              <div class="shot">
+                <img src="./assets/shots/inbox.webp" width="1440" height="900" loading="lazy" alt="The Dealflow inbox with a conversation linked to a person and a deal" decoding="async">
+              </div>
+              <p class="caption">Two-way email, linked to the person and the deal.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-campaigns" role="tabpanel" aria-labelledby="tab-campaigns">
+              <div class="shot">
+                <img src="./assets/shots/campaigns.webp" width="1440" height="900" loading="lazy" alt="The Dealflow campaign builder with a block editor and mobile preview" decoding="async">
+              </div>
+              <p class="caption">A block builder, segments, consent and reports.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-reports" role="tabpanel" aria-labelledby="tab-reports">
+              <div class="shot">
+                <img src="./assets/shots/insights.webp" width="1440" height="900" loading="lazy" alt="The Dealflow insights dashboard with charts and reports" decoding="async">
+              </div>
+              <p class="caption">Reports and dashboards over deals and activities.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-activities" role="tabpanel" aria-labelledby="tab-activities">
+              <div class="shot">
+                <img src="./assets/shots/calendar.webp" width="1440" height="900" loading="lazy" alt="The Dealflow week calendar with calls, meetings and tasks" decoding="async">
+              </div>
+              <p class="caption">A week and month calendar for calls, meetings and tasks.</p>
+            </div>
+
+            <div class="tour-panel" id="panel-projects" role="tabpanel" aria-labelledby="tab-projects">
+              <div class="shot">
+                <img src="./assets/shots/projects.webp" width="1440" height="900" loading="lazy" alt="The Dealflow projects board with phases and tasks" decoding="async">
+              </div>
+              <p class="caption">Phases and tasks, startable from a won deal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Built for the whole deal.</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+            </span>
+            <h3>Pipeline that fits the work</h3>
+            <p>Multiple pipelines, custom stages, weighted totals, rotting flags, saved filters and board, list and archive views.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><rect width="7" height="18" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+            </span>
+            <h3>A workspace, not a record</h3>
+            <p>Activities, notes, files, email and change history on one timeline. Participants, followers, labels, lost reasons and close dates.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <h3>Contacts and leads</h3>
+            <p>People and organizations with custom fields, relationships, a shared timeline, duplicate merge, a leads inbox, public forms and booking pages.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <h3>Two-way email</h3>
+            <p>Gmail over OAuth or any IMAP/SMTP mailbox. Shared threads, templates, signatures, merge fields and scheduled send.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </span>
+            <h3>Campaigns with consent</h3>
+            <p>Double opt-in, suppression, sequences, throttled sending and open, click and bounce tracking.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </span>
+            <h3>Quotes and invoices</h3>
+            <p>Product lines snapshot on issue, a public link for the customer, quote acceptance, recorded invoice payments and an overdue job.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            </span>
+            <h3>Reports and forecast</h3>
+            <p>Reports, dashboards, goals, a forecast board and totals in your base currency.</p>
+          </article>
+
+          <article class="card reveal">
+            <span class="icon-tile" aria-hidden="true">
+              <svg role="presentation" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <h3>Admin that holds</h3>
+            <p>Roles, permission sets, visibility groups, audit log, recycle bin, backups and API tokens.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band-mint" id="email">
+      <div class="container email-grid">
+        <div class="email-copy reveal">
+          <p class="badge">Email and campaigns</p>
+          <h2>The inbox is part of the deal.</h2>
+          <p class="lead">Connect Gmail or any IMAP/SMTP mailbox. Replies thread to the person and the deal, and campaigns use the same consent and suppression rules.</p>
+          <ul class="check-list">
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Gmail OAuth or any IMAP/SMTP mailbox, with Purelymail as a preset</span>
+            </li>
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Templates, signatures, merge fields and scheduled send</span>
+            </li>
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Campaigns with double opt-in, sequences and bounce handling</span>
+            </li>
+          </ul>
+          <a class="btn btn-glass" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/email.md">Read the email guide</a>
+        </div>
+
+        <div class="email-flow reveal">
+          <ol class="flow-list">
+            <li class="flow-chip flow-first">
+              <p class="flow-label">Inbound</p>
+              <p class="flow-text">A reply lands in the shared inbox.</p>
+            </li>
+            <li class="flow-chip">
+              <p class="flow-label">Link</p>
+              <p class="flow-text">The thread attaches to the person and the deal.</p>
+            </li>
+            <li class="flow-chip">
+              <p class="flow-label">Thread</p>
+              <p class="flow-text">In-Reply-To and References keep the conversation together.</p>
+            </li>
+            <li class="flow-chip">
+              <p class="flow-label">Campaign</p>
+              <p class="flow-text">The same contact joins a segment; consent and suppression are re-checked.</p>
+            </li>
+            <li class="flow-chip">
+              <p class="flow-label">Track</p>
+              <p class="flow-text">Opens, clicks and bounces land on the timeline.</p>
+            </li>
+            <li class="flow-chip">
+              <p class="flow-label">Notify</p>
+              <p class="flow-text">The owner is notified, not buried in another dashboard.</p>
+            </li>
+          </ol>
+          <p class="flow-note">Example flow</p>
+          <div class="shot">
+            <img src="./assets/shots/compose.webp" width="1440" height="900" loading="lazy" alt="The Dealflow email composer with a template and merge fields" decoding="async">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="badge">Optional AI</p>
+          <h2>AI with a bill you control.</h2>
+          <p class="lead">Dealflow works without AI. Add an OpenRouter key and set a company cap, plus an optional per-user cap.</p>
+        </div>
+
+        <div class="ai-grid">
+          <article class="card reveal">
+            <h3>Your key, your model</h3>
+            <p>Connect OpenRouter and choose the model. The default is DeepSeek v4.1 Flash. No key means no AI, and nothing leaves your server.</p>
+          </article>
+          <article class="card reveal">
+            <h3>Caps that hold</h3>
+            <p>A company monthly token cap and an optional per-user cap. Every call is logged, and calls over a cap are refused.</p>
+          </article>
+          <article class="card reveal">
+            <h3>Access-aware answers</h3>
+            <p>The assistant uses MCP tools, sees only what the user can see, and asks before it writes.</p>
+          </article>
+        </div>
+
+        <section class="budget glass reveal" aria-label="Example AI usage">
+          <div class="budget-head">
+            <h3>AI usage this month</h3>
+            <p class="budget-total">$6.40 of $25.00</p>
+          </div>
+          <div class="budget-track budget-track-main" aria-hidden="true"><span style="width:26%"></span></div>
+          <div class="budget-rows">
+            <div class="budget-row">
+              <span class="budget-name">Demo Rep Bianca</span>
+              <span class="budget-track" aria-hidden="true"><span style="width:42%"></span></span>
+              <span class="budget-amount">$2.10 of $5.00</span>
+            </div>
+            <div class="budget-row">
+              <span class="budget-name">Demo Rep Chen</span>
+              <span class="budget-track" aria-hidden="true"><span style="width:26%"></span></span>
+              <span class="budget-amount">$1.30 of $5.00</span>
+            </div>
+            <div class="budget-row">
+              <span class="budget-name">Demo Rep Esra</span>
+              <span class="budget-track" aria-hidden="true"><span style="width:60%"></span></span>
+              <span class="budget-amount">$3.00 of $5.00</span>
+            </div>
+          </div>
+          <p class="footnote">Example figures</p>
+          <p class="link-line"><a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/deploy.md">How AI is configured</a></p>
+        </section>
+      </div>
+    </section>
+
+    <section class="section band-lilac" id="self-host">
+      <div class="light" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="badge">Self-hosted</p>
+          <h2>Your CRM, on your hardware.</h2>
+          <p class="lead">One Compose stack: the app, a WebSocket server, a worker, Postgres and MinIO. Your records and files stay in your database and your bucket.</p>
+        </div>
+
+        <div class="selfhost-grid">
+          <div class="diagram-panel glass reveal">
+            <svg class="diagram" viewBox="0 0 640 560" role="img" aria-label="Dealflow runs as a Docker Compose stack with Postgres and MinIO; Gmail, SMTP, OpenRouter, webhooks and Google SSO are optional connections">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M0 0 10 5 0 10z" class="dg-arrow-head"/>
+                </marker>
+              </defs>
+
+              <rect class="dg-box" x="190" y="24" width="250" height="54" rx="12"/>
+              <text class="dg-title" x="315" y="56" text-anchor="middle">Your browser or phone</text>
+
+              <line class="dg-arrow" x1="315" y1="78" x2="315" y2="112" marker-end="url(#arrow)"/>
+              <text class="dg-label" x="330" y="101" text-anchor="start">HTTPS</text>
+
+              <rect class="dg-box" x="190" y="120" width="250" height="62" rx="12"/>
+              <text class="dg-title" x="315" y="148" text-anchor="middle">Your reverse proxy</text>
+              <text class="dg-label" x="315" y="168" text-anchor="middle">TLS</text>
+
+              <line class="dg-arrow" x1="315" y1="182" x2="315" y2="216" marker-end="url(#arrow)"/>
+
+              <rect class="dg-stack" x="100" y="224" width="330" height="210" rx="16"/>
+              <text class="dg-stack-title" x="265" y="250" text-anchor="middle">Dealflow Compose stack</text>
+
+              <rect class="dg-box" x="120" y="266" width="84" height="44" rx="10"/>
+              <text class="dg-title" x="162" y="293" text-anchor="middle">App</text>
+
+              <rect class="dg-box" x="216" y="266" width="98" height="44" rx="10"/>
+              <text class="dg-title" x="265" y="293" text-anchor="middle">WebSocket</text>
+
+              <rect class="dg-box" x="326" y="266" width="84" height="44" rx="10"/>
+              <text class="dg-title" x="368" y="293" text-anchor="middle">Worker</text>
+
+              <rect class="dg-box" x="150" y="334" width="100" height="44" rx="10"/>
+              <text class="dg-title" x="200" y="361" text-anchor="middle">Postgres</text>
+
+              <rect class="dg-box" x="282" y="334" width="100" height="44" rx="10"/>
+              <text class="dg-title" x="332" y="361" text-anchor="middle">MinIO</text>
+
+              <text class="dg-label" x="555" y="214" text-anchor="middle">optional</text>
+
+              <line class="dg-dash" x1="430" y1="290" x2="480" y2="290"/>
+              <rect class="dg-optional" x="480" y="270" width="150" height="40" rx="10"/>
+              <text class="dg-optional-text" x="555" y="295" text-anchor="middle">Gmail / IMAP</text>
+
+              <line class="dg-dash" x1="430" y1="346" x2="480" y2="346"/>
+              <rect class="dg-optional" x="480" y="326" width="150" height="40" rx="10"/>
+              <text class="dg-optional-text" x="555" y="351" text-anchor="middle">SMTP</text>
+
+              <line class="dg-dash" x1="430" y1="402" x2="480" y2="402"/>
+              <rect class="dg-optional" x="480" y="382" width="150" height="40" rx="10"/>
+              <text class="dg-optional-text" x="555" y="407" text-anchor="middle">OpenRouter</text>
+
+              <line class="dg-dash" x1="430" y1="458" x2="480" y2="458"/>
+              <rect class="dg-optional" x="480" y="438" width="150" height="40" rx="10"/>
+              <text class="dg-optional-text" x="555" y="463" text-anchor="middle">Webhooks</text>
+
+              <line class="dg-dash" x1="430" y1="514" x2="480" y2="514"/>
+              <rect class="dg-optional" x="480" y="494" width="150" height="40" rx="10"/>
+              <text class="dg-optional-text" x="555" y="519" text-anchor="middle">Google SSO</text>
+            </svg>
+          </div>
+
+          <div class="install-col reveal" id="install">
+            <h3>Install in a few minutes</h3>
+            <div class="code">
+              <button class="copy-btn" type="button" data-copy-target="install-code" aria-label="Copy install commands">Copy</button>
+              <pre id="install-code"><code><span class="prompt">$</span> git clone https://github.com/itchyparrot53/dealflow.git
+<span class="prompt">$</span> cd dealflow
+<span class="prompt">$</span> cp .env.example .env
+<span class="prompt">$</span> <span class="comment"># set BASE_URL, NEXT_PUBLIC_WS_URL, MINIO_ENDPOINT,</span>
+<span class="prompt">$</span> <span class="comment"># SEED_ADMIN_EMAIL and the generated secrets</span>
+<span class="prompt">$</span> docker compose up -d --build</code></pre>
+            </div>
+
+            <p>Open http://localhost:3000. With SMTP unset, the sign-in link prints in the app log. On a fresh box, mint the first admin setup link:</p>
+
+            <div class="install-chip install-chip-line">
+              <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: the command scrolls inside the chip and must be keyboard focusable -->
+              <code id="bootstrap-command" tabindex="0">$ docker compose exec app node dist/bootstrap-link.mjs</code>
+              <button class="copy-icon" type="button" data-copy-target="bootstrap-command" aria-label="Copy bootstrap command">
+                <svg role="presentation" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+              <span class="copy-feedback" aria-hidden="true">Copied</span>
+            </div>
+
+            <h3 class="need-title">What you need</h3>
+            <ul class="need-list">
+              <li>Docker Engine with the Compose plugin</li>
+              <li>A domain, and a second s3. hostname for storage</li>
+              <li>A reverse proxy for HTTPS, such as Caddy</li>
+              <li>Optionally, an SMTP account and an OpenRouter key</li>
+            </ul>
+
+            <div class="link-buttons">
+              <a class="btn btn-glass btn-small" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/deploy.md">Deployment guide</a>
+              <a class="btn btn-glass btn-small" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/reverse-proxy.md">Reverse proxy</a>
+              <a class="btn btn-glass btn-small" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/self-hosting.md">Operator guide</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="compare glass reveal">
+          <h3>What it takes to run</h3>
+          <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: the comparison table scrolls inside its panel and must be keyboard focusable -->
+          <section class="table-scroll" aria-label="What it takes to run" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col"><span class="visually-hidden">Category</span></th>
+                  <th scope="col" class="dealflow-col">Dealflow</th>
+                  <th scope="col">Typical SaaS CRM</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Where it runs</th>
+                  <td class="dealflow-col">Your server, one Compose file</td>
+                  <td>The vendor's cloud</td>
+                </tr>
+                <tr>
+                  <th scope="row">Data</th>
+                  <td class="dealflow-col">Postgres and MinIO, on your disk</td>
+                  <td>The vendor's database</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pricing</th>
+                  <td class="dealflow-col">MIT, no per-seat fee</td>
+                  <td>Per seat, per month</td>
+                </tr>
+                <tr>
+                  <th scope="row">Email and campaigns</th>
+                  <td class="dealflow-col">Included, your mailboxes</td>
+                  <td>Add-ons or separate tools</td>
+                </tr>
+                <tr>
+                  <th scope="row">AI</th>
+                  <td class="dealflow-col">Optional, your key, capped</td>
+                  <td>Bundled or metered</td>
+                </tr>
+                <tr>
+                  <th scope="row">Exit</th>
+                  <td class="dealflow-col">Database dump and files</td>
+                  <td>Export tools vary</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Your data, your rules.</h2>
+          <p class="lead">No telemetry by default and no account with us. The outbound calls are the ones you configure.</p>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>
+              <h3 class="rule-title">Permissions checked on the server</h3>
+              <p>Deals, contacts, email, campaigns, reports and AI answers respect the same visibility rules.</p>
+            </div>
+          </div>
+
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div>
+              <h3 class="rule-title">Visibility groups and teams</h3>
+              <p>Decide who sees which records, with permission sets for what they can do.</p>
+            </div>
+          </div>
+
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            <div>
+              <h3 class="rule-title">Sign-in your way</h3>
+              <p>Email and password, single-use email links, and Google Workspace SSO when configured.</p>
+            </div>
+          </div>
+
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>
+            <div>
+              <h3 class="rule-title">Audit log</h3>
+              <p>Permission changes, users, groups, pipeline access and settings, with filters.</p>
+            </div>
+          </div>
+
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 12.47 2.77"/><path d="M21 5v12"/><path d="M3 12a9 3 0 0 0 3 2.29"/><path d="m16 19 2 2 4-4"/></svg>
+            <div>
+              <h3 class="rule-title">Backups you can test</h3>
+              <p>Daily archives, a restore CLI and a 30-day recycle bin.</p>
+            </div>
+          </div>
+
+          <div class="rule reveal">
+            <svg role="presentation" class="rule-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <div>
+              <h3 class="rule-title">Health you can watch</h3>
+              <p>A health endpoint for your monitoring, plus a smoke test that boots the Compose stack.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band-mint">
+      <div class="container phone-grid">
+        <div class="phone-copy reveal">
+          <p class="badge">Mobile</p>
+          <h2>Install it like an app.</h2>
+          <p class="lead">Dealflow installs as a PWA with offline snapshots, web push and mobile layouts for the screens people use on a phone.</p>
+          <ul class="check-list">
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Offline snapshots of the records you opened</span>
+            </li>
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Web push for notifications</span>
+            </li>
+            <li>
+              <svg role="presentation" class="tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>A bottom navigation below 768px</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="phone-col reveal">
+          <div class="phone-glow" aria-hidden="true"></div>
+          <div class="phone">
+            <img src="./assets/shots/mobile.webp" width="390" height="844" loading="lazy" alt="Dealflow on a phone: the pipeline board in a mobile layout" decoding="async">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="badge">Open source</p>
+          <h2>Built in the open.</h2>
+          <p class="lead">MIT licensed and developed on GitHub. Read every line, run it anywhere, and help shape what comes next.</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="card stat-card reveal">
+            <p class="stat-figure" data-stars>Star on GitHub</p>
+            <p class="stat-label">GitHub stars</p>
+          </div>
+          <div class="card stat-card reveal">
+            <p class="stat-figure">MIT</p>
+            <p class="stat-label">Licence</p>
+          </div>
+          <div class="card stat-card reveal">
+            <p class="stat-figure">5</p>
+            <p class="stat-label">Long-running services in one Compose file</p>
+          </div>
+        </div>
+
+        <div class="link-card-grid">
+          <a class="card card-link reveal" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/index.md">
+            <h3>User guide</h3>
+            <p>Task-by-task help for the team</p>
+          </a>
+          <a class="card card-link reveal" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/deploy.md">
+            <h3>Deploy</h3>
+            <p>Install, environment and upgrades</p>
+          </a>
+          <a class="card card-link reveal" href="https://github.com/itchyparrot53/dealflow/blob/main/docs/API.md">
+            <h3>REST API</h3>
+            <p>Tokens, scopes and endpoints</p>
+          </a>
+          <a class="card card-link reveal" href="https://github.com/itchyparrot53/dealflow">
+            <h3>GitHub</h3>
+            <p>Source, issues and releases</p>
+          </a>
+        </div>
+
+        <div class="status-note reveal">
+          <p>Dealflow runs one company's business development in production and is actively developed. It is single-company by design: back up your data and pin a release before upgrading.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band-lilac" id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Questions, answered.</h2>
+        </div>
+
+        <div class="faq-panel glass">
+          <details class="faq-item" id="is-dealflow-free">
+            <summary><span>Is Dealflow free?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Yes. It is MIT licensed, with no paid tier and no per-seat fee.</p></div>
+          </details>
+          <details class="faq-item" id="is-there-a-hosted-version">
+            <summary><span>Is there a hosted version?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>No. Dealflow runs on your server. There is no Dealflow cloud and no account to create with us.</p></div>
+          </details>
+          <details class="faq-item" id="is-it-multi-tenant">
+            <summary><span>Is it multi-tenant?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>No. One install serves one company. If you need separate companies, run separate instances.</p></div>
+          </details>
+          <details class="faq-item" id="what-does-it-need-to-run">
+            <summary><span>What does it need to run?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Docker Engine with the Compose plugin, a domain and a second s3. hostname for storage, and a reverse proxy for HTTPS. Postgres and MinIO run in the Compose stack.</p></div>
+          </details>
+          <details class="faq-item" id="do-i-need-ai">
+            <summary><span>Do I need AI?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>No. Without an OpenRouter key every AI surface is unavailable and nothing leaves your server. With a key, you set a company cap and an optional per-user cap.</p></div>
+          </details>
+          <details class="faq-item" id="how-does-email-work">
+            <summary><span>How does email work?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Connect Gmail through Google OAuth, or any IMAP/SMTP mailbox with an app password. Campaigns use a separate sending account when you configure one, and fall back to your system SMTP.</p></div>
+          </details>
+          <details class="faq-item" id="can-i-import-from-pipedrive">
+            <summary><span>Can I import from Pipedrive?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Contacts and leads can come in by CSV, and the REST API can write deals and other records. There is no one-click Pipedrive migration.</p></div>
+          </details>
+          <details class="faq-item" id="how-do-backups-work">
+            <summary><span>How do backups work?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>The worker writes a daily archive with the database dump, stored files and a manifest. Restore from the CLI with the app stopped, and deleted records sit in a 30-day recycle bin.</p></div>
+          </details>
+          <details class="faq-item" id="is-it-ready-for-production">
+            <summary><span>Is it ready for production?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Dealflow runs a real business-development workflow in production and is actively developed. Back up your data and pin a release before upgrading.</p></div>
+          </details>
+          <details class="faq-item" id="does-it-support-sso">
+            <summary><span>Does it support SSO?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>Google Workspace SSO when its three environment variables are set. Email and password and single-use email links work without Google.</p></div>
+          </details>
+          <details class="faq-item" id="is-dealflow-affiliated-with-pipedrive">
+            <summary><span>Is Dealflow affiliated with Pipedrive?</span><svg role="presentation" class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="faq-answer"><p>No. Dealflow is an independent open-source project and is not affiliated with, endorsed by or connected to Pipedrive.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-section">
+      <div class="light" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="container">
+        <div class="cta-panel reveal">
+          <img class="cta-logo" src="./assets/brand/dealflow-logo-stacked-reverse.svg" width="121" height="96" alt="Dealflow" loading="lazy" decoding="async">
+          <h2>Your pipeline. Your server. Your data.</h2>
+          <p class="cta-lead">Run it on your own box.</p>
+          <div class="cta-actions">
+            <a class="btn btn-primary" href="#install">Get started</a>
+            <a class="btn btn-glass cta-ghost" href="https://github.com/itchyparrot53/dealflow">
+              <svg role="presentation" class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 .5C5.73.5.6 5.63.6 11.9c0 5.03 3.26 9.3 7.78 10.8.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.16.69-3.83-1.34-3.83-1.34-.52-1.31-1.27-1.66-1.27-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.65 1.24 3.3.95.1-.73.4-1.24.72-1.53-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.44.11-3 0 0 .95-.3 3.12 1.16a10.8 10.8 0 0 1 2.84-.38c.96 0 1.93.13 2.84.38 2.16-1.46 3.11-1.16 3.11-1.16.62 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.35-2.66 5.31-5.19 5.59.41.35.77 1.04.77 2.1 0 1.51-.01 2.73-.01 3.1 0 .3.2.66.79.55A10.9 10.9 0 0 0 23.4 11.9C23.4 5.63 18.27.5 12 .5Z" fill="currentColor"/></svg>
+              <span>Star on GitHub</span>
+              <span class="cta-stars" data-stars hidden></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="./assets/brand/dealflow-logo-horizontal.svg" width="115" height="24" alt="Dealflow" loading="lazy" decoding="async">
+        <p>The business-development CRM you run yourself.</p>
+        <p>No cookies. No tracking.</p>
+      </div>
+      <nav class="footer-col" aria-label="Product">
+        <h2>Product</h2>
+        <a href="#features">Features</a>
+        <a href="#email">Email</a>
+        <a href="#self-host">Self-host</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/user-guide/index.md">Docs</a>
+      </nav>
+      <nav class="footer-col" aria-label="Resources">
+        <h2>Resources</h2>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/deploy.md">Deployment</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/API.md">API</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/dealflow/BACKUPS.md">Backups</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/docs/dealflow/UPSTREAM.md">Upstream</a>
+      </nav>
+      <nav class="footer-col" aria-label="Community">
+        <h2>Community</h2>
+        <a href="https://github.com/itchyparrot53/dealflow">GitHub</a>
+        <a href="https://github.com/itchyparrot53/dealflow/issues">Issues</a>
+        <a href="https://github.com/itchyparrot53/dealflow/releases">Releases</a>
+        <a href="https://github.com/itchyparrot53/dealflow/blob/main/CLAUDE.md">Contributing</a>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Dealflow contributors &middot; MIT licence</p>
+      <p>Not affiliated with Pipedrive.</p>
+    </div>
+  </footer>
+
+  <p class="visually-hidden" id="copy-status" aria-live="polite"></p>
+</body>
+</html>
