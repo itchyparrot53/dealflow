@@ -6,7 +6,7 @@
 # files via __dirname-relative reads, so they must stay in a real node_modules, not a bundle.
 # See docs/deploy.md.
 
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 RUN corepack enable
 WORKDIR /app
 
