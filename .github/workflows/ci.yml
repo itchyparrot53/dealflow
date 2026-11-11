@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Type, lint, design, unit and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Design checks
+        run: pnpm check:design
+
+      - name: Unit tests
+        run: pnpm test:unit
+
+      # Build-time placeholders only, the same set the Dockerfile uses. Scoped to this step so
+      # they cannot override the values vitest.setup.ts installs for the unit suite.
+      - name: Production build
+        env:
+          DATABASE_URL: postgres://build:build@localhost:5432/build
+          BASE_URL: http://localhost:3000
+          WS_TICKET_SECRET: ci_ws_ticket_secret_0123456789abcdef0123456789abcdef
+          WS_PUBLIC_URL: ws://localhost:8080
+          NEXT_PUBLIC_WS_URL: ws://localhost:8080
+          MINIO_ENDPOINT: http://localhost:9000
+          MINIO_ACCESS_KEY: build
+          MINIO_SECRET_KEY: build
+          TOKEN_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          OAUTH_SIGNING_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          GOOGLE_OAUTH_CLIENT_ID: build
+          GOOGLE_OAUTH_CLIENT_SECRET: build
+          GOOGLE_WORKSPACE_DOMAIN: build.example.com
+          SEED_ADMIN_EMAIL: build@example.com
+          ALLOW_FIRST_LOGIN_ADMIN: "false"
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: pnpm build
+
+  integration:
+    name: Integration (Postgres container)
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Integration tests
+        run: pnpm test:integration
+
+  docker:
+    name: Docker smoke
+    needs: checks
+    # Validate the Compose stack on pull requests and manual runs only. Pushing a tag publishes
+    # the multi-arch image through docker-publish.yml.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COMPOSE_PARALLEL_LIMIT: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # The smoke test builds the real image, boots the long-running tier, proves health,
+      # restarts the app and proves the seeded admin survives. Everything is removed afterwards.
+      - name: Build and smoke the Compose stack
+        run: pnpm smoke

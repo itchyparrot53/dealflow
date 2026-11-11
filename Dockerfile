@@ -4,7 +4,7 @@
 # no test tooling), the Next build output, the three esbuild-transpiled server entrypoints, and
 # the migration SQL. The workers are transpiled (not inlined): deps like jsdom read their own data
 # files via __dirname-relative reads, so they must stay in a real node_modules, not a bundle.
-# See docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md.
+# See docs/deploy.md.
 
 FROM node:22-alpine AS base
 RUN corepack enable

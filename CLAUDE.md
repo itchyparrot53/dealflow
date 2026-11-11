@@ -42,7 +42,7 @@ Guidance for working in this codebase (with an AI coding assistant or by hand).
 - **New work goes in new feature folders** (`src/features/<feature>/`) and **new schema files** under `src/db/schema/` (exported from the index), so the upstream diff stays small and reviewable.
 - **Migrations** are named `00NN_dealflow_<topic>.sql` (for example `0075_dealflow_auth.sql`). Never reuse or renumber an upstream migration; take the next free number.
 - **Upstream policy:** `docs/dealflow/UPSTREAM.md` records the base commit, how to bring a fix over, and every upstream file we changed. Read it before cherry-picking anything.
-- **Plans** live in `PLAN-PART<N>.md` at the folder root; `ROADMAP.md` is context only.
+- **Feature notes** live in `docs/dealflow/`; working plans and progress logs are not kept in the repository.
 - **Every external service has a fake.** `AI_FAKE=true` gives deterministic AI answers and tests inject `ScriptedAiProvider`; `MAIL_FAKE=true` writes captured mail to a folder and tests may inject `setSystemMailerForTest`. Never call a paid or real external service from a test.
 
 ## Engineering Conventions

@@ -1,5 +1,7 @@
 # Campaigns: reuse map and design note
 
+> The plan and progress files named here are not part of the repository. They remain in git history.
+
 Part 14 (`dealflow-wd-p14-v1`), Task 0.2. This note names the existing code each contract in
 `PLAN-PART14.md` section 6 plugs into, before any of it is written. Every row gives the file and
 the exact function or type. "Mismatch" marks a place where the code differs from the plan's

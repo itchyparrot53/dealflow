@@ -15,23 +15,18 @@ import {
 
 export default tseslint.config(
   {
-    // Exclude build artifacts, generated output, and dev-only parity analysis scripts. site/ is
-    // the standalone marketing site (its own package + toolchain), so the app's type-aware config
-    // does not apply to it. See docs/superpowers/specs/2026-07-18-landing-cloudflare-pages-design.md.
-    // website/ is the static Dealflow site (HTML templates and generated output), built by
-    // scripts/dealflow/build-site.mjs; the script itself is linted.
+    // Exclude build artifacts and generated output. website/ is the static Dealflow site (HTML
+    // templates and generated public/), built by scripts/dealflow/build-site.mjs; the build
+    // script itself is linted.
     ignores: [
       "drizzle/**",
       ".next/**",
       "dist/**",
       "node_modules/**",
       "**/parity-tools/**",
-      "site/**",
       "website/**",
-      "docs-site/**",
       ".claude/**",
       ".dsh/**",
-      "scripts/check-progress.mjs",
       ".e2e/**",
       "e2e/screenshots/**",
       "test-results/**",
@@ -42,8 +37,6 @@ export default tseslint.config(
       "public/sw.js",
       "e2e/**",
       "playwright.config.ts",
-      "DEALFLOW/**",
-      "PLAN AND EXECUTE/**",
     ],
   },
   ...tseslint.configs.recommendedTypeChecked,

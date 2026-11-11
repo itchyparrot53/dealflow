@@ -1,5 +1,8 @@
 # Upstream tracking: Dealflow on warpdrive
 
+> Working files named in this document (`PLAN-PART*.md`, `ROADMAP.md`, `PROGRESS*.md`) are not part
+> of the repository. They remain in git history for reference.
+
 ## Remotes and branches
 
 - `upstream` = `https://github.com/sneg55/warpdrive.git` (read-only source of future fixes)
@@ -37,9 +40,9 @@ Keep this list current: it is the conflict surface for every future cherry-pick.
   workflow" test were removed for the same reason; the three Dockerfile stage tests stay (Task 0.3).
 - `scripts/auditConfig.ts` (new): the export left out this module that `scripts/seedSavedFilters.test.ts`
   imports; it is recreated from the plan's Task 0.3 snippet (Task 0.3).
-- `tsconfig.json`, `biome.json`, `eslint.config.mjs`, `vitest.classify.ts` (changed): ignores for the
-  kit folder, generated test output and a stray `DEALFLOW/` copy of the old app that sits in this
-  workspace; and `scripts/dealflow/*.mjs` added to the ESLint default project (Task 0.1, Task 0.3).
+- `tsconfig.json`, `biome.json`, `eslint.config.mjs`, `vitest.classify.ts` (changed): generated
+  output is ignored and `scripts/dealflow/*.mjs` is added to the ESLint default project (Task 0.1,
+  Task 0.3).
 - `.gitignore`, `package.json` (changed): generated paths and the Dealflow scripts from
   PLAN-PART1.md 6.1 (Task 0.1); the package name, description and contributors (Task 1.2); and
   `dev:up` without the explicit compose project name (Task 1.4, AMENDMENT A1).
@@ -61,8 +64,6 @@ Keep this list current: it is the conflict surface for every future cherry-pick.
 - `docker-compose.yml` (changed): no proxy service, loopback publishes for app/ws/MinIO, configurable
   `MINIO_IMAGE`/`MC_IMAGE` and `DEALFLOW_ENV_FILE`, header rewritten (Task 1.4, AMENDMENT A1).
 - `docker-compose.dev.yml` (changed): only the Postgres and MinIO console debug ports (Task 1.4).
-- `docker-compose.local.yml` (changed): this machine's override updated for the new base file, no
-  proxy stanza, no duplicate publishes (Task 1.4, AMENDMENT A1).
 - `Caddyfile` (moved): now `docs/reverse-proxy/Caddyfile.example`, with `$APP_UPSTREAM`,
   `$WS_UPSTREAM` and `$S3_UPSTREAM` variables (Task 1.4).
 - `Caddyfile.test.ts` (changed): reads the example path above (Task 1.4).
@@ -463,7 +464,7 @@ Screens restyled (all presentation):
   `src/features/data-table/ColumnsMenu.tsx`, the `src/app/(app)/contacts/**`, `leads/**` and
   `activities/**` pages and calendar components.
 - Mail, documents, insights, projects, settings, auth and public pages: their feature folders and
-  route pages, as logged task by task in `PROGRESS.md`.
+  route pages, as logged task by task in the Part 1 progress log (git history).
 - `src/app/(app)/settings/SettingsSurface.tsx` and `SettingsHeading.tsx`, every settings page
   (`PageTitle`), `src/features/stats/ui/{Panel,KpiTile,Dashboard,GoalsWidget,Scoreboard,TrendWidget,GoalChart}.tsx`,
   `src/features/insights/ui/**`, `src/features/forecast/ui/**`.

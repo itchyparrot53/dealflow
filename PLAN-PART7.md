@@ -1,1 +1,0 @@
-PLAN AND EXECUTE/dealflow-wd-part7-kit/PLAN-PART7.md

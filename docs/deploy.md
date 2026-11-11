@@ -3,8 +3,7 @@
 Dealflow ships as a self-contained Docker Compose stack: the Next.js app, a WebSocket server, a
 background worker, Postgres and MinIO object storage. There is **no reverse proxy in the stack**:
 the app, ws and MinIO publish on loopback, and your own proxy terminates TLS for the app domain and
-the `s3.` subdomain. One `docker compose up -d --build` brings up everything Dealflow owns. Design:
-`docs/superpowers/specs/2026-07-07-docker-single-box-deploy-design.md`.
+the `s3.` subdomain. One `docker compose up -d --build` brings up everything Dealflow owns.
 
 ## Prerequisites
 
@@ -160,5 +159,5 @@ at `localhost:5433`. Set `BASE_URL=http://localhost:3000` and `NEXT_PUBLIC_WS_UR
 in `.env` for this mode. `pnpm dev:up` starts only Postgres, MinIO and the bucket for app
 development.
 
-`docker-compose.local.yml` is this machine's own override (app on `APP_PORT=3001` because 3000 is
-taken, no proxy, dev login enabled). It is not part of the documented topology.
+If you need machine-specific overrides, create a `docker-compose.local.yml` next to the base file
+and pass it with `-f`. It is gitignored and not part of the documented topology.

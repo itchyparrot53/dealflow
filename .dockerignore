@@ -30,7 +30,13 @@ pnpm-debug.log*
 .idea
 .DS_Store
 
-# Tests and docs are not needed at runtime.
+# Tests, docs and the static site are not needed at runtime.
+website
+e2e
+brand
+*.zip
+.mcp.json
+docker-compose.local.yml
 **/*.test.ts
 **/*.test-helpers.ts
 docs

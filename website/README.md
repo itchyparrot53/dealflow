@@ -1,6 +1,6 @@
 # Dealflow website
 
-The marketing site and online user guide for Dealflow, served at `https://dealflow.umev.co.uk`. (The `site/` folder next to this one is the original warpdrive landing page, kept unchanged from upstream.) It is plain static HTML, CSS and images with no dependency on the app's runtime.
+The marketing site and online user guide for Dealflow, served at `https://dealflow.umev.co.uk`. It is plain static HTML, CSS and images with no dependency on the app's runtime.
 
 | Path | What it is |
 |---|---|
@@ -9,7 +9,6 @@ The marketing site and online user guide for Dealflow, served at `https://dealfl
 | `src/assets/` | `site.css` and `site.js` (the mobile menu; everything else works without JavaScript) |
 | `public/` | The built site. Committed, and what Vercel serves. |
 | `vercel.json` | Clean URLs (`/features` serves `features.html`), caching and security headers |
-| `screenshots/` | Review screenshots at 375, 768 and 1440 px (not deployed) |
 
 The Docs pages are generated from `docs/user-guide/*.md`, and the screenshots and PDFs are copied from `docs/user-guide/images` and `docs/user-guide/pdf`, so the website and the guide never drift apart.
 

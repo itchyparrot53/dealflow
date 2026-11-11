@@ -12,9 +12,7 @@
       "**",
       "!**/.claude",
       "!brand",
-      "!site",
       "!website",
-      "!docs-site",
       "!**/drizzle",
       "!**/.next",
       "!**/dist",
@@ -23,7 +21,6 @@
       "!**/parity-tools",
       "!docs/parity-baselines",
       "!**/.dsh",
-      "!scripts/check-progress.mjs",
       "!.e2e",
       "!e2e/screenshots",
       "!test-results",
@@ -32,9 +29,8 @@
       "!.mail-capture",
       "!.push-capture",
       "!public/sw.js",
-      "!DEALFLOW",
-      "!PLAN AND EXECUTE",
-      "!docs/dealflow/mail-probe-result.json"
+      "!docs/dealflow/mail-probe-result.json",
+      "!docs/dealflow/mail-live-check.json"
     ]
   },
   "formatter": {

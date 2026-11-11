@@ -12,6 +12,10 @@ const entries = [
   { in: "src/entrypoints/migrate.ts", out: "dist/migrate.mjs" },
   { in: "src/entrypoints/sweepSpam.ts", out: "dist/sweep-spam.mjs" },
   { in: "src/entrypoints/backupRestore.ts", out: "dist/backup-restore.mjs" },
+  // The deploy guide runs `node dist/bootstrap-link.mjs` inside the app container, so the script
+  // must be in dist like the entrypoints. It reads DATABASE_URL and SEED_ADMIN_EMAIL from the
+  // container environment and prints a single-use admin setup link.
+  { in: "scripts/dealflow/bootstrap-link.ts", out: "dist/bootstrap-link.mjs" },
 ];
 
 await Promise.all(

@@ -100,9 +100,9 @@ with `E_MAIL_004`, which is how the settings error path is tested.
 
 ## Live check
 
-`pnpm mail:live-check` proves the real transports, the parser and the thread keys against the
-owner's Purelymail test mailbox. It sends two messages from that mailbox to itself, appends both to
+`pnpm mail:live-check` proves the real transports, the parser and the thread keys against a
+Purelymail test mailbox. It sends two messages from that mailbox to itself, appends both to
 Sent, waits for them in INBOX, checks that the received copy has no `Bcc`, checks that the reply
 references the first message, searches Sent by Message-ID and moves both inbound copies to Trash.
 It needs `MAIL_PROBE_USER` and `MAIL_PROBE_PASS` in `.env`; without them it writes
-`docs/dealflow/mail-live-check.json` with `"status": "skipped"`.
+`docs/dealflow/mail-live-check.json` (gitignored) with `"status": "skipped"`.
